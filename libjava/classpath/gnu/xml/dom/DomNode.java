@@ -1,4 +1,4 @@
-/* DomNode.java -- 
+/* DomNode.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -102,10 +102,10 @@ public abstract class DomNode
   //final static String xmlnsURI = "http://www.w3.org/2000/xmlns/";
 
   // tunable
-  //	NKIDS_* affects arrays of children (which grow)
+  //    NKIDS_* affects arrays of children (which grow)
   // (currently) fixed size:
-  //	ANCESTORS_* is for event capture/bubbling, # ancestors
-  //	NOTIFICATIONS_* is for per-node event delivery, # events
+  //    ANCESTORS_* is for event capture/bubbling, # ancestors
+  //    NOTIFICATIONS_* is for per-node event delivery, # events
   private static final int NKIDS_DELTA = 8;
   private static final int ANCESTORS_INIT = 20;
   private static final int NOTIFICATIONS_INIT = 10;
@@ -193,7 +193,7 @@ public abstract class DomNode
     this.owner = owner;
     this.listeners = new HashSet();
   }
-  
+
 
   /**
    * <b>DOM L1</b>
@@ -314,7 +314,7 @@ public abstract class DomNode
       this.owner;
     DomDocument childOwner = child.owner;
     short childNodeType = child.nodeType;
-    
+
     if (childOwner != owner)
       {
         // new in DOM L2, this case -- patch it up later, in reparent()
@@ -338,7 +338,7 @@ public abstract class DomNode
             return;
           }
         break;
-        
+
       case ATTRIBUTE_NODE:
         switch (childNodeType)
           {
@@ -347,7 +347,7 @@ public abstract class DomNode
             return;
           }
         break;
-        
+
       case DOCUMENT_FRAGMENT_NODE:
       case ENTITY_REFERENCE_NODE:
       case ELEMENT_NODE:
@@ -384,7 +384,7 @@ public abstract class DomNode
                                   this, 0);
       }
   }
-  
+
   // Here's hoping a good optimizer will detect the case when the
   // next several methods are never called, and won't allocate
   // object code space of any kind.  (Case:  not reporting any
@@ -399,7 +399,7 @@ public abstract class DomNode
         return;
       }
     boolean doFree = false;
-    
+
     if (event == null)
       {
         event = getMutationEvent();
@@ -531,7 +531,7 @@ public abstract class DomNode
   {
     try
       {
-        DomNode	child = (DomNode) newChild;
+        DomNode child = (DomNode) newChild;
 
         if (child.nodeType == DOCUMENT_FRAGMENT_NODE)
           {
@@ -610,9 +610,9 @@ public abstract class DomNode
 
     try
       {
-        DomNode	child = (DomNode) newChild;
+        DomNode child = (DomNode) newChild;
         DomNode ref = (DomNode) refChild;
-        
+
         if (child.nodeType == DOCUMENT_FRAGMENT_NODE)
           {
             // Append all nodes in the fragment to this node
@@ -641,7 +641,7 @@ public abstract class DomNode
                                           "can't insert node before itself",
                                           ref, 0);
               }
-        
+
             if (child.parent != null)
               {
                 child.parent.removeChild(child);
@@ -672,7 +672,7 @@ public abstract class DomNode
               }
             length++;
           }
-        
+
         return child;
       }
     catch (ClassCastException e)
@@ -713,10 +713,10 @@ public abstract class DomNode
       {
         DomNode child = (DomNode) newChild;
         DomNode ref = (DomNode) refChild;
-        
+
         DomEvent.DomMutationEvent event = getMutationEvent();
         boolean doFree = (event != null);
-            
+
         if (child.nodeType == DOCUMENT_FRAGMENT_NODE)
           {
             // Append all nodes in the fragment to this node
@@ -729,14 +729,14 @@ public abstract class DomNode
                 throw new DomDOMException(DOMException.NOT_FOUND_ERR,
                                           null, ref, 0);
               }
-            
+
             if (reportMutations)
               {
                 removalEvent(event, ref);
               }
             length--;
             length += child.length;
-            
+
             if (child.length == 0)
               {
                 // Removal
@@ -793,12 +793,12 @@ public abstract class DomNode
                 throw new DomDOMException(DOMException.NOT_FOUND_ERR,
                                           null, ref, 0);
               }
-        
+
             if (reportMutations)
               {
                 removalEvent(event, ref);
               }
-            
+
             if (child.parent != null)
               {
                 child.parent.removeChild(child);
@@ -839,7 +839,7 @@ public abstract class DomNode
         ref.setDepth(0);
         ref.previous = null;
         ref.next = null;
-        
+
         return ref;
       }
     catch (ClassCastException e)
@@ -875,7 +875,7 @@ public abstract class DomNode
             throw new DomDOMException(DOMException.NO_MODIFICATION_ALLOWED_ERR,
                                       null, this, 0);
           }
-        
+
         for (DomNode child = first; child != null; child = child.next)
           {
             if (child == ref)
@@ -913,7 +913,7 @@ public abstract class DomNode
                 ref.index = 0;
                 ref.previous = null;
                 ref.next = null;
-                
+
                 return ref;
               }
           }
@@ -1002,9 +1002,9 @@ public abstract class DomNode
    */
   public boolean isSupported(String feature, String version)
   {
-    Document		doc = owner;
-    DOMImplementation	impl = null;
-    
+    Document            doc = owner;
+    DOMImplementation   impl = null;
+
     if (doc == null && nodeType == DOCUMENT_NODE)
       {
         doc = (Document) this;
@@ -1183,7 +1183,7 @@ public abstract class DomNode
     try
       {
         DomNode node = (DomNode) super.clone();
-        
+
         node.parent = null;
         node.depth = 0;
         node.index = 0;
@@ -1192,7 +1192,7 @@ public abstract class DomNode
         node.last = null;
         node.previous = null;
         node.next = null;
-        
+
         node.readonly = false;
         node.listeners = new HashSet();
         node.nListeners = 0;
@@ -1242,7 +1242,7 @@ public abstract class DomNode
   {
 
     private LiveNodeList liveList;
-    
+
     ShadowList(String ns, String local)
     {
       liveList = new LiveNodeList(ns, local);
@@ -1268,15 +1268,15 @@ public abstract class DomNode
   final class LiveNodeList
     implements NodeList, EventListener, NodeFilter
   {
- 
+
     private final boolean matchAnyURI;
-    private final boolean matchAnyName; 
+    private final boolean matchAnyName;
     private final String elementURI;
     private final String elementName;
-    
+
     private DomIterator current;
     private int lastIndex;
-    
+
     LiveNodeList(String uri, String name)
     {
       elementURI = uri;
@@ -1336,28 +1336,28 @@ public abstract class DomNode
     {
       return new DomIterator(DomNode.this,
                              NodeFilter.SHOW_ELEMENT,
-                             this,	/* filter */
-                             true	/* expand entity refs */
+                             this,      /* filter */
+                             true       /* expand entity refs */
                             );
     }
 
     public void handleEvent(Event e)
     {
-      MutationEvent	mutation = (MutationEvent) e;
-      Node		related = mutation.getRelatedNode();
-      
+      MutationEvent     mutation = (MutationEvent) e;
+      Node              related = mutation.getRelatedNode();
+
       // XXX if it's got children ... check all kids too, they
       // will invalidate our saved index
-      
+
       if (related.getNodeType() != Node.ELEMENT_NODE ||
           related.getNodeName() != elementName ||
           related.getNamespaceURI() != elementURI)
         {
           return;
         }
-      
+
       if (current != null)
-	current.detach();
+        current.detach();
       current = null;
     }
 
@@ -1368,7 +1368,7 @@ public abstract class DomNode
           current = createIterator();
           lastIndex = -1;
         }
-      
+
       // last node or before?  go backwards
       if (index <= lastIndex) {
         while (index != lastIndex) {
@@ -1376,11 +1376,11 @@ public abstract class DomNode
           lastIndex--;
         }
         Node ret = current.previousNode ();
-	current.detach();
+        current.detach();
         current = null;
         return ret;
-      } 
-      
+      }
+
       // somewhere after last node
       while (++lastIndex != index)
         current.nextNode ();
@@ -1390,12 +1390,12 @@ public abstract class DomNode
       current = null;
       return ret;
     }
-    
+
     public int getLength()
     {
       int retval = 0;
       NodeIterator iter = createIterator();
-      
+
       while (iter.nextNode() != null)
         {
           retval++;
@@ -1403,7 +1403,7 @@ public abstract class DomNode
       iter.detach();
       return retval;
     }
-    
+
   }
 
   //
@@ -1411,7 +1411,7 @@ public abstract class DomNode
   //
   static final class ListenerRecord
   {
-  
+
     String type;
     EventListener listener;
     boolean useCapture;
@@ -1435,10 +1435,10 @@ public abstract class DomNode
         && useCapture == rec.useCapture
         && type == rec.type;
     }
-    
+
     public int hashCode()
     {
-	return listener.hashCode() ^ type.hashCode();
+        return listener.hashCode() ^ type.hashCode();
     }
   }
 
@@ -1456,32 +1456,32 @@ public abstract class DomNode
    * of DomEvent and pass that to dispatchEvent().
    *
    * @param eventType Identifies the particular DOM feature module
-   *	defining the type of event, such as "MutationEvents".
-   *	<em>The event "name" is a different kind of "type".</em>
+   *    defining the type of event, such as "MutationEvents".
+   *    <em>The event "name" is a different kind of "type".</em>
    */
   public Event createEvent(String eventType)
   {
     eventType = eventType.toLowerCase();
-    
+
     if ("mutationevents".equals(eventType))
       {
         return new DomEvent.DomMutationEvent(null);
       }
-    
+
     if ("htmlevents".equals(eventType)
         || "events".equals(eventType)
         || "user-events".equals(eventType))
       {
         return new DomEvent(null);
       }
-    
+
     if ("uievents".equals(eventType))
       {
         return new DomEvent.DomUIEvent(null);
       }
 
-    // mouse events 
-    
+    // mouse events
+
     throw new DomDOMException(DOMException.NOT_SUPPORTED_ERR,
                               eventType, null, 0);
   }
@@ -1508,12 +1508,12 @@ public abstract class DomNode
   static final class DomEventException
     extends EventException
   {
-   
+
     DomEventException()
     {
       super(UNSPECIFIED_EVENT_TYPE_ERR, "unspecified event type");
     }
-    
+
   }
 
   /**
@@ -1527,7 +1527,7 @@ public abstract class DomNode
    *
    * @exception NullPointerException When a null event is passed.
    * @exception ClassCastException When the event wasn't provided by
-   *	the createEvent method, or otherwise isn't a DomEvent.
+   *    the createEvent method, or otherwise isn't a DomEvent.
    * @exception EventException If the event type wasn't specified
    */
   public final boolean dispatchEvent(Event event)
@@ -1537,7 +1537,7 @@ public abstract class DomNode
     DomNode[] ancestors = null;
     int ancestorMax = 0;
     boolean haveDispatchDataLock = false;
-    
+
     if (e.type == null)
       {
         throw new DomEventException();
@@ -1545,7 +1545,7 @@ public abstract class DomNode
 
     e.doDefault = true;
     e.target = this;
-    
+
     //
     // Typical case:  one nonrecursive dispatchEvent call at a time
     // for this class.  If that's our case, we can avoid allocating
@@ -1565,7 +1565,7 @@ public abstract class DomNode
         boolean haveAncestorRegistrations = false;
         ListenerRecord[] notificationSet;
         int ancestorLen;
-        
+
         synchronized (lockNode)
           {
             if (!dispatchDataLock)
@@ -1581,7 +1581,7 @@ public abstract class DomNode
               }
             ancestorLen = ancestors.length;
           }
-        
+
         // Climb to the top of this subtree and handle capture, letting
         // each node (from the top down) capture until one stops it or
         // until we get to this one.
@@ -1597,7 +1597,7 @@ public abstract class DomNode
           {
             if (current == null || current.depth == 0)
               break;
-            
+
             if (current.nListeners != 0)
               {
                 haveAncestorRegistrations = true;
@@ -1609,10 +1609,10 @@ public abstract class DomNode
           {
             throw new RuntimeException("dispatchEvent capture stack size");
           }
-        
+
         ancestorMax = index;
         e.stop = false;
-        
+
         if (haveAncestorRegistrations)
           {
             e.eventPhase = Event.CAPTURING_PHASE;
@@ -1625,7 +1625,7 @@ public abstract class DomNode
                   }
               }
           }
-        
+
         // Always deliver events to the target node (this)
         // unless stopPropagation was called.  If we saw
         // no registrations yet (typical!), we never will.
@@ -1638,11 +1638,11 @@ public abstract class DomNode
           {
             e.stop = true;
           }
-        
+
         // If the event bubbles and propagation wasn't halted,
         // walk back up the ancestor list.  Stop bubbling when
         // any bubbled event handler stops it.
-        
+
         if (!e.stop && e.bubbles)
           {
             e.eventPhase = Event.BUBBLING_PHASE;
@@ -1659,11 +1659,11 @@ public abstract class DomNode
               }
           }
         e.eventPhase = 0;
-        
+
         // Caller chooses whether to perform the default
         // action based on return from this method.
         return e.doDefault;
-        
+
       }
     finally
       {
@@ -1678,13 +1678,13 @@ public abstract class DomNode
                     ancestors [i] = null;
                   }
                 // notificationSet handled by notifyNode
-                
+
                 dispatchDataLock = false;
               }
           }
       }
   }
-  
+
   private void notifyNode(DomEvent e,
                           DomNode current,
                           boolean capture,
@@ -1704,7 +1704,7 @@ public abstract class DomNode
           {
             continue;
           }
-        if (!e.type.equals (rec.type)) 
+        if (!e.type.equals (rec.type))
           {
             continue;
           }
@@ -1722,18 +1722,18 @@ public abstract class DomNode
     iter = null;
 
     // Notify just those listeners
-    e.currentNode = current; 
+    e.currentNode = current;
     for (int i = 0; i < count; i++)
       {
         try
           {
-	    iter = current.listeners.iterator();
+            iter = current.listeners.iterator();
             // Late in the DOM CR process (3rd or 4th CR?) the
             // removeEventListener spec became asymmetric with respect
             // to addEventListener ... effect is now immediate.
-	    while (iter.hasNext())
+            while (iter.hasNext())
               {
-		ListenerRecord rec = (ListenerRecord)iter.next();
+                ListenerRecord rec = (ListenerRecord)iter.next();
 
                 if (rec.equals(notificationSet[i]))
                   {
@@ -1747,7 +1747,7 @@ public abstract class DomNode
           {
             // ignore all exceptions
           }
-        notificationSet[i] = null;		// free for GC
+        notificationSet[i] = null;              // free for GC
       }
   }
 
@@ -2074,7 +2074,7 @@ public abstract class DomNode
       }
     if (ctx != null || argCtx != null)
       return false;
-    
+
     // TODO DocumentType
     return true;
   }
@@ -2082,9 +2082,9 @@ public abstract class DomNode
   boolean equal(String arg1, String arg2)
   {
     return ((arg1 == null && arg2 == null) ||
-            (arg1 != null && arg1.equals(arg2))); 
+            (arg1 != null && arg1.equals(arg2)));
   }
-  
+
   public Object getFeature(String feature, String version)
   {
     DOMImplementation impl = (nodeType == DOCUMENT_NODE) ?
@@ -2145,7 +2145,7 @@ public abstract class DomNode
     buf.append(']');
     return buf.toString();
   }
-  
+
   String encode(String value)
   {
     CPStringBuilder buf = null;
@@ -2220,4 +2220,3 @@ public abstract class DomNode
   }
 
 }
-

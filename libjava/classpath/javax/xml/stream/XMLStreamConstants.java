@@ -1,4 +1,4 @@
-/* XMLStreamConstants.java -- 
+/* XMLStreamConstants.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -117,6 +117,5 @@ public interface XMLStreamConstants
    * An entity declaration event.
    */
   static final int ENTITY_DECLARATION = 15;
-  
-}
 
+}

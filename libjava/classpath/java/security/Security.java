@@ -70,7 +70,7 @@ public final class Security
 
   private static Vector providers = new Vector();
   private static Properties secprops = new Properties();
-  
+
   static
     {
       String base = SystemProperties.getProperty("gnu.classpath.home.url");
@@ -78,36 +78,36 @@ public final class Security
 
       // Try VM specific security file
       boolean loaded = loadProviders (base, vendor);
-    
+
       // Append classpath standard provider if possible
       if (!loadProviders (base, "classpath")
-	  && !loaded
-	  && providers.size() == 0)
-	  {
-	      if (Configuration.DEBUG)
-		  {
-		      /* No providers found and both security files failed to
-		       * load properly. Give a warning in case of DEBUG is
-		       * enabled. Could be done with java.util.logging later.
-		       */
-		      System.err.println
-			  ("WARNING: could not properly read security provider files:");
-		      System.err.println
-			  ("         " + base + "/security/" + vendor
-			   + ".security");
-		      System.err.println
-			  ("         " + base + "/security/" + "classpath"
-			   + ".security");
-		      System.err.println
-			  ("         Falling back to standard GNU security provider");
-		  }
+          && !loaded
+          && providers.size() == 0)
+          {
+              if (Configuration.DEBUG)
+                  {
+                      /* No providers found and both security files failed to
+                       * load properly. Give a warning in case of DEBUG is
+                       * enabled. Could be done with java.util.logging later.
+                       */
+                      System.err.println
+                          ("WARNING: could not properly read security provider files:");
+                      System.err.println
+                          ("         " + base + "/security/" + vendor
+                           + ".security");
+                      System.err.println
+                          ("         " + base + "/security/" + "classpath"
+                           + ".security");
+                      System.err.println
+                          ("         Falling back to standard GNU security provider");
+                  }
               // Note that this matches our classpath.security file.
-	      providers.addElement (new gnu.java.security.provider.Gnu());
-	      providers.addElement(new gnu.javax.crypto.jce.GnuCrypto());
+              providers.addElement (new gnu.java.security.provider.Gnu());
+              providers.addElement(new gnu.javax.crypto.jce.GnuCrypto());
               providers.addElement(new gnu.javax.crypto.jce.GnuSasl());
               providers.addElement(new gnu.javax.net.ssl.provider.Jessie());
               providers.addElement(new gnu.javax.security.auth.callback.GnuCallbacks());
-	  }
+          }
     }
   // This class can't be instantiated.
   private Security()
@@ -128,44 +128,44 @@ public final class Security
     String secfilestr = baseUrl + "/security/" + vendor + ".security";
     try
       {
-	InputStream fin = new URL(secfilestr).openStream();
-	secprops.load(fin);
+        InputStream fin = new URL(secfilestr).openStream();
+        secprops.load(fin);
 
-	int i = 1;
-	String name;
-	while ((name = secprops.getProperty("security.provider." + i)) != null)
-	  {
-	    Exception exception = null;
-	    try
-	      {
-		ClassLoader sys = ClassLoader.getSystemClassLoader();
-		providers.addElement(Class.forName(name, true, sys).newInstance());
-	      }
-	    catch (ClassNotFoundException x)
-	      {
-	        exception = x;
-	      }
-	    catch (InstantiationException x)
-	      {
-	        exception = x;
-	      }
-	    catch (IllegalAccessException x)
-	      {
-	        exception = x;
-	      }
+        int i = 1;
+        String name;
+        while ((name = secprops.getProperty("security.provider." + i)) != null)
+          {
+            Exception exception = null;
+            try
+              {
+                ClassLoader sys = ClassLoader.getSystemClassLoader();
+                providers.addElement(Class.forName(name, true, sys).newInstance());
+              }
+            catch (ClassNotFoundException x)
+              {
+                exception = x;
+              }
+            catch (InstantiationException x)
+              {
+                exception = x;
+              }
+            catch (IllegalAccessException x)
+              {
+                exception = x;
+              }
 
-	    if (exception != null)
-	      {
-		System.err.println ("WARNING: Error loading security provider "
-				    + name + ": " + exception);
-		result = false;
-	      }
-	    i++;
-	  }
+            if (exception != null)
+              {
+                System.err.println ("WARNING: Error loading security provider "
+                                    + name + ": " + exception);
+                result = false;
+              }
+            i++;
+          }
       }
     catch (IOException ignored)
       {
-	result = false;
+        result = false;
       }
 
     return result;
@@ -174,7 +174,7 @@ public final class Security
   /**
    * Returns the value associated to a designated property name for a given
    * algorithm.
-   * 
+   *
    * @param algName
    *          the algorithm name.
    * @param propName
@@ -208,7 +208,7 @@ public final class Security
   /**
    * Inserts a new designated {@link Provider} at a designated (1-based)
    * position in the current list of installed {@link Provider}s,
-   * 
+   *
    * @param provider
    *          the new {@link Provider} to add.
    * @param position
@@ -235,8 +235,8 @@ public final class Security
     int max = providers.size ();
     for (int i = 0; i < max; i++)
       {
-	if (((Provider) providers.elementAt(i)).getName().equals(provider.getName()))
-	  return -1;
+        if (((Provider) providers.elementAt(i)).getName().equals(provider.getName()))
+          return -1;
       }
 
     if (position < 0)
@@ -252,7 +252,7 @@ public final class Security
   /**
    * Appends the designated new {@link Provider} to the current list of
    * installed {@link Provider}s.
-   * 
+   *
    * @param provider
    *          the new {@link Provider} to append.
    * @return the position (starting from 1) of <code>provider</code> in the
@@ -273,7 +273,7 @@ public final class Security
   /**
    * Removes an already installed {@link Provider}, given its name, from the
    * current list of installed {@link Provider}s.
-   * 
+   *
    * @param name
    *          the name of an already installed {@link Provider} to remove.
    * @throws SecurityException
@@ -291,18 +291,18 @@ public final class Security
     int max = providers.size ();
     for (int i = 0; i < max; i++)
       {
-	if (((Provider) providers.elementAt(i)).getName().equals(name))
-	  {
-	    providers.remove(i);
-	    break;
-	  }
+        if (((Provider) providers.elementAt(i)).getName().equals(name))
+          {
+            providers.remove(i);
+            break;
+          }
       }
   }
 
   /**
    * Returns the current list of installed {@link Provider}s as an array
    * ordered according to their installation preference order.
-   * 
+   *
    * @return an array of all the installed providers.
    */
   public static Provider[] getProviders()
@@ -314,7 +314,7 @@ public final class Security
 
   /**
    * Returns an already installed {@link Provider} given its name.
-   * 
+   *
    * @param name
    *          the name of an already installed {@link Provider}.
    * @return the {@link Provider} known by <code>name</code>. Returns
@@ -337,16 +337,16 @@ public final class Security
     int max = providers.size ();
     for (int i = 0; i < max; i++)
       {
-	p = (Provider) providers.elementAt(i);
-	if (p.getName().equals(name))
-	  return p;
+        p = (Provider) providers.elementAt(i);
+        if (p.getName().equals(name))
+          return p;
       }
     return null;
   }
 
   /**
    * Returns the value associated with a Security propery.
-   * 
+   *
    * @param key
    *          the key of the property to fetch.
    * @return the value of the Security property associated with
@@ -372,7 +372,7 @@ public final class Security
 
   /**
    * Sets or changes a designated Security property to a designated value.
-   * 
+   *
    * @param key
    *          the name of the property to set.
    * @param datum
@@ -399,7 +399,7 @@ public final class Security
    * For a given <i>service</i> (e.g. Signature, MessageDigest, etc...) this
    * method returns the {@link Set} of all available algorithm names (instances
    * of {@link String}, from all currently installed {@link Provider}s.
-   * 
+   *
    * @param serviceName
    *          the case-insensitive name of a service (e.g. Signature,
    *          MessageDigest, etc).
@@ -441,21 +441,21 @@ public final class Security
    * Returns an array of currently installed {@link Provider}s, ordered
    * according to their installation preference order, which satisfy a given
    * <i>selection</i> criterion.
-   * 
+   *
    * <p>This implementation recognizes a <i>selection</i> criterion written in
    * one of two following forms:</p>
-   * 
+   *
    * <ul>
    *   <li>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt;: Where
    *   <i>crypto_service</i> is a case-insensitive string, similar to what has
    *   been described in the {@link #getAlgorithms(String)} method, and
    *   <i>algorithm_or_type</i> is a known case-insensitive name of an
    *   Algorithm, or one of its aliases.
-   *   
+   *
    *   <p>For example, "CertificateFactory.X.509" would return all the installed
    *   {@link Provider}s which provide a <i>CertificateFactory</i>
    *   implementation of <i>X.509</i>.</p></li>
-   *   
+   *
    *   <li>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt; &lt;attribute_name&gt;:&lt;value&gt;:
    *   Where <i>crypto_service</i> is a case-insensitive string, similar to what
    *   has been described in the {@link #getAlgorithms(String)} method,
@@ -463,13 +463,13 @@ public final class Security
    *   or one of its aliases, <i>attribute_name</i> is a case-insensitive
    *   property name with no whitespace characters, and no dots, in-between, and
    *   <i>value</i> is a {@link String} with no whitespace characters in-between.
-   *   
+   *
    *   <p>For example, "Signature.Sha1WithDSS KeySize:1024" would return all the
    *   installed {@link Provider}s which declared their ability to provide
    *   <i>Signature</i> services, using the <i>Sha1WithDSS</i> algorithm with
    *   key sizes of <i>1024</i>.</p></li>
    * </ul>
-   * 
+   *
    * @param filter
    *          the <i>selection</i> criterion for selecting among the installed
    *          {@link Provider}s.
@@ -503,11 +503,11 @@ public final class Security
   /**
    * Returns an array of currently installed {@link Provider}s which satisfy a
    * set of <i>selection</i> criteria.
-   * 
+   *
    * <p>The <i>selection</i> criteria are defined in a {@link Map} where each
    * element specifies a <i>selection</i> querry. The <i>Keys</i> in this
    * {@link Map} must be in one of the two following forms:</p>
-   * 
+   *
    * <ul>
    *   <li>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt;: Where
    *   <i>crypto_service</i> is a case-insensitive string, similar to what has
@@ -517,7 +517,7 @@ public final class Security
    *   {@link Map} for such a <i>Key</i> MUST be the empty string.
    *   {@link Provider}s which provide an implementation for the designated
    *   <i>service algorithm</i> are included in the result.</li>
-   *   
+   *
    *   <li>&lt;crypto_service&gt;.&lt;algorithm_or_type&gt; &lt;attribute_name&gt;:
    *   Where <i>crypto_service</i> is a case-insensitive string, similar to what
    *   has been described in the {@link #getAlgorithms(String)} method,
@@ -529,7 +529,7 @@ public final class Security
    *   declare the designated <i>attribute_name</i> and <i>value</i> for the
    *   designated <i>service algorithm</i> are included in the result.</li>
    * </ul>
-   * 
+   *
    * @param filter
    *          a {@link Map} of <i>selection querries</i>.
    * @return all currently installed {@link Provider}s which satisfy ALL the

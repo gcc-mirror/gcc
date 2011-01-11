@@ -206,7 +206,7 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     {
       Point p = e.getPoint();
       if (p.x < 0 || p.y < 0 || p.y > imgHeight || p.x > imgWidth)
-	return;
+        return;
 
       gradientPoint = p;
       update(p);
@@ -231,11 +231,11 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     {
       handlingMouse = true;
       if (hSpinner.isEnabled())
-	updateH(p);
+        updateH(p);
       else if (sSpinner.isEnabled())
-	updateS(p);
+        updateS(p);
       else
-	updateB(p);
+        updateB(p);
       handlingMouse = false;
     }
 
@@ -309,21 +309,21 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     public void stateChanged(ChangeEvent e)
     {
       if (internalChange)
-	return;
+        return;
 
       Integer value = new Integer(slider.getValue());
 
       switch (locked)
         {
-	case HLOCKED:
-	  hSpinner.setValue(value);
-	  break;
-	case SLOCKED:
-	  sSpinner.setValue(value);
-	  break;
-	case BLOCKED:
-	  bSpinner.setValue(value);
-	  break;
+        case HLOCKED:
+          hSpinner.setValue(value);
+          break;
+        case SLOCKED:
+          sSpinner.setValue(value);
+          break;
+        case BLOCKED:
+          bSpinner.setValue(value);
+          break;
         }
     }
   }
@@ -344,18 +344,18 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
       JSpinner change;
       if (e.getSource() == hRadio)
         {
-	  locked = HLOCKED;
-	  change = hSpinner;
+          locked = HLOCKED;
+          change = hSpinner;
         }
       else if (e.getSource() == sRadio)
         {
-	  locked = SLOCKED;
-	  change = sSpinner;
+          locked = SLOCKED;
+          change = sSpinner;
         }
       else
         {
-	  locked = BLOCKED;
-	  change = bSpinner;
+          locked = BLOCKED;
+          change = bSpinner;
         }
 
       change.setEnabled(((AbstractButton) e.getSource()).isSelected());
@@ -380,7 +380,7 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     public void stateChanged(ChangeEvent e)
     {
       if (internalChange)
-	return;
+        return;
 
       float h = ((Number) hSpinner.getValue()).intValue() / 360f;
       float s = ((Number) sSpinner.getValue()).intValue() / 100f;
@@ -393,8 +393,8 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
 
       if (! handlingMouse && slider != null && ! slider.getValueIsAdjusting())
         {
-	  updateImage();
-	  updateTrack();
+          updateImage();
+          updateTrack();
         }
       repaint();
     }
@@ -435,44 +435,44 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
 
     if (! spinnerTrigger)
       {
-	hSpinner.setValue(new Integer((int) (hsbVals[0] * 360)));
-	sSpinner.setValue(new Integer((int) (hsbVals[1] * 100)));
-	bSpinner.setValue(new Integer((int) (hsbVals[2] * 100)));
+        hSpinner.setValue(new Integer((int) (hsbVals[0] * 360)));
+        sSpinner.setValue(new Integer((int) (hsbVals[1] * 100)));
+        bSpinner.setValue(new Integer((int) (hsbVals[2] * 100)));
       }
 
     switch (locked)
       {
       case HLOCKED:
-	if (slider != null)
-	  slider.setValue(((Number) hSpinner.getValue()).intValue());
-	if (! handlingMouse)
-	  {
-	    gradientPoint.x = (int) ((1
-	                      - ((Number) sSpinner.getValue()).intValue() / 100f) * imgWidth);
-	    gradientPoint.y = (int) ((1
-	                      - ((Number) bSpinner.getValue()).intValue() / 100f) * imgHeight);
-	  }
-	break;
+        if (slider != null)
+          slider.setValue(((Number) hSpinner.getValue()).intValue());
+        if (! handlingMouse)
+          {
+            gradientPoint.x = (int) ((1
+                              - ((Number) sSpinner.getValue()).intValue() / 100f) * imgWidth);
+            gradientPoint.y = (int) ((1
+                              - ((Number) bSpinner.getValue()).intValue() / 100f) * imgHeight);
+          }
+        break;
       case SLOCKED:
-	if (slider != null)
-	  slider.setValue(((Number) sSpinner.getValue()).intValue());
-	if (! handlingMouse)
-	  {
-	    gradientPoint.x = (int) (((Number) hSpinner.getValue()).intValue() / 360f * imgWidth);
-	    gradientPoint.y = (int) ((1
-	                      - ((Number) bSpinner.getValue()).intValue() / 100f) * imgHeight);
-	  }
-	break;
+        if (slider != null)
+          slider.setValue(((Number) sSpinner.getValue()).intValue());
+        if (! handlingMouse)
+          {
+            gradientPoint.x = (int) (((Number) hSpinner.getValue()).intValue() / 360f * imgWidth);
+            gradientPoint.y = (int) ((1
+                              - ((Number) bSpinner.getValue()).intValue() / 100f) * imgHeight);
+          }
+        break;
       case BLOCKED:
-	if (slider != null)
-	  slider.setValue(((Number) bSpinner.getValue()).intValue());
-	if (! handlingMouse)
-	  {
-	    gradientPoint.x = (int) (((Number) hSpinner.getValue()).intValue() / 360f * imgWidth);
-	    gradientPoint.y = (int) ((1
-	                      - ((Number) sSpinner.getValue()).intValue() / 100f) * imgHeight);
-	  }
-	break;
+        if (slider != null)
+          slider.setValue(((Number) bSpinner.getValue()).intValue());
+        if (! handlingMouse)
+          {
+            gradientPoint.x = (int) (((Number) hSpinner.getValue()).intValue() / 360f * imgWidth);
+            gradientPoint.y = (int) ((1
+                              - ((Number) sSpinner.getValue()).intValue() / 100f) * imgHeight);
+          }
+        break;
       }
     internalChange = false;
 
@@ -498,21 +498,21 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
 
     gradientPanel = new JPanel()
         {
-	  public Dimension getPreferredSize()
-	  {
-	    return new Dimension(imgWidth, imgHeight);
-	  }
+          public Dimension getPreferredSize()
+          {
+            return new Dimension(imgWidth, imgHeight);
+          }
 
-	  public void paint(Graphics g)
-	  {
-	    if (gradientImage != null)
-	      g.drawImage(gradientImage, 0, 0, this);
+          public void paint(Graphics g)
+          {
+            if (gradientImage != null)
+              g.drawImage(gradientImage, 0, 0, this);
 
-	    Color saved = g.getColor();
-	    g.setColor(Color.WHITE);
-	    g.drawOval(gradientPoint.x - 3, gradientPoint.y - 3, 6, 6);
-	    g.setColor(saved);
-	  }
+            Color saved = g.getColor();
+            g.setColor(Color.WHITE);
+            g.drawOval(gradientPoint.x - 3, gradientPoint.y - 3, 6, 6);
+            g.setColor(saved);
+          }
         };
 
     MouseAdapter ml = new MainGradientMouseListener();
@@ -521,16 +521,16 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
 
     trackPanel = new JPanel()
         {
-	  public Dimension getPreferredSize()
-	  {
-	    return new Dimension(trackWidth, imgHeight);
-	  }
+          public Dimension getPreferredSize()
+          {
+            return new Dimension(trackWidth, imgHeight);
+          }
 
-	  public void paint(Graphics g)
-	  {
-	    if (trackImage != null)
-	      g.drawImage(trackImage, 0, 0, this);
-	  }
+          public void paint(Graphics g)
+          {
+            if (trackImage != null)
+              g.drawImage(trackImage, 0, 0, this);
+          }
         };
 
     slider = new JSlider();
@@ -682,9 +682,9 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
 
     for (int j = 0; j < imgHeight; j++)
       for (int i = 0; i < imgWidth; i++)
-	pix[index++] = Color.HSBtoRGB(hValue, (imgWidth - i * 1f) / imgWidth,
-	                              (imgHeight - j * 1f) / imgHeight)
-	               | (255 << 24);
+        pix[index++] = Color.HSBtoRGB(hValue, (imgWidth - i * 1f) / imgWidth,
+                                      (imgHeight - j * 1f) / imgHeight)
+                       | (255 << 24);
 
     gradientImage = createImage(new MemoryImageSource(imgWidth, imgHeight,
                                                       pix, 0, imgWidth));
@@ -702,9 +702,9 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     int index = 0;
     for (int j = 0; j < imgHeight; j++)
       for (int i = 0; i < imgWidth; i++)
-	pix[index++] = Color.HSBtoRGB(i * 1f / imgWidth,
-	                              (imgHeight - j * 1f) / imgHeight, bValue)
-	               | (255 << 24);
+        pix[index++] = Color.HSBtoRGB(i * 1f / imgWidth,
+                                      (imgHeight - j * 1f) / imgHeight, bValue)
+                       | (255 << 24);
 
     gradientImage = createImage(new MemoryImageSource(imgWidth, imgHeight,
                                                       pix, 0, imgWidth));
@@ -722,9 +722,9 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     int index = 0;
     for (int j = 0; j < imgHeight; j++)
       for (int i = 0; i < imgWidth; i++)
-	pix[index++] = Color.HSBtoRGB(i * 1f / imgWidth, sValue,
-	                              (imgHeight - j * 1f) / imgHeight)
-	               | (255 << 24);
+        pix[index++] = Color.HSBtoRGB(i * 1f / imgWidth, sValue,
+                                      (imgHeight - j * 1f) / imgHeight)
+                       | (255 << 24);
     gradientImage = createImage(new MemoryImageSource(imgWidth, imgHeight,
                                                       pix, 0, imgWidth));
   }
@@ -739,14 +739,14 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     switch (locked)
       {
       case HLOCKED:
-	updateHLockImage();
-	break;
+        updateHLockImage();
+        break;
       case SLOCKED:
-	updateSLockImage();
-	break;
+        updateSLockImage();
+        break;
       case BLOCKED:
-	updateBLockImage();
-	break;
+        updateBLockImage();
+        break;
       }
   }
 
@@ -777,18 +777,18 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     slider.setMinimum(0);
     if (locked == HLOCKED)
       {
-	slider.setMaximum(359);
-	slider.setValue(((Number) hSpinner.getValue()).intValue());
-	slider.setInverted(true);
+        slider.setMaximum(359);
+        slider.setValue(((Number) hSpinner.getValue()).intValue());
+        slider.setInverted(true);
       }
     else
       {
-	slider.setMaximum(100);
-	slider.setInverted(false);
-	if (sRadio.isSelected())
-	  slider.setValue(((Number) sSpinner.getValue()).intValue());
-	else
-	  slider.setValue(((Number) bSpinner.getValue()).intValue());
+        slider.setMaximum(100);
+        slider.setInverted(false);
+        if (sRadio.isSelected())
+          slider.setValue(((Number) sSpinner.getValue()).intValue());
+        else
+          slider.setValue(((Number) bSpinner.getValue()).intValue());
       }
     repaint();
   }
@@ -803,14 +803,14 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     switch (locked)
       {
       case HLOCKED:
-	updateHTrack();
-	break;
+        updateHTrack();
+        break;
       case SLOCKED:
-	updateSTrack();
-	break;
+        updateSTrack();
+        break;
       case BLOCKED:
-	updateBTrack();
-	break;
+        updateBTrack();
+        break;
       }
   }
 
@@ -825,8 +825,8 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
 
     for (int j = 0; j < imgHeight; j++)
       for (int i = 0; i < trackWidth; i++)
-	trackPix[trackIndex++] = Color.HSBtoRGB(j * 1f / imgHeight, 1f, 1f)
-	                         | (255 << 24);
+        trackPix[trackIndex++] = Color.HSBtoRGB(j * 1f / imgHeight, 1f, 1f)
+                                 | (255 << 24);
 
     trackImage = createImage(new MemoryImageSource(trackWidth, imgHeight,
                                                    trackPix, 0, trackWidth));
@@ -846,9 +846,9 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     int trackIndex = 0;
     for (int j = 0; j < imgHeight; j++)
       for (int i = 0; i < trackWidth; i++)
-	trackPix[trackIndex++] = Color.HSBtoRGB(hValue,
-	                                        (imgHeight - j * 1f) / imgHeight,
-	                                        bValue) | (255 << 24);
+        trackPix[trackIndex++] = Color.HSBtoRGB(hValue,
+                                                (imgHeight - j * 1f) / imgHeight,
+                                                bValue) | (255 << 24);
 
     trackImage = createImage(new MemoryImageSource(trackWidth, imgHeight,
                                                    trackPix, 0, trackWidth));
@@ -868,9 +868,9 @@ class DefaultHSBChooserPanel extends AbstractColorChooserPanel
     int trackIndex = 0;
     for (int j = 0; j < imgHeight; j++)
       for (int i = 0; i < trackWidth; i++)
-	trackPix[trackIndex++] = Color.HSBtoRGB(hValue, sValue,
-	                                        (imgHeight - j * 1f) / imgHeight)
-	                         | (255 << 24);
+        trackPix[trackIndex++] = Color.HSBtoRGB(hValue, sValue,
+                                                (imgHeight - j * 1f) / imgHeight)
+                                 | (255 << 24);
 
     trackImage = createImage(new MemoryImageSource(trackWidth, imgHeight,
                                                    trackPix, 0, trackWidth));

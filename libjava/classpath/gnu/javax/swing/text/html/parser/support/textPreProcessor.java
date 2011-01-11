@@ -51,7 +51,7 @@ public class textPreProcessor
    * Pre - process non-preformatted text. \t, \r and \n mutate into spaces, then
    * multiple spaces mutate into single one, all whitespace around tags is
    * consumed. The content of the passed buffer is destroyed.
-   * 
+   *
    * @param a_text A text to pre-process.
    */
   public char[] preprocess(StringBuffer a_text)

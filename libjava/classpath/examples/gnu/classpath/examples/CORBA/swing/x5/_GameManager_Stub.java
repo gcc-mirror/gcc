@@ -54,22 +54,22 @@ import org.omg.CORBA.portable.ServantObject;
  * Normally generated with rmic compiler, this class represents the GameManager
  * Stub on the client side. The Game Manager methods contain the code for
  * remote invocation.
- * 
+ *
  * This class is normally generated with rmic from the {@link GameManagerImpl}:
  * <pre>
  * rmic -iiop -poa -keep gnu.classpath.examples.CORBA.swing.x5.GameManagerImpl
  * </pre>
  * (the compiled package must be present in the current folder).
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class _GameManager_Stub extends Stub implements GameManager
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   private static final String[] _type_ids =
     { "RMI:gnu.classpath.examples.CORBA.swing.x5.GameManager:0000000000000000" };
 
@@ -77,7 +77,7 @@ public class _GameManager_Stub extends Stub implements GameManager
   {
     return _type_ids;
   }
-  
+
   /**
    * Notify the manager that the player is no longer willing to play and
    * should be removed from the queue.
@@ -141,7 +141,7 @@ public class _GameManager_Stub extends Stub implements GameManager
           }
       }
   }
-  
+
   /**
    * The method that the user should invoke.
    */

@@ -42,22 +42,22 @@ import gnu.classpath.Pointer;
 import javax.sound.sampled.LineUnavailableException;
 
 public class GstNativeDataLine
-{ 
+{
   public static final GstPipeline createSourcePipeline(int bufferSize)
     throws LineUnavailableException
   {
     GstPipeline pipeline = new GstPipeline(bufferSize);
- 
+
     pipeline.createForWrite();
-    
+
     if (!setup_sink_pipeline(pipeline.getNativeClass()))
       throw new LineUnavailableException("Line unavailable");
-    
+
     return pipeline;
   }
-  
+
   /* native methods */
-  
+
   /**
    * Initialize the native peer and enables the object cache.
    * It is meant to be used by the static initializer.

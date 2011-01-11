@@ -44,7 +44,7 @@ import java.io.Serializable;
  * Means that some request or reply from the network has a wrong size or is
  * structurally invalid. In GNU Classpath, this exception may have the following
  * minor codes (the high 20 bits being Classpath VMCID):
- * 
+ *
  * <table border="1">
  * <tr>
  * <th>Hex</th>
@@ -216,7 +216,7 @@ import java.io.Serializable;
  * <td>No means are provided to read or write this value type (not Streamable,
  * not CustomMarshal, not Serializable, no factory, no helper.</td>
  * </tr>
- * <tr> 
+ * <tr>
  * <td>47430017</td>
  * <td>1195573271</td>
  * <td>23</td>
@@ -228,7 +228,7 @@ import java.io.Serializable;
  * <td>47430018</td>
  * <td>1195573272</td>
  * <td>24</td>
- * 
+ *
  * <td>UnsupportedAddressing</td>
  * <td>Unsupported object addressing method in GIOP request header.</td>
  * </tr>
@@ -246,7 +246,7 @@ import java.io.Serializable;
  * <td>TargetConversion</td>
  * <td>Problems with converting between stubs, ties, interfaces and
  * implementations.</td>
- * 
+ *
  * </tr>
  * <tr>
  * <td>4743001b</td>
@@ -265,7 +265,7 @@ import java.io.Serializable;
  * serializable</td>
  * </tr>
  * </table>
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class MARSHAL
@@ -280,7 +280,7 @@ public final class MARSHAL
   /**
    * Creates a MARSHAL with the default minor code of 0, completion state
    * COMPLETED_NO and the given explaining message.
-   * 
+   *
    * @param message the explaining message.
    */
   public MARSHAL(String message)
@@ -300,7 +300,7 @@ public final class MARSHAL
   /**
    * Creates a MARSHAL exception with the specified minor code and completion
    * status.
-   * 
+   *
    * @param minor_code additional error code.
    * @param is_completed the method completion status.
    */
@@ -311,7 +311,7 @@ public final class MARSHAL
 
   /**
    * Created MARSHAL exception, providing full information.
-   * 
+   *
    * @param reason explaining message.
    * @param minor_code additional error code (the "minor").
    * @param is_completed the method completion status.

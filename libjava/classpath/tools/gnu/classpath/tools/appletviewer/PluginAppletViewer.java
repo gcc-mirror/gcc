@@ -82,55 +82,55 @@ class PluginAppletViewer
 
     while (true)
       {
-	if (message.startsWith("instance"))
-	  {
-	    // Read applet instance identifier.
-	    String key = message.substring(9);
+        if (message.startsWith("instance"))
+          {
+            // Read applet instance identifier.
+            String key = message.substring(9);
 
-	    if (appletWindows.get(key) == null)
-	      appletWindows.put(key, new PluginAppletWindow());
+            if (appletWindows.get(key) == null)
+              appletWindows.put(key, new PluginAppletWindow());
 
-	    currentWindow = (PluginAppletWindow) appletWindows.get(key);
-	  }
-	else if (message.startsWith("tag"))
-	  {
-	    int pos = message.indexOf(' ', 4);
-	    String documentbase = message.substring(4, pos);
+            currentWindow = (PluginAppletWindow) appletWindows.get(key);
+          }
+        else if (message.startsWith("tag"))
+          {
+            int pos = message.indexOf(' ', 4);
+            String documentbase = message.substring(4, pos);
         String tag = message.substring(pos + 1);
         currentWindow.setParser(tag, documentbase);
-	  }
-	else if (message.startsWith("handle"))
-	  {
-	    long handle = Long.parseLong(message.substring(7));
+          }
+        else if (message.startsWith("handle"))
+          {
+            long handle = Long.parseLong(message.substring(7));
 
-	    currentWindow.setHandle(handle);
-	  }
-	else if (message.startsWith("width"))
-	  {
-	    int width = Integer.parseInt(message.substring(6));
+            currentWindow.setHandle(handle);
+          }
+        else if (message.startsWith("width"))
+          {
+            int width = Integer.parseInt(message.substring(6));
 
-	    currentWindow.setSize(width, currentWindow.getHeight());
-	  }
-	else if (message.startsWith("height"))
-	  {
-	    int height = Integer.parseInt(message.substring(7));
+            currentWindow.setSize(width, currentWindow.getHeight());
+          }
+        else if (message.startsWith("height"))
+          {
+            int height = Integer.parseInt(message.substring(7));
 
-	    currentWindow.setSize(currentWindow.getWidth(), height);
-	  }
-	else if (message.startsWith("destroy"))
-	  {
-	    appletWindows.remove(currentWindow);
-	    currentWindow.dispose();
-	  }
+            currentWindow.setSize(currentWindow.getWidth(), height);
+          }
+        else if (message.startsWith("destroy"))
+          {
+            appletWindows.remove(currentWindow);
+            currentWindow.dispose();
+          }
 
-	// Read next message.
-	message = read();
+        // Read next message.
+        message = read();
       }
   }
 
   /**
    * Write string to plugin.
-   * 
+   *
    * @param message the message to write
    *
    * @exception IOException if an error occurs
@@ -163,14 +163,14 @@ class PluginAppletViewer
 
     if (message == null || message.equals("shutdown"))
       {
-	// Close input/output channels to plugin.
-	pluginInputStream.close();
-	pluginOutputStream.close();
+        // Close input/output channels to plugin.
+        pluginInputStream.close();
+        pluginOutputStream.close();
 
-	System.err.println
+        System.err.println
           (Messages.getString("PluginAppletViewer.AppletViewerExiting"));
 
-	System.exit(0);
+        System.exit(0);
       }
 
     return message;

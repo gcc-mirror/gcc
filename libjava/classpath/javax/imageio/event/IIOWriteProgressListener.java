@@ -46,7 +46,7 @@ public interface IIOWriteProgressListener extends EventListener
 {
   /**
    * Reports that an image write operation has completed.
-   * 
+   *
    * @param source the <code>ImageWriter</code> object calling this method
    */
   void imageComplete(ImageWriter source);
@@ -54,7 +54,7 @@ public interface IIOWriteProgressListener extends EventListener
   /**
    * Reports the approximate percentage of completion of an image write
    * operation.
-   * 
+   *
    * @param source the <code>ImageWriter</code> object calling this method
    * @param percentageDone the approximate percentage of decoding completed
    */
@@ -62,7 +62,7 @@ public interface IIOWriteProgressListener extends EventListener
 
   /**
    * Reports that a thumbnail write operation has started.
-   * 
+   *
    * @param source the <code>ImageWriter</code> object calling this method
    * @param imageIndex the index of the image being written
    */
@@ -70,7 +70,7 @@ public interface IIOWriteProgressListener extends EventListener
 
   /**
    * Reports that a thumbnail write operation has completed.
-   * 
+   *
    * @param source the <code>ImageWriter</code> object calling this method
    */
   void thumbnailComplete(ImageWriter source);
@@ -78,7 +78,7 @@ public interface IIOWriteProgressListener extends EventListener
   /**
    * Reports the approximate percentage of completion of a thumbnail write
    * operation.
-   * 
+   *
    * @param source the <code>ImageWriter</code> object calling this method
    * @param percentageDone the approximate percentage of decoding completed
    */
@@ -86,7 +86,7 @@ public interface IIOWriteProgressListener extends EventListener
 
   /**
    * Reports that a thumbnail write operation is beginning.
-   * 
+   *
    * @param source the <code>ImageWriter</code> object calling this method
    * @param imageIndex the index of the image being written
    * @param thumnailIndex the index of the thumbnail being written
@@ -95,7 +95,7 @@ public interface IIOWriteProgressListener extends EventListener
 
   /**
    * Reports that an image write operation is aborted.
-   * 
+   *
    * @param source the <code>ImageWriter</code> object calling this method
    */
   void writeAborted(ImageWriter source);

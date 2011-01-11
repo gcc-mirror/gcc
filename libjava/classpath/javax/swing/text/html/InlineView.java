@@ -158,7 +158,7 @@ public class InlineView
     return attributes;
   }
 
-  
+
   public int getBreakWeight(int axis, float pos, float len)
   {
     int weight;

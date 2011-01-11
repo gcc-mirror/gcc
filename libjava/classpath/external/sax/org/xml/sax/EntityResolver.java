@@ -67,8 +67,8 @@ import java.io.IOException;
  * @see org.xml.sax.InputSource
  */
 public interface EntityResolver {
-    
-    
+
+
     /**
      * Allow the application to resolve external entities.
      *
@@ -111,9 +111,9 @@ public interface EntityResolver {
      * @see org.xml.sax.InputSource
      */
     public abstract InputSource resolveEntity (String publicId,
-					       String systemId)
-	throws SAXException, IOException;
-    
+                                               String systemId)
+        throws SAXException, IOException;
+
 }
 
 // end of EntityResolver.java

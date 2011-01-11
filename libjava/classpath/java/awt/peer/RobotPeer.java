@@ -53,4 +53,3 @@ public interface RobotPeer
   void dispose();
 
 } // interface RobotPeer
-

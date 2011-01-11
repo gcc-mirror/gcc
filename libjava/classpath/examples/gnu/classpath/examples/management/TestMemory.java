@@ -29,20 +29,20 @@ public class TestMemory
   {
     MemoryMXBean bean = ManagementFactory.getMemoryMXBean();
     System.out.println("Bean: " + bean);
-    System.out.println("Heap memory usage: " 
-		       + bean.getHeapMemoryUsage());
-    System.out.println("Non-heap memory usage: " 
-		       + bean.getNonHeapMemoryUsage());
-    System.out.println("Objects pending finalization: " 
-		       + bean.getObjectPendingFinalizationCount());
+    System.out.println("Heap memory usage: "
+                       + bean.getHeapMemoryUsage());
+    System.out.println("Non-heap memory usage: "
+                       + bean.getNonHeapMemoryUsage());
+    System.out.println("Objects pending finalization: "
+                       + bean.getObjectPendingFinalizationCount());
     System.out.println("Running garbage collector via bean...");
     bean.gc();
-    System.out.println("Heap memory usage: " 
-		       + bean.getHeapMemoryUsage());
-    System.out.println("Non-heap memory usage: " 
-		       + bean.getNonHeapMemoryUsage());
-    System.out.println("Objects pending finalization: " 
-		       + bean.getObjectPendingFinalizationCount());
+    System.out.println("Heap memory usage: "
+                       + bean.getHeapMemoryUsage());
+    System.out.println("Non-heap memory usage: "
+                       + bean.getNonHeapMemoryUsage());
+    System.out.println("Objects pending finalization: "
+                       + bean.getObjectPendingFinalizationCount());
     boolean verbosity = bean.isVerbose();
     System.out.println("Verbose memory output: " + (verbosity ? "yes" : "no"));
     System.out.println("Changing verbose setting...");

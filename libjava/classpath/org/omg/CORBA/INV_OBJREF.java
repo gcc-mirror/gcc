@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means that some object reference is internally malformed.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class INV_OBJREF
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -7238811948257685034L;
 

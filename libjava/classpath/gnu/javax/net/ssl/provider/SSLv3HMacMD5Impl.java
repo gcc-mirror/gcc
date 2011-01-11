@@ -1,4 +1,4 @@
-/* SSLv3HMacMD5.java -- 
+/* SSLv3HMacMD5.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -59,7 +59,7 @@ public class SSLv3HMacMD5Impl extends MacSpi
   {
     adaptee = new SSLHMac("MD5");
   }
-  
+
   /* (non-Javadoc)
    * @see javax.crypto.MacSpi#engineDoFinal()
    */

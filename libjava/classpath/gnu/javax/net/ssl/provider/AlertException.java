@@ -66,14 +66,14 @@ public class AlertException extends SSLException
   {
     this(alert, true);
   }
-  
+
   public AlertException(Alert alert, boolean isLocal, Throwable cause)
   {
     super(alert.description().toString(), cause);
     this.alert = alert;
     this.isLocal = isLocal;
   }
-  
+
   public AlertException(Alert alert, Throwable cause)
   {
     this(alert, true, cause);
@@ -93,7 +93,7 @@ public class AlertException extends SSLException
   {
     return alert;
   }
-  
+
   public boolean isLocal()
   {
     return isLocal;

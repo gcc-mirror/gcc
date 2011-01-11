@@ -41,7 +41,7 @@ package java.awt.color;
 /**
  * ICC_ProfileRGB - a special case of ICC_Profiles.
  *
- * The ICC_Profile.getInstance() method will return an instance of the 
+ * The ICC_Profile.getInstance() method will return an instance of the
  * ICC_ProfileRGB subclass when all the following conditions are met:
  * The device color space of the profile is TYPE_RGB.
  * The profile contains red, green and blue ColorantTags.
@@ -54,17 +54,17 @@ package java.awt.color;
  * linearG = greenTRC[deviceG]
  * linearB = blueTRC[deviceB]
  * TRC curves are either a single gamma value, or a 1-dimensional lookup table.
- * 
+ *
  * Followed by the matrix transform:
  * PCS = M*linear
  *
  * Where PCS is the vector of profile color space (must be XYZ) coordinates,
- * linear is the vector of linear RGB coordinates, and the matrix M is 
+ * linear is the vector of linear RGB coordinates, and the matrix M is
  * constructed from the ColorantTags, where the columns are red, green and
  * blue respectively, and the rows are X, Y and Z.
  *
  * Note that if the profile contains a CLUT for the color space conversion,
- * it should be used instead, and the TRC information ignored. 
+ * it should be used instead, and the TRC information ignored.
  *
  * @author Sven de Marothy
  * @since 1.2
@@ -131,7 +131,7 @@ public class ICC_ProfileRGB extends ICC_Profile
     float[][] mat = new float[3][3];
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
-	mat[i][j] = matrix[i][j];
+        mat[i][j] = matrix[i][j];
     return mat;
   }
 
@@ -146,16 +146,16 @@ public class ICC_ProfileRGB extends ICC_Profile
     switch (component)
       {
       case REDCOMPONENT:
-	data = getCurve(icSigRedTRCTag);
-	break;
+        data = getCurve(icSigRedTRCTag);
+        break;
       case GREENCOMPONENT:
-	data = getCurve(icSigGreenTRCTag);
-	break;
+        data = getCurve(icSigGreenTRCTag);
+        break;
       case BLUECOMPONENT:
-	data = getCurve(icSigBlueTRCTag);
-	break;
+        data = getCurve(icSigBlueTRCTag);
+        break;
       default:
-	throw new IllegalArgumentException("Not a valid component");
+        throw new IllegalArgumentException("Not a valid component");
       }
     if (data == null)
       throw new IllegalArgumentException("Error reading TRC");
@@ -181,16 +181,16 @@ public class ICC_ProfileRGB extends ICC_Profile
     switch (component)
       {
       case REDCOMPONENT:
-	data = getCurve(icSigRedTRCTag);
-	break;
+        data = getCurve(icSigRedTRCTag);
+        break;
       case GREENCOMPONENT:
-	data = getCurve(icSigGreenTRCTag);
-	break;
+        data = getCurve(icSigGreenTRCTag);
+        break;
       case BLUECOMPONENT:
-	data = getCurve(icSigBlueTRCTag);
-	break;
+        data = getCurve(icSigBlueTRCTag);
+        break;
       default:
-	throw new IllegalArgumentException("Not a valid component");
+        throw new IllegalArgumentException("Not a valid component");
       }
     if (data == null)
       throw new IllegalArgumentException("Error reading TRC");
@@ -218,9 +218,9 @@ public class ICC_ProfileRGB extends ICC_Profile
       throw new IllegalArgumentException("Error reading colorant tags!");
     for (int i = 0; i < 3; i++)
       {
-	mat[i][0] = r[i];
-	mat[i][1] = g[i];
-	mat[i][2] = b[i];
+        mat[i][0] = r[i];
+        mat[i][1] = g[i];
+        mat[i][2] = b[i];
       }
     return mat;
   }

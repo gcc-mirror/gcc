@@ -52,8 +52,8 @@ import java.util.Vector;
 /**
  * Represents hierarchical names from the single namespace. For instance,
  * the path /home/audriusa/classpath/file.txt is the compound name, using
- * the filesystem namespace. 
- * 
+ * the filesystem namespace.
+ *
  * @author Tom Tromey (tromey@redhat.com)
  * @date May 16, 2001
  *
@@ -82,8 +82,8 @@ public class CompoundName implements Name, Cloneable, Serializable
     initializeSyntax ();
     try
       {
-	while (comps.hasMoreElements ())
-	  elts.add (comps.nextElement ());
+        while (comps.hasMoreElements ())
+          elts.add (comps.nextElement ());
       }
     catch (NoSuchElementException ignore)
       {
@@ -104,79 +104,79 @@ public class CompoundName implements Name, Cloneable, Serializable
     String quote = null;
     while (i < n.length ())
       {
-	String special = isSpecial (n, i);
+        String special = isSpecial (n, i);
 
-	if (special == escape && escape != null)
-	  {
-	    if (n.length () == i + special.length ())
-	      {
-		// A trailing escape is treated as itself.
-		new_element.append (special);
-		i += special.length ();
-	      }
-	    else
-	      {
-		String eSpecial = isSpecial (n, i + special.length ());
-		if (eSpecial != null)
-		  {
-		    // Treat the escape as an escape.
-		    new_element.append (eSpecial);
-		    i += special.length () + eSpecial.length ();
-		  }
-		else
-		  {
-		    // Treat the escape as itself.
-		    new_element.append (special);
-		    i += special.length ();
-		  }
-		continue;
-	      }
-	  }
-	else if (quote != null)
-	  {
-	    // It is safe to use == here.
-	    if (quote == special)
-	      {
-		// Quotes must surround a complete component.
-		if (i + quote.length () < n.length ()
-		    && ! n.startsWith (separator, i + quote.length ()))
-		  throw new InvalidNameException ("close quote before end of component");
-		elts.add (new_element.toString ());
-		new_element.setLength (0);
-		i += quote.length ();
-		quote = null;
-		continue;
-	      }
-	    // Otherwise, fall through.
-	  }
-	// Quotes are only special at the start of a component.
-	else if (new_element.length () == 0
-		 && special == beginQuote
-		 && beginQuote != null)
-	  {
-	    quote = endQuote;
-	    i += special.length ();
-	    continue;
-	  }
-	else if (new_element.length () == 0
-		 && special == beginQuote2
-		 && beginQuote2 != null)
-	  {
-	    quote = endQuote2;
-	    i += special.length ();
-	    continue;
-	  }
-	else if (direction != FLAT && special == separator)
-	  {
-	    elts.add (new_element.toString ());
-	    new_element.setLength (0);
-	    i += special.length ();
-	    continue;
-	  }
+        if (special == escape && escape != null)
+          {
+            if (n.length () == i + special.length ())
+              {
+                // A trailing escape is treated as itself.
+                new_element.append (special);
+                i += special.length ();
+              }
+            else
+              {
+                String eSpecial = isSpecial (n, i + special.length ());
+                if (eSpecial != null)
+                  {
+                    // Treat the escape as an escape.
+                    new_element.append (eSpecial);
+                    i += special.length () + eSpecial.length ();
+                  }
+                else
+                  {
+                    // Treat the escape as itself.
+                    new_element.append (special);
+                    i += special.length ();
+                  }
+                continue;
+              }
+          }
+        else if (quote != null)
+          {
+            // It is safe to use == here.
+            if (quote == special)
+              {
+                // Quotes must surround a complete component.
+                if (i + quote.length () < n.length ()
+                    && ! n.startsWith (separator, i + quote.length ()))
+                  throw new InvalidNameException ("close quote before end of component");
+                elts.add (new_element.toString ());
+                new_element.setLength (0);
+                i += quote.length ();
+                quote = null;
+                continue;
+              }
+            // Otherwise, fall through.
+          }
+        // Quotes are only special at the start of a component.
+        else if (new_element.length () == 0
+                 && special == beginQuote
+                 && beginQuote != null)
+          {
+            quote = endQuote;
+            i += special.length ();
+            continue;
+          }
+        else if (new_element.length () == 0
+                 && special == beginQuote2
+                 && beginQuote2 != null)
+          {
+            quote = endQuote2;
+            i += special.length ();
+            continue;
+          }
+        else if (direction != FLAT && special == separator)
+          {
+            elts.add (new_element.toString ());
+            new_element.setLength (0);
+            i += special.length ();
+            continue;
+          }
 
-	// Nothing in particular, so try the next character.
-	new_element.append (n.charAt (i));
-	++i;
+        // Nothing in particular, so try the next character.
+        new_element.append (n.charAt (i));
+        ++i;
       }
 
     if (new_element.length () != 0)
@@ -184,13 +184,13 @@ public class CompoundName implements Name, Cloneable, Serializable
 
     if (direction == RIGHT_TO_LEFT)
       {
-	// Reverse the order of the elements.
-	int len = elts.size ();
-	for (i = 0; i < len / 2; ++i)
-	  {
-	    String t = elts.set (i, elts.get (len - i - 1));
-	    elts.set (len - i - 1, t);
-	  }
+        // Reverse the order of the elements.
+        int len = elts.size ();
+        for (i = 0; i < len / 2; ++i)
+          {
+            String t = elts.set (i, elts.get (len - i - 1));
+            elts.set (len - i - 1, t);
+          }
       }
 
     // Error checking.
@@ -215,11 +215,11 @@ public class CompoundName implements Name, Cloneable, Serializable
     Enumeration<String> e = n.getAll ();
     try
       {
-	while (e.hasMoreElements ())
-	  {
-	    elts.add (posn, e.nextElement ());
-	    ++posn;
-	  }
+        while (e.hasMoreElements ())
+          {
+            elts.add (posn, e.nextElement ());
+            ++posn;
+          }
       }
     catch (NoSuchElementException ignore)
       {
@@ -232,8 +232,8 @@ public class CompoundName implements Name, Cloneable, Serializable
     Enumeration<String> e = suffix.getAll ();
     try
       {
-	while (e.hasMoreElements ())
-	  elts.add (e.nextElement ());
+        while (e.hasMoreElements ())
+          elts.add (e.nextElement ());
       }
     catch (NoSuchElementException ignore)
       {
@@ -254,10 +254,10 @@ public class CompoundName implements Name, Cloneable, Serializable
     int last = Math.min (cn.elts.size (), elts.size ());
     for (int i = 0; i < last; ++i)
       {
-	String f = canonicalize (elts.get (i));
-	int comp = f.compareTo (canonicalize (cn.elts.get (i)));
-	if (comp != 0)
-	  return comp;
+        String f = canonicalize (elts.get (i));
+        int comp = f.compareTo (canonicalize (cn.elts.get (i)));
+        if (comp != 0)
+          return comp;
       }
     return elts.size () - cn.elts.size ();
   }
@@ -272,9 +272,9 @@ public class CompoundName implements Name, Cloneable, Serializable
     int delta = elts.size () - cn.elts.size ();
     for (int i = 0; i < cn.elts.size (); ++i)
       {
-	String f = canonicalize (elts.get (delta + i));
-	if (! f.equals (canonicalize (cn.elts.get (i))))
-	  return false;
+        String f = canonicalize (elts.get (delta + i));
+        if (! f.equals (canonicalize (cn.elts.get (i))))
+          return false;
       }
     return true;
   }
@@ -346,9 +346,9 @@ public class CompoundName implements Name, Cloneable, Serializable
       return false;
     for (int i = 0; i < cn.elts.size (); ++i)
       {
-	String f = canonicalize (elts.get (i));
-	if (! f.equals (canonicalize (cn.elts.get (i))))
-	  return false;
+        String f = canonicalize (elts.get (i));
+        if (! f.equals (canonicalize (cn.elts.get (i))))
+          return false;
       }
     return true;
   }
@@ -368,7 +368,7 @@ public class CompoundName implements Name, Cloneable, Serializable
     else if (endQuote != null && element.startsWith (endQuote, offset))
       special = endQuote;
     else if (beginQuote2 != null
-	     && element.startsWith (beginQuote2, offset))
+             && element.startsWith (beginQuote2, offset))
       special = beginQuote2;
     else if (endQuote2 != null && element.startsWith (endQuote2, offset))
       special = endQuote2;
@@ -382,30 +382,30 @@ public class CompoundName implements Name, Cloneable, Serializable
     int size = elts.size ();
     for (int i = 0; i < size; ++i)
       {
-	// Find the appropriate element.  FIXME: not clear what FLAT
-	// means.
-	int offset = (direction == RIGHT_TO_LEFT) ? (size - i - 1) : i;
-	String element = elts.get (offset);
-	if (i > 0
-	    || (i == size - 1 && element.equals ("")))
-	  result.append (separator);
+        // Find the appropriate element.  FIXME: not clear what FLAT
+        // means.
+        int offset = (direction == RIGHT_TO_LEFT) ? (size - i - 1) : i;
+        String element = elts.get (offset);
+        if (i > 0
+            || (i == size - 1 && element.equals ("")))
+          result.append (separator);
 
-	int k = 0;
-	while (k < element.length ())
-	  {
-	    String special = isSpecial (element, k);
-	    if (special != null)
-	      {
-		result.append (escape);
-		result.append (special);
-		k += special.length ();
-	      }
-	    else
-	      {
-		result.append (element.charAt (k));
-		++k;
-	      }
-	  }
+        int k = 0;
+        while (k < element.length ())
+          {
+            String special = isSpecial (element, k);
+            if (special != null)
+              {
+                result.append (escape);
+                result.append (special);
+                k += special.length ();
+              }
+            else
+              {
+                result.append (element.charAt (k));
+                ++k;
+              }
+          }
       }
 
     return result.toString ();
@@ -422,17 +422,17 @@ public class CompoundName implements Name, Cloneable, Serializable
 
     if (trimBlanks)
       {
-	int first = 0;
-	while (first < ret.length ()
-	       && Character.isWhitespace (ret.charAt (first)))
-	  ++first;
+        int first = 0;
+        while (first < ret.length ()
+               && Character.isWhitespace (ret.charAt (first)))
+          ++first;
 
-	int last = ret.length () - 1;
-	while (last >= first
-	       && Character.isWhitespace (ret.charAt (last)))
-	  --last;
+        int last = ret.length () - 1;
+        while (last >= first
+               && Character.isWhitespace (ret.charAt (last)))
+          --last;
 
-	ret = ret.substring (first, last);
+        ret = ret.substring (first, last);
       }
 
     return ret;
@@ -451,8 +451,8 @@ public class CompoundName implements Name, Cloneable, Serializable
       this.direction = LEFT_TO_RIGHT;
     else
       {
-	// If we don't recognize it, default to flat.
-	this.direction = FLAT;
+        // If we don't recognize it, default to flat.
+        this.direction = FLAT;
       }
 
     // This is required unless the direction is FLAT.  Unfortunately
@@ -461,18 +461,18 @@ public class CompoundName implements Name, Cloneable, Serializable
 
     this.ignoreCase
       = Boolean.valueOf (mySyntax.getProperty ("jndi.syntax.ignorecase",
-					       "false")).booleanValue ();
+                                               "false")).booleanValue ();
     this.escape = mySyntax.getProperty ("jndi.syntax.escape", null);
     this.beginQuote = mySyntax.getProperty ("jndi.syntax.beginquote", null);
     this.endQuote = mySyntax.getProperty ("jndi.syntax.endquote",
-					  this.beginQuote);
+                                          this.beginQuote);
     this.beginQuote2 = mySyntax.getProperty ("jndi.syntax.beginquote2",
-					     null);
+                                             null);
     this.endQuote2 = mySyntax.getProperty ("jndi.syntax.endquote2",
-					   this.beginQuote2);
+                                           this.beginQuote2);
     this.trimBlanks
       = Boolean.valueOf (mySyntax.getProperty ("jndi.syntax.trimblanks",
-					       "false")).booleanValue ();
+                                               "false")).booleanValue ();
   }
 
   private void readObject(ObjectInputStream s)

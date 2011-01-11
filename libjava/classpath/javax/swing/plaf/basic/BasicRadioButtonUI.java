@@ -72,7 +72,7 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
    *
    * @return a new instance of <code>BasicRadioButtonUI</code>
    */
-  public static ComponentUI createUI(final JComponent c)  
+  public static ComponentUI createUI(final JComponent c)
   {
     return new BasicRadioButtonUI();
   }
@@ -158,7 +158,7 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
     Icon currentIcon = getCurrentIcon(b);
 
     // Do the layout.
-    String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
+    String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f),
        b.getText(), currentIcon == null ? getDefaultIcon() : currentIcon,
        b.getVerticalAlignment(), b.getHorizontalAlignment(),
        b.getVerticalTextPosition(), b.getHorizontalTextPosition(),
@@ -184,13 +184,13 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
           paintFocus(g, textR, size);
       }
   }
-  
-  /**                                                                                  
-   * Determines the icon to be displayed for the specified radio button.               
-   *                                                                                   
-   * @param b the radio button                                                         
-   *                                                                                   
-   * @return the icon                                                                  
+
+  /**
+   * Determines the icon to be displayed for the specified radio button.
+   *
+   * @param b the radio button
+   *
+   * @return the icon
    */
   private Icon getCurrentIcon(AbstractButton b)
   {
@@ -246,14 +246,14 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
     // one will be used for layout calculations and painting instead.
     // The other icon properties are ignored.
     AbstractButton b = (AbstractButton) c;
-    
+
     Insets insets = b.getInsets();
 
     String text = b.getText();
     Icon i = b.getIcon();
     if (i == null)
-      i = getDefaultIcon(); 
-    
+      i = getDefaultIcon();
+
     textR.x = 0;
     textR.y = 0;
     textR.width = 0;
@@ -269,7 +269,7 @@ public class BasicRadioButtonUI extends BasicToggleButtonUI
 
     SwingUtilities.layoutCompoundLabel(b, // for the component orientation
                                        b.getFontMetrics(b.getFont()),
-                                       text, i, b.getVerticalAlignment(), 
+                                       text, i, b.getVerticalAlignment(),
                                        b.getHorizontalAlignment(),
                                        b.getVerticalTextPosition(),
                                        b.getHorizontalTextPosition(),

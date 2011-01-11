@@ -434,8 +434,8 @@ public class IppRequest
       PrinterURI printerUri = (PrinterURI) attributes.get(PrinterURI.class);
       JobUri jobUri = (JobUri) attributes.get(JobUri.class);
       JobId jobId = (JobId) attributes.get(JobId.class);
-      RequestedAttributes reqAttrs 
-	= (RequestedAttributes)attributes.get(RequestedAttributes.class);
+      RequestedAttributes reqAttrs
+        = (RequestedAttributes)attributes.get(RequestedAttributes.class);
       if (printerUri != null && jobId == null && jobUri == null)
         {
           write(printerUri);

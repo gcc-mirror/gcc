@@ -50,7 +50,7 @@ final class VMRuntime
     /**
      * No instance is ever created.
      */
-    private VMRuntime() 
+    private VMRuntime()
     {
     }
 
@@ -177,7 +177,7 @@ final class VMRuntime
      * @throws NullPointerException if cmd or env have null elements
      */
     static Process exec(String[] cmd, String[] env, File dir)
-	throws IOException {
+        throws IOException {
       return VMProcess.exec(cmd, env, dir);
     }
 

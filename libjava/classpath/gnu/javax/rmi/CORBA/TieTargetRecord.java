@@ -44,7 +44,7 @@ import javax.rmi.CORBA.Tie;
 
 /**
  * Represents a Tie, connected to possibly multiple invocation targets.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class TieTargetRecord

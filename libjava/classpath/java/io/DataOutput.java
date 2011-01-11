@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,9 +44,9 @@ package java.io;
  */
 
 /**
- * This interface is implemented by classes that can wrte data to streams 
+ * This interface is implemented by classes that can wrte data to streams
  * from Java primitive types.  This data can subsequently be read back
- * by classes implementing the <code>DataInput</code> interface. 
+ * by classes implementing the <code>DataInput</code> interface.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
@@ -58,7 +58,7 @@ public interface DataOutput
   /**
    * This method writes a Java boolean value to an output stream.  If
    * <code>value</code> is <code>true</code>, a byte with the value of
-   * 1 will be written, otherwise a byte with the value of 0 will be 
+   * 1 will be written, otherwise a byte with the value of 0 will be
    * written.
    *
    * The value written can be read using the <code>readBoolean</code>
@@ -74,7 +74,7 @@ public interface DataOutput
 
   /**
    * This method writes a Java byte value to an output stream.  The
-   * byte to be written will be in the lowest 8 bits of the 
+   * byte to be written will be in the lowest 8 bits of the
    * <code>int</code> value passed.
    *
    * The value written can be read using the <code>readByte</code> or
@@ -236,10 +236,10 @@ public interface DataOutput
   void writeBytes(String value) throws IOException;
 
   /**
-   * This method writes all the characters of a <code>String</code> to an 
+   * This method writes all the characters of a <code>String</code> to an
    * output stream as an array of <code>char</code>'s. Each character
    * is written using the method specified in the <code>writeChar</code>
-   * method. 
+   * method.
    *
    * @param value The String to write
    *
@@ -253,13 +253,13 @@ public interface DataOutput
   * This method writes a Java <code>String</code> to the stream in a modified
    * UTF-8 format.  First, two bytes are written to the stream indicating the
    * number of bytes to follow.  This is written in the form of a Java
-   * <code>short</code> value in the same manner used by the 
-   * <code>writeShort</code> method.  Note that this is the number of 
+   * <code>short</code> value in the same manner used by the
+   * <code>writeShort</code> method.  Note that this is the number of
    * bytes in the
    * encoded <code>String</code> not the <code>String</code> length.  Next
    * come the encoded characters.  Each character in the <code>String</code>
    * is encoded as either one, two or three bytes.  For characters in the
-   * range of <code>\u0001</code> to <code>\u007F</code>, one byte is used.  
+   * range of <code>\u0001</code> to <code>\u007F</code>, one byte is used.
    * The character
    * value goes into bits 0-7 and bit eight is 0.  For characters in the range
    * of <code>\u0080</code> to <code>\u007FF</code>, two bytes are used.  Bits
@@ -308,14 +308,14 @@ public interface DataOutput
   void write(byte[] buf) throws IOException;
 
   /**
-   * This method writes raw bytes from the passed array <code>buf</code> 
+   * This method writes raw bytes from the passed array <code>buf</code>
    * starting
-   * <code>offset</code> bytes into the buffer.  The number of bytes 
-   * written will be exactly <code>len</code>. 
+   * <code>offset</code> bytes into the buffer.  The number of bytes
+   * written will be exactly <code>len</code>.
    *
    * @param buf The buffer from which to write the data
    * @param offset The offset into the buffer to start writing data from
-   * @param len The number of bytes to write from the buffer to the output 
+   * @param len The number of bytes to write from the buffer to the output
    * stream
    *
    * @exception IOException If any other error occurs
@@ -323,4 +323,3 @@ public interface DataOutput
   void write(byte[] buf, int offset, int len) throws IOException;
 
 } // interface DataOutput
-

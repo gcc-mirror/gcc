@@ -95,11 +95,11 @@ public final class PreciseFilter implements Filter
   {
     try
       {
-	return isEnabled ((Component) record.getLevel ());
+        return isEnabled ((Component) record.getLevel ());
       }
     catch (ClassCastException cce)
       {
-	return true;
+        return true;
       }
   }
 }

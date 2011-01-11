@@ -43,11 +43,11 @@ import java.rmi.RemoteException;
 
 /**
  * The game manager interface.
- * 
+ *
  * Defines the operations of the game server that connects two players into
  * the game. The game server does not participate in the game itself.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface GameManager extends Remote
 {

@@ -56,7 +56,7 @@ public final class REMatch implements Serializable, Cloneable
   private CharIndexed matchedCharIndexed;
 
   // These variables are package scope for fast access within the engine
-  int eflags;			// execution flags this match was made using
+  int eflags;                   // execution flags this match was made using
 
   // Offset in source text where match was tried.  This is zero-based;
   // the actual position in the source text is given by (offset + anchor).
@@ -68,19 +68,19 @@ public final class REMatch implements Serializable, Cloneable
   int anchor;
 
   // Package scope; used by RE.
-  int index;			// used while matching to mark current match position in input
+  int index;                    // used while matching to mark current match position in input
   // start1[i] is set when the i-th subexp starts. And start1[i] is copied
   // to start[i] when the i-th subexp ends.  So start[i] keeps the previously
   // assigned value while the i-th subexp is being processed. This makes
   // backreference to the i-th subexp within the i-th subexp possible.
-  int[] start;			// start positions (relative to offset) for each (sub)exp.
-  int[] start1;			// start positions (relative to offset) for each (sub)exp.
-  int[] end;			// end positions for the same
+  int[] start;                  // start positions (relative to offset) for each (sub)exp.
+  int[] start1;                 // start positions (relative to offset) for each (sub)exp.
+  int[] end;                    // end positions for the same
   // start[i] == -1 or end[i] == -1 means that the start/end position is void.
   // start[i] == p or end[i] == p where p < 0 and p != -1 means that
   // the actual start/end position is (p+1). Start/end positions may
   // become negative when the subexpression is in a RETokenLookBehind.
-  boolean empty;		// empty string matched. This flag is used only within
+  boolean empty;                // empty string matched. This flag is used only within
   // RETokenRepeated.
 
   BacktrackStack backtrackStack;
@@ -99,7 +99,7 @@ public final class REMatch implements Serializable, Cloneable
     }
     catch (CloneNotSupportedException e)
     {
-      throw new Error ();	// doesn't happen
+      throw new Error ();       // doesn't happen
     }
   }
 
@@ -133,13 +133,13 @@ public final class REMatch implements Serializable, Cloneable
     matchedCharIndexed = text;
     for (i = 0; i < start.length; i++)
       {
-	// If any subexpressions didn't terminate, they don't count
-	// TODO check if this code ever gets hit
-	if ((start[i] == -1) ^ (end[i] == -1))
-	  {
-	    start[i] = -1;
-	    end[i] = -1;
-	  }
+        // If any subexpressions didn't terminate, they don't count
+        // TODO check if this code ever gets hit
+        if ((start[i] == -1) ^ (end[i] == -1))
+          {
+            start[i] = -1;
+            end[i] = -1;
+          }
       }
     backtrackStack = null;
   }
@@ -151,7 +151,7 @@ public final class REMatch implements Serializable, Cloneable
     this.index = 0;
     for (int i = 0; i < start.length; i++)
       {
-	start[i] = start1[i] = end[i] = -1;
+        start[i] = start1[i] = end[i] = -1;
       }
     backtrackStack = null;
   }
@@ -160,7 +160,7 @@ public final class REMatch implements Serializable, Cloneable
      * Returns the string matching the pattern.  This makes it convenient
      * to write code like the following:
      * <P>
-     * <code> 
+     * <code>
      * REMatch myMatch = myExpression.getMatch(myString);<br>
      * if (myMatch != null) System.out.println("Regexp found: "+myMatch);
      * </code>
@@ -194,7 +194,7 @@ public final class REMatch implements Serializable, Cloneable
      * myMatch.getEndIndex());</code>
      * <P>
      * But you can save yourself that work, since the <code>toString()</code>
-     * method (above) does exactly that for you.  
+     * method (above) does exactly that for you.
      */
   public int getEndIndex ()
   {
@@ -219,21 +219,21 @@ public final class REMatch implements Serializable, Cloneable
       return (matchedText.substring (start[sub], end[sub]));
     else
       {
-	// This case occurs with RETokenLookAhead or RETokenLookBehind.
-	CPStringBuilder sb = new CPStringBuilder ();
-	int s = start[sub];
-	int e = end[sub];
-	if (s < 0)
-	  s += 1;
-	if (e < 0)
-	  e += 1;
-	for (int i = start[0] + s; i < start[0] + e; i++)
-	  sb.append (matchedCharIndexed.charAt (i));
-	return sb.toString ();
+        // This case occurs with RETokenLookAhead or RETokenLookBehind.
+        CPStringBuilder sb = new CPStringBuilder ();
+        int s = start[sub];
+        int e = end[sub];
+        if (s < 0)
+          s += 1;
+        if (e < 0)
+          e += 1;
+        for (int i = start[0] + s; i < start[0] + e; i++)
+          sb.append (matchedCharIndexed.charAt (i));
+        return sb.toString ();
       }
   }
 
-    /** 
+    /**
      * Returns the index within the input string used to generate this match
      * where subexpression number <i>sub</i> begins, or <code>-1</code> if
      * the subexpression does not exist.  The initial position is zero.
@@ -249,7 +249,7 @@ public final class REMatch implements Serializable, Cloneable
     return (x == -1) ? x : (x >= 0) ? offset + x : offset + x + 1;
   }
 
-    /** 
+    /**
      * Returns the index within the input string used to generate this match
      * where subexpression number <i>sub</i> begins, or <code>-1</code> if
      * the subexpression does not exist.  The initial position is zero.
@@ -265,7 +265,7 @@ public final class REMatch implements Serializable, Cloneable
     return (x == -1) ? x : (x >= 0) ? offset + x : offset + x + 1;
   }
 
-    /** 
+    /**
      * Returns the index within the input string used to generate this match
      * where subexpression number <i>sub</i> ends, or <code>-1</code> if
      * the subexpression does not exist.  The initial position is zero.
@@ -281,7 +281,7 @@ public final class REMatch implements Serializable, Cloneable
     return (x == -1) ? x : (x >= 0) ? offset + x : offset + x + 1;
   }
 
-    /** 
+    /**
      * Returns the index within the input string used to generate this match
      * where subexpression number <i>sub</i> ends, or <code>-1</code> if
      * the subexpression does not exist.  The initial position is zero.
@@ -314,30 +314,30 @@ public final class REMatch implements Serializable, Cloneable
     int pos;
     for (pos = 0; pos < input.length () - 1; pos++)
       {
-	if ((input.charAt (pos) == '$')
-	    && (Character.isDigit (input.charAt (pos + 1))))
-	  {
-	    int val = Character.digit (input.charAt (++pos), 10);
-	    int pos1 = pos + 1;
-	    while (pos1 < input.length () &&
-		   Character.isDigit (input.charAt (pos1)))
-	      {
-		int val1 =
-		  val * 10 + Character.digit (input.charAt (pos1), 10);
-		if (val1 >= start.length)
-		  break;
-		pos1++;
-		val = val1;
-	      }
-	    pos = pos1 - 1;
+        if ((input.charAt (pos) == '$')
+            && (Character.isDigit (input.charAt (pos + 1))))
+          {
+            int val = Character.digit (input.charAt (++pos), 10);
+            int pos1 = pos + 1;
+            while (pos1 < input.length () &&
+                   Character.isDigit (input.charAt (pos1)))
+              {
+                int val1 =
+                  val * 10 + Character.digit (input.charAt (pos1), 10);
+                if (val1 >= start.length)
+                  break;
+                pos1++;
+                val = val1;
+              }
+            pos = pos1 - 1;
 
-	    if (val < start.length)
-	      {
-		output.append (toString (val));
-	      }
-	  }
-	else
-	  output.append (input.charAt (pos));
+            if (val < start.length)
+              {
+                output.append (toString (val));
+              }
+          }
+        else
+          output.append (input.charAt (pos));
       }
     if (pos < input.length ())
       output.append (input.charAt (pos));
@@ -346,16 +346,16 @@ public final class REMatch implements Serializable, Cloneable
 
 /*  The following are used for debugging purpose
     public static String d(REMatch m) {
-	if (m == null) return "null";
+        if (m == null) return "null";
         else return "[" + m.index + "]";
     }
 
     public String substringUptoIndex(CharIndexed input) {
-	StringBuffer sb = new StringBuffer();
-	for (int i = 0; i < index; i++) {
-	    sb.append(input.charAt(i));
-	}
-	return sb.toString();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < index; i++) {
+            sb.append(input.charAt(i));
+        }
+        return sb.toString();
     }
 */
 

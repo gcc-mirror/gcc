@@ -106,19 +106,19 @@ public class ZipFile implements ZipConstants
    *
    * @return the newly open RandomAccessFile, never null
    */
-  private RandomAccessFile openFile(String name, 
-                                    File file) 
+  private RandomAccessFile openFile(String name,
+                                    File file)
     throws ZipException, IOException
-  {                                       
-    try 
+  {
+    try
       {
-        return 
+        return
           (name != null)
           ? new RandomAccessFile(name, "r")
           : new RandomAccessFile(file, "r");
       }
     catch (FileNotFoundException f)
-      { 
+      {
         ZipException ze = new ZipException(f.getMessage());
         ze.initCause(f);
         throw ze;
@@ -130,7 +130,7 @@ public class ZipFile implements ZipConstants
    * Opens a Zip file with the given name for reading.
    * @exception IOException if a i/o error occured.
    * @exception ZipException if the file doesn't contain a valid zip
-   * archive.  
+   * archive.
    */
   public ZipFile(String name) throws ZipException, IOException
   {
@@ -143,7 +143,7 @@ public class ZipFile implements ZipConstants
    * Opens a Zip file reading the given File.
    * @exception IOException if a i/o error occured.
    * @exception ZipException if the file doesn't contain a valid zip
-   * archive.  
+   * archive.
    */
   public ZipFile(File file) throws ZipException, IOException
   {
@@ -158,7 +158,7 @@ public class ZipFile implements ZipConstants
    * If the OPEN_DELETE mode is specified, the zip file will be deleted at
    * some time moment after it is opened. It will be deleted before the zip
    * file is closed or the Virtual Machine exits.
-   * 
+   *
    * The contents of the zip file will be accessible until it is closed.
    *
    * @since JDK1.3
@@ -166,7 +166,7 @@ public class ZipFile implements ZipConstants
    *
    * @exception IOException if a i/o error occured.
    * @exception ZipException if the file doesn't contain a valid zip
-   * archive.  
+   * archive.
    */
   public ZipFile(File file, int mode) throws ZipException, IOException
   {
@@ -183,7 +183,7 @@ public class ZipFile implements ZipConstants
   {
     boolean valid = false;
 
-    try 
+    try
       {
         byte[] buf = new byte[4];
         raf.readFully(buf);
@@ -195,18 +195,18 @@ public class ZipFile implements ZipConstants
       }
     catch (IOException _)
       {
-      } 
+      }
 
     if (!valid)
       {
         try
           {
-	    raf.close();
+            raf.close();
           }
         catch (IOException _)
           {
           }
-	throw new ZipException("Not a valid zip file");
+        throw new ZipException("Not a valid zip file");
       }
   }
 
@@ -225,11 +225,11 @@ public class ZipFile implements ZipConstants
    * while holding the lock on <code>raf</code>.
    *
    * @exception IOException if a i/o error occured.
-   * @exception ZipException if the central directory is malformed 
+   * @exception ZipException if the central directory is malformed
    */
   private void readEntries() throws ZipException, IOException
   {
-    /* Search for the End Of Central Directory.  When a zip comment is 
+    /* Search for the End Of Central Directory.  When a zip comment is
      * present the directory may start earlier.
      * Note that a comment has a maximum length of 64K, so that is the
      * maximum we search backwards.
@@ -239,13 +239,13 @@ public class ZipFile implements ZipConstants
     long top = Math.max(0, pos - 65536);
     do
       {
-	if (pos < top)
-	  throw new ZipException
-	    ("central directory not found, probably not a zip file: " + name);
-	inp.seek(pos--);
+        if (pos < top)
+          throw new ZipException
+            ("central directory not found, probably not a zip file: " + name);
+        inp.seek(pos--);
       }
     while (inp.readLeInt() != ENDSIG);
-    
+
     if (inp.skip(ENDTOT - ENDNRD) != ENDTOT - ENDNRD)
       throw new EOFException(name);
     int count = inp.readLeShort();
@@ -255,43 +255,43 @@ public class ZipFile implements ZipConstants
 
     entries = new LinkedHashMap<String, ZipEntry> (count+count/2);
     inp.seek(centralOffset);
-    
+
     for (int i = 0; i < count; i++)
       {
-	if (inp.readLeInt() != CENSIG)
-	  throw new ZipException("Wrong Central Directory signature: " + name);
+        if (inp.readLeInt() != CENSIG)
+          throw new ZipException("Wrong Central Directory signature: " + name);
 
         inp.skip(6);
-	int method = inp.readLeShort();
-	int dostime = inp.readLeInt();
-	int crc = inp.readLeInt();
-	int csize = inp.readLeInt();
-	int size = inp.readLeInt();
-	int nameLen = inp.readLeShort();
-	int extraLen = inp.readLeShort();
-	int commentLen = inp.readLeShort();
+        int method = inp.readLeShort();
+        int dostime = inp.readLeInt();
+        int crc = inp.readLeInt();
+        int csize = inp.readLeInt();
+        int size = inp.readLeInt();
+        int nameLen = inp.readLeShort();
+        int extraLen = inp.readLeShort();
+        int commentLen = inp.readLeShort();
         inp.skip(8);
-	int offset = inp.readLeInt();
-	String name = inp.readString(nameLen);
+        int offset = inp.readLeInt();
+        String name = inp.readString(nameLen);
 
-	ZipEntry entry = new ZipEntry(name);
-	entry.setMethod(method);
-	entry.setCrc(crc & 0xffffffffL);
-	entry.setSize(size & 0xffffffffL);
-	entry.setCompressedSize(csize & 0xffffffffL);
-	entry.setDOSTime(dostime);
-	if (extraLen > 0)
-	  {
-	    byte[] extra = new byte[extraLen];
-	    inp.readFully(extra);
-	    entry.setExtra(extra);
-	  }
-	if (commentLen > 0)
-	  {
+        ZipEntry entry = new ZipEntry(name);
+        entry.setMethod(method);
+        entry.setCrc(crc & 0xffffffffL);
+        entry.setSize(size & 0xffffffffL);
+        entry.setCompressedSize(csize & 0xffffffffL);
+        entry.setDOSTime(dostime);
+        if (extraLen > 0)
+          {
+            byte[] extra = new byte[extraLen];
+            inp.readFully(extra);
+            entry.setExtra(extra);
+          }
+        if (commentLen > 0)
+          {
             entry.setComment(inp.readString(commentLen));
-	  }
-	entry.offset = offset;
-	entries.put(name, entry);
+          }
+        entry.offset = offset;
+        entries.put(name, entry);
       }
   }
 
@@ -299,7 +299,7 @@ public class ZipFile implements ZipConstants
    * Closes the ZipFile.  This also closes all input streams given by
    * this class.  After this is called, no further method should be
    * called.
-   * 
+   *
    * @exception IOException if a i/o error occured.
    */
   public void close() throws IOException
@@ -310,9 +310,9 @@ public class ZipFile implements ZipConstants
 
     synchronized (raf)
       {
-	closed = true;
-	entries = null;
-	raf.close();
+        closed = true;
+        entries = null;
+        raf.close();
       }
   }
 
@@ -333,14 +333,14 @@ public class ZipFile implements ZipConstants
   public Enumeration<? extends ZipEntry> entries()
   {
     checkClosed();
-    
+
     try
       {
-	return new ZipEntryEnumeration(getEntries().values().iterator());
+        return new ZipEntryEnumeration(getEntries().values().iterator());
       }
     catch (IOException ioe)
       {
-	return new EmptyEnumeration<ZipEntry>();
+        return new EmptyEnumeration<ZipEntry>();
       }
   }
 
@@ -354,12 +354,12 @@ public class ZipFile implements ZipConstants
   {
     synchronized(raf)
       {
-	checkClosed();
+        checkClosed();
 
-	if (entries == null)
-	  readEntries();
+        if (entries == null)
+          readEntries();
 
-	return entries;
+        return entries;
       }
   }
 
@@ -378,16 +378,16 @@ public class ZipFile implements ZipConstants
 
     try
       {
-	LinkedHashMap<String, ZipEntry> entries = getEntries();
-	ZipEntry entry = entries.get(name);
+        LinkedHashMap<String, ZipEntry> entries = getEntries();
+        ZipEntry entry = entries.get(name);
         // If we didn't find it, maybe it's a directory.
         if (entry == null && !name.endsWith("/"))
-	  entry = entries.get(name + '/');
-	return entry != null ? new ZipEntry(entry, name) : null;
+          entry = entries.get(name + '/');
+        return entry != null ? new ZipEntry(entry, name) : null;
       }
     catch (IOException ioe)
       {
-	return null;
+        return null;
       }
   }
 
@@ -411,7 +411,7 @@ public class ZipFile implements ZipConstants
    *
    * @exception IllegalStateException when the ZipFile has already been closed
    * @exception IOException if a i/o error occured.
-   * @exception ZipException if the Zip archive is malformed.  
+   * @exception ZipException if the Zip archive is malformed.
    */
   public InputStream getInputStream(ZipEntry entry) throws IOException
   {
@@ -446,7 +446,7 @@ public class ZipFile implements ZipConstants
     switch (method)
       {
       case ZipOutputStream.STORED:
-	return inp;
+        return inp;
       case ZipOutputStream.DEFLATED:
         inp.addDummyByte();
         final Inflater inf = new Inflater(true);
@@ -463,10 +463,10 @@ public class ZipFile implements ZipConstants
           }
         };
       default:
-	throw new ZipException("Unknown compression method " + method);
+        throw new ZipException("Unknown compression method " + method);
       }
   }
-  
+
   /**
    * Returns the (path) name of this zip file.
    */
@@ -483,17 +483,17 @@ public class ZipFile implements ZipConstants
   public int size()
   {
     checkClosed();
-    
+
     try
       {
-	return getEntries().size();
+        return getEntries().size();
       }
     catch (IOException ioe)
       {
-	return 0;
+        return 0;
       }
   }
-  
+
   private static class ZipEntryEnumeration implements Enumeration<ZipEntry>
   {
     private final Iterator<ZipEntry> elements;
@@ -511,7 +511,7 @@ public class ZipFile implements ZipConstants
     public ZipEntry nextElement()
     {
       /* We return a clone, just to be safe that the user doesn't
-       * change the entry.  
+       * change the entry.
        */
       return (ZipEntry) (elements.next().clone());
     }
@@ -525,7 +525,7 @@ public class ZipFile implements ZipConstants
     private static final Charset UTF8CHARSET = Charset.forName("UTF-8");
 
     /**
-     * The actual UTF-8 decoder. Created on demand. 
+     * The actual UTF-8 decoder. Created on demand.
      */
     private CharsetDecoder utf8Decoder;
 
@@ -572,37 +572,37 @@ public class ZipFile implements ZipConstants
             }
         }
     }
-    
+
     public int available()
     {
       long amount = end - (bufferOffset + pos);
       if (amount > Integer.MAX_VALUE)
-	return Integer.MAX_VALUE;
+        return Integer.MAX_VALUE;
       return (int) amount;
     }
-    
+
     public int read() throws IOException
     {
       if (bufferOffset + pos >= end + dummyByteCount)
-	return -1;
+        return -1;
       if (pos == buffer.length)
         {
           bufferOffset += buffer.length;
           pos = 0;
           fillBuffer();
         }
-      
+
       return buffer[pos++] & 0xFF;
     }
 
     public int read(byte[] b, int off, int len) throws IOException
     {
       if (len > end + dummyByteCount - (bufferOffset + pos))
-	{
-	  len = (int) (end + dummyByteCount - (bufferOffset + pos));
-	  if (len == 0)
-	    return -1;
-	}
+        {
+          len = (int) (end + dummyByteCount - (bufferOffset + pos));
+          if (len == 0)
+            return -1;
+        }
 
       int totalBytesRead = Math.min(buffer.length - pos, len);
       System.arraycopy(buffer, pos, b, off, totalBytesRead);
@@ -622,16 +622,16 @@ public class ZipFile implements ZipConstants
           len -= remain;
           totalBytesRead += remain;
         }
-      
+
       return totalBytesRead;
     }
 
     public long skip(long amount) throws IOException
     {
       if (amount < 0)
-	return 0;
+        return 0;
       if (amount > end - (bufferOffset + pos))
-	amount = end - (bufferOffset + pos);
+        amount = end - (bufferOffset + pos);
       seek(bufferOffset + pos + amount);
       return amount;
     }

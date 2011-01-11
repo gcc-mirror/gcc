@@ -42,18 +42,18 @@ import java.awt.AWTKeyStroke;
 import java.awt.event.KeyEvent;
 import java.io.Serializable;
 
-public class KeyStroke 
+public class KeyStroke
   extends AWTKeyStroke
   implements Serializable
 {
   private static final long serialVersionUID = -9060180771037902530L;
-  
+
   // Called by java.awt.AWTKeyStroke.registerSubclass via reflection.
   private KeyStroke()
   {
     // Nothing to do here.
   }
-  
+
   private KeyStroke(char keyChar, int keyCode, int modifiers,
                     boolean onKeyRelease)
   {
@@ -65,34 +65,34 @@ public class KeyStroke
     AWTKeyStroke.registerSubclass(KeyStroke.class);
   }
 
-  public static KeyStroke getKeyStroke(char keyChar) 
+  public static KeyStroke getKeyStroke(char keyChar)
   {
     return (KeyStroke) getAWTKeyStroke(keyChar);
   }
 
-  /** 
+  /**
    * @deprecated Use {@link #getKeyStroke(char)}
    *
    * This method, unlike all the other factory methods on this object,
    * returns a non-cached, non-shared object. New code should not use it.
    */
-  public static KeyStroke getKeyStroke(char keyChar, boolean onKeyRelease) 
+  public static KeyStroke getKeyStroke(char keyChar, boolean onKeyRelease)
   {
     return new KeyStroke(keyChar, KeyEvent.VK_UNDEFINED, 0, onKeyRelease);
   }
 
-  public static KeyStroke getKeyStroke(Character keyChar, int modifiers) 
+  public static KeyStroke getKeyStroke(Character keyChar, int modifiers)
   {
     return (KeyStroke) getAWTKeyStroke(keyChar, modifiers);
   }
 
-  public static KeyStroke getKeyStroke(int keyCode, int modifiers, 
-                                       boolean onKeyRelease) 
+  public static KeyStroke getKeyStroke(int keyCode, int modifiers,
+                                       boolean onKeyRelease)
   {
     return (KeyStroke) getAWTKeyStroke(keyCode, modifiers, onKeyRelease);
   }
 
-  public static KeyStroke getKeyStroke(int keyCode, int modifiers) 
+  public static KeyStroke getKeyStroke(int keyCode, int modifiers)
   {
     return (KeyStroke) getAWTKeyStroke(keyCode, modifiers);
   }
@@ -103,19 +103,19 @@ public class KeyStroke
    * <code>IllegalArugmentException</code> when
    * the keystoke sequence cannot be parsed from the given string.
    */
-  public static KeyStroke getKeyStroke(String str) 
+  public static KeyStroke getKeyStroke(String str)
   {
     try
       {
-	return (KeyStroke) getAWTKeyStroke(str);
+        return (KeyStroke) getAWTKeyStroke(str);
       }
     catch (IllegalArgumentException iae)
       {
-	return null;
+        return null;
       }
   }
 
-  public static KeyStroke getKeyStrokeForEvent(KeyEvent event) 
+  public static KeyStroke getKeyStrokeForEvent(KeyEvent event)
   {
     return (KeyStroke) getAWTKeyStrokeForEvent(event);
   }

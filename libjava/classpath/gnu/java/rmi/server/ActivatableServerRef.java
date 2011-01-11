@@ -54,7 +54,7 @@ import java.rmi.server.Skeleton;
  * additionally activates the associated object on demand, during the first
  * incoming call. When UnicastServerReference takes the working reference,
  * the ActivatableServerRef takes the activation id instead.
- * 
+ *
  * @author Audrius Meskauskas (Audriusa@Bioinformatics.org)
  */
 public class ActivatableServerRef extends UnicastServerRef
@@ -63,7 +63,7 @@ public class ActivatableServerRef extends UnicastServerRef
    * Use SVUID for interoperability
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The object activation id.
    */
@@ -76,7 +76,7 @@ public class ActivatableServerRef extends UnicastServerRef
   {
     super();
   }
-  
+
   /**
    * Create the new activatable server reference that will activate object on
    * the first call using the given activation id.
@@ -87,13 +87,13 @@ public class ActivatableServerRef extends UnicastServerRef
   {
     super(id, aPort, ssFactory);
     actId = anId;
-    
+
     // The object ID will be placed in the object map and should deliver
     // incoming call to {@link #incommingMessageCall}. The object itself
     // is currently null.
     UnicastServer.exportActivatableObject(this);
   }
-  
+
   /**
    * Inactivate the object (stop the server).
    */
@@ -101,7 +101,7 @@ public class ActivatableServerRef extends UnicastServerRef
   {
     manager.stopServer();
   }
-  
+
   /**
    * Activate the object (normally during the first call).
    */
@@ -110,7 +110,7 @@ public class ActivatableServerRef extends UnicastServerRef
     try
       {
         Remote self = actId.activate(false);
-        
+
         // This will call UnicastServer.exportObject, replacing null by
         // the activated object (self) in the object map.
         exportObject(self);
@@ -139,7 +139,7 @@ public class ActivatableServerRef extends UnicastServerRef
   }
 
   /**
-   * Export object and ensure it is present in the server activation table 
+   * Export object and ensure it is present in the server activation table
    * as well.
    */
   public Remote exportObject(Remote obj) throws RemoteException
@@ -148,11 +148,11 @@ public class ActivatableServerRef extends UnicastServerRef
     UnicastServer.registerActivatable(this);
     return r;
   }
-  
+
   /**
    * Export object and ensure it is present in the server activation table as
    * well.
-   * 
+   *
    * @param aClass the class being exported, must implement Remote.
    */
   public Remote exportClass(Class aClass) throws RemoteException
@@ -161,17 +161,17 @@ public class ActivatableServerRef extends UnicastServerRef
       throw new InternalError(aClass.getName()+" must implement Remote");
 
         String ignoreStubs;
-        
-        ClassLoader loader =aClass.getClassLoader(); 
-        
+
+        ClassLoader loader =aClass.getClassLoader();
+
         // Stubs are always searched for the bootstrap classes that may have
         // obsolete pattern and may still need also skeletons.
         if (loader==null)
           ignoreStubs = "false";
         else
-          ignoreStubs = System.getProperty("java.rmi.server.ignoreStubClasses", 
+          ignoreStubs = System.getProperty("java.rmi.server.ignoreStubClasses",
                                            "false");
-        
+
         if (! ignoreStubs.equals("true"))
           {
             // Find and install the stub
@@ -223,5 +223,5 @@ public class ActivatableServerRef extends UnicastServerRef
     super.writeExternal(out);
     out.writeObject(actId);
   }
-  
+
 }

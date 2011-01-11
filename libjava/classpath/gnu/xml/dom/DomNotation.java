@@ -1,4 +1,4 @@
-/* DomNotation.java -- 
+/* DomNotation.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,14 +56,14 @@ import org.w3c.dom.Notation;
  * @see DomEntity
  * @see DomPI
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomNotation
   extends DomExtern
   implements Notation
 {
-    
+
   /**
    * Constructs a Notation node associated with the specified document,
    * with the specified descriptive data.  Note that at least one of
@@ -72,7 +72,7 @@ public class DomNotation
    *
    * <p>This constructor should only be invoked by a DomDoctype object
    * as part of its declareNotation functionality, or through a subclass
-   * which is similarly used in a "Sub-DOM" style layer. 
+   * which is similarly used in a "Sub-DOM" style layer.
    *
    * @param owner The document with which this notation is associated
    * @param name Name of this notation
@@ -87,7 +87,7 @@ public class DomNotation
     super(NOTATION_NODE, owner, name, publicId, systemId);
     makeReadonly();
   }
-  
+
   /**
    * The base URI of an external entity is its system ID.
    * The base URI of an internal entity is the parent document's base URI.
@@ -98,6 +98,5 @@ public class DomNotation
     String systemId = getSystemId();
     return (systemId == null) ? owner.getBaseURI() : systemId;
   }
-  
-}
 
+}

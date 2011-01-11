@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -65,7 +65,7 @@ abstract class AbstractCreatableObjectContext extends AbstractObjectContext
   /** Adds a parameter object to this Context. Implement this without caring
    * for illegal states because this has been done already.
    *
-   * @param obj The parameter object to be added. 
+   * @param obj The parameter object to be added.
    */
   protected abstract void addParameterObjectImpl(Object obj);
 
@@ -83,7 +83,7 @@ abstract class AbstractCreatableObjectContext extends AbstractObjectContext
   /** Creates the result object. This method is called only once. Implement this
    * without checking for double invocations as this is already being prevented.
    *
-   * @param outerContext The Context that exists around this one. 
+   * @param outerContext The Context that exists around this one.
    * @return The result object.
    * @throws AssemblerException if the object creation fails somehow.
    */

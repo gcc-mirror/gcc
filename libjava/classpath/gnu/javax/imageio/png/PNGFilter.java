@@ -58,16 +58,16 @@ public class PNGFilter
     switch( header.getColorType() )
       {
       case PNGHeader.INDEXED:
-	return false;
-	
+        return false;
+
       case PNGHeader.GRAYSCALE:
       case PNGHeader.RGB:
-	if( header.bytesPerPixel() <= 1 )
-	  return false;
+        if( header.bytesPerPixel() <= 1 )
+          return false;
       case PNGHeader.GRAYSCALE_WITH_ALPHA:
       case PNGHeader.RGB_WITH_ALPHA:
       default:
-	return true;
+        return true;
       }
   }
 
@@ -76,20 +76,20 @@ public class PNGFilter
    * suggested in the PNG spec.
    * @return a fiter type.
    */
-  public static byte chooseFilter( byte[] scanline, byte[] lastScanline, 
-				  int bpp)
-    
+  public static byte chooseFilter( byte[] scanline, byte[] lastScanline,
+                                  int bpp)
+
   {
     long[] values = new long[5];
     int idx = 0;
     for( int i = 0; i < 5; i++ )
       {
-	byte[] filtered = filterScanline((byte)i, scanline, lastScanline, bpp);
-	values[i] = 0;
-	for(int j = 0; j < filtered.length; j++ )
-	  values[i] += (int)(filtered[j] & 0xFF);
-	if( values[ idx ] > values[i] )
-	  idx = i;
+        byte[] filtered = filterScanline((byte)i, scanline, lastScanline, bpp);
+        values[i] = 0;
+        for(int j = 0; j < filtered.length; j++ )
+          values[i] += (int)(filtered[j] & 0xFF);
+        if( values[ idx ] > values[i] )
+          idx = i;
       }
     return (byte)idx;
   }
@@ -97,69 +97,69 @@ public class PNGFilter
   /**
    * Filter a scanline.
    */
-  public static byte[] filterScanline( byte filtertype, byte[] scanline, 
-				       byte[] lastScanline, int bpp)
+  public static byte[] filterScanline( byte filtertype, byte[] scanline,
+                                       byte[] lastScanline, int bpp)
   {
     int stride = scanline.length;
     byte[] out = new byte[ stride ];
     switch( filtertype )
       {
       case FILTER_SUB:
-	for( int i = 0; i < bpp; i++)
-	  out[ i ] = scanline[ i ];
-	
-	for( int i = bpp; i < stride; i++ )
-	  out[i] = (byte)(scanline[ i ] - 
-			  scanline[ i - bpp ]);
-	break;
+        for( int i = 0; i < bpp; i++)
+          out[ i ] = scanline[ i ];
+
+        for( int i = bpp; i < stride; i++ )
+          out[i] = (byte)(scanline[ i ] -
+                          scanline[ i - bpp ]);
+        break;
 
       case FILTER_UP:
-	for( int i = 0; i < stride; i++ )
-	  out[ i ] = (byte)(scanline[ i ] - lastScanline[ i ]);
-	break;
+        for( int i = 0; i < stride; i++ )
+          out[ i ] = (byte)(scanline[ i ] - lastScanline[ i ]);
+        break;
 
       case FILTER_AVERAGE:
-	for( int i = 0; i < bpp; i++)
-	  out[ i ] = (byte)((scanline[ i ] & 0xFF) - ((lastScanline[ i ] & 0xFF) >> 1));
-	for( int i = bpp; i < stride; i++ )
-	  out[ i ] = (byte)((scanline[ i ] & 0xFF) - 
-			    (((scanline[ i - bpp ] & 0xFF) + 
-			      (lastScanline[ i ] & 0xFF)) >> 1));
-	break;
+        for( int i = 0; i < bpp; i++)
+          out[ i ] = (byte)((scanline[ i ] & 0xFF) - ((lastScanline[ i ] & 0xFF) >> 1));
+        for( int i = bpp; i < stride; i++ )
+          out[ i ] = (byte)((scanline[ i ] & 0xFF) -
+                            (((scanline[ i - bpp ] & 0xFF) +
+                              (lastScanline[ i ] & 0xFF)) >> 1));
+        break;
 
       case FILTER_PAETH:
-	for( int i = 0; i < stride; i++ )
-	  {
-	    int x;
-	    {
-	      int a, b, c;
-	      if( i >= bpp )
-		{
-		  a = (scanline[ i - bpp ] & 0xFF); // left
-		  c = (lastScanline[ i - bpp ] & 0xFF); // upper-left
-		}
-	      else
-		a = c = 0;
-	      b = (lastScanline[ i ] & 0xFF); // up
-	      
-	      int p = (a + b - c);        // initial estimate
-	      // distances to a, b, c
-	      int pa = (p > a) ? p - a : a - p; 
-	      int pb = (p > b) ? p - b : b - p; 
-	      int pc = (p > c) ? p - c : c - p; 
-	      // return nearest of a,b,c,
-	      // breaking ties in order a,b,c.
-	      if( pa <= pb && pa <= pc ) x = a;
-	      else { if( pb <= pc ) x = b;
-		else x = c;
-	      }
-	    }
-	    out[ i ] = (byte)(scanline[ i ] - x);
-	  }
-	break;
+        for( int i = 0; i < stride; i++ )
+          {
+            int x;
+            {
+              int a, b, c;
+              if( i >= bpp )
+                {
+                  a = (scanline[ i - bpp ] & 0xFF); // left
+                  c = (lastScanline[ i - bpp ] & 0xFF); // upper-left
+                }
+              else
+                a = c = 0;
+              b = (lastScanline[ i ] & 0xFF); // up
+
+              int p = (a + b - c);        // initial estimate
+              // distances to a, b, c
+              int pa = (p > a) ? p - a : a - p;
+              int pb = (p > b) ? p - b : b - p;
+              int pc = (p > c) ? p - c : c - p;
+              // return nearest of a,b,c,
+              // breaking ties in order a,b,c.
+              if( pa <= pb && pa <= pc ) x = a;
+              else { if( pb <= pc ) x = b;
+                else x = c;
+              }
+            }
+            out[ i ] = (byte)(scanline[ i ] - x);
+          }
+        break;
       default:
       case FILTER_NONE:
-	return scanline;
+        return scanline;
       }
     return out;
   }
@@ -167,8 +167,8 @@ public class PNGFilter
   /**
    * Unfilter a scanline.
    */
-  public static byte[] unFilterScanline( int filtertype, byte[] scanline, 
-					 byte[] lastScanline, int bpp)
+  public static byte[] unFilterScanline( int filtertype, byte[] scanline,
+                                         byte[] lastScanline, int bpp)
   {
     int stride = scanline.length;
     byte[] out = new byte[ stride ];
@@ -176,61 +176,61 @@ public class PNGFilter
       {
 
       case FILTER_NONE:
-	System.arraycopy( scanline, 0, out, 0, stride );
-	break;
-	
+        System.arraycopy( scanline, 0, out, 0, stride );
+        break;
+
       case FILTER_SUB:
-	for( int i = 0; i < bpp; i++)
-	  out[ i ] = scanline[ i ];
-	
-	for( int i = bpp; i < stride; i++ )
-	  out[ i ] = (byte)(scanline[ i ] + 
-			    out[ i - bpp ]);
-	break;
+        for( int i = 0; i < bpp; i++)
+          out[ i ] = scanline[ i ];
+
+        for( int i = bpp; i < stride; i++ )
+          out[ i ] = (byte)(scanline[ i ] +
+                            out[ i - bpp ]);
+        break;
 
       case FILTER_UP:
-	for( int i = 0; i < stride; i++ )
-	  out[ i ] = (byte)(scanline[ i ] + lastScanline[ i ]);
-	break;
+        for( int i = 0; i < stride; i++ )
+          out[ i ] = (byte)(scanline[ i ] + lastScanline[ i ]);
+        break;
 
       case FILTER_AVERAGE:
-	for( int i = 0; i < bpp; i++)
-	  out[ i ] = (byte)((scanline[ i ] & 0xFF) + ((lastScanline[ i ] & 0xFF) >> 1));
-	for( int i = bpp; i < stride; i++ )
-	  out[ i ] = (byte)((scanline[ i ] & 0xFF) + 
-			    (((out[ i - bpp ] & 0xFF) + (lastScanline[ i ] & 0xFF)) >> 1));
-	break;
+        for( int i = 0; i < bpp; i++)
+          out[ i ] = (byte)((scanline[ i ] & 0xFF) + ((lastScanline[ i ] & 0xFF) >> 1));
+        for( int i = bpp; i < stride; i++ )
+          out[ i ] = (byte)((scanline[ i ] & 0xFF) +
+                            (((out[ i - bpp ] & 0xFF) + (lastScanline[ i ] & 0xFF)) >> 1));
+        break;
 
       case FILTER_PAETH:
-	for( int i = 0; i < stride; i++ )
-	  {
-	    int x;
-	    {
-	      int a, b, c;
-	      if( i >= bpp )
-		{
-		  a = (out[ i - bpp ] & 0xFF); // left
-		  c = (lastScanline[ i - bpp ] & 0xFF); // upper-left
-		}
-	      else
-		a = c = 0;
-	      b = (lastScanline[ i ] & 0xFF); // up
-	      
-	      int p = (a + b - c);        // initial estimate
-	      // distances to a, b, c
-	      int pa = (p > a) ? p - a : a - p; 
-	      int pb = (p > b) ? p - b : b - p; 
-	      int pc = (p > c) ? p - c : c - p; 
-	      // return nearest of a,b,c,
-	      // breaking ties in order a,b,c.
-	      if( pa <= pb && pa <= pc ) x = a;
-	      else { if( pb <= pc ) x = b;
-		else x = c;
-	      }
-	    }
-	    out[ i ] = (byte)(scanline[ i ] + x);
-	  }
-	break;
+        for( int i = 0; i < stride; i++ )
+          {
+            int x;
+            {
+              int a, b, c;
+              if( i >= bpp )
+                {
+                  a = (out[ i - bpp ] & 0xFF); // left
+                  c = (lastScanline[ i - bpp ] & 0xFF); // upper-left
+                }
+              else
+                a = c = 0;
+              b = (lastScanline[ i ] & 0xFF); // up
+
+              int p = (a + b - c);        // initial estimate
+              // distances to a, b, c
+              int pa = (p > a) ? p - a : a - p;
+              int pb = (p > b) ? p - b : b - p;
+              int pc = (p > c) ? p - c : c - p;
+              // return nearest of a,b,c,
+              // breaking ties in order a,b,c.
+              if( pa <= pb && pa <= pc ) x = a;
+              else { if( pb <= pc ) x = b;
+                else x = c;
+              }
+            }
+            out[ i ] = (byte)(scanline[ i ] + x);
+          }
+        break;
       }
     return out;
   }

@@ -71,7 +71,7 @@ public class PrinterIOException extends PrinterException
   {
     super(mException == null ? null : mException.toString());
     initCause(mException);
-    this.mException = mException;  
+    this.mException = mException;
   }
 
   /**
@@ -95,4 +95,3 @@ public class PrinterIOException extends PrinterException
     return mException;
   }
 } // class PrinterIOException
-

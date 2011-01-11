@@ -70,15 +70,15 @@ import javax.swing.text.Position.Bias;
 public class DefaultCaret extends Rectangle
   implements Caret, FocusListener, MouseListener, MouseMotionListener
 {
-  
+
   /** A text component in the current VM which currently has a
    * text selection or <code>null</code>.
-   */ 
+   */
   static JTextComponent componentWithSelection;
 
   /** An implementation of NavigationFilter.FilterBypass which delegates
-   * to the corresponding methods of the <code>DefaultCaret</code>. 
-   * 
+   * to the corresponding methods of the <code>DefaultCaret</code>.
+   *
    * @author Robert Schuster (robertschuster@fsfe.org)
    */
   class Bypass extends NavigationFilter.FilterBypass
@@ -98,9 +98,9 @@ public class DefaultCaret extends Rectangle
     {
       DefaultCaret.this.setDotImpl(dot);
     }
-    
+
   }
-  
+
   /**
    * Controls the blinking of the caret.
    *
@@ -116,11 +116,11 @@ public class DefaultCaret extends Rectangle
      * the caret visible one iteration longer.
      */
     boolean ignoreNextEvent;
-    
+
     /**
      * Receives notification when the blink timer fires and updates the visible
      * state of the caret.
-     * 
+     *
      * @param event the action event
      */
     public void actionPerformed(ActionEvent event)
@@ -138,7 +138,7 @@ public class DefaultCaret extends Rectangle
   /**
    * Listens for changes in the text component's document and updates the
    * caret accordingly.
-   * 
+   *
    * @author Roman Kennke (kennke@aicas.com)
    */
   private class DocumentHandler implements DocumentListener
@@ -162,10 +162,10 @@ public class DefaultCaret extends Rectangle
      */
     public void insertUpdate(DocumentEvent event)
     {
-      if (policy == ALWAYS_UPDATE || 
-          (SwingUtilities.isEventDispatchThread() && 
+      if (policy == ALWAYS_UPDATE ||
+          (SwingUtilities.isEventDispatchThread() &&
            policy == UPDATE_WHEN_ON_EDT))
-        {        
+        {
           int dot = getDot();
           setDot(dot + event.getLength());
         }
@@ -216,14 +216,14 @@ public class DefaultCaret extends Rectangle
      */
     public void propertyChange(PropertyChangeEvent e)
     {
-      String name = e.getPropertyName(); 
-      
+      String name = e.getPropertyName();
+
       if (name.equals("document"))
         {
           Document oldDoc = (Document) e.getOldValue();
           if (oldDoc != null)
             oldDoc.removeDocumentListener(documentListener);
-          
+
           Document newDoc = (Document) e.getNewValue();
           if (newDoc != null)
             newDoc.addDocumentListener(documentListener);
@@ -238,19 +238,19 @@ public class DefaultCaret extends Rectangle
           active = (((Boolean) e.getNewValue()).booleanValue()
                    && textComponent.isEditable());
         }
-      
+
     }
-    
+
   }
 
   /** The serialization UID (compatible with JDK1.5). */
   private static final long serialVersionUID = 4325555698756477346L;
-  
+
   /**
    * Indicates the Caret position should always be updated after Document
    * changes even if the updates are not performed on the Event Dispatching
    * thread.
-   * 
+   *
    * @since 1.5
    */
   public static final int ALWAYS_UPDATE = 2;
@@ -259,22 +259,22 @@ public class DefaultCaret extends Rectangle
    * Indicates the Caret position should not be changed unless the Document
    * length becomes less than the Caret position, in which case the Caret
    * is moved to the end of the Document.
-   * 
+   *
    * @since 1.5
    */
   public static final int NEVER_UPDATE = 1;
-  
-  /** 
+
+  /**
    * Indicates the Caret position should be updated only if Document changes
    * are made on the Event Dispatcher thread.
-   *  
+   *
    * @since 1.5
    */
   public static final int UPDATE_WHEN_ON_EDT = 0;
-  
+
   /** Keeps track of the current update policy **/
   int policy = UPDATE_WHEN_ON_EDT;
-    
+
   /**
    * The <code>ChangeEvent</code> that is fired by {@link #fireStateChanged()}.
    */
@@ -297,7 +297,7 @@ public class DefaultCaret extends Rectangle
 
   /**
    * The text component in which this caret is installed.
-   * 
+   *
    * (Package private to avoid synthetic accessor method.)
    */
   JTextComponent textComponent;
@@ -332,11 +332,11 @@ public class DefaultCaret extends Rectangle
    * package private to avoid an accessor method.
    */
   boolean visible = false;
-  
+
   /** Indicates whether the text component where the caret is installed is
    * editable and enabled. If either of these properties is <code>false</code>
    * the caret is not drawn.
-   */ 
+   */
   boolean active = true;
 
   /**
@@ -345,7 +345,7 @@ public class DefaultCaret extends Rectangle
   private Object highlightEntry;
 
   private Timer blinkTimer;
-  
+
   private BlinkTimerListener blinkListener;
 
   /**
@@ -362,10 +362,10 @@ public class DefaultCaret extends Rectangle
   {
     // Nothing to do here.
   }
-  
+
   /** Returns the caret's <code>NavigationFilter.FilterBypass</code> instance
    * and creates it if it does not yet exist.
-   * 
+   *
    * @return The caret's <code>NavigationFilter.FilterBypass</code> instance.
    */
   private NavigationFilter.FilterBypass getBypass()
@@ -375,17 +375,17 @@ public class DefaultCaret extends Rectangle
 
   /**
    * Sets the Caret update policy.
-   *    
+   *
    * @param policy the new policy.  Valid values are:
    * ALWAYS_UPDATE: always update the Caret position, even when Document
    * updates don't occur on the Event Dispatcher thread.
    * NEVER_UPDATE: don't update the Caret position unless the Document
    * length becomes less than the Caret position (then update the
    * Caret to the end of the Document).
-   * UPDATE_WHEN_ON_EDT: update the Caret position when the 
-   * Document updates occur on the Event Dispatcher thread.  This is the 
+   * UPDATE_WHEN_ON_EDT: update the Caret position when the
+   * Document updates occur on the Event Dispatcher thread.  This is the
    * default.
-   * 
+   *
    * @since 1.5
    * @throws IllegalArgumentException if policy is not one of the above.
    */
@@ -393,15 +393,15 @@ public class DefaultCaret extends Rectangle
   {
     if (policy != ALWAYS_UPDATE && policy != NEVER_UPDATE
         && policy != UPDATE_WHEN_ON_EDT)
-      throw new 
+      throw new
         IllegalArgumentException
         ("policy must be ALWAYS_UPDATE, NEVER__UPDATE, or UPDATE_WHEN_ON_EDT");
     this.policy = policy;
   }
-  
+
   /**
    * Gets the caret update policy.
-   * 
+   *
    * @return the caret update policy.
    * @since 1.5
    */
@@ -409,11 +409,11 @@ public class DefaultCaret extends Rectangle
   {
     return policy;
   }
-  
+
   /**
    * Moves the caret position when the mouse is dragged over the text
    * component, modifying the selectiony.
-   * 
+   *
    * <p>When the text component where the caret is installed is disabled,
    * the selection is not change but you can still scroll the text and
    * update the caret's location.</p>
@@ -462,9 +462,9 @@ public class DefaultCaret extends Rectangle
     // Do not modify selection if component is disabled.
     if (!textComponent.isEnabled())
       return;
-    
+
     int count = event.getClickCount();
-    
+
     if (event.getButton() == MouseEvent.BUTTON1 && count >= 2)
       {
         int newDot = getComponent().viewToModel(event.getPoint());
@@ -480,7 +480,7 @@ public class DefaultCaret extends Rectangle
             else
               {
                 int wordStart = Utilities.getWordStart(t, newDot);
-                
+
                 // When the mouse points at the offset of the first character
                 // in a word Utilities().getPreviousWord will not return that
                 // word but we want to select that. We have to use
@@ -495,7 +495,7 @@ public class DefaultCaret extends Rectangle
                     int nextWord = Utilities.getNextWord(t, newDot);
                     int previousWord = Utilities.getPreviousWord(t, newDot);
                     int previousWordEnd = Utilities.getWordEnd(t, previousWord);
-                    
+
                     // If the user clicked in the space between two words,
                     // then select the space.
                     if (newDot >= previousWordEnd && newDot <= nextWord)
@@ -517,7 +517,7 @@ public class DefaultCaret extends Rectangle
             // TODO: Swallowing ok here?
           }
       }
-    
+
   }
 
   /**
@@ -552,7 +552,7 @@ public class DefaultCaret extends Rectangle
    */
   public void mousePressed(MouseEvent event)
   {
-    
+
     // The implementation assumes that consuming the event makes the AWT event
     // mechanism forget about this event instance and not transfer focus.
     // By observing how the RI reacts the following behavior has been
@@ -617,14 +617,14 @@ public class DefaultCaret extends Rectangle
   {
     if (textComponent.isEditable())
       {
-        setVisible(true);    
+        setVisible(true);
         updateTimerStatus();
       }
   }
 
   /**
    * Sets the caret to <code>invisible</code>.
-   * 
+   *
    * @param event the <code>FocusEvent</code>
    */
   public void focusLost(FocusEvent event)
@@ -632,13 +632,13 @@ public class DefaultCaret extends Rectangle
     if (textComponent.isEditable() && event.isTemporary() == false)
       {
         setVisible(false);
-        
+
         // Stop the blinker, if running.
         if (blinkTimer != null && blinkTimer.isRunning())
           blinkTimer.stop();
       }
   }
-  
+
   /**
    * Install (if not present) and start the timer, if the caret must blink. The
    * caret does not blink if it is invisible, or the component is disabled or
@@ -724,11 +724,11 @@ public class DefaultCaret extends Rectangle
     propertyChangeListener = new PropertyChangeHandler();
     textComponent.addPropertyChangeListener(propertyChangeListener);
     documentListener = new DocumentHandler();
-    
+
     Document doc = textComponent.getDocument();
     if (doc != null)
       doc.addDocumentListener(documentListener);
-    
+
     active = textComponent.isEditable() && textComponent.isEnabled();
 
     repaint();
@@ -769,21 +769,21 @@ public class DefaultCaret extends Rectangle
   {
     return mark;
   }
-  
+
   private void clearHighlight()
   {
     Highlighter highlighter = textComponent.getHighlighter();
-    
+
     if (highlighter == null)
       return;
-    
+
     if (selectionVisible)
       {
     try
       {
         if (highlightEntry != null)
           highlighter.changeHighlight(highlightEntry, 0, 0);
-        
+
         // Free the global variable which stores the text component with an active
         // selection.
         if (componentWithSelection == textComponent)
@@ -808,22 +808,22 @@ public class DefaultCaret extends Rectangle
   private void handleHighlight()
   {
     Highlighter highlighter = textComponent.getHighlighter();
-    
+
     if (highlighter == null)
       return;
-    
+
     int p0 = Math.min(dot, mark);
     int p1 = Math.max(dot, mark);
-    
+
     if (selectionVisible)
       {
-	try
-	  {
-	    if (highlightEntry == null)
-	      highlightEntry = highlighter.addHighlight(p0, p1, getSelectionPainter());
-	    else
-	      highlighter.changeHighlight(highlightEntry, p0, p1);
-            
+        try
+          {
+            if (highlightEntry == null)
+              highlightEntry = highlighter.addHighlight(p0, p1, getSelectionPainter());
+            else
+              highlighter.changeHighlight(highlightEntry, p0, p1);
+
             // If another component currently has a text selection clear that selection
             // first.
             if (componentWithSelection != null)
@@ -833,21 +833,21 @@ public class DefaultCaret extends Rectangle
                   c.setDot(c.getDot());
                 }
             componentWithSelection = textComponent;
-            
-	  }
-	catch (BadLocationException e)
-	  {
-	    // This should never happen.
-	    throw new InternalError();
-	  }
+
+          }
+        catch (BadLocationException e)
+          {
+            // This should never happen.
+            throw new InternalError();
+          }
       }
     else
       {
-	if (highlightEntry != null)
-	  {
-	    highlighter.removeHighlight(highlightEntry);
-	    highlightEntry = null;
-	  }
+        if (highlightEntry != null)
+          {
+            highlighter.removeHighlight(highlightEntry);
+            highlightEntry = null;
+          }
       }
   }
 
@@ -861,7 +861,7 @@ public class DefaultCaret extends Rectangle
   {
     if (selectionVisible == v)
       return;
-    
+
     selectionVisible = v;
     handleHighlight();
     repaint();
@@ -1049,7 +1049,7 @@ public class DefaultCaret extends Rectangle
    *
    * <p>If the underlying text component has a {@link NavigationFilter}
    * installed the caret will call the corresponding method of that object.</p>
-   * 
+   *
    * @param dot the location where to move the dot
    *
    * @see #setDot(int)
@@ -1062,7 +1062,7 @@ public class DefaultCaret extends Rectangle
     else
       moveDotImpl(dot);
   }
-  
+
   void moveDotImpl(int dot)
   {
     if (dot >= 0)
@@ -1071,7 +1071,7 @@ public class DefaultCaret extends Rectangle
         if (doc != null)
           this.dot = Math.min(dot, doc.getLength());
         this.dot = Math.max(this.dot, 0);
-        
+
         handleHighlight();
 
         appear();
@@ -1082,10 +1082,10 @@ public class DefaultCaret extends Rectangle
    * Sets the current position of this <code>Caret</code> within the
    * <code>Document</code>. This also sets the <code>mark</code> to the new
    * location.
-   * 
+   *
    * <p>If the underlying text component has a {@link NavigationFilter}
    * installed the caret will call the corresponding method of that object.</p>
-   * 
+   *
    * @param dot
    *          the new position to be set
    * @see #moveDot(int)
@@ -1098,27 +1098,27 @@ public class DefaultCaret extends Rectangle
     else
       setDotImpl(dot);
   }
-  
+
   void setDotImpl(int dot)
   {
     if (dot >= 0)
-      {        
+      {
         Document doc = textComponent.getDocument();
         if (doc != null)
           this.dot = Math.min(dot, doc.getLength());
         this.dot = Math.max(this.dot, 0);
         this.mark = this.dot;
-        
+
         clearHighlight();
-        
+
         appear();
       }
   }
-  
+
   /**
    * Show the caret (may be hidden due blinking) and adjust the timer not to
    * hide it (possibly immediately).
-   * 
+   *
    * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
    */
   void appear()
@@ -1137,7 +1137,7 @@ public class DefaultCaret extends Rectangle
         visible = true;
 
         Rectangle area = null;
-	int dot = getDot();
+        int dot = getDot();
         try
           {
             area = getComponent().modelToView(dot);
@@ -1158,7 +1158,7 @@ public class DefaultCaret extends Rectangle
           }
       }
     repaint();
-  }  
+  }
 
   /**
    * Returns <code>true</code> if this <code>Caret</code> is blinking,
@@ -1195,7 +1195,7 @@ public class DefaultCaret extends Rectangle
    * <code>Caret</code>, <code>false</code> hides it.
    *
    * @param v the visibility to set
-   */  
+   */
   public void setVisible(boolean v)
   {
     if (v != visible)
@@ -1203,17 +1203,17 @@ public class DefaultCaret extends Rectangle
         visible = v;
         updateTimerStatus();
         Rectangle area = null;
-	int dot = getDot();
+        int dot = getDot();
         try
-          {            
+          {
             area = getComponent().modelToView(dot);
           }
         catch (BadLocationException e)
           {
-	    AssertionError ae;
-	    ae = new AssertionError("Unexpected bad caret location: " + dot);
-	    ae.initCause(e);
-	    throw ae;
+            AssertionError ae;
+            ae = new AssertionError("Unexpected bad caret location: " + dot);
+            ae.initCause(e);
+            throw ae;
           }
         if (area != null)
           damage(area);
@@ -1258,7 +1258,7 @@ public class DefaultCaret extends Rectangle
           // Should not happen.
           throw new InternalError("Caret location not within document range.");
         }
-      
+
     repaint();
   }
 
@@ -1283,5 +1283,5 @@ public class DefaultCaret extends Rectangle
     blinkTimer = new Timer(getBlinkRate(), blinkListener);
     blinkTimer.setRepeats(true);
   }
-  
+
 }

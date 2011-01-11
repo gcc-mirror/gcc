@@ -40,21 +40,21 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * A <code>TableModelListener</code> can register with a 
+ * A <code>TableModelListener</code> can register with a
  * {@link javax.swing.table.TableModel} and receive notification of updates to
  * the model.
- * 
+ *
  * @author Andrew Selkirk
  */
-public interface TableModelListener extends EventListener 
+public interface TableModelListener extends EventListener
 {
 
   /**
-   * Called to notify the listener that the 
+   * Called to notify the listener that the
    * {@link javax.swing.table.TableModel} has been updated.
-   * 
+   *
    * @param event  contains details of the update.
    */
   void tableChanged(TableModelEvent event);
 
-} 
+}

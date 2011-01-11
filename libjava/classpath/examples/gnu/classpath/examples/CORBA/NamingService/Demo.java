@@ -89,7 +89,7 @@ public class Demo
     System.out.println("Starting the GNU Classpath " +
                        "built-in transient naming service"
                       );
-    
+
     final String[] args = an_args;
 
     new Thread()

@@ -111,13 +111,13 @@ public class SpinnerListModel extends AbstractSpinnerModel
    * to <code>getValue()</code> returns the same as <code>list.get(0)</code>.
    *
    * @param list The list to use for this model.
-   * 
+   *
    * @throws IllegalArgumentException if the list is null or contains no
    *         elements.
    *
    * @see SpinnerListModel#getNextValue()
    * @see SpinnerListModel#getValue()
-   */ 
+   */
   public SpinnerListModel(List<?> list)
   {
     // Retain a reference to the valid list.
@@ -151,9 +151,9 @@ public class SpinnerListModel extends AbstractSpinnerModel
         throw new IllegalArgumentException("The supplied array was invalid.");
       }
 
-	// Retain a reference to a wrapper around the valid array. 
-	// The array, in list form, will be tested again here, but we can't really
-	// avoid this -- a null value to Arrays.asList will throw a
+        // Retain a reference to a wrapper around the valid array.
+        // The array, in list form, will be tested again here, but we can't really
+        // avoid this -- a null value to Arrays.asList will throw a
     // NullPointerException.
     setList(Arrays.asList(array));
   }
@@ -167,7 +167,7 @@ public class SpinnerListModel extends AbstractSpinnerModel
   {
     return list;
   }
-    
+
   /**
    * Returns the next value from the list, which is the same as the element
    * stored at the current index + 1.  Null is returned if there are no more
@@ -200,10 +200,10 @@ public class SpinnerListModel extends AbstractSpinnerModel
   public Object getPreviousValue()
   {
     // Check for a previous value.
-    if (index > 0) 
+    if (index > 0)
       // Return the element at the previous position.
       return list.get(index - 1);
-	else
+        else
       // Return null as this is the start of the list.
       return null;
     }
@@ -266,7 +266,7 @@ public class SpinnerListModel extends AbstractSpinnerModel
    * the backing list.  Listeners are notified of this change.
    * Following the change, <code>getNextValue()</code> and
    * <code>getPreviousValue()</code> return the objects following
-   * and prior to the supplied value, respectively. 
+   * and prior to the supplied value, respectively.
    *
    * @param value The requested new value of the list.
    *

@@ -35,7 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
- 
+
 package javax.naming;
 
 import java.util.Enumeration;
@@ -58,16 +58,16 @@ public interface NamingEnumeration<T> extends Enumeration<T>
    * Returns the next element in this enumeration. The naming - specific
    * exceptions are only throws after returning all still available elements of
    * the enumeration.
-   * 
+   *
    * @return the next element of this enumeration
    * @throws NamingException
    */
   T next() throws NamingException;
-  
+
   /**
    * Checks if there are more unvisited elements in the enumeration, throwing
    * exceptions if there are some unvisited, but not available elements.
-   * 
+   *
    * @return true if there are some unvisited elements, false otherwise.
    * @throws PartialResultException if the enumeration, returned by the
    *           {@link Context#list(Name)} or other similar method contains only
@@ -77,13 +77,13 @@ public interface NamingEnumeration<T> extends Enumeration<T>
    * @throws NamingException
    */
   boolean hasMore() throws NamingException;
-  
+
   /**
    * Immediately frees all resources, owned by this enumeration. If invoked, it
    * must be the last method called for that enumeration.
-   * 
+   *
    * @throws NamingException
-   */  
+   */
   void close() throws NamingException;
 
 }

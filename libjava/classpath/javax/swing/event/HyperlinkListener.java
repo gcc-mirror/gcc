@@ -47,11 +47,11 @@ import java.util.EventListener;
  */
 public interface HyperlinkListener extends EventListener {
 
-	/**
-	 * Hyperlink updated
-	 * @param event Hyperlink Event
-	 */
-	void hyperlinkUpdate(HyperlinkEvent event);
+        /**
+         * Hyperlink updated
+         * @param event Hyperlink Event
+         */
+        void hyperlinkUpdate(HyperlinkEvent event);
 
 
 } // HyperlinkListener

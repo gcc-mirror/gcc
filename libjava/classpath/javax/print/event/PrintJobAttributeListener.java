@@ -1,4 +1,4 @@
-/* PrintJobAttributeListener.java -- 
+/* PrintJobAttributeListener.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,16 +40,16 @@ package javax.print.event;
 
 /**
  * Listener interface to receive attribute changes from a print job.
- * Implementations of this interface can be registered with a 
+ * Implementations of this interface can be registered with a
  * {@link javax.print.DocPrintJob} instance.
- *  
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface PrintJobAttributeListener
 {
   /**
    * Notifies the listener of an attribute change.
-   * 
+   *
    * @param event the event
    */
   void attributeUpdate(PrintJobAttributeEvent event);

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -62,7 +62,7 @@ public final class VMPlainSocketImpl
   private static final int CP_IP_TTL = 0x1E61;
 
   private final State nfd;
-  
+
   /**
    * Static initializer to load native library.
    */
@@ -73,19 +73,19 @@ public final class VMPlainSocketImpl
         System.loadLibrary("javanet");
       }
   }
-  
+
   public VMPlainSocketImpl()
   {
     // XXX consider adding security check here.
     nfd = new State();
   }
-  
+
   public VMPlainSocketImpl(VMChannel channel) throws IOException
   {
     this();
     nfd.setChannelFD(channel.getState());
   }
-  
+
   public State getState()
   {
     return nfd;
@@ -144,7 +144,7 @@ public final class VMPlainSocketImpl
     else
       throw new IllegalArgumentException("option value type "
                                          + optionValue.getClass().getName());
-    
+
     try
       {
         setOption(nfd.getNativeFD(), optionId, value);
@@ -156,7 +156,7 @@ public final class VMPlainSocketImpl
         throw se;
       }
   }
-  
+
   private static native void setOption(int fd, int id, int value)
     throws SocketException;
 
@@ -198,16 +198,16 @@ public final class VMPlainSocketImpl
   /**
    * Get a socket option. This implementation is only required to support
    * socket options that are boolean values, which include:
-   * 
+   *
    *  SocketOptions.IP_MULTICAST_LOOP
    *  SocketOptions.SO_BROADCAST
    *  SocketOptions.SO_KEEPALIVE
    *  SocketOptions.SO_OOBINLINE
    *  SocketOptions.SO_REUSEADDR
    *  SocketOptions.TCP_NODELAY
-   * 
+   *
    * and socket options that are integer values, which include:
-   * 
+   *
    *  SocketOptions.IP_TOS
    *  SocketOptions.SO_LINGER
    *  SocketOptions.SO_RCVBUF
@@ -232,7 +232,7 @@ public final class VMPlainSocketImpl
         se.initCause(ioe);
         throw se;
       }
-    
+
     switch (optionId)
       {
         case SocketOptions.IP_MULTICAST_LOOP:
@@ -242,20 +242,20 @@ public final class VMPlainSocketImpl
         case SocketOptions.SO_REUSEADDR:
         case SocketOptions.TCP_NODELAY:
           return Boolean.valueOf(value != 0);
-          
+
         case SocketOptions.IP_TOS:
         case SocketOptions.SO_LINGER:
         case SocketOptions.SO_RCVBUF:
         case SocketOptions.SO_SNDBUF:
         case SocketOptions.SO_TIMEOUT:
           return new Integer(value);
-          
+
         default:
           throw new SocketException("getting option " + optionId +
                                     " not supported here");
       }
   }
-  
+
   private static native int getOption(int fd, int id) throws SocketException;
 
   /**
@@ -264,7 +264,7 @@ public final class VMPlainSocketImpl
    *
    * The optionId is provided to make it possible that the native
    * implementation may do something different depending on whether
-   * the value is SocketOptions.IP_MULTICAST_IF or 
+   * the value is SocketOptions.IP_MULTICAST_IF or
    * SocketOptions.IP_MULTICAST_IF2.
    */
   public InetAddress getMulticastInterface(int optionId)
@@ -284,7 +284,7 @@ public final class VMPlainSocketImpl
 
   private static native InetAddress getMulticastInterface(int fd,
                                                           int optionId);
-  
+
   /**
    * Binds this socket to the given local address and port.
    *
@@ -306,11 +306,11 @@ public final class VMPlainSocketImpl
     else
       throw new SocketException ("unsupported address type");
   }
-  
+
   /**
    * Native bind function for IPv4 addresses. The addr array must be
    * exactly four bytes long.
-   * 
+   *
    * VMs without native support need not implement this.
    *
    * @param fd The native file descriptor integer.
@@ -320,11 +320,11 @@ public final class VMPlainSocketImpl
    */
   private static native void bind(int fd, byte[] addr, int port)
     throws IOException;
-  
+
   /**
    * Native bind function for IPv6 addresses. The addr array must be
    * exactly sixteen bytes long.
-   * 
+   *
    * VMs without native support need not implement this.
    *
    * @param fd The native file descriptor integer.
@@ -346,7 +346,7 @@ public final class VMPlainSocketImpl
   {
     listen(nfd.getNativeFD(), backlog);
   }
-  
+
   /**
    * Native listen function. VMs without native support need not implement
    * this.
@@ -366,11 +366,11 @@ public final class VMPlainSocketImpl
     else
       throw new IllegalArgumentException("unknown address type");
   }
-  
+
   private static native void join(int fd, byte[] addr) throws IOException;
-  
+
   private static native void join6(int fd, byte[] addr) throws IOException;
-  
+
   public void leave(InetAddress group) throws IOException
   {
     if (group instanceof Inet4Address)
@@ -380,16 +380,16 @@ public final class VMPlainSocketImpl
     else
       throw new IllegalArgumentException("unknown address type");
   }
-  
+
   private static native void leave(int fd, byte[] addr) throws IOException;
-  
+
   private static native void leave6(int fd, byte[] addr) throws IOException;
 
   public void joinGroup(InetSocketAddress addr, NetworkInterface netif)
     throws IOException
   {
     InetAddress address = addr.getAddress();
-    
+
     if (address instanceof Inet4Address)
       joinGroup(nfd.getNativeFD(), address.getAddress(),
                 netif != null ? netif.getName() : null);
@@ -399,13 +399,13 @@ public final class VMPlainSocketImpl
     else
       throw new IllegalArgumentException("unknown address type");
   }
-  
+
   private static native void joinGroup(int fd, byte[] addr, String ifname)
     throws IOException;
-  
+
   private static native void joinGroup6(int fd, byte[] addr, String ifname)
     throws IOException;
-  
+
   public void leaveGroup(InetSocketAddress addr, NetworkInterface netif)
     throws IOException
   {
@@ -419,42 +419,42 @@ public final class VMPlainSocketImpl
     else
       throw new IllegalArgumentException("unknown address type");
   }
-  
+
   private static native void leaveGroup(int fd, byte[] addr, String ifname)
     throws IOException;
-  
+
   private static native void leaveGroup6(int fd, byte[] addr, String ifname)
     throws IOException;
-  
-  
+
+
   public void shutdownInput() throws IOException
   {
     shutdownInput(nfd.getNativeFD());
   }
-  
+
   private static native void shutdownInput(int native_fd) throws IOException;
-  
+
   public void shutdownOutput() throws IOException
   {
     shutdownOutput(nfd.getNativeFD());
   }
-  
+
   private static native void shutdownOutput(int native_fd) throws IOException;
-  
+
   public void sendUrgentData(int data) throws IOException
   {
     sendUrgentData(nfd.getNativeFD(), data);
   }
-  
+
   private static native void sendUrgentData(int natfive_fd, int data) throws IOException;
-  
+
   public void close() throws IOException
   {
     nfd.close();
   }
-  
+
   // Inner classes.
-  
+
   /**
    * Our wrapper for the native file descriptor. In this implementation,
    * it is a simple wrapper around {@link VMChannel.State}, to simplify
@@ -463,38 +463,38 @@ public final class VMPlainSocketImpl
   public final class State
   {
     private VMChannel.State channelFd;
-    
+
     State()
     {
       channelFd = null;
     }
-    
+
     public boolean isValid()
     {
       if (channelFd != null)
         return channelFd.isValid();
       return false;
     }
-    
+
     public int getNativeFD() throws IOException
     {
       return channelFd.getNativeFD();
     }
-    
+
     public void setChannelFD(final VMChannel.State nfd) throws IOException
     {
       if (this.channelFd != null && this.channelFd.isValid())
         throw new IOException("file descriptor already initialized");
       this.channelFd = nfd;
     }
-    
+
     public void close() throws IOException
     {
       if (channelFd == null)
         throw new IOException("invalid file descriptor");
       channelFd.close();
     }
-    
+
     protected void finalize() throws Throwable
     {
       try
@@ -509,4 +509,3 @@ public final class VMPlainSocketImpl
     }
   }
 }
-

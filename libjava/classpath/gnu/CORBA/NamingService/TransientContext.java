@@ -77,7 +77,7 @@ public class TransientContext
    * Use serial version UID for interoperability.
    */
   private static final long serialVersionUID = 2;
-  
+
   /**
    * The already named contexts.
    */
@@ -87,7 +87,7 @@ public class TransientContext
    * The already named objects.
    */
   protected final NamingMap named_objects;
-  
+
   /**
    * Create the naming conetxt with default (transient) naming maps.
    */
@@ -95,10 +95,10 @@ public class TransientContext
   {
     this(new NamingMap(), new NamingMap());
   }
-  
+
   /**
    * Create the naming conetxt with the two provided naming maps.
-   * 
+   *
    * @param context_map the map for contexts
    * @param object_map the map for objectss
    */

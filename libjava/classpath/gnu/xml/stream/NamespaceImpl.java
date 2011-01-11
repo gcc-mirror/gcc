@@ -1,4 +1,4 @@
-/* NamespaceImpl.java -- 
+/* NamespaceImpl.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -109,7 +109,7 @@ public class NamespaceImpl
   {
     return (prefix == null || "".equals(prefix));
   }
-  
+
   public void writeAsEncodedUnicode(Writer writer)
     throws XMLStreamException
   {
@@ -133,6 +133,5 @@ public class NamespaceImpl
         throw e2;
       }
   }
-  
-}
 
+}

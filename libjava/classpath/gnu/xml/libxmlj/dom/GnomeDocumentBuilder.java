@@ -1,4 +1,4 @@
-/* GnomeDocumentBuilder.java - 
+/* GnomeDocumentBuilder.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -89,7 +89,7 @@ public class GnomeDocumentBuilder
   {
     this(true, false, false);
   }
-  
+
   /**
    * Constructs a new document builder.
    * @param validate whether to validate during parsing
@@ -151,7 +151,7 @@ public class GnomeDocumentBuilder
                        true, //entityResolver != null,
                        errorHandler != null);
   }
-  
+
   private native Document parseStream(InputStream in,
                                       byte[] detectBuffer,
                                       String publicId,
@@ -162,7 +162,7 @@ public class GnomeDocumentBuilder
                                       boolean expandEntities,
                                       boolean entityResolver,
                                       boolean errorHandler);
-  
+
   public void setEntityResolver(EntityResolver resolver)
   {
     entityResolver = resolver;
@@ -186,7 +186,7 @@ public class GnomeDocumentBuilder
       {
         name = name.substring(1);
       }
-    
+
     if ("xml".equals(name) || "core".equals(name))
       {
         return (version == null ||
@@ -194,7 +194,7 @@ public class GnomeDocumentBuilder
                 "1.0".equals(version) ||
                 "2.0".equals(version) ||
                 "3.0".equals(version));
-      
+
       }
     else if ("ls".equals(name) || "ls-async".equals(name))
       {
@@ -210,7 +210,7 @@ public class GnomeDocumentBuilder
       {
         return (version == null ||
                 "".equals(version) ||
-		"2.0".equals(version));
+                "2.0".equals(version));
       }
     else if ("xpath".equals(name))
       {
@@ -220,7 +220,7 @@ public class GnomeDocumentBuilder
       }
     return false;
   }
-  
+
   // DOM Level 3
 
   public Object getFeature(String feature, String version)
@@ -231,25 +231,25 @@ public class GnomeDocumentBuilder
       }
     return null;
   }
-  
+
   public native Document createDocument(String namespaceURI,
                                         String qualifiedName,
                                         DocumentType doctype);
-  
+
   public DocumentType createDocumentType(String qualifiedName,
                                          String publicId,
                                          String systemId)
   {
     return new StandaloneDocumentType(qualifiedName, publicId, systemId);
   }
-  
+
   // Callback hooks from JNI
-  
+
   private void setDocumentLocator(Object ctx, Object loc)
   {
     // ignore
   }
-  
+
   private InputStream resolveEntity(String publicId, String systemId,
                                     String base)
     throws SAXException, IOException
@@ -270,7 +270,7 @@ public class GnomeDocumentBuilder
       }
     return in;
   }
-  
+
   private void warning(String message,
                        int lineNumber,
                        int columnNumber,

@@ -57,7 +57,7 @@ import java.io.Serializable;
  * [ 1 ]   [  0   0   1  ] [ 1 ]   [          1          ]
  * </pre>
  * The bottom row of the matrix is constant, so a transform can be uniquely
- * represented (as in {@link #toString()}) by 
+ * represented (as in {@link #toString()}) by
  * "[[m00, m01, m02], [m10, m11, m12]]".
  *
  * @author Tom Tromey (tromey@cygnus.com)
@@ -450,7 +450,7 @@ public class AffineTransform implements Cloneable, Serializable
    * tx.translate(-x, -y);
    * </pre>
    *
-   * <p>The resulting matrix is: 
+   * <p>The resulting matrix is:
    * <pre>
    * [ cos(theta) -sin(theta) x-x*cos+y*sin ]
    * [ sin(theta)  cos(theta) y-x*sin-y*cos ]
@@ -521,7 +521,7 @@ public class AffineTransform implements Cloneable, Serializable
    * TYPE_*_ROTATIONs, and the mutually exclusive TYPE_*_SCALEs.
    *
    * @return The type.
-   * 
+   *
    * @see #TYPE_IDENTITY
    * @see #TYPE_TRANSLATION
    * @see #TYPE_UNIFORM_SCALE
@@ -825,7 +825,7 @@ public class AffineTransform implements Cloneable, Serializable
    * tx.translate(-x, -y);
    * </pre>
    *
-   * <p>The resulting matrix is: 
+   * <p>The resulting matrix is:
    * <pre>
    * [ cos(theta) -sin(theta) x-x*cos+y*sin ]
    * [ sin(theta)  cos(theta) y-x*sin-y*cos ]
@@ -1002,19 +1002,19 @@ public class AffineTransform implements Cloneable, Serializable
    * if getDeterminant() has a non-zero value.
    *
    * The inverse is calculated as:
-   * 
+   *
    * <pre>
    *
    * Let A be the matrix for which we want to find the inverse:
    *
    * A = [ m00 m01 m02 ]
    *     [ m10 m11 m12 ]
-   *     [ 0   0   1   ] 
+   *     [ 0   0   1   ]
    *
    *
-   *                 1    
-   * inverse (A) =  ---   x  adjoint(A) 
-   *                det 
+   *                 1
+   * inverse (A) =  ---   x  adjoint(A)
+   *                det
    *
    *
    *
@@ -1043,14 +1043,14 @@ public class AffineTransform implements Cloneable, Serializable
     double det = getDeterminant();
     if (det == 0)
       throw new NoninvertibleTransformException("can't invert transform");
-    
+
     double im00 = m11 / det;
     double im10 = -m10 / det;
     double im01 = -m01 / det;
     double im11 = m00 / det;
     double im02 = (m01 * m12 - m02 * m11) / det;
     double im12 = (-m00 * m12 + m10 * m02) / det;
-    
+
     return new AffineTransform (im00, im10, im01, im11, im02, im12);
   }
 
@@ -1335,13 +1335,13 @@ public class AffineTransform implements Cloneable, Serializable
    * which only stores points in float precision.
    *
    * @param src the shape source to transform
-   * @return the shape, transformed by this, <code>null</code> if src is 
+   * @return the shape, transformed by this, <code>null</code> if src is
    * <code>null</code>.
    * @see GeneralPath#transform(AffineTransform)
    */
   public Shape createTransformedShape(Shape src)
   {
-    if(src == null) 
+    if(src == null)
       return null;
     GeneralPath p = new GeneralPath(src);
     p.transform(this);
@@ -1413,12 +1413,12 @@ public class AffineTransform implements Cloneable, Serializable
    */
   public int hashCode()
   {
-    long l = Double.doubleToLongBits(m00); 
-    l = l * 31 + Double.doubleToLongBits(m01); 
-    l = l * 31 + Double.doubleToLongBits(m02); 
-    l = l * 31 + Double.doubleToLongBits(m10); 
-    l = l * 31 + Double.doubleToLongBits(m11); 
-    l = l * 31 + Double.doubleToLongBits(m12); 
+    long l = Double.doubleToLongBits(m00);
+    l = l * 31 + Double.doubleToLongBits(m01);
+    l = l * 31 + Double.doubleToLongBits(m02);
+    l = l * 31 + Double.doubleToLongBits(m10);
+    l = l * 31 + Double.doubleToLongBits(m11);
+    l = l * 31 + Double.doubleToLongBits(m12);
     return (int) ((l >> 32) ^ l);
   }
 

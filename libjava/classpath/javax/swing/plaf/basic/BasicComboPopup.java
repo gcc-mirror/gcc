@@ -483,7 +483,7 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected void installListListeners()
   {
-    // mouse listener listening to mouse events occuring in the 
+    // mouse listener listening to mouse events occuring in the
     // combo box's list of items.
     listMouseListener = createListMouseListener();
     list.addMouseListener(listMouseListener);
@@ -613,7 +613,7 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected void autoScrollUp()
   {
-    // scroll up the scroll bar to make the item above visible    
+    // scroll up the scroll bar to make the item above visible
     JScrollBar scrollbar = scroller.getVerticalScrollBar();
     int scrollToNext = list.getScrollableUnitIncrement(super.getBounds(),
                                                        SwingConstants.VERTICAL,
@@ -621,8 +621,8 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
 
     scrollbar.setValue(scrollbar.getValue() - scrollToNext);
 
-    // If we haven't reached the begging of the combo box's list of items, 
-    // then highlight next element above currently highlighted element	
+    // If we haven't reached the begging of the combo box's list of items,
+    // then highlight next element above currently highlighted element
     if (list.getSelectedIndex() != 0)
       list.setSelectedIndex(list.getSelectedIndex() - 1);
   }
@@ -633,7 +633,7 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
    */
   protected void autoScrollDown()
   {
-    // scroll scrollbar down to make next item visible    
+    // scroll scrollbar down to make next item visible
     JScrollBar scrollbar = scroller.getVerticalScrollBar();
     int scrollToNext = list.getScrollableUnitIncrement(super.getBounds(),
                                                        SwingConstants.VERTICAL,
@@ -713,12 +713,12 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
 
     for (int i = 0; i < maxRowCount; i++)
       {
-	Component comp = rend.getListCellRendererComponent(list,
-	                                                   comboBox.getModel()
-	                                                           .getElementAt(i),
-	                                                   -1, false, false);
-	Dimension dim = comp.getPreferredSize();
-	totalHeight += dim.height;
+        Component comp = rend.getListCellRendererComponent(list,
+                                                           comboBox.getModel()
+                                                                   .getElementAt(i),
+                                                           -1, false, false);
+        Dimension dim = comp.getPreferredSize();
+        totalHeight += dim.height;
       }
 
     return totalHeight == 0 ? 100 : totalHeight;
@@ -995,9 +995,9 @@ public class BasicComboPopup extends JPopupMenu implements ComboPopup
     {
       if (e.getPropertyName().equals("renderer"))
         {
-	  list.setCellRenderer(comboBox.getRenderer());
-	  if (isVisible())
-	    hide();
+          list.setCellRenderer(comboBox.getRenderer());
+          if (isVisible())
+            hide();
         }
       if (e.getPropertyName().equals("model"))
         {

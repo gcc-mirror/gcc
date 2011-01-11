@@ -59,7 +59,7 @@ import org.omg.CORBA.BAD_OPERATION;
 public abstract class UnknownEncodingHelper
 {
   /**
-   * Create the UnknownEncoding typecode (structure, 
+   * Create the UnknownEncoding typecode (structure,
    * named "UnknownEncoding").
    */
   public static TypeCode type()
@@ -68,11 +68,11 @@ public abstract class UnknownEncodingHelper
     StructMember[] members = new StructMember[0];
     return
     orb.create_exception_tc (id(), "UnknownEncoding", members);
-        
-  } 
+
+  }
 
   /* Every user exception with no user defined fields can use EmptyExceptionHolder */
-  
+
   /**
    * Insert the UnknownEncoding into the given Any.
    *
@@ -100,10 +100,10 @@ public abstract class UnknownEncodingHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("UnknownEncoding expected");
         bad.initCause(cex);
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         throw bad;
       }
-  }  
+  }
 
   /**
    * Get the UnknownEncoding repository id.
@@ -113,7 +113,7 @@ public abstract class UnknownEncodingHelper
   public static String id()
   {
     return "IDL:omg.org/IOP/CodecFactory/UnknownEncoding:1.0";
-  }  
+  }
 
   /**
    * Read the exception from the CDR intput stream.
@@ -123,10 +123,10 @@ public abstract class UnknownEncodingHelper
   public static UnknownEncoding read(InputStream input)
   {
     // Read the exception repository id.
-    String id = input.read_string();    
+    String id = input.read_string();
     UnknownEncoding value = new UnknownEncoding(id);
-    
-    return value;  	  
+
+    return value;
   }
 
   /**

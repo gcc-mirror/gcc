@@ -163,7 +163,7 @@ final class VMSystem
    * </p>
    *
    * @return the time of a system timer in nanoseconds.
-   * @since 1.5 
+   * @since 1.5
    */
   public static native long nanoTime();
 
@@ -178,18 +178,18 @@ final class VMSystem
   /**
    * Helper method which creates the standard input stream.
    * VM implementors may choose to construct these streams differently.
-   * This method can also return null if the stream is created somewhere 
+   * This method can also return null if the stream is created somewhere
    * else in the VM startup sequence.
    */
   static InputStream makeStandardInputStream()
   {
     return new BufferedInputStream(new FileInputStream(FileDescriptor.in));
   }
-  
+
   /**
    * Helper method which creates the standard output stream.
    * VM implementors may choose to construct these streams differently.
-   * This method can also return null if the stream is created somewhere 
+   * This method can also return null if the stream is created somewhere
    * else in the VM startup sequence.
    */
   static PrintStream makeStandardOutputStream()
@@ -200,14 +200,14 @@ final class VMSystem
   /**
    * Helper method which creates the standard error stream.
    * VM implementors may choose to construct these streams differently.
-   * This method can also return null if the stream is created somewhere 
+   * This method can also return null if the stream is created somewhere
    * else in the VM startup sequence.
    */
   static PrintStream makeStandardErrorStream()
   {
     return new PrintStream(new BufferedOutputStream(new FileOutputStream(FileDescriptor.err)), true);
   }
-  
+
   /**
    * Gets the value of an environment variable.
    * Always returning null is a valid (but not very useful) implementation.

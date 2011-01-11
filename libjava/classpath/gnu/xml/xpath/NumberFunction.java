@@ -1,4 +1,4 @@
-/* NumberFunction.java -- 
+/* NumberFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -99,5 +99,5 @@ final class NumberFunction
   {
     return "number(" + arg + ")";
   }
-  
+
 }

@@ -47,19 +47,19 @@ public abstract class GstDataLine
     implements DataLine
 {
   public static final int DEFAULT_BUFFER_SIZE = 1024;
-  
+
   /** Represents if this Line is opened or not.  */
-  protected Boolean open = false; 
-  
+  protected Boolean open = false;
+
   private AudioFormat format = null;
   private int bufferSize = 0;
-  
+
   public GstDataLine(AudioFormat format)
   {
     this.format = format;
     this.bufferSize = DEFAULT_BUFFER_SIZE;
   }
-  
+
   public GstDataLine(AudioFormat format, int bufferSize)
   {
     this.format = format;
@@ -81,7 +81,7 @@ public abstract class GstDataLine
     // TODO Auto-generated method stub
     return 0;
   }
-  
+
   public void addLineListener(LineListener listener)
   {
     // TODO Auto-generated method stub
@@ -124,7 +124,7 @@ public abstract class GstDataLine
   }
 
   /* protected methods for subclasses */
-  
+
   /**
    * @param open the open to set
    */

@@ -1,5 +1,5 @@
 /* DefaultDaemonThreadFactory.java -- Factory for Deamon Threads.
- 
+
  Copyright (C) 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ import java.util.concurrent.ThreadFactory;;
  * Create a new thread using all the default settings as returned by
  * <code>Executors.defaultThreadFactory()</code> plus calling
  * <code>thread.setDaemon(true)</code> on the newly created thread.
- * 
+ *
  * @author Mario Torre <neugens@limasoftware.net>
  */
 public class DefaultDaemonThreadFactory implements ThreadFactory

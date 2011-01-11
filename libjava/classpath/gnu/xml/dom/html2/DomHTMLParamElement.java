@@ -1,4 +1,4 @@
-/* DomHTMLParamElement.java -- 
+/* DomHTMLParamElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLParamElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public String getType()
   {
     return getHTMLAttribute("type");
@@ -74,7 +74,7 @@ public class DomHTMLParamElement
   {
     setHTMLAttribute("type", type);
   }
-  
+
   public String getValue()
   {
     return getHTMLAttribute("value");
@@ -84,7 +84,7 @@ public class DomHTMLParamElement
   {
     setHTMLAttribute("value", value);
   }
-  
+
   public String getValueType()
   {
     return getHTMLAttribute("valuetype");
@@ -94,6 +94,5 @@ public class DomHTMLParamElement
   {
     setHTMLAttribute("valuetype", valueType);
   }
-  
-}
 
+}

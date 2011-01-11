@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -113,7 +113,7 @@ public class DocTranslet implements ErrorListener {
    private ClassLoader classLoader;
    private Map transformerMap = new java.util.HashMap(); //WeakHashMap();
    private DocTransletOptions options;
-   
+
    protected DocTranslet(String mainResourceFilename,
                          ClassLoader classLoader)
       throws DocTransletConfigurationException {
@@ -155,14 +155,14 @@ public class DocTranslet implements ErrorListener {
 
       try{
          URL mainResourceURL = classLoader == null ?
-	     ClassLoader.getSystemResource(mainResourceFilename):
-	     classLoader.getResource(mainResourceFilename);
+             ClassLoader.getSystemResource(mainResourceFilename):
+             classLoader.getResource(mainResourceFilename);
 
          if (null == mainResourceURL) {
             throw new DocTransletException("Cannot find resource '" + mainResourceFilename + "'");
          }
 
-         
+
          Map parameters = new HashMap();
          parameters.put("gjdoc.xmldoclet.version", Driver.XMLDOCLET_VERSION);
 
@@ -188,13 +188,13 @@ public class DocTranslet implements ErrorListener {
                                                  parameters);
 
          reporter.printNotice("Running DocTranslet...");
-            
-         TransformerFactory transformerFactory 
+
+         TransformerFactory transformerFactory
             = TransformerFactory.newInstance();
 
          transformerFactory.setErrorListener(this);
 
-         boolean isLibxmlJ 
+         boolean isLibxmlJ
             = transformerFactory.getClass().getName().equals("gnu.xml.libxmlj.transform.TransformerFactoryImpl");
 
          for (Iterator it = outputFileList.iterator(); it.hasNext(); ) {
@@ -234,7 +234,7 @@ public class DocTranslet implements ErrorListener {
             }
 
             if (null != fileInfo.getSource()) {
-            
+
                reporter.printNotice("Copying " + fileInfo.getComment() + "...");
                InputStream in = new URL(mainResourceURL, fileInfo.getSource()).openStream();
                FileOutputStream out = new FileOutputStream(targetFile.getAbsolutePath());
@@ -243,14 +243,14 @@ public class DocTranslet implements ErrorListener {
                out.close();
             }
             else {
-            
+
                reporter.printNotice("Generating " + fileInfo.getComment() + "...");
 
                String pathToRoot = "";
                for (File file = getParentFile(targetFile); !equalsFile(file, targetDirectory); file = getParentFile(file)) {
                   pathToRoot += "../";
                }
-            
+
                StreamResult out = new StreamResult(targetFile.getAbsolutePath());
 
                StreamSource in = new StreamSource(new File(xmlSourceDirectory, "index.xml").getAbsolutePath());
@@ -291,60 +291,60 @@ public class DocTranslet implements ErrorListener {
          }
       }
       catch (MalformedURLException e) {
-	 throw new DocTransletException(e);
+         throw new DocTransletException(e);
       }
       catch (TransformerFactoryConfigurationError e) {
-	 throw new DocTransletException(e);
+         throw new DocTransletException(e);
       }
       catch (TransformerException e) {
-	 throw new DocTransletException(e.getMessageAndLocation(), e);
+         throw new DocTransletException(e.getMessageAndLocation(), e);
       }
       catch (IOException e) {
-	 throw new DocTransletException(e);
+         throw new DocTransletException(e);
       }
       finally {
          System.setErr(err);
       }
    }
 
-   private List getOutputFileList(URL resource, File xmlSourceDirectory, Map parameters) 
+   private List getOutputFileList(URL resource, File xmlSourceDirectory, Map parameters)
       throws DocTransletException {
 
       try {
-	 List result;
+         List result;
 
-	 OutputStream out = new ByteArrayOutputStream();
+         OutputStream out = new ByteArrayOutputStream();
 
          DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
          DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
          Document document = documentBuilder.newDocument();
-         DOMResult domResult = new DOMResult(document);         
+         DOMResult domResult = new DOMResult(document);
          {
             StreamSource source = new StreamSource(resource.toExternalForm());
-            
+
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = (Transformer)transformerFactory.newTransformer(source);
-            
+
             transformer.clearParameters();
             for (Iterator pit = parameters.keySet().iterator(); pit.hasNext(); ) {
                String key = (String)pit.next();
                String value = (String)parameters.get(key);
                transformer.setParameter(key, value);
             }
-            
-            transformer.transform(new StreamSource(new File(xmlSourceDirectory, 
-                                                            "index.xml").getAbsolutePath()), 
+
+            transformer.transform(new StreamSource(new File(xmlSourceDirectory,
+                                                            "index.xml").getAbsolutePath()),
                                   domResult);
          }
 
-         {	 
+         {
             NodeList nodeList = document.getElementsByTagName("outputfile");
             result = new ArrayList(nodeList.getLength());
 
             for (int i=0; i<nodeList.getLength(); ++i) {
                Element elem = (Element)nodeList.item(i);
                String name    = getTextContent(elem.getElementsByTagName("name").item(0));
-               String source  
+               String source
                   = (null != elem.getElementsByTagName("source").item(0))
                   ? getTextContent(elem.getElementsByTagName("source").item(0))
                   : null;
@@ -368,13 +368,13 @@ public class DocTranslet implements ErrorListener {
          return result;
       }
       catch (TransformerFactoryConfigurationError e) {
-	 throw new DocTransletException(e);
+         throw new DocTransletException(e);
       }
       catch (TransformerException e) {
-	 throw new DocTransletException(e.getMessageAndLocation(), e);
+         throw new DocTransletException(e.getMessageAndLocation(), e);
       }
       catch (ParserConfigurationException e) {
-	 throw new DocTransletException(e);
+         throw new DocTransletException(e);
       }
    }
 
@@ -399,36 +399,36 @@ public class DocTranslet implements ErrorListener {
    }
 
 
-   public static DocTranslet fromClasspath(String resourceName) 
+   public static DocTranslet fromClasspath(String resourceName)
       throws DocTransletConfigurationException {
 
-      return new DocTranslet(resourceName, 
+      return new DocTranslet(resourceName,
                              DocTranslet.class.getClassLoader());
    }
 
-   public static DocTranslet fromJarFile(File jarFile) 
+   public static DocTranslet fromJarFile(File jarFile)
       throws DocTransletConfigurationException {
 
       try {
          JarFile inputJarFile = new JarFile(jarFile, false, JarFile.OPEN_READ);
-      
+
          Manifest manifest = inputJarFile.getManifest();
-         
+
          if (null == manifest) {
-         
+
             throw new DocTransletConfigurationException("Jar file '" + jarFile + "' doesn't contain a manifest.");
          }
-         
+
          Attributes mainAttributes = manifest.getMainAttributes();
-      
+
          String docTransletMainEntry = mainAttributes.getValue("doctranslet-main-entry");
 
          if (null == docTransletMainEntry) {
-            
+
             throw new DocTransletConfigurationException("Manifest in Jar file '" + jarFile + "' doesn't contain a doctranslet-main-entry specification.");
          }
-         
-         return new DocTranslet(docTransletMainEntry, 
+
+         return new DocTranslet(docTransletMainEntry,
                                 new JarClassLoader(inputJarFile));
       }
       catch (IOException e) {

@@ -44,7 +44,7 @@ import java.io.IOException;
 
 /**
  * Wrapper for an void value.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public class VoidValue
@@ -57,10 +57,10 @@ public class VoidValue
   {
     super(JdwpConstants.Tag.VOID);
   }
-  
+
   /**
    * Return an object representing this type
-   * 
+   *
    * @return an Object represntation of this value
    */
   @Override
@@ -71,11 +71,11 @@ public class VoidValue
 
   /**
    * Write the wrapped void to the given DataOutputStream.
-   * 
+   *
    * @param os the output stream to write to
    */
   @Override
-  protected void write(DataOutputStream os) 
+  protected void write(DataOutputStream os)
     throws IOException
   {
   }

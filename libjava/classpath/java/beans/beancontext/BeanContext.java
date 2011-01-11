@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -166,107 +166,107 @@ import java.util.Collection;
  */
 
 public interface BeanContext
-	extends Collection, BeanContextChild, Visibility, DesignMode {
+        extends Collection, BeanContextChild, Visibility, DesignMode {
 
-	/**
-	 * The global lock on changing any BeanContext hierarchy.
-	 * It kinda sucks that there is only one lock, since there can be
-	 * multiple hierarchies.  Oh well, I didn't design, I just code.
-	 * <P>
-	 *
-	 * Methods that must (or do) synchronize on the global lock:
-	 * <BR>
-	 * <UL>
-	 *   <LI>
-	 *     Implementors of <CODE>BeanContext.add()</CODE> and <code>addAll()</code>
-	 *   </LI>
-	 * </UL>
-	 * @fixme fill in the rest of the methods which use the global lock.
-	 */
-	Object globalHierarchyLock = new Object();
+        /**
+         * The global lock on changing any BeanContext hierarchy.
+         * It kinda sucks that there is only one lock, since there can be
+         * multiple hierarchies.  Oh well, I didn't design, I just code.
+         * <P>
+         *
+         * Methods that must (or do) synchronize on the global lock:
+         * <BR>
+         * <UL>
+         *   <LI>
+         *     Implementors of <CODE>BeanContext.add()</CODE> and <code>addAll()</code>
+         *   </LI>
+         * </UL>
+         * @fixme fill in the rest of the methods which use the global lock.
+         */
+        Object globalHierarchyLock = new Object();
 
-	/** 
-	 * Instantiate a Bean using this Bean's <code>ClassLoader</code>
-	 * and this <code>BeanContext</code> as the parent.
-	 * <P>
-	 *
-	 * This method exists mainly so that <code>BeanContext</code>
-	 * implementations can perform extra actions on Beans that are
-	 * created within them.
-	 *
-	 * @param beanName the name of the bean to instantiate
-	 * @return the created Bean
-	 *
-	 * @see java.beans.Beans#instantiate(java.lang.ClassLoader,java.lang.String)
-	 * @see java.beans.Beans#instantiate(java.lang.ClassLoader,java.lang.String,java.beans.beancontext.BeanContext)
-	 * @exception IOException if there is an I/O problem during
-	 *            instantiation.
-	 * @exception ClassNotFoundException if a serialized Bean's class
-	 *            is not found.
-	 */
-	Object instantiateChild(String beanName)
+        /**
+         * Instantiate a Bean using this Bean's <code>ClassLoader</code>
+         * and this <code>BeanContext</code> as the parent.
+         * <P>
+         *
+         * This method exists mainly so that <code>BeanContext</code>
+         * implementations can perform extra actions on Beans that are
+         * created within them.
+         *
+         * @param beanName the name of the bean to instantiate
+         * @return the created Bean
+         *
+         * @see java.beans.Beans#instantiate(java.lang.ClassLoader,java.lang.String)
+         * @see java.beans.Beans#instantiate(java.lang.ClassLoader,java.lang.String,java.beans.beancontext.BeanContext)
+         * @exception IOException if there is an I/O problem during
+         *            instantiation.
+         * @exception ClassNotFoundException if a serialized Bean's class
+         *            is not found.
+         */
+        Object instantiateChild(String beanName)
                         throws IOException,
                                ClassNotFoundException;
 
-	/**
-	 * Get a resource.  The <code>BeanContext</code> will typically
-	 * call <code>ClassLoader.getResource()</code>, but may do it any
-	 * way it wants to.  This allows a <code>BeanContext</code> to
-	 * have its own set of resources separate from the rest of the
-	 * system.
-	 * <P>
-	 *
-	 * Beans should call this method on their parent rather than the
-	 * associated <code>ClassLoader</code> method.
-	 * <P>
-	 *
-	 * I am assuming, but am not entirely sure, that if a
-	 * <code>BeanContext</code> cannot find a resource, its
-	 * responsibility is to call the <code>getResource</code> method
-	 * of its parent <code>BeanContext</code>.
-	 *
-	 * @return a URL to the requested resource.
-	 * @param resourceName the name of the resource requested.
-	 * @param requestor a reference to the child requesting the resource.
-	 * @see java.lang.ClassLoader#getResource(java.lang.String)
-	 */
-	URL getResource(String resourceName, BeanContextChild requestor);
+        /**
+         * Get a resource.  The <code>BeanContext</code> will typically
+         * call <code>ClassLoader.getResource()</code>, but may do it any
+         * way it wants to.  This allows a <code>BeanContext</code> to
+         * have its own set of resources separate from the rest of the
+         * system.
+         * <P>
+         *
+         * Beans should call this method on their parent rather than the
+         * associated <code>ClassLoader</code> method.
+         * <P>
+         *
+         * I am assuming, but am not entirely sure, that if a
+         * <code>BeanContext</code> cannot find a resource, its
+         * responsibility is to call the <code>getResource</code> method
+         * of its parent <code>BeanContext</code>.
+         *
+         * @return a URL to the requested resource.
+         * @param resourceName the name of the resource requested.
+         * @param requestor a reference to the child requesting the resource.
+         * @see java.lang.ClassLoader#getResource(java.lang.String)
+         */
+        URL getResource(String resourceName, BeanContextChild requestor);
 
-	/**
-	 * Get a resource as a stream.  The <code>BeanContext</code> will
-	 * typically call <code>ClassLoader.getResourceAsStream()</code>,
-	 * but may do it any way it wants to.  This allows a
-	 * <code>BeanContext</code>'s children to have their own set of
-	 * resources separate from the rest of the system.
-	 * <P>
-	 *
-	 * Beans should call this method on their parent rather than the
-	 * associated <code>ClassLoader</code> method.
-	 * <P>
-	 *
-	 * I am assuming, but am not entirely sure, that if a
-	 * <code>BeanContext</code> cannot find a resource, its
-	 * responsibility is to call the <code>getResourceAsStream</code>
-	 * method of its parent <code>BeanContext</code>.
-	 *
-	 * @return the requested resource as a stream.
-	 * @param resourceName the name of the resource requested.
-	 * @param requestor a reference to the child requesting the resource.
-	 * @see java.lang.ClassLoader#getResourceAsStream(java.lang.String)
-	 */
-	InputStream getResourceAsStream(String resourceName, BeanContextChild requestor);
+        /**
+         * Get a resource as a stream.  The <code>BeanContext</code> will
+         * typically call <code>ClassLoader.getResourceAsStream()</code>,
+         * but may do it any way it wants to.  This allows a
+         * <code>BeanContext</code>'s children to have their own set of
+         * resources separate from the rest of the system.
+         * <P>
+         *
+         * Beans should call this method on their parent rather than the
+         * associated <code>ClassLoader</code> method.
+         * <P>
+         *
+         * I am assuming, but am not entirely sure, that if a
+         * <code>BeanContext</code> cannot find a resource, its
+         * responsibility is to call the <code>getResourceAsStream</code>
+         * method of its parent <code>BeanContext</code>.
+         *
+         * @return the requested resource as a stream.
+         * @param resourceName the name of the resource requested.
+         * @param requestor a reference to the child requesting the resource.
+         * @see java.lang.ClassLoader#getResourceAsStream(java.lang.String)
+         */
+        InputStream getResourceAsStream(String resourceName, BeanContextChild requestor);
 
-	/**
-	 * Add a listener on changes to the membership of this
-	 * <code>BeanContext</code> object.
-	 * @param listener the listener to add.
-	 */
-	void addBeanContextMembershipListener(BeanContextMembershipListener listener);
+        /**
+         * Add a listener on changes to the membership of this
+         * <code>BeanContext</code> object.
+         * @param listener the listener to add.
+         */
+        void addBeanContextMembershipListener(BeanContextMembershipListener listener);
 
-	/**
-	 * Remove a listener on changes to the membership of this
-	 * <code>BeanContext</code> object.
-	 * @param listener the listener to remove.
-	 */
-	void removeBeanContextMembershipListener(BeanContextMembershipListener listener);
+        /**
+         * Remove a listener on changes to the membership of this
+         * <code>BeanContext</code> object.
+         * @param listener the listener to remove.
+         */
+        void removeBeanContextMembershipListener(BeanContextMembershipListener listener);
 }

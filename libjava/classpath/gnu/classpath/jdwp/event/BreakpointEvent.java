@@ -62,7 +62,7 @@ public class BreakpointEvent
 
   // Location where breakpoint occurred
   private Location _location;
-  
+
   //object instance
   private Object _instance;
 

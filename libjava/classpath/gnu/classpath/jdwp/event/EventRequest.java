@@ -88,13 +88,13 @@ public class EventRequest
   /**
    * User-defined event
    */
-  public static final byte EVENT_USER_DEFINED = 
+  public static final byte EVENT_USER_DEFINED =
     JdwpConstants.EventKind.USER_DEFINED;
 
   /**
    * Thread start event
    */
-  public static final byte EVENT_THREAD_START = 
+  public static final byte EVENT_THREAD_START =
     JdwpConstants.EventKind.THREAD_START;
 
   /**
@@ -142,7 +142,7 @@ public class EventRequest
   /**
    * Method exit event
    */
-  public static final byte EVENT_METHOD_EXIT = 
+  public static final byte EVENT_METHOD_EXIT =
     JdwpConstants.EventKind.METHOD_EXIT;
 
   /**
@@ -165,7 +165,7 @@ public class EventRequest
   /**
    * Do not suspend any threads
    */
-  public static final byte SUSPEND_NONE = 
+  public static final byte SUSPEND_NONE =
     JdwpConstants.SuspendPolicy.NONE;
 
   /**
@@ -207,7 +207,7 @@ public class EventRequest
     _filters = new LinkedList ();
     synchronized (_idLock)
       {
-	_id = ++_last_id;
+        _id = ++_last_id;
       }
     _kind = kind;
     _suspendPolicy = suspendPolicy;
@@ -243,75 +243,75 @@ public class EventRequest
     Class clazz = filter.getClass ();
     if (clazz == ClassExcludeFilter.class)
       {
-	if (_kind == EVENT_THREAD_START
-	    || _kind == EVENT_THREAD_END)
-	  valid = false;
+        if (_kind == EVENT_THREAD_START
+            || _kind == EVENT_THREAD_END)
+          valid = false;
       }
     else if (clazz == ClassMatchFilter.class)
       {
-	if (_kind == EVENT_THREAD_START
-	    || _kind == EVENT_THREAD_END)
-	  valid = false;
+        if (_kind == EVENT_THREAD_START
+            || _kind == EVENT_THREAD_END)
+          valid = false;
       }
     else if (clazz == ClassOnlyFilter.class)
       {
-	if (_kind == EVENT_CLASS_UNLOAD
-	    || _kind == EVENT_THREAD_START
-	    || _kind == EVENT_THREAD_END)
-	  valid = false;
+        if (_kind == EVENT_CLASS_UNLOAD
+            || _kind == EVENT_THREAD_START
+            || _kind == EVENT_THREAD_END)
+          valid = false;
       }
     else if (clazz == ConditionalFilter.class)
       {
-	// JDWP 1.4 does not say much about this
+        // JDWP 1.4 does not say much about this
       }
     else if (clazz == CountFilter.class)
       {
-	// may be used with any event
+        // may be used with any event
       }
     else if (clazz == ExceptionOnlyFilter.class)
       {
-	if (_kind != EVENT_EXCEPTION)
-	  valid = false;
+        if (_kind != EVENT_EXCEPTION)
+          valid = false;
       }
     else if (clazz == FieldOnlyFilter.class)
       {
-	if (_kind != EVENT_FIELD_ACCESS
-	    && _kind != EVENT_FIELD_MODIFY)
-	  valid = false;
+        if (_kind != EVENT_FIELD_ACCESS
+            && _kind != EVENT_FIELD_MODIFY)
+          valid = false;
       }
     else if (clazz == InstanceOnlyFilter.class)
       {
-	if (_kind == EVENT_CLASS_PREPARE
-	    || _kind == EVENT_CLASS_UNLOAD
-	    || _kind == EVENT_THREAD_START
-	    || _kind == EVENT_THREAD_END)
-	  valid = false;
+        if (_kind == EVENT_CLASS_PREPARE
+            || _kind == EVENT_CLASS_UNLOAD
+            || _kind == EVENT_THREAD_START
+            || _kind == EVENT_THREAD_END)
+          valid = false;
       }
     else if (clazz == LocationOnlyFilter.class)
       {
-	if (_kind != EVENT_BREAKPOINT
-	    && _kind != EVENT_FIELD_ACCESS
-	    && _kind != EVENT_FIELD_MODIFY
-	    && _kind != EVENT_SINGLE_STEP
-	    && _kind != EVENT_EXCEPTION)
-	  valid = false;
+        if (_kind != EVENT_BREAKPOINT
+            && _kind != EVENT_FIELD_ACCESS
+            && _kind != EVENT_FIELD_MODIFY
+            && _kind != EVENT_SINGLE_STEP
+            && _kind != EVENT_EXCEPTION)
+          valid = false;
       }
     else if (clazz == StepFilter.class)
       {
-	if (_kind != EVENT_SINGLE_STEP)
-	  valid = false;
+        if (_kind != EVENT_SINGLE_STEP)
+          valid = false;
       }
     else if (clazz == ThreadOnlyFilter.class)
       {
-	if (_kind == EVENT_CLASS_UNLOAD)
-	  valid = false;
+        if (_kind == EVENT_CLASS_UNLOAD)
+          valid = false;
       }
 
     if (!valid)
       {
-	String msg = ("cannot use " + filter.getClass ().getName ()
-		      + " with class unload events");
-	throw new JdwpIllegalArgumentException (msg);
+        String msg = ("cannot use " + filter.getClass ().getName ()
+                      + " with class unload events");
+        throw new JdwpIllegalArgumentException (msg);
       }
 
     // Add filter to list
@@ -373,9 +373,9 @@ public class EventRequest
     Iterator iter = _filters.iterator ();
     while (iter.hasNext ())
       {
-	IEventFilter filter = (IEventFilter) iter.next ();
-	if (!filter.matches (theEvent))
-	  matches = false;
+        IEventFilter filter = (IEventFilter) iter.next ();
+        if (!filter.matches (theEvent))
+          matches = false;
       }
 
     return matches;

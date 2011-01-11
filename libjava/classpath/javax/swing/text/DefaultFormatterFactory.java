@@ -45,19 +45,19 @@ import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JFormattedTextField.AbstractFormatterFactory;
 
 /**
- * This class is Swing's only concrete implementation of 
+ * This class is Swing's only concrete implementation of
  * JFormattedTextField.AbstractFormatterFactory.  It holds several
- * formatters and determines the best one to be used based on the 
+ * formatters and determines the best one to be used based on the
  * passed-in value from the text field.
- * 
+ *
  * @author Anthony Balkissoon abalkiss at redhat dot com
  * @since 1.4
  */
 public class DefaultFormatterFactory extends AbstractFormatterFactory implements
     Serializable
 {
-  /** 
-   * The default formatter. 
+  /**
+   * The default formatter.
    **/
   AbstractFormatter defaultFormatter;
 
@@ -69,14 +69,14 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
   AbstractFormatter editFormatter;
 
   /**
-   * The formatter to use when the JFormattedTextField doesn't havefocus and 
-   * either the value isn't null or the value is null but no 
+   * The formatter to use when the JFormattedTextField doesn't havefocus and
+   * either the value isn't null or the value is null but no
    * <code>nullFormatter</code> has been specified.
    */
   AbstractFormatter displayFormatter;
 
   /**
-   * The formatter to use when the value of the JFormattedTextField is null.   
+   * The formatter to use when the value of the JFormattedTextField is null.
    */
   AbstractFormatter nullFormatter;
 
@@ -102,7 +102,7 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
    * Creates a new DefaultFormatterFactory with the specified formatters.
    * @param defaultFormat the formatter to use if no other appropriate non-null
    * formatted can be found.
-   * @param displayFormat the formatter to use if the JFormattedTextField 
+   * @param displayFormat the formatter to use if the JFormattedTextField
    * doesn't have focus and either the value is not null or the value is null
    * but no <code>nullFormatter</code> has been specified.
    */
@@ -117,7 +117,7 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
    * Creates a new DefaultFormatterFactory with the specified formatters.
    * @param defaultFormat the formatter to use if no other appropriate non-null
    * formatted can be found.
-   * @param displayFormat the formatter to use if the JFormattedTextField 
+   * @param displayFormat the formatter to use if the JFormattedTextField
    * doesn't have focus and either the value is not null or the value is null
    * but no <code>nullFormatter</code> has been specified.
    * @param editFormat the formatter to use if the JFormattedTextField has
@@ -137,13 +137,13 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
    * Creates a new DefaultFormatterFactory with the specified formatters.
    * @param defaultFormat the formatter to use if no other appropriate non-null
    * formatted can be found.
-   * @param displayFormat the formatter to use if the JFormattedTextField 
+   * @param displayFormat the formatter to use if the JFormattedTextField
    * doesn't have focus and either the value is not null or the value is null
    * but no <code>nullFormatter</code> has been specified.
    * @param editFormat the formatter to use if the JFormattedTextField has
    * focus and either the value is not null or the value is null but not
    * <code>nullFormatter</code> has been specified.
-   * @param nullFormat the formatter to use when the value of the 
+   * @param nullFormat the formatter to use when the value of the
    * JFormattedTextField is null.
    */
   public DefaultFormatterFactory(AbstractFormatter defaultFormat,
@@ -158,9 +158,9 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
   }
 
   /**
-   * Returns the formatted to be used if no other appropriate non-null 
+   * Returns the formatted to be used if no other appropriate non-null
    * formatter can be found.
-   * @return the formatted to be used if no other appropriate non-null 
+   * @return the formatted to be used if no other appropriate non-null
    * formatter can be found.
    */
   public AbstractFormatter getDefaultFormatter()
@@ -169,7 +169,7 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
   }
 
   /**
-   * Sets the formatted to be used if no other appropriate non-null formatter 
+   * Sets the formatted to be used if no other appropriate non-null formatter
    * can be found.
    * @param defaultFormatter the formatted to be used if no other appropriate
    * non-null formatter can be found.
@@ -180,13 +180,13 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
   }
 
   /**
-   * Gets the <code>displayFormatter</code>.  This is the formatter to use if 
-   * the JFormattedTextField is not being edited and either the value is not 
-   * null or the value is null and no <code>nullFormatter<code> has been 
+   * Gets the <code>displayFormatter</code>.  This is the formatter to use if
+   * the JFormattedTextField is not being edited and either the value is not
+   * null or the value is null and no <code>nullFormatter<code> has been
    * specified.
-   * @return the formatter to use if 
-   * the JFormattedTextField is not being edited and either the value is not 
-   * null or the value is null and no <code>nullFormatter<code> has been 
+   * @return the formatter to use if
+   * the JFormattedTextField is not being edited and either the value is not
+   * null or the value is null and no <code>nullFormatter<code> has been
    * specified.
    */
   public AbstractFormatter getDisplayFormatter()
@@ -195,9 +195,9 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
   }
 
   /**
-   * Sets the <code>displayFormatter</code>.  This is the formatter to use if 
-   * the JFormattedTextField is not being edited and either the value is not 
-   * null or the value is null and no <code>nullFormatter<code> has been 
+   * Sets the <code>displayFormatter</code>.  This is the formatter to use if
+   * the JFormattedTextField is not being edited and either the value is not
+   * null or the value is null and no <code>nullFormatter<code> has been
    * specified.
    * @param displayFormatter the formatter to use.
    */
@@ -208,10 +208,10 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
 
   /**
    * Gets the <code>editFormatter</code>.  This is the formatter to use if the
-   * JFormattedTextField is being edited and either the value is not null or 
+   * JFormattedTextField is being edited and either the value is not null or
    * the value is null and no <code>nullFormatter<code> has been specified.
    * @return the formatter to use if the JFormattedTextField is being edited
-   * and the value is not null or the value is null but no nullFormatted has 
+   * and the value is not null or the value is null but no nullFormatted has
    * been specified.
    */
   public AbstractFormatter getEditFormatter()
@@ -221,7 +221,7 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
 
   /**
    * Sets the <code>editFormatter</code>.  This is the formatter to use if the
-   * JFormattedTextField is being edited and either the value is not null or 
+   * JFormattedTextField is being edited and either the value is not null or
    * the value is null and no <code>nullFormatter<code> has been specified.
    * @param editFormatter the formatter to use.
    */
@@ -250,11 +250,11 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
   }
 
   /**
-   * Returns the appropriate formatter based on the state of 
+   * Returns the appropriate formatter based on the state of
    * <code>tf</code>. If <code>tf<code> is null we return null, otherwise
    * we return one of the following:
-   * 1. Returns <code>nullFormatter</code> if <code>tf.getValue()</code> is 
-   * null and <code>nullFormatter</code> is not.  
+   * 1. Returns <code>nullFormatter</code> if <code>tf.getValue()</code> is
+   * null and <code>nullFormatter</code> is not.
    * 2. Returns <code>editFormatter</code> if <code>tf.hasFocus()</code> is
    * true and <code>editFormatter</code> is not null.
    * 3. Returns <code>displayFormatter</code> if <code>tf.hasFocus()</code> is
@@ -265,7 +265,7 @@ public class DefaultFormatterFactory extends AbstractFormatterFactory implements
   {
     if (tf == null)
       return null;
-    
+
     if (tf.getValue() == null && nullFormatter != null)
       return nullFormatter;
 

@@ -61,7 +61,7 @@ import java.security.spec.X509EncodedKeySpec;
 
 /**
  * DSA key factory.
- * 
+ *
  * @author Casey Marshall (rsdio@metastatic.org)
  */
 public class DSSKeyFactory

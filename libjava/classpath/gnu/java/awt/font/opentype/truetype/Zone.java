@@ -229,7 +229,7 @@ public final class Zone
         System.out.print('.');
       else
         System.out.print('c');
-      if (isContourEnd(i))      
+      if (isContourEnd(i))
         System.out.print('E');
       System.out.println();
       if (isContourEnd(i))

@@ -72,7 +72,7 @@ import javax.management.loading.ClassLoaderRepository;
  * is thrown.  Note than the class name used in the exception
  * is that of the bean, and thus, as a result, an
  * {@link InstanceNotFoundException}
- * precludes these security checks, due to the class name 
+ * precludes these security checks, due to the class name
  * that would be used in the exception being unavailable.
  * </p>
  *
@@ -113,7 +113,7 @@ public interface MBeanServer
    *                                                      Object)
    */
   void addNotificationListener(ObjectName name, NotificationListener listener,
-			       NotificationFilter filter, Object passback)
+                               NotificationFilter filter, Object passback)
     throws InstanceNotFoundException;
 
   /**
@@ -122,7 +122,7 @@ public interface MBeanServer
    * bean.  Notifications emitted by the management bean are forwarded
    * to the listener via the server, which will convert any MBean
    * references in the source to portable {@link ObjectName}
-   * instances.  The notification is otherwise unchanged.  
+   * instances.  The notification is otherwise unchanged.
    * </p>
    * <p>
    * The listener that receives notifications will be the one that is
@@ -159,7 +159,7 @@ public interface MBeanServer
    *                                                      Object)
    */
   void addNotificationListener(ObjectName name, ObjectName listener,
-			       NotificationFilter filter, Object passback)
+                               NotificationFilter filter, Object passback)
     throws InstanceNotFoundException;
 
   /**
@@ -168,7 +168,7 @@ public interface MBeanServer
    * using the default constructor and registers it with the server
    * under the supplied name.  The class is loaded using the
    * {@link javax.management.loading.ClassLoaderRepository default
-   * loader repository} of the server. 
+   * loader repository} of the server.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -177,7 +177,7 @@ public interface MBeanServer
    * of this interface will be used to obtain the name in this case.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #createMBean(String, ObjectName, Object[], String[])
    * <code>createMBean(className, name, (Object[]) null,
    * (String[]) null)</code>} with <code>null</code> parameters
@@ -211,8 +211,8 @@ public interface MBeanServer
    */
   ObjectInstance createMBean(String className, ObjectName name)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException;
 
   /**
    * <p>
@@ -220,7 +220,7 @@ public interface MBeanServer
    * using the given constructor and registers it with the server
    * under the supplied name.  The class is loaded using the
    * {@link javax.management.loading.ClassLoaderRepository default
-   * loader repository} of the server. 
+   * loader repository} of the server.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -228,7 +228,7 @@ public interface MBeanServer
    * The {@link MBeanRegistration#preRegister preRegister} method
    * of this interface will be used to obtain the name in this case.
    * </p>
-   * 
+   *
    * @param className the class of the management bean, of which
    *                  an instance should be created.
    * @param name the name to register the new bean with.
@@ -256,10 +256,10 @@ public interface MBeanServer
    *                           and <code>registerMBean</code> methods.
    */
   ObjectInstance createMBean(String className, ObjectName name,
-			     Object[] params, String[] sig)
+                             Object[] params, String[] sig)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException;
 
   /**
    * <p>
@@ -277,7 +277,7 @@ public interface MBeanServer
    * of this interface will be used to obtain the name in this case.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #createMBean(String, ObjectName, ObjectName, Object[], String)
    * <code>createMBean(className, name, loaderName, (Object[]) null,
    * (String) null)</code>} with <code>null</code> parameters
@@ -312,11 +312,11 @@ public interface MBeanServer
    *                           and <code>registerMBean</code> methods.
    * @see #createMBean(String, ObjectName, ObjectName, Object[], String[])
    */
-  ObjectInstance createMBean(String className, ObjectName name, 
-			     ObjectName loaderName)
+  ObjectInstance createMBean(String className, ObjectName name,
+                             ObjectName loaderName)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, InstanceNotFoundException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, InstanceNotFoundException;
 
   /**
    * <p>
@@ -325,7 +325,7 @@ public interface MBeanServer
    * under the supplied name.  The class is loaded using the
    * given class loader.  If this argument is <code>null</code>,
    * then the same class loader as was used to load the server
-   * is used. 
+   * is used.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -333,7 +333,7 @@ public interface MBeanServer
    * The {@link MBeanRegistration#preRegister preRegister} method
    * of this interface will be used to obtain the name in this case.
    * </p>
-   * 
+   *
    * @param className the class of the management bean, of which
    *                  an instance should be created.
    * @param name the name to register the new bean with.
@@ -364,11 +364,11 @@ public interface MBeanServer
    *                           and <code>registerMBean</code> methods.
    */
   ObjectInstance createMBean(String className, ObjectName name,
-			     ObjectName loaderName, Object[] params,
-			     String[] sig)
+                             ObjectName loaderName, Object[] params,
+                             String[] sig)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, InstanceNotFoundException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, InstanceNotFoundException;
 
   /**
    * Deserializes a byte array using the class loader of the specified
@@ -449,7 +449,7 @@ public interface MBeanServer
    */
   ObjectInputStream deserialize(String name, ObjectName loader, byte[] data)
     throws InstanceNotFoundException, ReflectionException,
-	   OperationsException;
+           OperationsException;
 
   /**
    * Returns the value of the supplied attribute from the specified
@@ -478,7 +478,7 @@ public interface MBeanServer
    */
   Object getAttribute(ObjectName bean, String name)
     throws MBeanException, AttributeNotFoundException,
-	   InstanceNotFoundException, ReflectionException;
+           InstanceNotFoundException, ReflectionException;
 
   /**
    * Returns the values of the named attributes from the specified
@@ -505,7 +505,7 @@ public interface MBeanServer
    *                           <code>MBeanPermission(className, n, bean,
    *                           "getAttribute")</code>} or that attribute will
    *                           not be included.
-   *                           
+   *
    * @see DynamicMBean#getAttributes(String[])
    */
   AttributeList getAttributes(ObjectName bean, String[] names)
@@ -534,7 +534,7 @@ public interface MBeanServer
    */
   ClassLoader getClassLoader(ObjectName name)
     throws InstanceNotFoundException;
- 
+
   /**
    * Returns the class loader of the specified management bean.  If
    * <code>l</code> is the requested class loader, and <code>r</code>
@@ -630,7 +630,7 @@ public interface MBeanServer
    */
   MBeanInfo getMBeanInfo(ObjectName name)
     throws InstanceNotFoundException, IntrospectionException,
-	   ReflectionException;
+           ReflectionException;
 
   /**
    * Returns the {@link ObjectInstance} created for the specified
@@ -659,7 +659,7 @@ public interface MBeanServer
    * but the instance is not yet registered with the server.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #instantiate(String, Object[], String[])
    * <code>instantiate(name, (Object[]) null, (String[]) null)</code>}
    * with <code>null</code> parameters and signature.
@@ -723,7 +723,7 @@ public interface MBeanServer
    * registered with the server.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #instantiate(String, ObjectName, Object[], String[])
    * <code>instantiate(name, loaderName, (Object[]) null,
    * (String[]) null)</code>} with <code>null</code> parameters
@@ -751,7 +751,7 @@ public interface MBeanServer
    */
   Object instantiate(String name, ObjectName loaderName)
     throws InstanceNotFoundException, ReflectionException,
-	   MBeanException;
+           MBeanException;
 
   /**
    * Creates an instance of the specified class using the supplied
@@ -782,9 +782,9 @@ public interface MBeanServer
    *                           "instantiate")</code>}.
    */
   Object instantiate(String name, ObjectName loaderName,
-		     Object[] params, String[] sig)
+                     Object[] params, String[] sig)
     throws InstanceNotFoundException, ReflectionException,
-	   MBeanException;
+           MBeanException;
 
   /**
    * Invokes the supplied operation on the specified management
@@ -809,7 +809,7 @@ public interface MBeanServer
    */
   Object invoke(ObjectName bean, String name, Object[] params, String[] sig)
     throws InstanceNotFoundException, MBeanException,
-	   ReflectionException;
+           ReflectionException;
 
   /**
    * <p>
@@ -826,7 +826,7 @@ public interface MBeanServer
    * <li>Both the class of B and C were loaded by the same class loader,
    * and B is assignable to C.</li>
    * </ul>
-   * 
+   *
    * @param name the name of the management bean.
    * @param className the name of the class to test if <code>name</code> is
    *                  an instance of.
@@ -869,7 +869,7 @@ public interface MBeanServer
    * <p>
    * If both the object name and the query expression are <code>null</code>,
    * or the object name has no domain and no key properties,
-   * no filtering will be performed and all beans are returned. 
+   * no filtering will be performed and all beans are returned.
    * </p>
    *
    * @param name an {@link ObjectName} to use as a filter.
@@ -891,7 +891,7 @@ public interface MBeanServer
    *                           case that particular bean will again be excluded.
    */
   Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query);
-  
+
   /**
    * <p>
    * Returns a set of {@link ObjectName}s matching the specified
@@ -906,7 +906,7 @@ public interface MBeanServer
    * <p>
    * If both the object name and the query expression are <code>null</code>,
    * or the object name has no domain and no key properties,
-   * no filtering will be performed and all beans are returned. 
+   * no filtering will be performed and all beans are returned.
    * </p>
    *
    * @param name an {@link ObjectName} to use as a filter.
@@ -935,7 +935,7 @@ public interface MBeanServer
    * Registers the supplied instance with the server, using the specified
    * {@link ObjectName}.  If the name given is <code>null</code>, then
    * the bean supplied is expected to implement the {@link MBeanRegistration}
-   * interface and provide the name via the 
+   * interface and provide the name via the
    * {@link MBeanRegistration#preRegister preRegister} method
    * of this interface.
    *
@@ -971,7 +971,7 @@ public interface MBeanServer
    */
   ObjectInstance registerMBean(Object obj, ObjectName name)
     throws InstanceAlreadyExistsException, MBeanRegistrationException,
-	   NotCompliantMBeanException;
+           NotCompliantMBeanException;
 
   /**
    * Removes the specified listener from the list of recipients
@@ -997,7 +997,7 @@ public interface MBeanServer
    * @see NotificationBroadcaster#removeNotificationListener(NotificationListener)
    */
   void removeNotificationListener(ObjectName name,
-				  NotificationListener listener)
+                                  NotificationListener listener)
     throws InstanceNotFoundException, ListenerNotFoundException;
 
   /**
@@ -1029,9 +1029,9 @@ public interface MBeanServer
    *                                                     Object)
    */
   void removeNotificationListener(ObjectName name,
-				  NotificationListener listener,
-				  NotificationFilter filter,
-				  Object passback)
+                                  NotificationListener listener,
+                                  NotificationFilter filter,
+                                  Object passback)
     throws InstanceNotFoundException, ListenerNotFoundException;
 
   /**
@@ -1091,14 +1091,14 @@ public interface MBeanServer
    *                                                     Object)
    */
   void removeNotificationListener(ObjectName name,
-				  ObjectName listener,
-				  NotificationFilter filter,
-				  Object passback)
+                                  ObjectName listener,
+                                  NotificationFilter filter,
+                                  Object passback)
     throws InstanceNotFoundException, ListenerNotFoundException;
 
   /**
    * Sets the value of the specified attribute of the supplied
-   * management bean.  
+   * management bean.
    *
    * @param name the name of the management bean.
    * @param attribute the attribute to set.
@@ -1131,8 +1131,8 @@ public interface MBeanServer
    */
   void setAttribute(ObjectName name, Attribute attribute)
     throws InstanceNotFoundException, AttributeNotFoundException,
-	   InvalidAttributeValueException, MBeanException,
-	   ReflectionException;
+           InvalidAttributeValueException, MBeanException,
+           ReflectionException;
 
   /**
    * Sets the value of each of the specified attributes
@@ -1192,7 +1192,7 @@ public interface MBeanServer
    *                           MBeanPermission(String,String,ObjectName,String)
    *                           <code>MBeanPermission(className, null, name,
    *                           "unregisterMBean")</code>}.
-   */ 
+   */
   void unregisterMBean(ObjectName name)
     throws InstanceNotFoundException, MBeanRegistrationException;
 

@@ -83,7 +83,7 @@ class StandaloneAppletViewer extends Main
             (Messages.getString("StandaloneAppletViewer.CodeOptionError"));
           System.exit(1);
         }
-      
+
       String tagString =
         "<EMBED"
         + " CODE=\"" + code + "\""
@@ -102,7 +102,7 @@ class StandaloneAppletViewer extends Main
             "<PARAM NAME=" + paramTokenizer.nextToken().trim() + " VALUE="
             + paramTokenizer.nextToken().trim() + ">";
         }
-      
+
       tagString += "</EMBED>";
 
       StringReader reader = new StringReader(tagString);
@@ -139,7 +139,7 @@ class StandaloneAppletViewer extends Main
     for (int i = 0; i < appletTags.size(); i++)
       {
         AppletTag tag = (AppletTag) appletTags.get(i);
-          
+
         // Create a StandaloneAppletWindow and add it to the
         // appletWindows list.
         new StandaloneAppletWindow(tag, appletWindows);

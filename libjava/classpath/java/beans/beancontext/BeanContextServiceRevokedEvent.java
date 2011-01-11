@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -50,63 +50,63 @@ public class BeanContextServiceRevokedEvent extends BeanContextEvent {
        private static final long serialVersionUID = -1295543154724961754L;
 
        /**
-	 * The <code>Class</code> representing the service which is now
-	 * available.
-	 */
-	protected Class serviceClass;
-	private boolean invalidateRefs;
+         * The <code>Class</code> representing the service which is now
+         * available.
+         */
+        protected Class serviceClass;
+        private boolean invalidateRefs;
 
-	/**
-	 * Create a new service revoked event.
-	 * @param services the <code>BeanContextServices</code> through
-	 *        which the service was available.  This is also the source
-	 *        of the event.
-	 * @param serviceClass the service class that is now revoked.
-	 * @param revokeNow whether the revocation is immediate for all
-	 *        classes or just a suggestion.
-	 */
-	public BeanContextServiceRevokedEvent(BeanContextServices services, Class serviceClass, boolean revokeNow) {
-		super(services);
-		this.serviceClass = serviceClass;
-		invalidateRefs = revokeNow;
-	}
+        /**
+         * Create a new service revoked event.
+         * @param services the <code>BeanContextServices</code> through
+         *        which the service was available.  This is also the source
+         *        of the event.
+         * @param serviceClass the service class that is now revoked.
+         * @param revokeNow whether the revocation is immediate for all
+         *        classes or just a suggestion.
+         */
+        public BeanContextServiceRevokedEvent(BeanContextServices services, Class serviceClass, boolean revokeNow) {
+                super(services);
+                this.serviceClass = serviceClass;
+                invalidateRefs = revokeNow;
+        }
 
-	/**
-	 * Get the revoked service class.
-	 * @return the service class.
-	 */
-	public Class getServiceClass() {
-		return serviceClass;
-	}
+        /**
+         * Get the revoked service class.
+         * @return the service class.
+         */
+        public Class getServiceClass() {
+                return serviceClass;
+        }
 
-	/**
-	 * Tell whether the revoked service class is the same as the specified class.
-	 * Identical to <code>getServiceClass().equals(c)</code>.
-	 * @param c the class to compare.
-	 * @return whether the clases are equal.
-	 */
-	public boolean isServiceClass(Class c) {
-		return serviceClass.equals(c);
-	}
+        /**
+         * Tell whether the revoked service class is the same as the specified class.
+         * Identical to <code>getServiceClass().equals(c)</code>.
+         * @param c the class to compare.
+         * @return whether the clases are equal.
+         */
+        public boolean isServiceClass(Class c) {
+                return serviceClass.equals(c);
+        }
 
-	/**
-	 * Get the <code>BeanContextServices</code> through which the service was available.
-	 * @return the <code>BeanContextServices</code> through which the
-	 *         service was available.
-	 */
-	public BeanContextServices getSourceAsBeanContextServices() {
-		return (BeanContextServices)getSource();
-	}
+        /**
+         * Get the <code>BeanContextServices</code> through which the service was available.
+         * @return the <code>BeanContextServices</code> through which the
+         *         service was available.
+         */
+        public BeanContextServices getSourceAsBeanContextServices() {
+                return (BeanContextServices)getSource();
+        }
 
-	/**
-	 * Tell whether current instances of the revoked service are usable or not.
-	 * This is determined by whether the service was revoked
-	 * immediately.
-	 *
-	 * @return whether current instances of the revoked service are
-	 *         usable.
-	 */
-	public boolean isCurrentServiceInvalidNow() {
-		return invalidateRefs;
-	}
+        /**
+         * Tell whether current instances of the revoked service are usable or not.
+         * This is determined by whether the service was revoked
+         * immediately.
+         *
+         * @return whether current instances of the revoked service are
+         *         usable.
+         */
+        public boolean isCurrentServiceInvalidNow() {
+                return invalidateRefs;
+        }
 }

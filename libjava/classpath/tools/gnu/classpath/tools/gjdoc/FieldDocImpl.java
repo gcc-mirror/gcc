@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -45,9 +45,9 @@ import gnu.classpath.tools.gjdoc.expr.Evaluator;
 import gnu.classpath.tools.gjdoc.expr.CircularExpressionException;
 import gnu.classpath.tools.gjdoc.expr.IllegalExpressionException;
 
-public class FieldDocImpl 
-   extends MemberDocImpl 
-   implements FieldDoc, Cloneable 
+public class FieldDocImpl
+   extends MemberDocImpl
+   implements FieldDoc, Cloneable
 {
 
    private boolean isTransient;
@@ -61,7 +61,7 @@ public class FieldDocImpl
                         SourcePosition position) {
 
       super(containingClass,
-	    containingPackage,
+            containingPackage,
             position);
    }
 
@@ -82,7 +82,7 @@ public class FieldDocImpl
             dimSuffix=fieldDef.charAt(fieldDef.length()-1)+dimSuffix;
             fieldDef=fieldDef.substring(0,fieldDef.length()-1);
          }
-         
+
          fieldDoc.setTypeName(fieldDoc.getTypeName()+dimSuffix);
          fieldDoc.setName(fieldDef.trim());
          fieldDoc.setValueLiteral(fieldValueLiteral);
@@ -96,13 +96,13 @@ public class FieldDocImpl
    }
 
    public static Collection createFromSource(ClassDoc containingClass,
-					     PackageDoc containingPackage,
-					     char[] source, int startIndex, int endIndex) {
-      
+                                             PackageDoc containingPackage,
+                                             char[] source, int startIndex, int endIndex) {
+
       List rcList=new ArrayList();
 
       FieldDocImpl fd=new FieldDocImpl(containingClass,
-				       containingPackage,
+                                       containingPackage,
                                        DocImpl.getPosition(containingClass, source, startIndex));
 
       int ndx=fd.parseModifiers(source, startIndex, endIndex);
@@ -131,12 +131,12 @@ public class FieldDocImpl
 
       for (int i=ndx; i<endIndex; ++i) {
 
-	 char c = source[i];
+         char c = source[i];
          char nextChar = '\0';
          if (i + 1 < endIndex) {
             nextChar = source[i + 1];
          }
-	 switch (state) {
+         switch (state) {
          case STATE_FIELDNAME:
             if ('/' == c && '/' == nextChar) {
                prevState = state;
@@ -158,7 +158,7 @@ public class FieldDocImpl
             }
             break;
 
-	 case STATE_FIELDVALUE:
+         case STATE_FIELDVALUE:
             if ('/' == c && '/' == nextChar) {
                prevState = state;
                state = STATE_LINECOMMENT;
@@ -167,65 +167,65 @@ public class FieldDocImpl
                prevState = state;
                state = STATE_COMMENT;
             }
-	    else if ('\"' == c) {
+            else if ('\"' == c) {
                prevState = state;
-	       state = STATE_QUOTE;
+               state = STATE_QUOTE;
                fieldValueLiteralBuf.append(c);
-	    }
-	    else if ('\'' == c) {
+            }
+            else if ('\'' == c) {
                prevState = state;
-	       state = STATE_SQUOTE;
+               state = STATE_SQUOTE;
                fieldValueLiteralBuf.append(c);
-	    }
-	    else if ('{' == c || '(' == c) {
+            }
+            else if ('{' == c || '(' == c) {
                ++ bracketCount;
                fieldValueLiteralBuf.append(c);
-	    }
-	    else if ('}' == c || ')' == c) {
+            }
+            else if ('}' == c || ')' == c) {
                -- bracketCount;
                fieldValueLiteralBuf.append(c);
-	    }
-	    else if (0 == bracketCount && (',' == c || ';' == c)) {
-               rcList.add(createFieldDoc(fd, fieldNameBuf.toString(), 
+            }
+            else if (0 == bracketCount && (',' == c || ';' == c)) {
+               rcList.add(createFieldDoc(fd, fieldNameBuf.toString(),
                                          fieldValueLiteralBuf.toString()));
                fieldNameBuf.setLength(0);
                fieldValueLiteralBuf.setLength(0);
-	       state = STATE_FIELDNAME;
-	    }
+               state = STATE_FIELDNAME;
+            }
             else {
                fieldValueLiteralBuf.append(c);
             }
-	    break;
-	    
-	 case STATE_QUOTE:
-            fieldValueLiteralBuf.append(c);
-	    if ('\\' == c) {
-	       state = STATE_QUOTEBS;
-	    }
-	    else if ('\"' == c) {
-	       state = prevState;
-	    }
-	    break;
-	    
-	 case STATE_SQUOTE:
-            fieldValueLiteralBuf.append(c);
-	    if ('\\' == c) {
-	       state = STATE_SQUOTEBS;
-	    }
-	    else if ('\'' == c) {
-	       state = prevState;
-	    }
-	    break;
-	    
-	 case STATE_QUOTEBS:
-            fieldValueLiteralBuf.append(c);
-	    state = STATE_QUOTE;
-	    break;
+            break;
 
-	 case STATE_SQUOTEBS:
+         case STATE_QUOTE:
             fieldValueLiteralBuf.append(c);
-	    state = STATE_SQUOTE;
-	    break;
+            if ('\\' == c) {
+               state = STATE_QUOTEBS;
+            }
+            else if ('\"' == c) {
+               state = prevState;
+            }
+            break;
+
+         case STATE_SQUOTE:
+            fieldValueLiteralBuf.append(c);
+            if ('\\' == c) {
+               state = STATE_SQUOTEBS;
+            }
+            else if ('\'' == c) {
+               state = prevState;
+            }
+            break;
+
+         case STATE_QUOTEBS:
+            fieldValueLiteralBuf.append(c);
+            state = STATE_QUOTE;
+            break;
+
+         case STATE_SQUOTEBS:
+            fieldValueLiteralBuf.append(c);
+            state = STATE_SQUOTE;
+            break;
 
          case STATE_LINECOMMENT:
             if ('\n' == c) {
@@ -241,9 +241,9 @@ public class FieldDocImpl
             break;
          }
       }
-      
+
       if (fieldNameBuf.length() > 0) {
-         rcList.add(createFieldDoc(fd, fieldNameBuf.toString(), 
+         rcList.add(createFieldDoc(fd, fieldNameBuf.toString(),
                                    fieldValueLiteralBuf.toString()));
       }
 
@@ -252,7 +252,7 @@ public class FieldDocImpl
 
    public boolean isField() {
       return true;
-   } 
+   }
 
    public boolean isTransient() { return isTransient; }
 
@@ -262,25 +262,25 @@ public class FieldDocImpl
 
    public int modifierSpecifier() {
       return super.modifierSpecifier()
-	 | (isVolatile()?Modifier.VOLATILE:0)
-	 | (isTransient()?Modifier.TRANSIENT:0)
-	 ;
+         | (isVolatile()?Modifier.VOLATILE:0)
+         | (isTransient()?Modifier.TRANSIENT:0)
+         ;
    }
 
    protected boolean processModifier(String word) {
       if (super.processModifier(word)) {
-	 return true;
+         return true;
       }
       else if (word.equals("transient")) {
-	 isTransient=true;
-	 return true;	 
+         isTransient=true;
+         return true;
       }
       else if (word.equals("volatile")) {
-	 isVolatile=true;
-	 return true;	 
+         isVolatile=true;
+         return true;
       }
       else {
-	 return false;
+         return false;
       }
    }
 
@@ -299,10 +299,10 @@ public class FieldDocImpl
    }
 
    public Object constantValue(Set visitedFields) {
-      if (!isStatic() 
-          || !isFinal() 
+      if (!isStatic()
+          || !isFinal()
           || (!type().isPrimitive() && !"java.lang.String".equals(type().qualifiedTypeName()))
-          || type.dimension().length()>0 
+          || type.dimension().length()>0
           || null == valueLiteral) {
 
          return null;
@@ -315,7 +315,7 @@ public class FieldDocImpl
 
             String expression = "(" + type().typeName() + ")(" + valueLiteral + ")";
             try {
-               this.constantValue = Evaluator.evaluate(expression, 
+               this.constantValue = Evaluator.evaluate(expression,
                                                        visitedFields,
                                                        (ClassDocImpl)containingClass());
             }

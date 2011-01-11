@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,7 +40,7 @@ package javax.sound.sampled;
 
 /**
  * An EnumControl is a Control which can take one of a specified set of
- * values. 
+ * values.
  * @since 1.3
  */
 public abstract class EnumControl extends Control
@@ -110,8 +110,8 @@ public abstract class EnumControl extends Control
   {
     for (int i = 0; i < values.length; ++i)
       {
-	if (! values[i].equals(value))
-	  throw new IllegalArgumentException("value not supported");
+        if (! values[i].equals(value))
+          throw new IllegalArgumentException("value not supported");
       }
     this.value = value;
   }

@@ -1,4 +1,4 @@
-/* ClassLoaderReferenceCommandSet.java -- class to implement the 
+/* ClassLoaderReferenceCommandSet.java -- class to implement the
    ClassLoaderReference Command Set
    Copyright (C) 2005 Free Software Foundation
 
@@ -56,7 +56,7 @@ import java.util.Iterator;
 
 /**
  * A class representing the ClassLoaderReference Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class ClassLoaderReferenceCommandSet

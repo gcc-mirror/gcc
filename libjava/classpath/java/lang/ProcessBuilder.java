@@ -204,7 +204,7 @@ public final class ProcessBuilder
    * indicates that the default behaviour of using the
    * working directory of the current process should
    * be adopted.
-   * 
+   *
    * @return the working directory.
    */
   public File directory()
@@ -218,7 +218,7 @@ public final class ProcessBuilder
    * which indicates the default value should be used.
    * The default is the working directory of the current
    * process.
-   * 
+   *
    * @param directory the new working directory.
    * @return a reference to this process builder.
    */
@@ -252,7 +252,7 @@ public final class ProcessBuilder
    * some may not allow any changes to the environment variables or
    * may prevent certain values being used.  Attempts to do so will
    * throw an <code>UnsupportedOperationException</code> or
-   * <code>IllegalArgumentException</code>, respectively. 
+   * <code>IllegalArgumentException</code>, respectively.
    * </p>
    * <p>
    * Use of this method may require a security check for the

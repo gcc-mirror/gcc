@@ -1,4 +1,4 @@
-/* ComplexType.java -- 
+/* ComplexType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -97,6 +97,5 @@ class ComplexType
     this.finality = finality;
     attributeUses = new LinkedHashSet();
   }
-  
-}
 
+}

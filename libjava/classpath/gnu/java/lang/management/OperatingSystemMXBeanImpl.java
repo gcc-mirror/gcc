@@ -43,7 +43,7 @@ import javax.management.NotCompliantMBeanException;
 
 /**
  * Provides access to information about the underlying operating
- * system.  
+ * system.
  *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
@@ -91,5 +91,5 @@ public final class OperatingSystemMXBeanImpl
   {
     return System.getProperty("os.version");
   }
-  
+
 }

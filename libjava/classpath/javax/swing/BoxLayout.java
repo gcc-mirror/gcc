@@ -85,7 +85,7 @@ public class BoxLayout implements LayoutManager2, Serializable
    * The container given to the constructor.
    */
   private Container container;
-  
+
   /**
    * Current type of component layouting. Defaults to X_AXIS.
    */
@@ -174,14 +174,14 @@ public class BoxLayout implements LayoutManager2, Serializable
   private boolean isHorizontalIn(Container parent)
   {
     ComponentOrientation orientation = parent.getComponentOrientation();
-    return this.way == X_AXIS 
-      || (this.way == LINE_AXIS 
+    return this.way == X_AXIS
+      || (this.way == LINE_AXIS
           && orientation.isHorizontal())
       || (this.way == PAGE_AXIS
           && (!orientation.isHorizontal()));
   }
 
-  
+
 
   /**
    * Returns the preferred size of the layout.
@@ -236,7 +236,7 @@ public class BoxLayout implements LayoutManager2, Serializable
       {
         if (container != parent)
           throw new AWTError("BoxLayout can't be shared");
-      
+
         checkLayout();
         Component[] children = container.getComponents();
         Insets in = container.getInsets();
@@ -337,7 +337,7 @@ public class BoxLayout implements LayoutManager2, Serializable
         Insets i = container.getInsets();
         int xDim = xTotal.maximum + i.left + i.right;
         int yDim = yTotal.maximum + i.top + i.bottom;
-        
+
         // Check for overflow
         if (xDim < xTotal.maximum)
           xDim = Integer.MAX_VALUE;

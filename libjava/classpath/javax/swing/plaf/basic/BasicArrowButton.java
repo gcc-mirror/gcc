@@ -51,15 +51,15 @@ import javax.swing.SwingConstants;
  * A button that displays an arrow (triangle) that points {@link #NORTH},
  * {@link #SOUTH}, {@link #EAST} or {@link #WEST}.  This button is used by
  * the {@link BasicComboBoxUI} class.
- * 
+ *
  * @see BasicComboBoxUI#createArrowButton
  */
 public class BasicArrowButton extends JButton implements SwingConstants
 {
 
-  /** 
-   * The direction that the arrow points. 
-   * 
+  /**
+   * The direction that the arrow points.
+   *
    * @see #getDirection()
    */
   protected int direction;
@@ -89,7 +89,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
    * in the specified direction.  If the <code>direction</code> is not one of
    * the specified constants, no arrow is drawn.
    *
-   * @param direction The direction the arrow points in (one of: 
+   * @param direction The direction the arrow points in (one of:
    * {@link #NORTH}, {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
    */
   public BasicArrowButton(int direction)
@@ -103,7 +103,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
    * Creates a new BasicArrowButton object with the given colors and
    * direction.
    *
-   * @param direction The direction to point in (one of: 
+   * @param direction The direction to point in (one of:
    * {@link #NORTH}, {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
    * @param background The background color.
    * @param shadow The shadow color.
@@ -133,7 +133,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
   }
 
   /**
-   * Returns the direction of the arrow (one of: {@link #NORTH}, 
+   * Returns the direction of the arrow (one of: {@link #NORTH},
    * {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
    *
    * @return The direction of the arrow.
@@ -146,7 +146,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
   /**
    * Sets the direction of the arrow.
    *
-   * @param dir The new direction of the arrow (one of: {@link #NORTH}, 
+   * @param dir The new direction of the arrow (one of: {@link #NORTH},
    *            {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
    */
   public void setDirection(int dir)
@@ -163,23 +163,23 @@ public class BasicArrowButton extends JButton implements SwingConstants
   public void paint(Graphics g)
   {
     super.paint(g);
-    
+
     int height = getHeight();
     int size = height / 4;
-    
+
     int x = (getWidth() - size) / 2;
     int y = (height - size) / 2;
-    
+
     ButtonModel m = getModel();
     if (m.isArmed())
       {
         x++;
         y++;
       }
-    
+
     paintTriangle(g, x, y, size, direction, isEnabled());
   }
-  
+
   /**
    * Returns the preferred size of the arrow button.
    *
@@ -220,17 +220,17 @@ public class BasicArrowButton extends JButton implements SwingConstants
   }
 
   /**
-   * Paints a triangle with the given size, location and direction.  It is 
+   * Paints a triangle with the given size, location and direction.  It is
    * difficult to explain the rationale behind the positioning of the triangle
-   * relative to the given (x, y) position - by trial and error we seem to 
-   * match the behaviour of the reference implementation (which is missing a 
+   * relative to the given (x, y) position - by trial and error we seem to
+   * match the behaviour of the reference implementation (which is missing a
    * specification for this method).
    *
    * @param g  the graphics device.
    * @param x  the x-coordinate for the triangle's location.
    * @param y  the y-coordinate for the triangle's location.
    * @param size  the arrow size (depth).
-   * @param direction  the direction of the arrow (one of: {@link #NORTH}, 
+   * @param direction  the direction of the arrow (one of: {@link #NORTH},
    *            {@link #SOUTH}, {@link #EAST} and {@link #WEST}).
    * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
    *                   state, otherwise it is drawn in the disabled state.
@@ -258,11 +258,11 @@ public class BasicArrowButton extends JButton implements SwingConstants
       }
     g.setColor(savedColor);
   }
-  
+
   /**
-   * Paints an upward-pointing triangle.  This method is called by the 
+   * Paints an upward-pointing triangle.  This method is called by the
    * {@link #paintTriangle(Graphics, int, int, int, int, boolean)} method.
-   * 
+   *
    * @param g  the graphics device.
    * @param x  the x-coordinate for the anchor point.
    * @param y  the y-coordinate for the anchor point.
@@ -270,7 +270,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
    * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
    *                   state, otherwise it is drawn in the disabled state.
    */
-  private void paintTriangleNorth(Graphics g, int x, int y, int size, 
+  private void paintTriangleNorth(Graphics g, int x, int y, int size,
           boolean isEnabled)
   {
     int tipX = x + (size - 2) / 2;
@@ -297,11 +297,11 @@ public class BasicArrowButton extends JButton implements SwingConstants
        g.drawLine(baseX1 + 1, baseY + 1, baseX2 + 1, baseY + 1);
      }
   }
-  
+
   /**
-   * Paints an downward-pointing triangle.  This method is called by the 
+   * Paints an downward-pointing triangle.  This method is called by the
    * {@link #paintTriangle(Graphics, int, int, int, int, boolean)} method.
-   * 
+   *
    * @param g  the graphics device.
    * @param x  the x-coordinate for the anchor point.
    * @param y  the y-coordinate for the anchor point.
@@ -309,7 +309,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
    * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
    *                   state, otherwise it is drawn in the disabled state.
    */
-  private void paintTriangleSouth(Graphics g, int x, int y, int size, 
+  private void paintTriangleSouth(Graphics g, int x, int y, int size,
           boolean isEnabled)
   {
     int tipX = x + (size - 2) / 2;
@@ -337,11 +337,11 @@ public class BasicArrowButton extends JButton implements SwingConstants
        g.drawLine(tipX + 1, tipY + 1, baseX2 + 1, baseY + 1);
      }
   }
-  
+
   /**
-   * Paints a right-pointing triangle.  This method is called by the 
+   * Paints a right-pointing triangle.  This method is called by the
    * {@link #paintTriangle(Graphics, int, int, int, int, boolean)} method.
-   * 
+   *
    * @param g  the graphics device.
    * @param x  the x-coordinate for the anchor point.
    * @param y  the y-coordinate for the anchor point.
@@ -349,7 +349,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
    * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
    *                   state, otherwise it is drawn in the disabled state.
    */
-  private void paintTriangleEast(Graphics g, int x, int y, int size, 
+  private void paintTriangleEast(Graphics g, int x, int y, int size,
           boolean isEnabled)
   {
     int tipX = x + (size - 1);
@@ -357,7 +357,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
     int baseX = x;
     int baseY1 = tipY - (size - 1);
     int baseY2 = tipY + (size - 1);
-    
+
     Polygon triangle = new Polygon();
     triangle.addPoint(tipX, tipY);
     triangle.addPoint(baseX, baseY1);
@@ -378,11 +378,11 @@ public class BasicArrowButton extends JButton implements SwingConstants
        g.drawLine(baseX + 1, baseY2 + 1, tipX + 1, tipY + 1);
      }
   }
-  
+
   /**
-   * Paints a left-pointing triangle.  This method is called by the 
+   * Paints a left-pointing triangle.  This method is called by the
    * {@link #paintTriangle(Graphics, int, int, int, int, boolean)} method.
-   * 
+   *
    * @param g  the graphics device.
    * @param x  the x-coordinate for the anchor point.
    * @param y  the y-coordinate for the anchor point.
@@ -390,7 +390,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
    * @param isEnabled  if <code>true</code> the arrow is drawn in the enabled
    *                   state, otherwise it is drawn in the disabled state.
    */
-  private void paintTriangleWest(Graphics g, int x, int y, int size, 
+  private void paintTriangleWest(Graphics g, int x, int y, int size,
           boolean isEnabled)
   {
     int tipX = x;
@@ -398,7 +398,7 @@ public class BasicArrowButton extends JButton implements SwingConstants
     int baseX = x + (size - 1);
     int baseY1 = tipY - (size - 1);
     int baseY2 = tipY + (size - 1);
-    
+
     Polygon triangle = new Polygon();
     triangle.addPoint(tipX, tipY);
     triangle.addPoint(baseX, baseY1);
@@ -418,5 +418,5 @@ public class BasicArrowButton extends JButton implements SwingConstants
        g.drawLine(baseX + 1, baseY1 + 1, baseX + 1, baseY2 + 1);
      }
   }
-  
+
 }

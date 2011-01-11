@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * Describe a MIDI file, including specifics about its type, length and timing.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -48,44 +48,44 @@ package javax.sound.midi;
 public class MidiFileFormat
 {
   /**
-   * The MIDI file type.  This is either 0, 1 or 2.  
-   * 
+   * The MIDI file type.  This is either 0, 1 or 2.
+   *
    * Type 0 files contain a single track and represents a single song
    * performance.
    * Type 1 may contain multiple tracks for a single song performance.
    * Type 2 may contain multiple tracks, each representing a
    * separate song performance.
-   * 
+   *
    * See http://en.wikipedia.org/wiki/MIDI#MIDI_file_formats for more
    * information.
    */
   protected int type;
 
   /**
-   * The division type of the MIDI file. 
+   * The division type of the MIDI file.
    */
   protected float divisionType;
-  
+
   /**
    * The timing resolution of the MIDI file.
    */
   protected int resolution;
-  
+
   /**
-   * The size of the MIDI file in bytes. 
+   * The size of the MIDI file in bytes.
    */
   protected int byteLength = UNKNOWN_LENGTH;
-  
+
   /**
-   * The length of the MIDI file in microseconds. 
+   * The length of the MIDI file in microseconds.
    */
   protected long microsecondLength = UNKNOWN_LENGTH;
-  
+
   /**
    * A special value indicating an unknown quantity.
    */
   public static final int UNKNOWN_LENGTH = -1; // FIXME is this really -1?
-  
+
   /**
    * Create a MidiFileFormat object from the given parameters.
    *
@@ -95,8 +95,8 @@ public class MidiFileFormat
    * @param bytes the MIDI file size in bytes
    * @param microseconds the MIDI file length in microseconds
    */
-  public MidiFileFormat(int type, float divisionType, 
-			int resolution, int bytes, long microseconds)
+  public MidiFileFormat(int type, float divisionType,
+                        int resolution, int bytes, long microseconds)
   {
     this.type = type;
     this.divisionType = divisionType;
@@ -104,41 +104,41 @@ public class MidiFileFormat
     this.byteLength = bytes;
     this.microsecondLength = microseconds;
   }
-  
+
   /**
    * Get the MIDI file type (0, 1, or 2).
-   * 
+   *
    * @return the MIDI file type (0, 1, or 2)
    */
   public int getType()
   {
     return type;
   }
-  
+
   /**
    * Get the file division type.
-   * 
+   *
    * @return the file divison type
    */
   public float getDivisionType()
   {
-    return divisionType;    
+    return divisionType;
   }
-  
+
   /**
    * Get the file timing resolution.  If the division type is PPQ, then this
    * is value represents ticks per beat, otherwise it's ticks per frame (SMPTE).
-   * 
+   *
    * @return the timing resolution in ticks per beat or ticks per frame
    */
   public int getResolution()
   {
     return resolution;
   }
-  
+
   /**
    * Get the file length in bytes.
-   * 
+   *
    * @return the file length in bytes or UNKNOWN_LENGTH
    */
   public int getByteLength()
@@ -148,7 +148,7 @@ public class MidiFileFormat
 
   /**
    * Get the file length in microseconds.
-   * 
+   *
    * @return the file length in microseconds or UNKNOWN_LENGTH
    */
   public long getMicrosecondLength()

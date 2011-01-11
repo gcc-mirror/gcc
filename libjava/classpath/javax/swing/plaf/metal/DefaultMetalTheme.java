@@ -48,7 +48,7 @@ import javax.swing.plaf.FontUIResource;
 
 /**
  * The default theme for the {@link MetalLookAndFeel}.
- * 
+ *
  * @see MetalLookAndFeel#setCurrentTheme(MetalTheme)
  */
 public class DefaultMetalTheme extends MetalTheme
@@ -57,15 +57,15 @@ public class DefaultMetalTheme extends MetalTheme
     new ColorUIResource(102, 102, 153);
   private static final ColorUIResource PRIMARY2 =
     new ColorUIResource(153, 153, 204);
-  private static final ColorUIResource PRIMARY3 = 
+  private static final ColorUIResource PRIMARY3 =
     new ColorUIResource(204, 204, 255);
-  private static final ColorUIResource SECONDARY1 = 
+  private static final ColorUIResource SECONDARY1 =
     new ColorUIResource(102, 102, 102);
-  private static final ColorUIResource SECONDARY2 = 
+  private static final ColorUIResource SECONDARY2 =
     new ColorUIResource(153, 153, 153);
-  private static final ColorUIResource SECONDARY3 = 
+  private static final ColorUIResource SECONDARY3 =
     new ColorUIResource(204, 204, 204);
-  
+
   private static final FontUIResource SUB_TEXT_FONT =
     new FontUIResource("Dialog", Font.PLAIN, 10);
   private static final FontUIResource SYSTEM_TEXT_FONT =
@@ -74,7 +74,7 @@ public class DefaultMetalTheme extends MetalTheme
     new FontUIResource("Dialog", Font.PLAIN, 12);
   private static final FontUIResource WINDOW_TITLE_FONT =
     new FontUIResource("Dialog", Font.BOLD, 12);
-  
+
   /**
    * The control text font for swing.boldMetal=false.
    */
@@ -108,7 +108,7 @@ public class DefaultMetalTheme extends MetalTheme
    * Indicates the menu text font.
    */
   static final int MENU_TEXT_FONT = 2;
-  
+
   /**
    * Creates a new instance of this theme.
    */
@@ -119,7 +119,7 @@ public class DefaultMetalTheme extends MetalTheme
 
   /**
    * Returns the name of the theme.
-   * 
+   *
    * @return <code>"Steel"</code>.
    */
   public String getName()
@@ -129,7 +129,7 @@ public class DefaultMetalTheme extends MetalTheme
 
   /**
    * Returns the first primary color for this theme.
-   * 
+   *
    * @return The first primary color.
    */
   protected ColorUIResource getPrimary1()
@@ -139,7 +139,7 @@ public class DefaultMetalTheme extends MetalTheme
 
   /**
    * Returns the second primary color for this theme.
-   * 
+   *
    * @return The second primary color.
    */
   protected ColorUIResource getPrimary2()
@@ -149,7 +149,7 @@ public class DefaultMetalTheme extends MetalTheme
 
   /**
    * Returns the third primary color for this theme.
-   * 
+   *
    * @return The third primary color.
    */
   protected ColorUIResource getPrimary3()
@@ -159,7 +159,7 @@ public class DefaultMetalTheme extends MetalTheme
 
   /**
    * Returns the first secondary color for this theme.
-   * 
+   *
    * @return The first secondary color.
    */
   protected ColorUIResource getSecondary1()
@@ -169,7 +169,7 @@ public class DefaultMetalTheme extends MetalTheme
 
   /**
    * Returns the second secondary color for this theme.
-   * 
+   *
    * @return The second secondary color.
    */
   protected ColorUIResource getSecondary2()
@@ -179,7 +179,7 @@ public class DefaultMetalTheme extends MetalTheme
 
   /**
    * Returns the third secondary color for this theme.
-   * 
+   *
    * @return The third secondary color.
    */
   protected ColorUIResource getSecondary3()
@@ -190,66 +190,66 @@ public class DefaultMetalTheme extends MetalTheme
   /**
    * Returns the font used for text on controls.  In this case, the font is
    * <code>FontUIResource("Dialog", Font.BOLD, 12)</code>, unless the
-   * <code>swing.boldMetal</code> UI default is set to {@link Boolean#FALSE} 
+   * <code>swing.boldMetal</code> UI default is set to {@link Boolean#FALSE}
    * in which case it is <code>FontUIResource("Dialog", Font.PLAIN, 12)</code>.
-   * 
+   *
    * @return The font.
    */
   public FontUIResource getControlTextFont()
   {
     return getFont(CONTROL_TEXT_FONT);
   }
-  
+
   /**
    * Returns the font used for text in menus.  In this case, the font is
    * <code>FontUIResource("Dialog", Font.BOLD, 12)</code>, unless the
-   * <code>swing.boldMetal</code> UI default is set to {@link Boolean#FALSE} 
+   * <code>swing.boldMetal</code> UI default is set to {@link Boolean#FALSE}
    * in which case it is <code>FontUIResource("Dialog", Font.PLAIN, 12)</code>.
-   * 
+   *
    * @return The font used for text in menus.
    */
   public FontUIResource getMenuTextFont()
   {
     return getFont(MENU_TEXT_FONT);
   }
-  
+
   /**
    * Returns the font used for sub text.  In this case, the font is
    * <code>FontUIResource("Dialog", Font.PLAIN, 10)</code>.
-   * 
+   *
    * @return The font used for sub text.
    */
   public FontUIResource getSubTextFont()
   {
     return SUB_TEXT_FONT;
   }
-  
+
   /**
    * Returns the font used for system text.  In this case, the font is
    * <code>FontUIResource("Dialog", Font.PLAIN, 12)</code>.
-   * 
+   *
    * @return The font used for system text.
    */
   public FontUIResource getSystemTextFont()
   {
     return SYSTEM_TEXT_FONT;
   }
-  
+
   /**
    * Returns the font used for user text.  In this case, the font is
    * <code>FontUIResource("Dialog", Font.PLAIN, 12)</code>.
-   * 
-   * @return The font used for user text. 
+   *
+   * @return The font used for user text.
    */
   public FontUIResource getUserTextFont()
   {
     return USER_TEXT_FONT;
   }
-  
+
   /**
-   * Returns the font used for window titles.  In this case, the font is 
+   * Returns the font used for window titles.  In this case, the font is
    * <code>FontUIResource("Dialog", Font.BOLD, 12)</code>.
-   * 
+   *
    * @return The font used for window titles.
    */
   public FontUIResource getWindowTitleFont()

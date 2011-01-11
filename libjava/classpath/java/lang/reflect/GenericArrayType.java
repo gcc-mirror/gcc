@@ -46,7 +46,7 @@ package java.lang.reflect;
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
-public interface GenericArrayType 
+public interface GenericArrayType
   extends Type
 {
 

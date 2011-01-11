@@ -15,19 +15,19 @@ package org.w3c.dom.traversal;
 import org.w3c.dom.Node;
 
 /**
- * Filters are objects that know how to "filter out" nodes. If a 
- * <code>NodeIterator</code> or <code>TreeWalker</code> is given a 
- * <code>NodeFilter</code>, it applies the filter before it returns the next 
- * node. If the filter says to accept the node, the traversal logic returns 
- * it; otherwise, traversal looks for the next node and pretends that the 
+ * Filters are objects that know how to "filter out" nodes. If a
+ * <code>NodeIterator</code> or <code>TreeWalker</code> is given a
+ * <code>NodeFilter</code>, it applies the filter before it returns the next
+ * node. If the filter says to accept the node, the traversal logic returns
+ * it; otherwise, traversal looks for the next node and pretends that the
  * node that was rejected was not there.
- * <p>The DOM does not provide any filters. <code>NodeFilter</code> is just an 
- * interface that users can implement to provide their own filters. 
- * <p><code>NodeFilters</code> do not need to know how to traverse from node 
- * to node, nor do they need to know anything about the data structure that 
- * is being traversed. This makes it very easy to write filters, since the 
- * only thing they have to know how to do is evaluate a single node. One 
- * filter may be used with a number of different kinds of traversals, 
+ * <p>The DOM does not provide any filters. <code>NodeFilter</code> is just an
+ * interface that users can implement to provide their own filters.
+ * <p><code>NodeFilters</code> do not need to know how to traverse from node
+ * to node, nor do they need to know anything about the data structure that
+ * is being traversed. This makes it very easy to write filters, since the
+ * only thing they have to know how to do is evaluate a single node. One
+ * filter may be used with a number of different kinds of traversals,
  * encouraging code reuse.
  * <p>See also the <a href='http://www.w3.org/TR/2000/REC-DOM-Level-2-Traversal-Range-20001113'>Document Object Model (DOM) Level 2 Traversal and Range Specification</a>.
  * @since DOM Level 2
@@ -35,25 +35,25 @@ import org.w3c.dom.Node;
 public interface NodeFilter {
     // Constants returned by acceptNode
     /**
-     * Accept the node. Navigation methods defined for 
-     * <code>NodeIterator</code> or <code>TreeWalker</code> will return this 
+     * Accept the node. Navigation methods defined for
+     * <code>NodeIterator</code> or <code>TreeWalker</code> will return this
      * node.
      */
     public static final short FILTER_ACCEPT             = 1;
     /**
-     * Reject the node. Navigation methods defined for 
-     * <code>NodeIterator</code> or <code>TreeWalker</code> will not return 
-     * this node. For <code>TreeWalker</code>, the children of this node 
-     * will also be rejected. <code>NodeIterators</code> treat this as a 
+     * Reject the node. Navigation methods defined for
+     * <code>NodeIterator</code> or <code>TreeWalker</code> will not return
+     * this node. For <code>TreeWalker</code>, the children of this node
+     * will also be rejected. <code>NodeIterators</code> treat this as a
      * synonym for <code>FILTER_SKIP</code>.
      */
     public static final short FILTER_REJECT             = 2;
     /**
-     * Skip this single node. Navigation methods defined for 
-     * <code>NodeIterator</code> or <code>TreeWalker</code> will not return 
-     * this node. For both <code>NodeIterator</code> and 
-     * <code>TreeWalker</code>, the children of this node will still be 
-     * considered. 
+     * Skip this single node. Navigation methods defined for
+     * <code>NodeIterator</code> or <code>TreeWalker</code> will not return
+     * this node. For both <code>NodeIterator</code> and
+     * <code>TreeWalker</code>, the children of this node will still be
+     * considered.
      */
     public static final short FILTER_SKIP               = 3;
 
@@ -67,11 +67,11 @@ public interface NodeFilter {
      */
     public static final int SHOW_ELEMENT              = 0x00000001;
     /**
-     * Show <code>Attr</code> nodes. This is meaningful only when creating an 
-     * <code>NodeIterator</code> or <code>TreeWalker</code> with an 
-     * attribute node as its <code>root</code>; in this case, it means that 
-     * the attribute node will appear in the first position of the iteration 
-     * or traversal. Since attributes are never children of other nodes, 
+     * Show <code>Attr</code> nodes. This is meaningful only when creating an
+     * <code>NodeIterator</code> or <code>TreeWalker</code> with an
+     * attribute node as its <code>root</code>; in this case, it means that
+     * the attribute node will appear in the first position of the iteration
+     * or traversal. Since attributes are never children of other nodes,
      * they do not appear when traversing over the document tree.
      */
     public static final int SHOW_ATTRIBUTE            = 0x00000002;
@@ -88,12 +88,12 @@ public interface NodeFilter {
      */
     public static final int SHOW_ENTITY_REFERENCE     = 0x00000010;
     /**
-     * Show <code>Entity</code> nodes. This is meaningful only when creating 
-     * an <code>NodeIterator</code> or <code>TreeWalker</code> with an 
-     * <code>Entity</code> node as its <code>root</code>; in this case, it 
-     * means that the <code>Entity</code> node will appear in the first 
-     * position of the traversal. Since entities are not part of the 
-     * document tree, they do not appear when traversing over the document 
+     * Show <code>Entity</code> nodes. This is meaningful only when creating
+     * an <code>NodeIterator</code> or <code>TreeWalker</code> with an
+     * <code>Entity</code> node as its <code>root</code>; in this case, it
+     * means that the <code>Entity</code> node will appear in the first
+     * position of the traversal. Since entities are not part of the
+     * document tree, they do not appear when traversing over the document
      * tree.
      */
     public static final int SHOW_ENTITY               = 0x00000020;
@@ -118,25 +118,25 @@ public interface NodeFilter {
      */
     public static final int SHOW_DOCUMENT_FRAGMENT    = 0x00000400;
     /**
-     * Show <code>Notation</code> nodes. This is meaningful only when creating 
-     * an <code>NodeIterator</code> or <code>TreeWalker</code> with a 
-     * <code>Notation</code> node as its <code>root</code>; in this case, it 
-     * means that the <code>Notation</code> node will appear in the first 
-     * position of the traversal. Since notations are not part of the 
-     * document tree, they do not appear when traversing over the document 
+     * Show <code>Notation</code> nodes. This is meaningful only when creating
+     * an <code>NodeIterator</code> or <code>TreeWalker</code> with a
+     * <code>Notation</code> node as its <code>root</code>; in this case, it
+     * means that the <code>Notation</code> node will appear in the first
+     * position of the traversal. Since notations are not part of the
+     * document tree, they do not appear when traversing over the document
      * tree.
      */
     public static final int SHOW_NOTATION             = 0x00000800;
 
     /**
-     * Test whether a specified node is visible in the logical view of a 
-     * <code>TreeWalker</code> or <code>NodeIterator</code>. This function 
-     * will be called by the implementation of <code>TreeWalker</code> and 
-     * <code>NodeIterator</code>; it is not normally called directly from 
-     * user code. (Though you could do so if you wanted to use the same 
+     * Test whether a specified node is visible in the logical view of a
+     * <code>TreeWalker</code> or <code>NodeIterator</code>. This function
+     * will be called by the implementation of <code>TreeWalker</code> and
+     * <code>NodeIterator</code>; it is not normally called directly from
+     * user code. (Though you could do so if you wanted to use the same
      * filter to guide your own application logic.)
      * @param n The node to check to see if it passes the filter or not.
-     * @return A constant to determine whether the node is accepted, 
+     * @return A constant to determine whether the node is accepted,
      *   rejected, or skipped, as defined above.
      */
     public short acceptNode(Node n);

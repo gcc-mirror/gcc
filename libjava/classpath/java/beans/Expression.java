@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -40,13 +40,13 @@ package java.beans;
 /**
  * <p>An Expression captures the execution of an object method
  * that returns a value.</p>
- * 
+ *
  * <p>It stores an object, the method to call, and the arguments to pass to
  * the method.</p>
- * 
+ *
  * <p>While this class can generally be used to describe method calls it is
- * part of the XML serialization API.</p> 
- * 
+ * part of the XML serialization API.</p>
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  * @since 1.4
  */
@@ -63,7 +63,7 @@ public class Expression extends Statement
    * Constructor Constructs an Expression representing the invocation of
    * object.methodName(arg[0], arg[1], ...); However, it will never be executed.
    * Instead, value will always be returned.
-   * 
+   *
    * @param value
    *          The value to return.
    * @param target
@@ -83,7 +83,7 @@ public class Expression extends Statement
   /**
    * Constructor Constructs an Expression representing the invocation of
    * object.methodName(arg[0], arg[1], ...);
-   * 
+   *
    * @param target
    *          The object to invoke the method on.
    * @param methodName
@@ -102,7 +102,7 @@ public class Expression extends Statement
    * been set, the method is executed in the same way as Statement.execute(),
    * except that the value is cached, and then returned. If the value has been
    * set, it is returned without executing the method again.
-   * 
+   *
    * @return the result of executing the method.
    * @exception Exception
    *              if an error occurs
@@ -116,7 +116,7 @@ public class Expression extends Statement
 
   /**
    * Set the cached value to be returned by getValue()
-   * 
+   *
    * @param value
    *          the value to cache and return.
    */

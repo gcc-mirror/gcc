@@ -1,4 +1,4 @@
-/* URIResolverEntityResolver.java -- 
+/* URIResolverEntityResolver.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -79,5 +79,5 @@ class URIResolverEntityResolver
         throw new SAXException(e);
       }
   }
-  
+
 }

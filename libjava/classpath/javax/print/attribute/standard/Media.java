@@ -50,7 +50,7 @@ import javax.print.attribute.PrintRequestAttribute;
  * <p>
  * The media to be used can be specified in three ways represented
  * by the media subclasses {@link javax.print.attribute.standard.MediaTray},
- * {@link javax.print.attribute.standard.MediaName} and 
+ * {@link javax.print.attribute.standard.MediaName} and
  * {@link javax.print.attribute.standard.MediaSizeName}:
  * <ul>
  * <li>Selection by paper source - selection of printer tray to be used.</li>
@@ -59,11 +59,11 @@ import javax.print.attribute.PrintRequestAttribute;
  * </ul>
  * Each of the sublcasses represents the IPP attribute <code>media</code>
  * and provides predefined values to be used.
- * </p> 
+ * </p>
  * <p>
  * <b>IPP Compatibility:</b> Media is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -74,14 +74,14 @@ public abstract class Media extends EnumSyntax
 
   /**
    * Constructs a <code>Media</code> object.
-   * 
+   *
    * @param value the enum value.
    */
   protected Media(int value)
   {
     super(value);
   }
-    
+
   /**
    * Tests if the given object is equal to this object.
    * The objects are considered equal if both are of the same
@@ -89,14 +89,14 @@ public abstract class Media extends EnumSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
     if (obj == null)
       return false;
-    
+
     return (obj.getClass() == this.getClass()
             && ((Media) obj).getValue() == this.getValue());
   }

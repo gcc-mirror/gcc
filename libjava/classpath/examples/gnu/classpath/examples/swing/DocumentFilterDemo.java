@@ -47,20 +47,20 @@ import javax.swing.text.DocumentFilter;
 
 /**
  * A demonstration of the <code>javax.swing.text.DocumentFilter</code> class.
- * 
+ *
  * <p>Similar to a dialog in a popular programming IDE the user can insert
  * a CVS URL into a textfield and the filter will split the components apart
  * and will put them into the right textfields saving the user a lot of
  * typing time.</p>
- * 
+ *
  * @author Robert Schuster
  */
-public class DocumentFilterDemo 
-  extends JPanel 
-  implements ActionListener 
+public class DocumentFilterDemo
+  extends JPanel
+  implements ActionListener
 {
   JTextField target;
-  
+
   JTextField host;
   JTextField repositoryPath;
   JTextField user;
@@ -70,16 +70,16 @@ public class DocumentFilterDemo
   /**
    * Creates a new demo instance.
    */
-  public DocumentFilterDemo() 
+  public DocumentFilterDemo()
   {
     createContent();
-    // initFrameContent() is only called (from main) when running this app 
+    // initFrameContent() is only called (from main) when running this app
     // standalone
   }
-  
+
   /**
    * When the demo is run independently, the frame is displayed, so we should
-   * initialise the content panel (including the demo content and a close 
+   * initialise the content panel (including the demo content and a close
    * button).  But when the demo is run as part of the Swing activity board,
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
@@ -97,30 +97,30 @@ public class DocumentFilterDemo
   private void createContent()
   {
     setLayout(new BorderLayout());
-    
+
     JPanel panel = new JPanel(new GridLayout(7, 2));
     panel.add(new JLabel("CVS URL:"));
     panel.add(target = new JTextField(20));
     target.setBackground(Color.RED);
-    
+
     panel.add(new JLabel("Host:"));
     panel.add(host = new JTextField(20));
-    
+
     panel.add(new JLabel("Repository Path:"));
     panel.add(repositoryPath = new JTextField(20));
-    
+
     panel.add(new JLabel("Username:"));
     panel.add(user = new JTextField(20));
-    
+
     panel.add(new JLabel("Password:"));
     panel.add(password = new JTextField(20));
-    
+
     panel.add(new JLabel("Connection Type:"));
     panel.add(connectionType = new JComboBox());
-    
+
     JButton helpButton = new JButton("Help");
     panel.add(helpButton);
-    
+
     helpButton.addActionListener(new ActionListener()
       {
         public void actionPerformed(ActionEvent ae)
@@ -134,7 +134,7 @@ public class DocumentFilterDemo
                                         "string into your clipboard.");
         }
       });
-    
+
     JButton exampleButton = new JButton("Provide me an example!");
     panel.add(exampleButton);
     exampleButton.addActionListener(new ActionListener()
@@ -148,9 +148,9 @@ public class DocumentFilterDemo
              StringSelection selection
                = new StringSelection(":extssh:gnu@cvs.savannah.gnu.org:" +
                         "/cvs/example/project");
-             
+
              cb.setContents(selection, selection);
-             
+
              // Confirm success with a beep.
              tk.beep();
            }
@@ -164,25 +164,25 @@ public class DocumentFilterDemo
            }
         }
       });
-    
+
     connectionType.addItem("pserver");
     connectionType.addItem("ext");
     connectionType.addItem("extssh");
-    
+
     add(panel);
-    
+
     AbstractDocument doc = (AbstractDocument) target.getDocument();
     doc.setDocumentFilter(new CVSFilter());
   }
-  
-  public void actionPerformed(ActionEvent e) 
+
+  public void actionPerformed(ActionEvent e)
   {
     if (e.getActionCommand().equals("CLOSE"))
       System.exit(0);
-    
-  } 
 
-  public static void main(String[] args) 
+  }
+
+  public static void main(String[] args)
   {
     SwingUtilities.invokeLater
     (new Runnable()
@@ -215,7 +215,7 @@ public class DocumentFilterDemo
       }
     };
   }
-  
+
   class CVSFilter extends DocumentFilter
   {
     // example: pserver:anonymous@cvs.sourceforge.net:/cvsroot/fmj
@@ -228,7 +228,7 @@ public class DocumentFilterDemo
     {
       filterString(fb, offset, 0, string, attr, true);
     }
-    
+
     public void replace(DocumentFilter.FilterBypass fb,
                               int offset, int length,
                               String string,
@@ -237,7 +237,7 @@ public class DocumentFilterDemo
     {
       filterString(fb, offset, length, string, attr, false);
     }
-    
+
     public void filterString(DocumentFilter.FilterBypass fb,
                              int offset, int length, String string,
                              AttributeSet attr, boolean insertion)
@@ -253,12 +253,12 @@ public class DocumentFilterDemo
           // operation on the remaining string and continue.
           if(result[0].equals(""))
             result = result[1].split(":", 2);
-                
+
           connectionType.setSelectedItem(result[0]);
-              
+
           // Split off the username and password part
           result = result[1].split("@", 2);
-              
+
           // Break username and password in half
           String[] userCredentials = result[0].split(":");
           user.setText(userCredentials[0]);
@@ -267,22 +267,22 @@ public class DocumentFilterDemo
           // be the password.
           if (userCredentials.length == 2)
             password.setText(userCredentials[1]);
-              
+
           // Now break the host part apart.
           result = result[1].split(":");
-              
+
           host.setText(result[0]);
-              
+
           repositoryPath.setText(result[1]);
         }
-          
+
       // The unmodified string is put into the document.
       if (insertion)
         fb.insertString(offset, string, attr);
       else
         fb.replace(offset, length, string, attr);
     }
-    
+
   }
-  
+
 }

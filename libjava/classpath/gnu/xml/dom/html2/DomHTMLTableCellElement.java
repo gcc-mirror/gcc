@@ -1,4 +1,4 @@
-/* DomHTMLTableCellElement.java -- 
+/* DomHTMLTableCellElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -70,7 +70,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("abbr", abbr);
   }
-  
+
   public String getAlign()
   {
     return getHTMLAttribute("align");
@@ -80,7 +80,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getAxis()
   {
     return getHTMLAttribute("axis");
@@ -90,7 +90,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("axis", axis);
   }
-  
+
   public String getBgColor()
   {
     return getHTMLAttribute("bgcolor");
@@ -100,7 +100,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("bgcolor", bgColor);
   }
-  
+
   public String getCh()
   {
     return getHTMLAttribute("char");
@@ -110,7 +110,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("char", ch);
   }
-  
+
   public String getChOff()
   {
     return getHTMLAttribute("charoff");
@@ -120,7 +120,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("charoff", chOff);
   }
-  
+
   public int getColSpan()
   {
     return getIntHTMLAttribute("colspan");
@@ -130,7 +130,7 @@ public class DomHTMLTableCellElement
   {
     setIntHTMLAttribute("colspan", colSpan);
   }
-  
+
   public String getHeaders()
   {
     return getHTMLAttribute("headers");
@@ -140,7 +140,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("headers", headers);
   }
-  
+
   public String getHeight()
   {
     return getHTMLAttribute("height");
@@ -150,7 +150,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("height", height);
   }
-  
+
   public boolean getNoWrap()
   {
     return getBooleanHTMLAttribute("nowrap");
@@ -160,7 +160,7 @@ public class DomHTMLTableCellElement
   {
     setBooleanHTMLAttribute("nowrap", noWrap);
   }
-  
+
   public int getRowSpan()
   {
     return getIntHTMLAttribute("rowspan");
@@ -170,7 +170,7 @@ public class DomHTMLTableCellElement
   {
     setIntHTMLAttribute("rowspan", rowSpan);
   }
-  
+
   public String getScope()
   {
     return getHTMLAttribute("scope");
@@ -180,7 +180,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("scope", scope);
   }
-  
+
   public String getVAlign()
   {
     return getHTMLAttribute("valign");
@@ -190,7 +190,7 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("valign", vAlign);
   }
-  
+
   public String getWidth()
   {
     return getHTMLAttribute("width");
@@ -200,6 +200,5 @@ public class DomHTMLTableCellElement
   {
     setHTMLAttribute("width", width);
   }
-  
-}
 
+}

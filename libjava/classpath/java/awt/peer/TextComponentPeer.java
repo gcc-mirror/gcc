@@ -54,13 +54,12 @@ public interface TextComponentPeer extends ComponentPeer
   int getIndexAtPoint(int x, int y);
   Rectangle getCharacterBounds(int pos);
   long filterEvents(long filter);
-  
+
   /**
    * Retrieve this text component peer's input method requests.
-   * 
+   *
    * @return the input method requests made by this text component peer
    * @since 1.5
    */
   InputMethodRequests getInputMethodRequests();
-} // interface TextComponentPeer 
-
+} // interface TextComponentPeer

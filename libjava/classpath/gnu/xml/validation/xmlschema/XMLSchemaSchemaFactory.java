@@ -1,4 +1,4 @@
-/* XMLSchemaSchemaFactory.java -- 
+/* XMLSchemaSchemaFactory.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -77,7 +77,7 @@ public class XMLSchemaSchemaFactory
   {
     this.resourceResolver = resourceResolver;
   }
-  
+
   public ErrorHandler getErrorHandler()
   {
     return this.errorHandler;
@@ -85,7 +85,7 @@ public class XMLSchemaSchemaFactory
 
   public void setErrorHandler(ErrorHandler errorHandler)
   {
-    this.errorHandler = errorHandler;    
+    this.errorHandler = errorHandler;
   }
 
 
@@ -167,6 +167,5 @@ public class XMLSchemaSchemaFactory
         throw e2;
       }
   }
-  
-}
 
+}

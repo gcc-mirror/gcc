@@ -1,4 +1,4 @@
-/* DomHTMLImpl.java -- 
+/* DomHTMLImpl.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,7 +48,7 @@ import org.w3c.dom.Document;
 public class DomHTMLImpl
   extends DomImpl
 {
-  
+
   protected Document createDocument()
   {
     return new DomHTMLDocument(this);
@@ -64,4 +64,3 @@ public class DomHTMLImpl
   }
 
 }
-

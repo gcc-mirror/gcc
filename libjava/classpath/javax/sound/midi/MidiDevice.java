@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * Interface for all MIDI devices.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -52,69 +52,69 @@ public interface MidiDevice
    * @return the Info object describing this device
    */
   public Info getDeviceInfo();
-  
+
   /**
    * Open this MIDI device and allocate any system resource we need.
-   * 
+   *
    * @throws MidiUnavailableException if we're not able to open for some reason
    */
   public void open() throws MidiUnavailableException;
-  
+
   /**
    * Close this MIDI device, and release any system resources we're using.
    */
   public void close();
-  
+
   /**
    * Returns true if this MIDI device is open and false otherwise.
-   * 
+   *
    * @return true if this is open, false otherwise
    */
   public boolean isOpen();
-  
+
   /**
    * If this device supports time-stamps, then it will return the number
    * of microseconds since this device has been open, and -1 otherwise.
-   * 
+   *
    * @return -1 or the number of microseconds since this was opened
    */
   public long getMicrosecondPosition();
-  
+
   /**
    * The maximum number of MIDI IN connections we can get as Receivers,
    * or -1 if there is no maximum.
-   * 
+   *
    * @return -1 or the maximum number of Receivers we can get
    */
   public int getMaxReceivers();
-  
+
   /**
    * The maximum number of MIDI OUT connections we can get as Transmitters,
    * or -1 if there is no maximum.
-   * 
+   *
    * @return -1 or the maximum number of Transmitters we can get
    */
   public int getMaxTransmitters();
-  
+
   /**
    * Get a MIDI IN Receiver for this device.
-   * 
+   *
    * @return a MIDI IN Receiver for this device
    * @throws MidiUnavailableException if we can't get a Receiver
    */
   public Receiver getReceiver() throws MidiUnavailableException;
-  
+
   /**
    * Get a MIDI OUT Transmitter for this device.
-   * 
+   *
    * @return a MIDI OUT Transmitter for this device
    * @throws MidiUnavailableException if we can't get a Transmitter
    */
   public Transmitter getTransmitter() throws MidiUnavailableException;
-  
+
   /**
    * A MIDI device descriptor object.
-   * 
+   *
    * @author green@redhat.com
    *
    */
@@ -125,10 +125,10 @@ public interface MidiDevice
     private String vendor;
     private String description;
     private String version;
-    
+
     /**
      * Create an Info object for a MIDI device
-     * 
+     *
      * @param name the device name
      * @param vendor the vendor name
      * @param description the device description
@@ -141,11 +141,11 @@ public interface MidiDevice
       this.description = description;
       this.version = version;
     }
-    
+
     /**
      * This equals method only returns true if this object
      * is the same as obj.
-     * 
+     *
      * @param obj the object we're comparing to
      * @return true if this is the same object
      * @see java.lang.Object#equals(java.lang.Object)
@@ -154,10 +154,10 @@ public interface MidiDevice
     {
       return super.equals(obj);
     }
-  
+
     /**
      * A hash code for this object.
-     *     
+     *
      * @return the hash code for this object
      * @see java.lang.Object#hashCode()
      */
@@ -165,50 +165,50 @@ public interface MidiDevice
     {
       return super.hashCode();
     }
-  
+
     /**
      * Get the device name.
-     * 
+     *
      * @return the device name
      */
     public final String getName()
     {
       return name;
     }
-    
+
     /**
      * Get the device vendor.
-     * 
+     *
      * @return the device vendor
      */
     public final String getVendor()
     {
       return vendor;
     }
-    
+
     /**
      * Get the device description
-     * 
+     *
      * @return the device description
      */
     public final String getDescription()
     {
       return description;
     }
-    
+
     /**
      * get the device version
-     * 
+     *
      * @return the device version
      */
     public final String getVersion()
     {
       return version;
     }
-    
+
     /**
      * Simple return the name of the device.
-     * 
+     *
      * @return the device name
      * @see java.lang.Object#toString()
      */

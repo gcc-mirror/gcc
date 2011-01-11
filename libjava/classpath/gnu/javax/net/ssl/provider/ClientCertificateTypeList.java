@@ -74,7 +74,7 @@ public class ClientCertificateTypeList implements Iterable<ClientCertificateType
     return CertificateRequest.ClientCertificateType.forValue
       (buffer.get (index + 1) & 0xFF);
   }
-  
+
   public java.util.Iterator<ClientCertificateType> iterator()
   {
     return new Iterator();

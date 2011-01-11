@@ -43,9 +43,9 @@ import java.io.Serializable;
 /**
  * Means that the object exists but does not support the operation that was
  * invoked on it.
- * 
+ *
  * In GNU Classpath, this exception may have the following Minor codes:
- * 
+ *
  * <table border="1">
  * <tr>
  * <th>Hex</th>
@@ -111,7 +111,7 @@ import java.io.Serializable;
  * policies for the given policy type. </td>
  * </tr>
  * </table>
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class BAD_OPERATION
@@ -126,7 +126,7 @@ public final class BAD_OPERATION
   /**
    * Creates a BAD_OPERATION with the default minor code of 0, completion state
    * COMPLETED_NO and the given explaining message.
-   * 
+   *
    * @param message the explaining message.
    */
   public BAD_OPERATION(String message)
@@ -146,7 +146,7 @@ public final class BAD_OPERATION
   /**
    * Creates a BAD_OPERATION exception with the specified minor code and
    * completion status.
-   * 
+   *
    * @param minor additional error code.
    * @param completed the method completion status.
    */
@@ -157,7 +157,7 @@ public final class BAD_OPERATION
 
   /**
    * Created BAD_OPERATION exception, providing full information.
-   * 
+   *
    * @param reason explaining message.
    * @param minor additional error code (the "minor").
    * @param completed the method completion status.

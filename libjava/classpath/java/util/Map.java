@@ -310,7 +310,7 @@ public interface Map<K, V>
      * Returns the hash code of the entry.  This is defined as the
      * exclusive-or of the hashcodes of the key and value (using 0 for
      * <code>null</code>). In other words, this must be:
-     * 
+     *
 <p><pre>(getKey() == null ? 0 : getKey().hashCode())
 ^ (getValue() == null ? 0 : getValue().hashCode())</pre>
      *
@@ -322,7 +322,7 @@ public interface Map<K, V>
      * Compares the specified object with this entry. Returns true only if
      * the object is a mapping of identical key and value. In other words,
      * this must be:
-     * 
+     *
 <p><pre>(o instanceof Map.Entry)
 && (getKey() == null ? ((Map.Entry) o).getKey() == null
                      : getKey().equals(((Map.Entry) o).getKey()))

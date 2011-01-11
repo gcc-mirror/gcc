@@ -78,20 +78,20 @@ final class IconvDecoder extends CharsetDecoder
       inArr = in.array();
     else
       {
-	inArr = new byte[remIn];
-	in.get(inArr);
+        inArr = new byte[remIn];
+        in.get(inArr);
       }
 
     if (out.hasArray())
       {
-	ret = decode(inArr, out.array(), inPos, remIn, outPos, remOut);
-	out.position(outPos + (remOut - outremaining));
+        ret = decode(inArr, out.array(), inPos, remIn, outPos, remOut);
+        out.position(outPos + (remOut - outremaining));
       }
     else
       {
-	char[] outArr = new char[remOut];
-	ret = decode(inArr, outArr, inPos, remIn, outPos, remOut);
-	out.put(outArr, 0, (remOut - outremaining));
+        char[] outArr = new char[remOut];
+        ret = decode(inArr, outArr, inPos, remIn, outPos, remOut);
+        out.put(outArr, 0, (remOut - outremaining));
       }
     in.position(inPos + (remIn - inremaining));
 
@@ -108,5 +108,3 @@ final class IconvDecoder extends CharsetDecoder
     closeIconv();
   }
 }
-
-

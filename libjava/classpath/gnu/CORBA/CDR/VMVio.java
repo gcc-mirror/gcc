@@ -36,13 +36,13 @@
  exception statement from your version. */
 
 /**
- * This is a temporary replacement for the native call that would allocate 
+ * This is a temporary replacement for the native call that would allocate
  * objects without public constructors. The replacement only allocates
  * objects with public parameterless constructor and objects with public
  * constructor taking string (like some Throwables).
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
- * 
+ *
  * TODO FIXME replace by native call like in VMObjectInputStream.
  * Required modification of Classpath the build system.
  */

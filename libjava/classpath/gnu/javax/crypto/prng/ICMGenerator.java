@@ -1,4 +1,4 @@
-/* ICMGenerator.java -- 
+/* ICMGenerator.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -269,8 +269,8 @@ public class ICMGenerator
       }
     catch (LimitReachedException impossible)
       {
-	throw (InternalError)
-	  new InternalError().initCause(impossible);
+        throw (InternalError)
+          new InternalError().initCause(impossible);
       }
   }
 

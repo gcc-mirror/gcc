@@ -140,7 +140,7 @@ public class WStringValueHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("WString value type expected");
         bad.minor = Minor.Any;
-        throw bad;        
+        throw bad;
       }
   }
 

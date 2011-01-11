@@ -1,4 +1,4 @@
-/* LineBorder.java -- 
+/* LineBorder.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -121,12 +121,12 @@ public class LineBorder extends AbstractBorder
   {
     this (color, thickness, /* roundedCorners */ false);
   }
-  
-  
+
+
   /**
    * Constructs a LineBorder given its color, thickness, and whether
    * it has rounded corners.
-   * 
+   *
    * <p><img src="doc-files/LineBorder-1.png" width="500" height="200"
    * alt="[An illustration of two LineBorders]" />
    *
@@ -159,12 +159,12 @@ public class LineBorder extends AbstractBorder
     this.thickness = thickness;
     this.roundedCorners = roundedCorners;
   }
-  
-  
+
+
   /**
    * Returns a black, one pixel thick, plain {@link LineBorder}. The method
    * may always return the same (singleton) {@link LineBorder} instance.
-   * 
+   *
    * @return The border.
    */
   public static Border createBlackLineBorder()
@@ -174,15 +174,15 @@ public class LineBorder extends AbstractBorder
      */
     if (blackLineBorder == null)
       blackLineBorder = new LineBorder(Color.black);
-    
+
     return blackLineBorder;
   }
-  
-  
+
+
   /**
    * Returns a gray, one pixel thick, plain {@link LineBorder}. The method
    * may always return the same (singleton) {@link LineBorder} instance.
-   * 
+   *
    * @return The border.
    */
   public static Border createGrayLineBorder()
@@ -192,11 +192,11 @@ public class LineBorder extends AbstractBorder
      */
     if (grayLineBorder == null)
       grayLineBorder = new LineBorder(Color.gray);
-    
+
     return grayLineBorder;
   }
-  
-  
+
+
   /**
    * Paints the line border around a given Component.
    *
@@ -255,8 +255,8 @@ public class LineBorder extends AbstractBorder
       g.setColor(oldColor);
     }
   }
-  
-  
+
+
   /**
    * Measures the width of this border.
    *
@@ -273,8 +273,8 @@ public class LineBorder extends AbstractBorder
   {
     return new Insets(thickness, thickness, thickness, thickness);
   }
-  
-  
+
+
   /**
    * Measures the width of this border, storing the results into a
    * pre-existing Insets object.
@@ -295,30 +295,30 @@ public class LineBorder extends AbstractBorder
     insets.left = insets.right = insets.top = insets.bottom = thickness;
     return insets;
   }
-  
-  
+
+
   /**
    * Returns the color of the line.
-   * 
+   *
    * @return The line color (never <code>null</code>).
    */
   public Color getLineColor()
   {
     return lineColor;
   }
-  
-  
+
+
   /**
    * Returns the thickness of the line in pixels.
-   * 
+   *
    * @return The line thickness (in pixels).
    */
   public int getThickness()
   {
     return thickness;
   }
-  
-  
+
+
   /**
    * Returns whether this LineBorder os drawm with rounded
    * or with plain corners.
@@ -330,8 +330,8 @@ public class LineBorder extends AbstractBorder
   {
     return roundedCorners;
   }
-  
-  
+
+
   /**
    * Determines whether this border fills every pixel in its area
    * when painting.

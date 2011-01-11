@@ -1,4 +1,4 @@
-/* PipeImpl.java -- 
+/* PipeImpl.java --
    Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,7 +49,7 @@ class PipeImpl extends Pipe
     implements VMChannelOwner
   {
     private VMChannel vmch;
-    
+
     public SourceChannelImpl (SelectorProvider selectorProvider,
                               VMChannel channel)
     {
@@ -82,18 +82,18 @@ class PipeImpl extends Pipe
     }
 
     public final synchronized long read (ByteBuffer[] srcs, int offset,
-					 int len)
+                                         int len)
       throws IOException
     {
       if (offset < 0
-	  || offset > srcs.length
-	  || len < 0
-	  || len > srcs.length - offset)
-	throw new IndexOutOfBoundsException();
+          || offset > srcs.length
+          || len < 0
+          || len > srcs.length - offset)
+        throw new IndexOutOfBoundsException();
 
       return vmch.readScattering(srcs, offset, len);
     }
-    
+
     public VMChannel getVMChannel()
     {
       return vmch;
@@ -104,7 +104,7 @@ class PipeImpl extends Pipe
     implements VMChannelOwner
   {
     private VMChannel vmch;
-    
+
     public SinkChannelImpl (SelectorProvider selectorProvider,
                             VMChannel channel)
     {
@@ -140,14 +140,14 @@ class PipeImpl extends Pipe
       throws IOException
     {
       if (offset < 0
-	  || offset > srcs.length
-	  || len < 0
-	  || len > srcs.length - offset)
-	throw new IndexOutOfBoundsException();
-      
+          || offset > srcs.length
+          || len < 0
+          || len > srcs.length - offset)
+        throw new IndexOutOfBoundsException();
+
       return vmch.writeGathering(srcs, offset, len);
     }
-    
+
     public VMChannel getVMChannel()
     {
       return vmch;
@@ -156,7 +156,7 @@ class PipeImpl extends Pipe
 
   private SinkChannelImpl sink;
   private SourceChannelImpl source;
-  
+
   public PipeImpl (SelectorProvider provider)
     throws IOException
   {

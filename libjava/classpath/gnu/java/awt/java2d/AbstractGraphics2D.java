@@ -166,7 +166,7 @@ public abstract class AbstractGraphics2D
    */
   protected static final WeakHashMap<Image, HashMap<Dimension,Image>> imageCache =
     new WeakHashMap<Image, HashMap<Dimension, Image>>();
-  
+
   /**
    * Wether we use anti aliasing for rendering text by default or not.
    */
@@ -234,7 +234,7 @@ public abstract class AbstractGraphics2D
    */
   private Color foreground = Color.BLACK;
   private boolean isForegroundColorNull = true;
-  
+
   /**
    * The current font.
    */
@@ -287,16 +287,16 @@ public abstract class AbstractGraphics2D
   private static final HashMap<Key, Object> STANDARD_HINTS;
   static
     {
-    
+
       HashMap<Key, Object> hints = new HashMap<Key, Object>();
       hints.put(RenderingHints.KEY_TEXT_ANTIALIASING,
                 RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
       hints.put(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_DEFAULT);
-    
+
       STANDARD_HINTS = hints;
     }
-  
+
   /**
    * Creates a new AbstractGraphics2D instance.
    */
@@ -398,8 +398,8 @@ public abstract class AbstractGraphics2D
    *
    * @param image the source buffered image
    * @param op the filter to apply to the buffered image before rendering
-   * @param x the x coordinate to render the image to 
-   * @param y the y coordinate to render the image to 
+   * @param x the x coordinate to render the image to
+   * @param y the y coordinate to render the image to
    */
   public void drawImage(BufferedImage image, BufferedImageOp op, int x, int y)
   {
@@ -415,7 +415,7 @@ public abstract class AbstractGraphics2D
    * transform is used to convert the image into user space. The transform
    * of this AbstractGraphics2D object is used to transform from user space
    * to device space.
-   * 
+   *
    * The rendering is performed using the scanline algorithm that performs the
    * rendering of other shapes and a custom Paint implementation, that supplies
    * the pixel values of the rendered image.
@@ -438,7 +438,7 @@ public abstract class AbstractGraphics2D
    * of this AbstractGraphics2D object is used to transform from user space
    * to device space. Only the area specified by <code>areaOfInterest</code>
    * is finally rendered to the target.
-   * 
+   *
    * The rendering is performed using the scanline algorithm that performs the
    * rendering of other shapes and a custom Paint implementation, that supplies
    * the pixel values of the rendered image.
@@ -504,7 +504,7 @@ public abstract class AbstractGraphics2D
                                              (int) image.getWidth(),
                                              (int) image.getHeight());
     drawRenderableImageImpl(image, xform, areaOfInterest);
-                                                       
+
   }
 
   /**
@@ -648,7 +648,7 @@ public abstract class AbstractGraphics2D
     if (p != null)
       {
         paint = p;
-        
+
         if (! (paint instanceof Color))
           {
             isOptimized = false;
@@ -665,11 +665,11 @@ public abstract class AbstractGraphics2D
         this.foreground = Color.BLACK;
         isForegroundColorNull = true;
       }
-    
+
     // free resources if needed, then put the paint context to null
     if (this.paintContext != null)
       this.paintContext.dispose();
-    
+
     this.paintContext = null;
   }
 
@@ -745,7 +745,7 @@ public abstract class AbstractGraphics2D
    * Translates the coordinate system by (x, y).
    *
    * @param x the translation X coordinate
-   * @param y the translation Y coordinate 
+   * @param y the translation Y coordinate
    */
   public void translate(int x, int y)
   {
@@ -775,7 +775,7 @@ public abstract class AbstractGraphics2D
    * Translates the coordinate system by (tx, ty).
    *
    * @param tx the translation X coordinate
-   * @param ty the translation Y coordinate 
+   * @param ty the translation Y coordinate
    */
   public void translate(double tx, double ty)
   {
@@ -992,7 +992,7 @@ public abstract class AbstractGraphics2D
     if (clip == null)
       setClip(s);
 
-    // This is so common, let's optimize this. 
+    // This is so common, let's optimize this.
     else if (clip instanceof Rectangle && s instanceof Rectangle)
       {
         Rectangle clipRect = (Rectangle) clip;
@@ -1076,8 +1076,8 @@ public abstract class AbstractGraphics2D
         else
           copy.clip = null;
 
-	copy.renderingHints = new RenderingHints(null);
-	copy.renderingHints.putAll(renderingHints);
+        copy.renderingHints = new RenderingHints(null);
+        copy.renderingHints.putAll(renderingHints);
         copy.transform = new AffineTransform(transform);
         // The remaining state is inmmutable and doesn't need to be copied.
         return copy;
@@ -1097,7 +1097,7 @@ public abstract class AbstractGraphics2D
   {
     if (isForegroundColorNull)
       return null;
-    
+
     return this.foreground;
   }
 
@@ -1107,7 +1107,7 @@ public abstract class AbstractGraphics2D
    * @param color the foreground to set
    */
   public void setColor(Color color)
-  { 
+  {
     this.setPaint(color);
   }
 
@@ -1298,7 +1298,7 @@ public abstract class AbstractGraphics2D
   /**
    * Fills a rectangle with the current background color.
    *
-   * This implementation temporarily sets the foreground color to the 
+   * This implementation temporarily sets the foreground color to the
    * background and forwards the call to {@link #fillRect(int, int, int, int)}.
    *
    * @param x the upper left corner, X coordinate
@@ -1590,7 +1590,7 @@ public abstract class AbstractGraphics2D
     int dy = Math.min(dy1, dy2);
     int dw = Math.abs(dx1 - dx2);
     int dh = Math.abs(dy1 - dy2);
-    
+
     AffineTransform t = new AffineTransform();
     t.translate(sx - dx, sy - dy);
     double scaleX = (double) sw / (double) dw;
@@ -1693,7 +1693,7 @@ public abstract class AbstractGraphics2D
    *
    * @param x0 the starting point, X coordinate
    * @param y0 the starting point, Y coordinate
-   * @param x1 the end point, X coordinate 
+   * @param x1 the end point, X coordinate
    * @param y1 the end point, Y coordinate
    */
   protected void rawDrawLine(int x0, int y0, int x1, int y1)
@@ -1806,7 +1806,7 @@ public abstract class AbstractGraphics2D
   public void renderScanline(int y, ScanlineCoverage c)
   {
     PaintContext pCtx = getPaintContext();
-    
+
     int x0 = c.getMinX();
     int x1 = c.getMaxX();
     Raster paintRaster = pCtx.getRaster(x0, y, x1 - x0, 1);
@@ -1842,7 +1842,7 @@ public abstract class AbstractGraphics2D
                                                     renderingHints);
     WritableRaster raster = getDestinationRaster();
     WritableRaster targetChild = raster.createWritableTranslatedChild(-x0, -y);
-    
+
     cCtx.compose(paintRaster, targetChild, targetChild);
     updateRaster(raster, x0, y, x1 - x0, 1);
     cCtx.dispose();
@@ -2042,7 +2042,7 @@ public abstract class AbstractGraphics2D
                                         getTransform(),
                                         getRenderingHints());
       }
-   
+
     return this.paintContext;
   }
 

@@ -43,12 +43,12 @@ import java.io.Serializable;
 import javax.naming.CompositeName;
 import javax.naming.InvalidNameException;
 import javax.naming.Name;
- 
+
 /**
  * Stores the partial resolution of the name. This class contains the
  * object to which part of the name has been resolved and the remaining,
- * unresolved part of this name. 
- * 
+ * unresolved part of this name.
+ *
  * @author Warren Levy (warrenl@redhat.com)
  */
 
@@ -61,22 +61,22 @@ public class ResolveResult implements Serializable
    * The object, to that part of the name has been resolved.
    */
   protected Object resolvedObj;
-  
+
   /**
    * The remaining, unresolved part of the name.
    */
   protected Name remainingName;
-  
+
   /**
    * Create the unitialised instance with both parts being null.
    */
   protected ResolveResult()
   {
   }
-  
+
   /**
    * Create the initialised instance
-   * 
+   *
    * @param resolved the object, to that the name is partially resolved
    * @param remaining the remaining unresolved part of the name.
    */
@@ -88,7 +88,7 @@ public class ResolveResult implements Serializable
     remainingName = new CompositeName ();
     try
       {
-	remainingName.add (remaining);
+        remainingName.add (remaining);
       }
     catch (InvalidNameException _)
       {
@@ -97,7 +97,7 @@ public class ResolveResult implements Serializable
 
   /**
    * Create the initialised instance
-   * 
+   *
    * @param resolved the object, to that the name is partially resolved
    * @param remaining the remaining unresolved part of the name.
    */
@@ -109,7 +109,7 @@ public class ResolveResult implements Serializable
 
   /**
    * Get the remaining unresolved part of the name
-   * 
+   *
    * @return the remaining unresolved part of the name.
    */
   public Name getRemainingName()
@@ -119,17 +119,17 @@ public class ResolveResult implements Serializable
 
   /**
    * Get the object to that the name was partially resolved
-   * 
+   *
    * @return the object, to that the name is partially resolved
    */
   public Object getResolvedObj()
   {
     return resolvedObj;
   }
-  
+
   /**
    * Set the remaining unresolved name.
-   * 
+   *
    * @param name the name being set. The passed parameter is cloned, so the
    *          caller can reuse or modify it after the method returns.
    */
@@ -137,17 +137,17 @@ public class ResolveResult implements Serializable
   {
     remainingName = (Name) name.clone();
   }
-  
+
   /**
    * Append the name to the end of the resolved name.
-   * 
+   *
    * @param name the name to append
    */
   public void appendRemainingName(Name name)
   {
     try
       {
-	remainingName.addAll(name);
+        remainingName.addAll(name);
       }
     catch (InvalidNameException _)
       {
@@ -156,14 +156,14 @@ public class ResolveResult implements Serializable
 
   /**
    * Append the name to the end of the resolved name.
-   * 
+   *
    * @param name the name to append
    */
   public void appendRemainingComponent(String name)
   {
     try
       {
-	remainingName.add(name);
+        remainingName.add(name);
       }
     catch (InvalidNameException _)
       {
@@ -172,7 +172,7 @@ public class ResolveResult implements Serializable
 
   /**
    * Set the object to that the part of the name has been resolved.
-   * 
+   *
    * @param obj the object, to that the name has been partially resolved.
    */
   public void setResolvedObj(Object obj)

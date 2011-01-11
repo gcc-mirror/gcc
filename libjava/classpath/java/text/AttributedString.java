@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -50,9 +50,9 @@ import java.util.Set;
 
 /**
  * This class models a <code>String</code> with attributes over various
- * subranges of the string.  It allows applications to access this 
+ * subranges of the string.  It allows applications to access this
  * information via the <code>AttributedCharacterIterator</code> interface.
- * 
+ *
  * @since 1.2
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -61,8 +61,8 @@ import java.util.Set;
 public class AttributedString
 {
 
-  /** 
-   * The attributes and ranges of text over which those attributes apply. 
+  /**
+   * The attributes and ranges of text over which those attributes apply.
    */
   final class AttributeRange
   {
@@ -78,12 +78,12 @@ public class AttributedString
 
     /**
      * Creates a new attribute range.
-     * 
+     *
      * @param attribs  the attributes.
      * @param beginIndex  the start index.
      * @param endIndex  the end index.
      */
-    AttributeRange(Map attribs, int beginIndex, int endIndex) 
+    AttributeRange(Map attribs, int beginIndex, int endIndex)
     {
       this.attribs = attribs;
       this.beginIndex = beginIndex;
@@ -104,7 +104,7 @@ public class AttributedString
    *
    * @param str The <code>String</code> to be attributed (<code>null</code> not
    *            permitted).
-   * 
+   *
    * @throws NullPointerException if <code>str</code> is <code>null</code>.
    */
   public AttributedString(String str)
@@ -135,10 +135,10 @@ public class AttributedString
    * that will use the text and attribute information from the specified
    * <code>AttributedCharacterIterator</code>.
    *
-   * @param aci The <code>AttributedCharacterIterator</code> containing the 
-   *            text and attribute information (<code>null</code> not 
+   * @param aci The <code>AttributedCharacterIterator</code> containing the
+   *            text and attribute information (<code>null</code> not
    *            permitted).
-   * 
+   *
    * @throws NullPointerException if <code>aci</code> is <code>null</code>.
    */
   public AttributedString(AttributedCharacterIterator aci)
@@ -151,7 +151,7 @@ public class AttributedString
    * that will use the text and attribute information from the specified
    * subrange of the specified <code>AttributedCharacterIterator</code>.
    *
-   * @param aci The <code>AttributedCharacterIterator</code> containing the 
+   * @param aci The <code>AttributedCharacterIterator</code> containing the
    *            text and attribute information.
    * @param beginIndex The beginning index of the text subrange.
    * @param endIndex The ending index of the text subrange.
@@ -170,14 +170,14 @@ public class AttributedString
    * specified array of attributes will be included in the attribute list
    * for this object.
    *
-   * @param aci The <code>AttributedCharacterIterator</code> containing the 
+   * @param aci The <code>AttributedCharacterIterator</code> containing the
    *            text and attribute information.
    * @param begin The beginning index of the text subrange.
    * @param end The ending index of the text subrange.
-   * @param attributes A list of attributes to include from the iterator, or 
+   * @param attributes A list of attributes to include from the iterator, or
    *                   <code>null</code> to include all attributes.
    */
-  public AttributedString(AttributedCharacterIterator aci, int begin, int end, 
+  public AttributedString(AttributedCharacterIterator aci, int begin, int end,
                           AttributedCharacterIterator.Attribute[] attributes)
   {
     // Validate some arguments
@@ -196,7 +196,7 @@ public class AttributedString
 
     ArrayList accum = new ArrayList();
     do
-      { 
+      {
         sb.append(c);
 
         Iterator iter = allAttribs.iterator();
@@ -208,7 +208,7 @@ public class AttributedString
             if (!(obj instanceof AttributedCharacterIterator.Attribute))
               continue;
 
-            AttributedCharacterIterator.Attribute attrib = 
+            AttributedCharacterIterator.Attribute attrib =
               (AttributedCharacterIterator.Attribute)obj;
 
             // Make sure the attribute is defined.
@@ -260,7 +260,7 @@ public class AttributedString
    * @param attrib The attribute to add.
    * @param value The value of the attribute.
    */
-  public void addAttribute(AttributedCharacterIterator.Attribute attrib, 
+  public void addAttribute(AttributedCharacterIterator.Attribute attrib,
           Object value)
   {
     addAttribute(attrib, value, 0, sci.getEndIndex());
@@ -275,10 +275,10 @@ public class AttributedString
    * @param begin The beginning index of the subrange.
    * @param end The ending index of the subrange.
    *
-   * @exception IllegalArgumentException If attribute is <code>null</code> or 
+   * @exception IllegalArgumentException If attribute is <code>null</code> or
    *            the subrange is not valid.
    */
-  public void addAttribute(AttributedCharacterIterator.Attribute attrib, 
+  public void addAttribute(AttributedCharacterIterator.Attribute attrib,
           Object value, int begin, int end)
   {
     if (attrib == null)
@@ -299,12 +299,12 @@ public class AttributedString
    * @param beginIndex The beginning index.
    * @param endIndex The ending index
    *
-   * @throws NullPointerException if <code>attributes</code> is 
+   * @throws NullPointerException if <code>attributes</code> is
    *         <code>null</code>.
    * @throws IllegalArgumentException if the subrange is not valid.
    */
   public void addAttributes(Map<? extends AttributedCharacterIterator.Attribute, ?> attributes,
-			    int beginIndex, int endIndex)
+                            int beginIndex, int endIndex)
   {
     if (attributes == null)
       throw new NullPointerException("null attribute");
@@ -316,19 +316,19 @@ public class AttributedString
     AttributeRange[] new_list = new AttributeRange[attribs.length + 1];
     System.arraycopy(attribs, 0, new_list, 0, attribs.length);
     attribs = new_list;
-    attribs[attribs.length - 1] = new AttributeRange(attributes, beginIndex, 
+    attribs[attribs.length - 1] = new AttributeRange(attributes, beginIndex,
                                                      endIndex);
-  } 
+  }
 
   /**
-   * Returns an <code>AttributedCharacterIterator</code> that 
+   * Returns an <code>AttributedCharacterIterator</code> that
    * will iterate over the entire string.
    *
    * @return An <code>AttributedCharacterIterator</code> for the entire string.
    */
   public AttributedCharacterIterator getIterator()
   {
-    return(new AttributedStringIterator(sci, attribs, 0, sci.getEndIndex(), 
+    return(new AttributedStringIterator(sci, attribs, 0, sci.getEndIndex(),
             null));
   }
 
@@ -351,11 +351,11 @@ public class AttributedString
 
   /**
    * Returns an <code>AttributedCharacterIterator</code> that
-   * will iterate over the specified subrange.  This iterator will return 
-   * information about the list of attributes in the specified array.  
-   * Attributes not in the array may or may not be returned by the iterator.  
-   * If the specified array is <code>null</code>, all attributes will be 
-   * returned.  
+   * will iterate over the specified subrange.  This iterator will return
+   * information about the list of attributes in the specified array.
+   * Attributes not in the array may or may not be returned by the iterator.
+   * If the specified array is <code>null</code>, all attributes will be
+   * returned.
    *
    * @param attributes A list of attributes to include in the returned iterator.
    * @param beginIndex The beginning index of the subrange.
@@ -364,7 +364,7 @@ public class AttributedString
    * @return An <code>AttributedCharacterIterator</code> for this string.
    */
   public AttributedCharacterIterator getIterator(
-          AttributedCharacterIterator.Attribute[] attributes, 
+          AttributedCharacterIterator.Attribute[] attributes,
           int beginIndex, int endIndex)
   {
     if ((beginIndex < 0) || (endIndex > sci.getEndIndex()) ||

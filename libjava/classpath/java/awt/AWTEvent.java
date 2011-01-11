@@ -55,7 +55,7 @@ import java.awt.event.WindowEvent;
 import java.util.EventObject;
 
 /**
- * AWTEvent is the root event class for all AWT events in the JDK 1.1 event 
+ * AWTEvent is the root event class for all AWT events in the JDK 1.1 event
  * model. It supersedes the Event class from JDK 1.0. Subclasses outside of
  * the java.awt package should have IDs greater than RESERVED_ID_MAX.
  *
@@ -206,7 +206,7 @@ public abstract class AWTEvent extends EventObject
   */
   public static final int RESERVED_ID_MAX = 1999;
 
-
+
   /**
    * Initializes a new AWTEvent from the old Java 1.0 event object.
    *

@@ -50,7 +50,7 @@ import org.omg.CORBA.portable.OutputStream;
  * The ORB Id is defined in OMG specification just as a narrow (not wide)
  * string. As such, the ORB Id needs no helper, but one is included in
  * the API anyway.
- * 
+ *
  * @since 1.5
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)

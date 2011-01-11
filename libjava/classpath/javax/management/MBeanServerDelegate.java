@@ -115,8 +115,8 @@ public class MBeanServerDelegate
    * @see #removeNotificationListener(NotificationListener)
    */
   public void addNotificationListener(NotificationListener listener,
-				      NotificationFilter filter,
-				      Object passback)
+                                      NotificationFilter filter,
+                                      Object passback)
     throws IllegalArgumentException
   {
     if (listener == null)
@@ -175,15 +175,15 @@ public class MBeanServerDelegate
    */
   public MBeanNotificationInfo[] getNotificationInfo()
   {
-    return new MBeanNotificationInfo[] 
+    return new MBeanNotificationInfo[]
       {
-	new MBeanNotificationInfo(new String[]
-	  {
-	    MBeanServerNotification.REGISTRATION_NOTIFICATION,
-	    MBeanServerNotification.UNREGISTRATION_NOTIFICATION,
-	  },
-				  MBeanServerNotification.class.getName(),
-				  "Server registration notifications")
+        new MBeanNotificationInfo(new String[]
+          {
+            MBeanServerNotification.REGISTRATION_NOTIFICATION,
+            MBeanServerNotification.UNREGISTRATION_NOTIFICATION,
+          },
+                                  MBeanServerNotification.class.getName(),
+                                  "Server registration notifications")
       };
   }
 
@@ -239,15 +239,15 @@ public class MBeanServerDelegate
     boolean foundOne = false;
     while (it.hasNext())
       {
-	if (it.next().getListener() == listener)
-	  {
-	    it.remove();
-	    foundOne = true;
-	  }
+        if (it.next().getListener() == listener)
+          {
+            it.remove();
+            foundOne = true;
+          }
       }
     if (!foundOne)
       throw new ListenerNotFoundException("The specified listener, " + listener +
-					  "is not registered with this bean.");
+                                          "is not registered with this bean.");
   }
 
   /**
@@ -269,16 +269,16 @@ public class MBeanServerDelegate
    * @see #removeNotificationListener(NotificationListener)
    */
   public void removeNotificationListener(NotificationListener listener,
-					 NotificationFilter filter,
-					 Object passback)
+                                         NotificationFilter filter,
+                                         Object passback)
     throws ListenerNotFoundException
   {
     if (!(listeners.remove(new ListenerData(listener, filter, passback))))
       {
-	throw new ListenerNotFoundException("The specified listener, " + listener +
-					    " with filter " + filter + 
-					    "and passback " + passback + 
-					    ", is not registered with this bean.");
+        throw new ListenerNotFoundException("The specified listener, " + listener +
+                                            " with filter " + filter +
+                                            "and passback " + passback +
+                                            ", is not registered with this bean.");
       }
   }
 
@@ -295,9 +295,9 @@ public class MBeanServerDelegate
       notification.setSequenceNumber(++seqNo);
     for (ListenerData ldata : listeners)
       {
-	NotificationFilter filter = ldata.getFilter();
-	if (filter == null || filter.isNotificationEnabled(notification))
-	  ldata.getListener().handleNotification(notification, ldata.getPassback());
+        NotificationFilter filter = ldata.getFilter();
+        if (filter == null || filter.isNotificationEnabled(notification))
+          ldata.getListener().handleNotification(notification, ldata.getPassback());
       }
   }
 

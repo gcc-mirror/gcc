@@ -46,8 +46,8 @@ import java.security.BasicPermission;
  * It has a target, but no actions. Valid values for the target
  * are <code>"register"</code> and <code>"*"</code>, the latter
  * representing both the existing <code>"register"</code> target
- * and any future targets.  
- *  
+ * and any future targets.
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
@@ -96,10 +96,10 @@ public class MBeanTrustPermission
   {
     super(target, actions);
     if ((!(target.equals("register"))) &&
-	(!(target.equals("*"))))
+        (!(target.equals("*"))))
       throw new IllegalArgumentException("The target must be 'register' or '*'");
     if (actions != null && !(actions.length() == 0))
-      throw new IllegalArgumentException("The actions must be null or ''");  
+      throw new IllegalArgumentException("The actions must be null or ''");
   }
-  
+
 }

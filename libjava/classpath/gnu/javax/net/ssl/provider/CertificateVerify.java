@@ -52,7 +52,7 @@ public class CertificateVerify extends Signature implements Handshake.Body
   {
     super(buffer, sigAlg);
   }
-  
+
   public CertificateVerify(final byte[] sigVal, final SignatureAlgorithm sigAlg)
   {
     super(sigVal, sigAlg);

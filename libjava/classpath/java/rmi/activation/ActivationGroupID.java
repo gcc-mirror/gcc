@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -45,7 +45,7 @@ import java.rmi.server.UID;
  * This identifier identifies the activation group inside the scope of its
  * activation system. It also contains (and can provide) the reference to the
  * groups activation system.
- * 
+ *
  * @see ActivationSystem#registerGroup(ActivationGroupDesc)
  */
 public class ActivationGroupID
@@ -60,7 +60,7 @@ public class ActivationGroupID
    * The associated activation system.
    */
   final ActivationSystem system;
-  
+
   /**
    * The object identifier, making the ID unique.
    */
@@ -69,7 +69,7 @@ public class ActivationGroupID
   /**
    * Create the new activation group id in the scope of the given activation
    * system
-   * 
+   *
    * @param aSystem the activation system
    */
   public ActivationGroupID(ActivationSystem aSystem)
@@ -80,7 +80,7 @@ public class ActivationGroupID
 
   /**
    * Get the associated activation system
-   * 
+   *
    * @return the associated activation system
    */
   public ActivationSystem getSystem()
@@ -110,7 +110,7 @@ public class ActivationGroupID
     else
       return false;
   }
-  
+
   /**
    * Get the string representation
    */

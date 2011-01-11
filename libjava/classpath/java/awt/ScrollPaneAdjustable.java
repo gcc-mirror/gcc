@@ -52,7 +52,7 @@ public class ScrollPaneAdjustable
   implements Adjustable, Serializable
 {
   private static final long serialVersionUID = -3359745691033257079L;
- 
+
   ScrollPane sp;
   int orientation;
   int value;
@@ -70,7 +70,7 @@ public class ScrollPaneAdjustable
     this.sp = sp;
     this.orientation = orientation;
   }
-  
+
   ScrollPaneAdjustable (ScrollPane sp, int orientation, int value, int minimum,
                         int maximum, int visibleAmount, int unitIncrement,
                         int blockIncrement)
@@ -84,21 +84,21 @@ public class ScrollPaneAdjustable
     this.unitIncrement = unitIncrement;
     this.blockIncrement = blockIncrement;
   }
-  
+
   public void addAdjustmentListener (AdjustmentListener listener)
   {
     if (listener == null)
       return;
     adjustmentListener = AWTEventMulticaster.add (adjustmentListener, listener);
   }
-  
+
   public void removeAdjustmentListener (AdjustmentListener listener)
   {
     if (listener == null)
       return;
     adjustmentListener = AWTEventMulticaster.remove (adjustmentListener, listener);
   }
-  
+
   public AdjustmentListener[] getAdjustmentListeners ()
   {
     return (AdjustmentListener[]) AWTEventMulticaster.getListeners
@@ -129,7 +129,7 @@ public class ScrollPaneAdjustable
   {
     return unitIncrement;
   }
-  
+
   public int getValue ()
   {
     return value;
@@ -144,10 +144,10 @@ public class ScrollPaneAdjustable
   {
     this.blockIncrement = blockIncrement;
   }
-    
+
   /**
    * This method should never be called.
-   * 
+   *
    * @param maximum The maximum value to be set.
    * @throws AWTError Always throws this error when called.
    */
@@ -158,7 +158,7 @@ public class ScrollPaneAdjustable
 
   /**
    * This method should never be called.
-   * 
+   *
    * @param minimum The minimum value to be set.
    * @throws AWTError Always throws this error when called.
    */
@@ -182,10 +182,10 @@ public class ScrollPaneAdjustable
     if (value > maximum)
       maximum = value;
   }
-  
+
   /**
    * This method should never be called.
-   * 
+   *
    * @param visibleAmount The visible amount to be set.
    * @throws AWTError Always throws this error when called.
    */
@@ -196,12 +196,12 @@ public class ScrollPaneAdjustable
 
   public String paramString ()
   {
-    return paramStringHelper() 
-         + ",[" + getMinimum() + ".." + getMaximum() 
-         + "],val=" + getValue() 
-         + ",vis=" + getVisibleAmount() 
+    return paramStringHelper()
+         + ",[" + getMinimum() + ".." + getMaximum()
+         + "],val=" + getValue()
+         + ",vis=" + getVisibleAmount()
          + ",unit=" + getUnitIncrement()
-         + ",block=" + getBlockIncrement() 
+         + ",block=" + getBlockIncrement()
          + ",isAdjusting=" + valueIsAdjusting;
   }
 
@@ -212,7 +212,7 @@ public class ScrollPaneAdjustable
     else
       return "vertical";
   }
-  
+
   public String toString()
   {
     return getClass().getName() + "[" + paramString() + "]";
@@ -237,6 +237,5 @@ public class ScrollPaneAdjustable
   {
     this.valueIsAdjusting = valueIsAdjusting;
   }
-  
-} // class ScrollPaneAdjustable
 
+} // class ScrollPaneAdjustable

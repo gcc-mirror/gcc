@@ -62,7 +62,7 @@ public class ColorUIResource extends Color implements UIResource
    * @param g the green intensity, which must be in the range [0 .. 255].
    * @param b the blue intensity, which must be in the range [0 .. 255].
    *
-   * @throws IllegalArgumentException if any of the values is outside the 
+   * @throws IllegalArgumentException if any of the values is outside the
    *         specified range.
    */
   public ColorUIResource(int r, int g, int b)
@@ -95,7 +95,7 @@ public class ColorUIResource extends Color implements UIResource
    * @param g the green intensity, which must be in the range [0.0 .. 1.0].
    * @param b the blue intensity, which must be in the range [0.0 .. 1.0].
    *
-   * @throws IllegalArgumentException if any of the values is outside the 
+   * @throws IllegalArgumentException if any of the values is outside the
    *         specified range.
    */
   public ColorUIResource(float r, float g, float b)

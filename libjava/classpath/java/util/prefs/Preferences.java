@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -213,28 +213,28 @@ public abstract class Preferences {
               {
                 Iterator iter = ServiceFactory.lookupProviders
                     (PreferencesFactory.class, null);
-            
+
                 if (iter != null && iter.hasNext())
                   factory = (PreferencesFactory) iter.next();
               }
-            
+
             // Still no factory? Use our default.
             if (factory == null)
-	      {
+              {
                 try
-		  {
+                  {
                     Class cls = Class.forName (defaultFactoryClass);
                     factory = (PreferencesFactory) cls.newInstance();
                   }
-		catch (Exception e)
-		  {
+                catch (Exception e)
+                  {
                     throw new RuntimeException ("Couldn't load default factory"
                         + " '"+ defaultFactoryClass +"'", e);
                   }
               }
 
         }
-	
+
         return factory;
     }
 
@@ -305,7 +305,7 @@ public abstract class Preferences {
      * @throws InvalidPreferencesFormatException if the XML is not properly
      * formatted
      */
-    public static void importPreferences(InputStream is) 
+    public static void importPreferences(InputStream is)
                                     throws InvalidPreferencesFormatException,
                                            IOException
     {
@@ -318,7 +318,7 @@ public abstract class Preferences {
 
     /**
      * Returns the absolute path name of this preference node.
-     * The absolute path name of a node is the path name of its parent node 
+     * The absolute path name of a node is the path name of its parent node
      * plus a '/' plus its own name. If the node is the root node and has no
      * parent then its name is "" and its absolute path name is "/".
      */
@@ -400,8 +400,8 @@ public abstract class Preferences {
     // abstract methods (export)
 
     /**
-     * Export this node, but not its descendants, as XML to the 
-     * indicated output stream.  The XML will be encoded using UTF-8 
+     * Export this node, but not its descendants, as XML to the
+     * indicated output stream.  The XML will be encoded using UTF-8
      * and will use a specified document type:<br>
      * <code>&lt;!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd"&gt;</code><br>
      * @param os the output stream to which the XML is sent
@@ -414,8 +414,8 @@ public abstract class Preferences {
                                        IOException;
 
     /**
-     * Export this node and all its descendants as XML to the 
-     * indicated output stream.  The XML will be encoded using UTF-8 
+     * Export this node and all its descendants as XML to the
+     * indicated output stream.  The XML will be encoded using UTF-8
      * and will use a specified document type:<br>
      * <code>&lt;!DOCTYPE preferences SYSTEM "http://java.sun.com/dtd/preferences.dtd"&gt;</code><br>
      * @param os the output stream to which the XML is sent
@@ -670,7 +670,7 @@ public abstract class Preferences {
      * <p>
      * Note that according to the specification an implementation may delay
      * removal of the node from the backing store till the <code>flush()</code>
-     * method is called. But the <code>flush()</code> method may throw a 
+     * method is called. But the <code>flush()</code> method may throw a
      * <code>IllegalStateException</code> when the node has been removed.
      * So most implementations will actually remove the node and any subnodes
      * from the backing store immediatly.
@@ -694,4 +694,3 @@ public abstract class Preferences {
     public abstract void removePreferenceChangeListener
                             (PreferenceChangeListener listener);
 }
-

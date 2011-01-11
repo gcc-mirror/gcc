@@ -345,7 +345,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
   protected Border createNonRolloverBorder()
   {
     Border b = UIManager.getBorder("ToolBar.nonrolloverBorder");
-    
+
     if (b == null)
       {
         b = new CompoundBorder(
@@ -355,7 +355,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
                              UIManager.getColor("Button.highlight")),
             BasicBorders.getMarginBorder());
       }
-    
+
     return b;  }
 
   /**
@@ -377,7 +377,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
   protected Border createRolloverBorder()
   {
     Border b = UIManager.getBorder("ToolBar.rolloverBorder");
-    
+
     if (b == null)
       {
         b = new CompoundBorder(
@@ -387,7 +387,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
                              UIManager.getColor("Button.highlight")),
             BasicBorders.getMarginBorder());
       }
-    
+
     return b;
   }
 
@@ -438,13 +438,13 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
     if (loc != -1)
       {
-	dragWindow.setBorderColor(dockingBorderColor);
-	dragWindow.setBackground(dockingColor);
+        dragWindow.setBorderColor(dockingBorderColor);
+        dragWindow.setBackground(dockingColor);
       }
     else
       {
-	dragWindow.setBorderColor(floatingBorderColor);
-	dragWindow.setBackground(floatingColor);
+        dragWindow.setBorderColor(floatingBorderColor);
+        dragWindow.setBackground(floatingColor);
       }
 
     int w = 0;
@@ -458,13 +458,13 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     if (((cachedOrientation == SwingConstants.HORIZONTAL) && tmp)
         || ((cachedOrientation == VERTICAL) && ! tmp))
       {
-	w = cachedBounds.width;
-	h = cachedBounds.height;
+        w = cachedBounds.width;
+        h = cachedBounds.height;
       }
     else
       {
-	w = cachedBounds.height;
-	h = cachedBounds.width;
+        w = cachedBounds.height;
+        h = cachedBounds.width;
       }
 
     Point p = dragWindow.getOffset();
@@ -507,28 +507,28 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
       newParent = ((RootPaneContainer) floatFrame).getContentPane();
     else
       {
-	floatFrame.hide();
-	newParent = origParent;
+        floatFrame.hide();
+        newParent = origParent;
       }
 
     String constraint;
     switch (aoc)
       {
       case SwingConstants.EAST:
-	constraint = BorderLayout.EAST;
-	break;
+        constraint = BorderLayout.EAST;
+        break;
       case SwingConstants.NORTH:
-	constraint = BorderLayout.NORTH;
-	break;
+        constraint = BorderLayout.NORTH;
+        break;
       case SwingConstants.SOUTH:
-	constraint = BorderLayout.SOUTH;
-	break;
+        constraint = BorderLayout.SOUTH;
+        break;
       case SwingConstants.WEST:
-	constraint = BorderLayout.WEST;
-	break;
+        constraint = BorderLayout.WEST;
+        break;
       default:
-	constraint = BorderLayout.CENTER;
-	break;
+        constraint = BorderLayout.CENTER;
+        break;
       }
 
     int newOrientation = SwingConstants.HORIZONTAL;
@@ -538,8 +538,8 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
     if (aoc != -1)
       {
-	constraintBeforeFloating = constraint;
-	lastGoodOrientation = newOrientation;
+        constraintBeforeFloating = constraint;
+        lastGoodOrientation = newOrientation;
       }
 
     newParent.add(toolBar, constraint);
@@ -557,10 +557,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
     if (aoc == -1)
       {
-	floatFrame.pack();
-	floatFrame.setSize(dims.width + insets.left + insets.right,
-	                   dims.height + insets.top + insets.bottom);
-	floatFrame.show();
+        floatFrame.pack();
+        floatFrame.setSize(dims.width + insets.left + insets.right,
+                           dims.height + insets.top + insets.bottom);
+        floatFrame.show();
       }
 
     newParent.invalidate();
@@ -776,14 +776,14 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
     for (int i = 0; i < c.length; i++)
       {
-	if (c[i] instanceof JButton)
-	  {
-	    // Don't really care about anything other than JButtons
-	    JButton b = (JButton) c[i];
+        if (c[i] instanceof JButton)
+          {
+            // Don't really care about anything other than JButtons
+            JButton b = (JButton) c[i];
 
-	    if (b.getBorder() != null)
-	      borders.put(b, b.getBorder());
-	  }
+            if (b.getBorder() != null)
+              borders.put(b, b.getBorder());
+          }
       }
   }
 
@@ -798,11 +798,11 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
     if (c instanceof JToolBar)
       {
-	toolBar = (JToolBar) c;
+        toolBar = (JToolBar) c;
     installDefaults();
     installComponents();
-	installListeners();
-	installKeyboardActions();
+        installListeners();
+        installKeyboardActions();
       }
   }
 
@@ -894,14 +894,14 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
   {
     if (c instanceof AbstractButton)
       {
-	AbstractButton b = (AbstractButton) c;
-	b.setRolloverEnabled(false);
+        AbstractButton b = (AbstractButton) c;
+        b.setRolloverEnabled(false);
 
         // Save old border in hashtable.
-	if (b.getBorder() != null)
+        if (b.getBorder() != null)
           borders.put(b, b.getBorder());
-        
-	b.setBorder(nonRolloverBorder);
+
+        b.setBorder(nonRolloverBorder);
       }
   }
 
@@ -931,11 +931,11 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
       {
         AbstractButton b = (AbstractButton) c;
         b.setRolloverEnabled(false);
-        
+
         // Save old border in hashtable.
         if (b.getBorder() != null)
-	  borders.put(b, b.getBorder());
-        
+          borders.put(b, b.getBorder());
+
         b.setBorder(rolloverBorder);
       }
   }
@@ -1139,7 +1139,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     public void mouseDragged(MouseEvent e)
     {
       if (isDragging)
-	dragTo(e.getPoint(), origin);
+        dragTo(e.getPoint(), origin);
     }
 
     /**
@@ -1182,7 +1182,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     public void mousePressed(MouseEvent e)
     {
       if (! toolBar.isFloatable())
-	return;
+        return;
 
       Point ssd = e.getPoint();
       Insets insets = toolBar.getInsets();
@@ -1190,13 +1190,13 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
       // Verify that this click occurs in the top inset.
       if (toolBar.getOrientation() == SwingConstants.HORIZONTAL)
         {
-	  if (e.getX() > insets.left)
-	    return;
+          if (e.getX() > insets.left)
+            return;
         }
       else
         {
-	  if (e.getY() > insets.top)
-	    return;
+          if (e.getY() > insets.top)
+            return;
         }
 
       origin = new Point(0, 0);
@@ -1204,16 +1204,16 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
         SwingUtilities.convertPointToScreen(ssd, toolBar);
 
       if (! (SwingUtilities.getAncestorOfClass(Window.class, toolBar) instanceof UIResource))
-	// Need to know who keeps the toolBar if it gets dragged back into it.
-	origParent = toolBar.getParent();
-      
+        // Need to know who keeps the toolBar if it gets dragged back into it.
+        origParent = toolBar.getParent();
+
       if (toolBar.isShowing())
         SwingUtilities.convertPointToScreen(origin, toolBar);
 
       isDragging = true;
 
       if (dragWindow != null)
-	dragWindow.setOffset(new Point(cachedBounds.width / 2, 
+        dragWindow.setOffset(new Point(cachedBounds.width / 2,
             cachedBounds.height / 2));
 
       dragTo(e.getPoint(), origin);
@@ -1227,7 +1227,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     public void mouseReleased(MouseEvent e)
     {
       if (! isDragging || ! toolBar.isFloatable())
-	return;
+        return;
 
       isDragging = false;
       floatAt(e.getPoint(), origin);
@@ -1267,7 +1267,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     public Color getBorderColor()
     {
       if (borderColor == null)
-	return Color.BLACK;
+        return Color.BLACK;
 
       return borderColor;
     }
@@ -1341,7 +1341,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     public void setOrientation(int o)
     {
       toolBar.setOrientation(o);
-      if (dragWindow != null) 
+      if (dragWindow != null)
         dragWindow.setOrientation(o);
     }
   }
@@ -1364,10 +1364,10 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
 
       if (origParent != null)
         {
-	  origParent.add(toolBar,
-	                 (constraintBeforeFloating != null)
-	                 ? constraintBeforeFloating : BorderLayout.NORTH);
-	  toolBar.setOrientation(lastGoodOrientation);
+          origParent.add(toolBar,
+                         (constraintBeforeFloating != null)
+                         ? constraintBeforeFloating : BorderLayout.NORTH);
+          toolBar.setOrientation(lastGoodOrientation);
         }
 
       origParent.invalidate();
@@ -1410,16 +1410,16 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     {
       if (e.getChild() instanceof JButton)
         {
-	  JButton b = (JButton) e.getChild();
+          JButton b = (JButton) e.getChild();
 
-	  if (b.getBorder() != null)
-	    borders.put(b, b.getBorder());
+          if (b.getBorder() != null)
+            borders.put(b, b.getBorder());
         }
 
       if (isRolloverBorders())
-	setBorderToRollover(e.getChild());
+        setBorderToRollover(e.getChild());
       else
-	setBorderToNonRollover(e.getChild());
+        setBorderToNonRollover(e.getChild());
 
       cachedBounds = toolBar.getPreferredSize();
       cachedOrientation = toolBar.getOrientation();
@@ -1479,7 +1479,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     /**
      * Receives notification when the toolbar or one of it's component
      * receives the keyboard input focus.
-     * 
+     *
      * @param e the focus event
      */
     public void focusGained(FocusEvent e)
@@ -1491,7 +1491,7 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     /**
      * Receives notification when the toolbar or one of it's component
      * looses the keyboard input focus.
-     * 
+     *
      * @param e the focus event
      */
     public void focusLost(FocusEvent e)
@@ -1522,15 +1522,15 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     {
       if (c instanceof JToolBar)
         {
-	  JToolBar tb = (JToolBar) c;
-	  int orientation = tb.getOrientation();
+          JToolBar tb = (JToolBar) c;
+          int orientation = tb.getOrientation();
 
-	  if (! tb.isFloatable())
-	    return new Insets(regular, regular, regular, regular);
-	  else if (orientation == SwingConstants.HORIZONTAL)
-	    return new Insets(regular, offset, regular, regular);
-	  else
-	    return new Insets(offset, regular, regular, regular);
+          if (! tb.isFloatable())
+            return new Insets(regular, regular, regular, regular);
+          else if (orientation == SwingConstants.HORIZONTAL)
+            return new Insets(regular, offset, regular, regular);
+          else
+            return new Insets(offset, regular, regular, regular);
         }
 
       return new Insets(0, 0, 0, 0);
@@ -1568,9 +1568,9 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
       int count = 0;
 
       for (int i = x; i < (w + x); i += hgap)
-	for (int j = ((count++ % 2) == 0) ? y : (y + (2 * size)); j < (h + y);
-	     j += vgap)
-	  g.fillRect(i, j, size, size);
+        for (int j = ((count++ % 2) == 0) ? y : (y + (2 * size)); j < (h + y);
+             j += vgap)
+          g.fillRect(i, j, size, size);
 
       g.setColor(saved);
     }
@@ -1590,20 +1590,20 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
     {
       if (c instanceof JToolBar)
         {
-	  JToolBar tb = (JToolBar) c;
+          JToolBar tb = (JToolBar) c;
 
-	  int orientation = tb.getOrientation();
+          int orientation = tb.getOrientation();
 
-	  if (orientation == SwingConstants.HORIZONTAL)
-	    {
-	      paintBumps(g, x, y, offset, height, 1, Color.WHITE);
-	      paintBumps(g, x + 1, y + 1, offset - 1, height - 1, 1, Color.GRAY);
-	    }
-	  else
-	    {
-	      paintBumps(g, x, y, width, offset, 1, Color.WHITE);
-	      paintBumps(g, x + 1, y + 1, width - 1, offset - 1, 1, Color.GRAY);
-	    }
+          if (orientation == SwingConstants.HORIZONTAL)
+            {
+              paintBumps(g, x, y, offset, height, 1, Color.WHITE);
+              paintBumps(g, x + 1, y + 1, offset - 1, height - 1, 1, Color.GRAY);
+            }
+          else
+            {
+              paintBumps(g, x, y, width, offset, 1, Color.WHITE);
+              paintBumps(g, x + 1, y + 1, width - 1, offset - 1, 1, Color.GRAY);
+            }
         }
     }
   }

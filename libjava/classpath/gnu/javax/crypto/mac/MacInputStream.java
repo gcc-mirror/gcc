@@ -1,4 +1,4 @@
-/* MacInputStream.java -- 
+/* MacInputStream.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -58,7 +58,7 @@ public class MacInputStream
    * Creates a new MacInputStream. The stream is initially set to digest data
    * written, the <i>mac</i> argument must have already been initialized, and
    * the <i>mac</i> argument is <b>not</b> cloned.
-   * 
+   *
    * @param in The underlying input stream.
    * @param mac The mac instance to use.
    */
@@ -73,7 +73,7 @@ public class MacInputStream
 
   /**
    * Returns the MAC this stream is updating.
-   * 
+   *
    * @return The MAC.
    */
   public IMac getMac()
@@ -84,7 +84,7 @@ public class MacInputStream
   /**
    * Sets the MAC this stream is updating, which must have already been
    * initialized. The argument is not cloned by this method.
-   * 
+   *
    * @param mac The new MAC.
    * @throws NullPointerException If the argument is null.
    */
@@ -98,7 +98,7 @@ public class MacInputStream
   /**
    * Turns the digesting state on or off. When off, the MAC will not be updated
    * when data is written to the stream.
-   * 
+   *
    * @param flag The new digesting state.
    */
   public void on(boolean flag)

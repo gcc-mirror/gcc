@@ -1,4 +1,4 @@
-/* XmlParser.java -- 
+/* XmlParser.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -81,7 +81,7 @@ import org.xml.sax.SAXException;
  * internal parser interfaces are subject to change.
  *
  * @author Written by David Megginson &lt;dmeggins@microstar.com&gt;
- *	(version 1.2a with bugfixes)
+ *      (version 1.2a with bugfixes)
  * @author Updated by David Brownell &lt;dbrownell@users.sourceforge.net&gt;
  * @see SAXDriver
  */
@@ -94,74 +94,74 @@ final class XmlParser
   ////////////////////////////////////////////////////////////////////////
   // Constants.
   ////////////////////////////////////////////////////////////////////////
-  
+
   //
   // Constants for element content type.
   //
-  
+
   /**
    * Constant: an element has not been declared.
    * @see #getElementContentType
    */
   public final static int CONTENT_UNDECLARED = 0;
-  
+
   /**
    * Constant: the element has a content model of ANY.
    * @see #getElementContentType
    */
   public final static int CONTENT_ANY = 1;
-  
+
   /**
    * Constant: the element has declared content of EMPTY.
    * @see #getElementContentType
    */
   public final static int CONTENT_EMPTY = 2;
-  
+
   /**
    * Constant: the element has mixed content.
    * @see #getElementContentType
    */
   public final static int CONTENT_MIXED = 3;
-  
+
   /**
    * Constant: the element has element content.
    * @see #getElementContentType
    */
   public final static int CONTENT_ELEMENTS = 4;
-  
-  
+
+
   //
   // Constants for the entity type.
   //
-  
+
   /**
    * Constant: the entity has not been declared.
    * @see #getEntityType
    */
   public final static int ENTITY_UNDECLARED = 0;
-  
+
   /**
    * Constant: the entity is internal.
    * @see #getEntityType
    */
   public final static int ENTITY_INTERNAL = 1;
-  
+
   /**
    * Constant: the entity is external, non-parsable data.
    * @see #getEntityType
    */
   public final static int ENTITY_NDATA = 2;
-  
+
   /**
    * Constant: the entity is external XML data.
    * @see #getEntityType
    */
   public final static int ENTITY_TEXT = 3;
-    
+
   //
   // Attribute type constants are interned literal strings.
   //
-  
+
   //
   // Constants for supported encodings.  "external" is just a flag.
   //
@@ -175,43 +175,43 @@ final class XmlParser
   private final static int ENCODING_UCS_4_2143 = 7;
   private final static int ENCODING_UCS_4_3412 = 8;
   private final static int ENCODING_ASCII = 9;
-  
+
   //
   // Constants for attribute default value.
   //
-  
+
   /**
    * Constant: the attribute is not declared.
    * @see #getAttributeDefaultValueType
    */
   public final static int ATTRIBUTE_DEFAULT_UNDECLARED = 30;
-  
+
   /**
    * Constant: the attribute has a literal default value specified.
    * @see #getAttributeDefaultValueType
    * @see #getAttributeDefaultValue
    */
   public final static int ATTRIBUTE_DEFAULT_SPECIFIED = 31;
-  
+
   /**
    * Constant: the attribute was declared #IMPLIED.
    * @see #getAttributeDefaultValueType
    */
   public final static int ATTRIBUTE_DEFAULT_IMPLIED = 32;
-  
+
   /**
    * Constant: the attribute was declared #REQUIRED.
    * @see #getAttributeDefaultValueType
    */
   public final static int ATTRIBUTE_DEFAULT_REQUIRED = 33;
-  
+
   /**
    * Constant: the attribute was declared #FIXED.
    * @see #getAttributeDefaultValueType
    * @see #getAttributeDefaultValue
    */
   public final static int ATTRIBUTE_DEFAULT_FIXED = 34;
-    
+
   //
   // Constants for input.
   //
@@ -219,7 +219,7 @@ final class XmlParser
   private final static int INPUT_INTERNAL = 1;
   private final static int INPUT_STREAM = 3;
   private final static int INPUT_READER = 5;
-  
+
   //
   // Flags for reading literals.
   //
@@ -227,7 +227,7 @@ final class XmlParser
   private final static int LIT_ENTITY_REF = 2;
   // normalize this value (space chars) (attributes, public ids)
   private final static int LIT_NORMALIZE = 4;
-  // literal is an attribute value 
+  // literal is an attribute value
   private final static int LIT_ATTRIBUTE = 8;
   // don't expand parameter entities
   private final static int LIT_DISABLE_PE = 16;
@@ -235,30 +235,30 @@ final class XmlParser
   private final static int LIT_DISABLE_CREF = 32;
   // don't parse general entity refs
   private final static int LIT_DISABLE_EREF = 64;
-  // literal is a public ID value 
+  // literal is a public ID value
   private final static int LIT_PUBID = 256;
-    
+
   //
   // Flags affecting PE handling in DTDs (if expandPE is true).
   // PEs expand with space padding, except inside literals.
   //
   private final static int CONTEXT_NORMAL = 0;
   private final static int CONTEXT_LITERAL = 1;
-  
+
   // Emit warnings for relative URIs with no base URI.
   static boolean uriWarnings;
   static
   {
     String key = "gnu.xml.aelfred2.XmlParser.uriWarnings";
     GetPropertyAction a = new GetPropertyAction(key);
-    uriWarnings = "true".equals(AccessController.doPrivileged(a));      
+    uriWarnings = "true".equals(AccessController.doPrivileged(a));
   }
-    
+
   //
   // The current XML handler interface.
   //
   private SAXDriver handler;
-  
+
   //
   // I/O information.
   //
@@ -272,7 +272,7 @@ final class XmlParser
   private int encoding;   // current character encoding
   private int currentByteCount; // bytes read from current source
   private InputSource scratch;  // temporary
-  
+
   //
   // Buffers for decoded but unparsed character input.
   //
@@ -280,33 +280,33 @@ final class XmlParser
   private int readBufferPos;
   private int readBufferLength;
   private int readBufferOverflow;  // overflow from last data chunk.
-  
+
   //
   // Buffer for undecoded raw byte input.
   //
   private final static int READ_BUFFER_MAX = 16384;
   private byte[] rawReadBuffer;
-  
-  
+
+
   //
   // Buffer for attribute values, char refs, DTD stuff.
   //
   private static int DATA_BUFFER_INITIAL = 4096;
   private char[] dataBuffer;
   private int dataBufferPos;
-  
+
   //
   // Buffer for parsed names.
   //
   private static int NAME_BUFFER_INITIAL = 1024;
   private char[] nameBuffer;
   private int nameBufferPos;
-  
+
   //
   // Save any standalone flag
   //
   private boolean docIsStandalone;
-  
+
   //
   // Hashtables for DTD information on elements, entities, and notations.
   // Populated until we start ignoring decls (because of skipping a PE)
@@ -315,18 +315,18 @@ final class XmlParser
   private HashMap entityInfo;
   private HashMap notationInfo;
   private boolean skippedPE;
-  
+
   //
   // Element type currently in force.
   //
   private String currentElement;
   private int currentElementContent;
-  
+
   //
   // Stack of entity names, to detect recursion.
   //
   private LinkedList entityStack;
-  
+
   //
   // PE expansion is enabled in most chunks of the DTD, not all.
   // When it's enabled, literals are treated differently.
@@ -334,14 +334,14 @@ final class XmlParser
   private boolean inLiteral;
   private boolean expandPE;
   private boolean peIsError;
-  
+
   //
   // can't report entity expansion inside two constructs:
   // - attribute expansions (internal entities only)
   // - markup declarations (parameter entities only)
   //
   private boolean doReport;
-  
+
   //
   // Symbol table, for caching interned names.
   //
@@ -358,38 +358,38 @@ final class XmlParser
   // 32 bit hardware.
   //
   private final static int SYMBOL_TABLE_LENGTH = 2039;
-  
+
   private Object[][] symbolTable;
-  
+
   //
   // Hash table of attributes found in current start tag.
   //
   private String[] tagAttributes;
   private int tagAttributePos;
-  
+
   //
   // Utility flag: have we noticed a CR while reading the last
   // data chunk?  If so, we will have to go back and normalise
   // CR or CR/LF line ends.
   //
   private boolean sawCR;
-  
+
   //
   // Utility flag: are we in CDATA?  If so, whitespace isn't ignorable.
-  // 
+  //
   private boolean inCDATA;
-  
+
   //
   // Xml version.
-  //  
-  private static final int XML_10 = 0; 
-  private static final int XML_11 = 1; 
+  //
+  private static final int XML_10 = 0;
+  private static final int XML_11 = 1;
   private int xmlVersion = XML_10;
 
   //////////////////////////////////////////////////////////////////////
   // Constructors.
   ////////////////////////////////////////////////////////////////////////
-  
+
   /**
    * Construct a new parser with no associated handler.
    * @see #setHandler
@@ -422,14 +422,14 @@ final class XmlParser
    * which MUST NOT REUSE the parser (just null it).
    *
    * @param systemId Absolute URI of the document; should never be null,
-   *	but may be so iff a reader <em>or</em> a stream is provided.
+   *    but may be so iff a reader <em>or</em> a stream is provided.
    * @param publicId The public identifier of the document, or null.
    * @param reader A character stream; must be null if stream isn't.
    * @param stream A byte input stream; must be null if reader isn't.
    * @param encoding The suggested encoding, or null if unknown.
    * @exception java.lang.Exception Basically SAXException or IOException
    */
-  // package private 
+  // package private
   void doParse(String systemId, String publicId, Reader reader,
                InputStream stream, String encoding)
     throws Exception
@@ -459,7 +459,7 @@ final class XmlParser
                 // default baseURI: null
                 new ExternalIdentifiers(publicId, systemId, null),
                 reader, stream, encoding, false);
-        
+
         parseDocument();
       }
     catch (EOFException e)
@@ -509,7 +509,7 @@ final class XmlParser
   //////////////////////////////////////////////////////////////////////
   // Error reporting.
   //////////////////////////////////////////////////////////////////////
-    
+
   /**
    * Report an error.
    * @param message The error message.
@@ -529,7 +529,7 @@ final class XmlParser
         message = message + " (expected \"" + textExpected + "\")";
       }
     handler.fatal(message);
-    
+
     // "can't happen"
     throw new SAXException(message);
   }
@@ -581,7 +581,7 @@ final class XmlParser
       {                 // added by MHK
         error("premature end of file", "[EOF]", null);
       }
-    
+
     try
       {
         parseMisc();   //skip all white, PIs, and comments
@@ -593,7 +593,7 @@ final class XmlParser
         return;
       }
   }
-  
+
   static final char[] startDelimComment = { '<', '!', '-', '-' };
   static final char[] endDelimComment = { '-', '-' };
 
@@ -609,7 +609,7 @@ final class XmlParser
   {
     char c;
     boolean saved = expandPE;
-    
+
     expandPE = false;
     parseUntil(endDelimComment);
     require('>');
@@ -617,7 +617,7 @@ final class XmlParser
     handler.comment(dataBuffer, 0, dataBufferPos);
     dataBufferPos = 0;
   }
-  
+
   static final char[] startDelimPI = { '<', '?' };
   static final char[] endDelimPI = { '?', '>' };
 
@@ -636,7 +636,7 @@ final class XmlParser
   {
     String name;
     boolean saved = expandPE;
-    
+
     expandPE = false;
     name = readNmtoken(true);
     //NE08
@@ -657,7 +657,7 @@ final class XmlParser
     expandPE = saved;
     handler.processingInstruction(name, dataBufferToString());
   }
-  
+
   static final char[] endDelimCDATA = { ']', ']', '>' };
 
   private boolean isDirtyCurrentElement;
@@ -756,7 +756,7 @@ final class XmlParser
     String standalone = null;
     int flags = LIT_DISABLE_CREF | LIT_DISABLE_PE | LIT_DISABLE_EREF;
     String inputEncoding = null;
-        
+
     switch (this.encoding)
       {
       case ENCODING_EXTERNAL:
@@ -773,7 +773,7 @@ final class XmlParser
         inputEncoding = "UTF-16LE";
         break;
       }
-    
+
     // Read the version.
     require("version");
     parseEq();
@@ -796,7 +796,7 @@ final class XmlParser
       }
     // Try reading an encoding declaration.
     boolean white = tryWhitespace();
-    
+
     if (tryRead("encoding"))
       {
         if (!white)
@@ -810,7 +810,7 @@ final class XmlParser
             setupDecoding(encodingName);
           }
       }
-    
+
     // Try reading a standalone declaration
     if (encodingName != null)
       {
@@ -869,13 +869,13 @@ final class XmlParser
         String version;
         parseEq();
         checkLegalVersion(version = readLiteral(flags));
-        
+
         if (version.equals("1.1"))
           {
             if (xmlVersion == XML_10)
               {
                 error("external subset has later version number.", "1.0",
-                      version);    
+                      version);
               }
             handler.warn("expected XML version 1.0, not: " + version);
             xmlVersion = XML_11;
@@ -886,7 +886,7 @@ final class XmlParser
           }
         requireWhitespace();
       }
-    
+
     // Read the encoding.
     require("encoding");
     parseEq();
@@ -897,7 +897,7 @@ final class XmlParser
       }
     skipWhitespace();
     require("?>");
-    
+
     return encodingName;
   }
 
@@ -921,14 +921,14 @@ final class XmlParser
     throws SAXException, IOException
   {
     encodingName = encodingName.toUpperCase();
-    
+
     // ENCODING_EXTERNAL indicates an encoding that wasn't
     // autodetected ... we can use builtin decoders, or
     // ones from the JVM (InputStreamReader).
-    
+
     // Otherwise we can only tweak what was autodetected, and
     // only for single byte (ASCII derived) builtin encodings.
-    
+
     // ASCII-derived encodings
     if (encoding == ENCODING_UTF_8 || encoding == ENCODING_EXTERNAL)
       {
@@ -959,7 +959,7 @@ final class XmlParser
         // else fallthrough ...
         // it's ASCII-ish and something other than a builtin
       }
-    
+
     // Unicode and such
     if (encoding == ENCODING_UCS_2_12 || encoding == ENCODING_UCS_2_21)
       {
@@ -972,7 +972,7 @@ final class XmlParser
           }
         return;
       }
-    
+
     // four byte encodings
     if (encoding == ENCODING_UCS_4_1234
         || encoding == ENCODING_UCS_4_4321
@@ -987,11 +987,11 @@ final class XmlParser
           }
         return;
       }
-    
+
     // assert encoding == ENCODING_EXTERNAL
     // if (encoding != ENCODING_EXTERNAL)
     //     throw new RuntimeException ("encoding = " + encoding);
-    
+
     if (encodingName.equals("UTF-16BE"))
       {
         encoding = ENCODING_UCS_2_12;
@@ -1002,22 +1002,22 @@ final class XmlParser
         encoding = ENCODING_UCS_2_21;
         return;
       }
-    
+
     // We couldn't use the builtin decoders at all.  But we can try to
     // create a reader, since we haven't messed up buffering.  Tweak
     // the encoding name if necessary.
-    
+
     if (encodingName.equals("UTF-16")
         || encodingName.equals("ISO-10646-UCS-2"))
       {
         encodingName = "Unicode";
       }
     // Ignoring all the EBCDIC aliases here
-    
+
     reader = new InputStreamReader(is, encodingName);
     sourceType = INPUT_READER;
   }
-  
+
   /**
    * Parse miscellaneous markup outside the document element and DOCTYPE
    * declaration.
@@ -1070,12 +1070,12 @@ final class XmlParser
 
     // report (a) declaration of name, (b) lexical info (ids)
     handler.doctypeDecl(rootName, ids.publicId, ids.systemId);
-    
+
     // Internal subset is parsed first, if present
     skipWhitespace();
     if (tryRead('['))
       {
-        
+
         // loop until the subset ends
         while (true)
           {
@@ -1097,10 +1097,10 @@ final class XmlParser
       }
     skipWhitespace();
     require('>');
-    
+
     // Read the external subset, if any
     InputSource subset;
-    
+
     if (ids.systemId == null)
       {
         subset = handler.getExternalSubset(rootName,
@@ -1113,7 +1113,7 @@ final class XmlParser
     if (ids.systemId != null || subset != null)
       {
         pushString(null, ">");
-      
+
         // NOTE:  [dtd] is so we say what SAX2 expects,
         // though it's misleading (subset, not entire dtd)
         if (ids.systemId != null)
@@ -1132,7 +1132,7 @@ final class XmlParser
                     subset.getEncoding(),
                     false);
           }
-        
+
         // Loop until we end up back at '>'
         while (true)
           {
@@ -1150,20 +1150,20 @@ final class XmlParser
                 expandPE = false;
               }
           }
-        
+
         // the ">" string isn't popped yet
         if (inputStack.size() != 1)
           {
             error("external subset has unmatched '>'");
           }
       }
-    
+
     // done dtd
     handler.endDoctype();
     expandPE = false;
     doReport = true;
   }
-  
+
   /**
    * Parse a markup declaration in the internal or external DTD subset.
    * <pre>
@@ -1185,7 +1185,7 @@ final class XmlParser
     require('<');
     unread('<');
     expandPE = false;
-    
+
     if (tryRead("<!ELEMENT"))
       {
         saved = readBuffer;
@@ -1246,7 +1246,7 @@ final class XmlParser
         handler.verror("Illegal Declaration/PE nesting");
       }
   }
-  
+
   /**
    * Parse an element, with its tags.
    * <pre>
@@ -1270,10 +1270,10 @@ final class XmlParser
     // This is the (global) counter for the
     // array of specified attributes.
     tagAttributePos = 0;
-    
+
     // Read the element type name.
     gi = readNmtoken(true);
-    
+
     // If we saw no DTD, and this is the document root element,
     // let the application modify the input stream by providing one.
     if (maybeGetSubset)
@@ -1284,11 +1284,11 @@ final class XmlParser
           {
             String publicId = subset.getPublicId();
             String systemId = subset.getSystemId();
-            
+
             handler.warn("modifying document by adding DTD");
             handler.doctypeDecl(gi, publicId, systemId);
             pushString(null, ">");
-            
+
             // NOTE:  [dtd] is so we say what SAX2 expects,
             // though it's misleading (subset, not entire dtd)
             pushURL(true, "[dtd]",
@@ -1297,7 +1297,7 @@ final class XmlParser
                     subset.getByteStream(),
                     subset.getEncoding(),
                     false);
-            
+
             // Loop until we end up back at '>'
             while (true)
               {
@@ -1315,17 +1315,17 @@ final class XmlParser
                     expandPE = false;
                   }
               }
-            
+
             // the ">" string isn't popped yet
             if (inputStack.size() != 1)
               {
                 error("external subset has unmatched '>'");
               }
-            
+
             handler.endDoctype();
           }
       }
-    
+
     // Determine the current content type.
     currentElement = gi;
     element = (ElementDecl) elementInfo.get(gi);
@@ -1346,7 +1346,7 @@ final class XmlParser
         white = tryWhitespace();
         c = readCh();
       }
-    
+
     // Supply any defaulted attributes.
     Iterator atts = declaredAttributes(element);
     if (atts != null)
@@ -1366,7 +1366,7 @@ loop:
               }
             // ... or has a default
             String value = getAttributeDefaultValue(gi, aname);
-            
+
             if (value == null)
               {
                 continue;
@@ -1395,7 +1395,7 @@ loop:
     currentElement = oldElement;
     currentElementContent = oldElementContent;
   }
-    
+
   /**
    * Parse an attribute assignment.
    * <pre>
@@ -1411,11 +1411,11 @@ loop:
     String type;
     String value;
     int flags = LIT_ATTRIBUTE |  LIT_ENTITY_REF;
-    
+
     // Read the attribute name.
     aname = readNmtoken(true);
     type = getAttributeType(name, aname);
-    
+
     // Parse '='
     parseEq();
 
@@ -1457,7 +1457,7 @@ loop:
     // attribute.
     handler.attribute(aname, value, true);
     dataBufferPos = 0;
-    
+
     // Note that the attribute has been
     // specified.
     if (tagAttributePos == tagAttributes.length)
@@ -1501,7 +1501,7 @@ loop:
     // not re-reporting any SAXException re bogus end tags,
     // even though that diagnostic might be clearer ...
   }
-  
+
   /**
    * Parse the content of an element.
    * <pre>
@@ -1515,7 +1515,7 @@ loop:
     throws Exception
   {
     char c;
-    
+
     while (true)
       {
         // consume characters (or ignorable whitspace) until delimiter
@@ -1538,7 +1538,7 @@ loop:
               }
             isDirtyCurrentElement = true;
             break;
-            
+
           case '<':       // Found "<"
             dataBufferFlush();
             c = readCh();
@@ -1567,17 +1567,17 @@ loop:
                     break;
                   }
                 break;
-              
+
               case '?':     // Found "<?"
                 isDirtyCurrentElement = false;
                 parsePI();
                 break;
-                
+
               case '/':     // Found "</"
                 isDirtyCurrentElement = false;
                 parseETag();
                 return;
-                
+
               default:     // Found "<" followed by something else
                 isDirtyCurrentElement = false;
                 unread(c);
@@ -1587,7 +1587,7 @@ loop:
           }
       }
   }
-  
+
   /**
    * Parse an element type declaration.
    * <pre>
@@ -1599,7 +1599,7 @@ loop:
     throws Exception
   {
     String name;
-    
+
     requireWhitespace();
     // Read the element type name.
     name = readNmtoken(true);
@@ -1607,7 +1607,7 @@ loop:
     requireWhitespace();
     // Read the content model.
     parseContentspec(name);
-    
+
     skipWhitespace();
     require('>');
   }
@@ -1643,8 +1643,8 @@ loop:
     else
       {
         String model;
-        char[] saved; 
-        
+        char[] saved;
+
         require('(');
         saved = readBuffer;
         dataBufferAppend('(');
@@ -1668,7 +1668,7 @@ loop:
           }
       }
   }
-  
+
   /**
    * Parse an element-content model.
    * <pre>
@@ -1686,11 +1686,11 @@ loop:
   {
     char c;
     char sep;
-    
+
     // Parse the first content particle
     skipWhitespace();
     parseCp();
-    
+
     // Check for end or for a separator.
     skipWhitespace();
     c = readCh();
@@ -1702,7 +1702,7 @@ loop:
           {
             handler.verror("Illegal Group/PE nesting");
           }
-        
+
         dataBufferAppend(')');
         c = readCh();
         switch (c)
@@ -1725,7 +1725,7 @@ loop:
         error("bad separator in content model", c, null);
         return;
       }
-    
+
     // Parse the rest of the content model.
     while (true)
       {
@@ -1740,7 +1740,7 @@ loop:
               {
                 handler.verror("Illegal Group/PE nesting");
               }
-            
+
             dataBufferAppend(')');
             break;
           }
@@ -1754,7 +1754,7 @@ loop:
             dataBufferAppend(c);
           }
       }
-    
+
     // Check for the occurrence indicator.
     c = readCh();
     switch (c)
@@ -1769,7 +1769,7 @@ loop:
         return;
       }
   }
-   
+
   /**
    * Parse a content particle.
    * <pre>
@@ -1823,12 +1823,12 @@ loop:
           {
             handler.verror("Illegal Group/PE nesting");
           }
-        
+
         dataBufferAppend(")*");
         tryRead('*');
         return;
       }
-    
+
     // Parse mixed content.
     skipWhitespace();
     while (!tryRead(")"))
@@ -1839,17 +1839,17 @@ loop:
         dataBufferAppend(readNmtoken(true));
         skipWhitespace();
       }
-    
+
     // VC: Proper Group/PE Nesting
     if (readBuffer != saved)
       {
         handler.verror("Illegal Group/PE nesting");
       }
-    
+
     require('*');
     dataBufferAppend(")*");
   }
-  
+
   /**
    * Parse an attribute list declaration.
    * <pre>
@@ -1861,7 +1861,7 @@ loop:
     throws Exception
   {
     String elementName;
-    
+
     requireWhitespace();
     elementName = readNmtoken(true);
     boolean white = tryWhitespace();
@@ -1875,7 +1875,7 @@ loop:
         white = tryWhitespace();
       }
   }
-  
+
   /**
    * Parse a single attribute definition.
    * <pre>
@@ -1888,7 +1888,7 @@ loop:
     String name;
     String type;
     String enumer = null;
-    
+
     // Read the attribute name.
     name = readNmtoken(true);
 
@@ -1911,7 +1911,7 @@ loop:
             enumer = dataBufferToString();
           }
       }
-    
+
     // Read the default value.
     requireWhitespace();
     parseDefault(elementName, name, type, enumer);
@@ -1980,7 +1980,7 @@ loop:
         return null;
       }
   }
-  
+
   /**
    * Parse an enumeration.
    * <pre>
@@ -2022,7 +2022,7 @@ loop:
   {
     requireWhitespace();
     require('(');
-    
+
     parseEnumeration(true);
   }
 
@@ -2042,11 +2042,11 @@ loop:
     int flags = LIT_ATTRIBUTE;
     boolean saved = expandPE;
     String defaultType = null;
-    
+
     // LIT_ATTRIBUTE forces '<' checks now (ASAP) and turns whitespace
     // chars to spaces (doesn't matter when that's done if it doesn't
     // interfere with char refs expanding to whitespace).
-    
+
     if (!skippedPE)
       {
         flags |= LIT_ENTITY_REF;
@@ -2065,7 +2065,7 @@ loop:
               }
           }
       }
-    
+
     expandPE = false;
     if (tryRead('#'))
       {
@@ -2125,7 +2125,7 @@ loop:
                                                defaultType, value);
       }
   }
-  
+
   /**
    * Parse a conditional section.
    * <pre>
@@ -2197,7 +2197,7 @@ loop:
         error("conditional section must begin with INCLUDE or IGNORE");
       }
   }
-  
+
   private void parseCharRef()
     throws SAXException, IOException
   {
@@ -2216,7 +2216,7 @@ loop:
   {
     int value = 0;
     char c;
-    
+
     if (tryRead('x'))
       {
 loop1:
@@ -2263,7 +2263,7 @@ loop2:
               }
           }
       }
-    
+
     // check for character refs being legal XML
     if ((value < 0x0020
          && ! (value == '\n' || value == '\t' || value == '\r'))
@@ -2274,7 +2274,7 @@ loop2:
         error("illegal XML character reference U+"
               + Integer.toHexString(value));
       }
-    
+
     // Check for surrogates: 00000000 0000xxxx yyyyyyyy zzzzzzzz
     //  (1101|10xx|xxyy|yyyy + 1101|11yy|zzzz|zzzz:
     if (value > 0x0010ffff)
@@ -2283,9 +2283,9 @@ loop2:
         error("character reference " + value + " is too large for UTF-16",
               Integer.toString(value), null);
       }
-    
+
   }
-  
+
   /**
    * Read and interpret a character reference.
    * <pre>
@@ -2298,7 +2298,7 @@ loop2:
   {
     int value = 0;
     char c;
-    
+
     if (tryRead('x'))
       {
 loop1:
@@ -2345,7 +2345,7 @@ loop2:
               }
           }
       }
-    
+
     // check for character refs being legal XML
     if ((value < 0x0020
          && ! (value == '\n' || value == '\t' || value == '\r'))
@@ -2356,7 +2356,7 @@ loop2:
         error("illegal XML character reference U+"
               + Integer.toHexString(value));
       }
-    
+
     // Check for surrogates: 00000000 0000xxxx yyyyyyyy zzzzzzzz
     //  (1101|10xx|xxyy|yyyy + 1101|11yy|zzzz|zzzz:
     if (value <= 0x0000ffff)
@@ -2382,7 +2382,7 @@ loop2:
         dataBufferFlush();
       }
   }
-  
+
   /**
    * Parse and expand an entity reference.
    * <pre>
@@ -2395,7 +2395,7 @@ loop2:
     throws SAXException, IOException
   {
     String name;
-    
+
     name = readNmtoken(true);
     require(';');
     switch (getEntityType(name))
@@ -2406,7 +2406,7 @@ loop2:
         // unless the processor might _legitimately_ not have seen a
         // declaration ... which is what this implements.
         String message;
-        
+
         message = "reference to undeclared general entity " + name;
         if (skippedPE && !docIsStandalone)
           {
@@ -2424,25 +2424,25 @@ loop2:
         break;
       case ENTITY_INTERNAL:
           pushString(name, getEntityValue(name));
-          
+
           //workaround for possible input pop before marking
-          //the buffer reading position  
+          //the buffer reading position
           char t = readCh();
           unread(t);
           int bufferPosMark = readBufferPos;
-          
+
           int end = readBufferPos + getEntityValue(name).length();
           for (int k = readBufferPos; k < end; k++)
             {
               t = readCh();
               if (t == '&')
                 {
-                  t = readCh();   
+                  t = readCh();
                   if (t  == '#')
-                    { 
+                    {
                       //try to match a character ref
                       tryReadCharRef();
-                
+
                       //everything has been read
                       if (readBufferPos >= end)
                         {
@@ -2457,7 +2457,7 @@ loop2:
                       unread(t);
                       readNmtoken(true);
                       require(';');
-                      
+
                       //everything has been read
                       if (readBufferPos >= end)
                         {
@@ -2468,7 +2468,7 @@ loop2:
                     }
                   error(" malformed entity reference");
                 }
-              
+
             }
           readBufferPos = bufferPosMark;
           break;
@@ -2499,7 +2499,7 @@ loop2:
           throw new RuntimeException();
       }
   }
-    
+
   /**
    * Parse and expand a parameter entity reference.
    * <pre>
@@ -2511,7 +2511,7 @@ loop2:
     throws SAXException, IOException
   {
     String name;
-    
+
     name = "%" + readNmtoken(true);
     require(';');
     switch (getEntityType(name))
@@ -2519,7 +2519,7 @@ loop2:
       case ENTITY_UNDECLARED:
         // VC: Entity Declared
         handler.verror("reference to undeclared parameter entity " + name);
-        
+
         // we should disable handling of all subsequent declarations
         // unless this is a standalone document (info discarded)
         break;
@@ -2546,7 +2546,7 @@ loop2:
         break;
       }
   }
-  
+
   /**
    * Parse an entity declaration.
    * <pre>
@@ -2566,7 +2566,7 @@ loop2:
   {
     boolean peFlag = false;
     int flags = 0;
-    
+
     // Check for a parameter entity.
     expandPE = false;
     requireWhitespace();
@@ -2576,7 +2576,7 @@ loop2:
         requireWhitespace();
       }
     expandPE = true;
-    
+
     // Read the entity name, and prepend
     // '%' if necessary.
     String name = readNmtoken(true);
@@ -2605,7 +2605,7 @@ loop2:
       {
         // Read the external IDs
         ExternalIdentifiers ids = readExternalIds(false, false);
-        
+
         // Check for NDATA declaration.
         boolean white = tryWhitespace();
         if (!peFlag && tryRead("NDATA"))
@@ -2637,7 +2637,7 @@ loop2:
                                    : ids.systemId);
           }
       }
-    
+
     // Finish the declaration.
     skipWhitespace();
     require('>');
@@ -2672,11 +2672,11 @@ loop2:
 
     // Register the notation.
     setNotation(nname, ids);
-    
+
     skipWhitespace();
     require('>');
   }
-  
+
   /**
    * Parse character data.
    * <pre>
@@ -2691,7 +2691,7 @@ loop2:
     boolean pureWhite = false;
 
     // assert (dataBufferPos == 0);
-    
+
     // are we expecting pure whitespace?  it might be dirty...
     if ((currentElementContent == CONTENT_ELEMENTS) && !isDirtyCurrentElement)
       {
@@ -2705,7 +2705,7 @@ loop2:
         int lineAugment = 0;
         int columnAugment = 0;
         int i;
-        
+
 loop:
         for (i = readBufferPos; i < readBufferLength; i++)
           {
@@ -2751,8 +2751,8 @@ loop:
                 break;
               default:
                 if ((c < 0x0020 || c > 0xFFFD)
-                    || ((c >= 0x007f) && (c <= 0x009f) && (c != 0x0085) 
-                        && xmlVersion == XML_11)) 
+                    || ((c >= 0x007f) && (c <= 0x009f) && (c != 0x0085)
+                        && xmlVersion == XML_11))
                   {
                     error("illegal XML character U+"
                           + Integer.toHexString(c));
@@ -2762,7 +2762,7 @@ loop:
                 columnAugment++;
               }
           }
-        
+
         // report text thus far
         if (lineAugment > 0)
           {
@@ -2773,10 +2773,10 @@ loop:
           {
             column += columnAugment;
           }
-        
+
         // report characters/whitspace
         int length = i - readBufferPos;
-        
+
         if (length != 0)
           {
             if (pureWhite)
@@ -2790,12 +2790,12 @@ loop:
               }
             readBufferPos = i;
           }
-        
+
         if (state != 0)
           {
             break;
           }
-        
+
         // fill next buffer from this entity, or
         // pop stack and continue with previous entity
         unread(readCh());
@@ -2810,11 +2810,11 @@ loop:
         error("character data may not contain ']]>'");
       }
   }
-  
+
   //////////////////////////////////////////////////////////////////////
   // High-level reading and scanning methods.
   //////////////////////////////////////////////////////////////////////
-  
+
   /**
    * Require whitespace characters.
    */
@@ -2849,7 +2849,7 @@ loop:
       {
         int lineAugment = 0;
         int columnAugment = 0;
-        
+
 loop:
         for (int i = readBufferPos; i < readBufferLength; i++)
           {
@@ -2885,7 +2885,7 @@ loop:
               }
           }
       }
-    
+
     // OK, do it the slow way.
     char c = readCh ();
     while (isWhitespace(c))
@@ -2894,7 +2894,7 @@ loop:
       }
     unread(c);
   }
-  
+
   /**
    * Read a name or (when parsing an enumeration) name token.
    * <pre>
@@ -2906,7 +2906,7 @@ loop:
     throws SAXException, IOException
   {
     char c;
-    
+
     if (USE_CHEATS)
       {
 loop:
@@ -2921,7 +2921,7 @@ loop:
                     break loop;
                   }
                 // else fall through...
-                
+
                 // What may legitimately come AFTER a name/nmtoken?
               case '<': case '>': case '&':
               case ',': case '|': case '*': case '+': case '?':
@@ -2939,10 +2939,10 @@ loop:
                   }
                 readBufferPos = i;
                 return intern(readBuffer, start, i - start);
-                
+
               default:
                 // FIXME ... per IBM's OASIS test submission, these:
-                //   ?    U+06dd 
+                //   ?    U+06dd
                 //   Combining  U+309B
                 //these switches are kind of ugly but at least we won't
                 //have to go over the whole lits for each char
@@ -2997,7 +2997,7 @@ loop:
                                       + Integer.toHexString(c));
                               }
                           }
-                        
+
                         break;
                         //starting with 11
                       case 0x1100:
@@ -3061,7 +3061,7 @@ loop:
                           }
                         break;
                       default:
-                        if (c == 0x0e46 || c == 0x1011 
+                        if (c == 0x0e46 || c == 0x1011
                             || c == 0x212f || c == 0x0587
                             || c == 0x0230 )
                           {
@@ -3091,7 +3091,7 @@ loop:
               }
           }
       }
-    
+
     nameBufferPos = 0;
 
     // Read the first character.
@@ -3128,7 +3128,7 @@ loop:
             return s;
           default:
             // punt on exact tests from Appendix A, but approximate them
-            
+
             if ((nameBufferPos != 0 || !isName)
                 && !Character.isUnicodeIdentifierPart(c)
                 && ":-_.".indexOf(c) == -1
@@ -3147,7 +3147,7 @@ loop:
           }
       }
   }
-  
+
   private static boolean isExtender(char c)
   {
     // [88] Extender ::= ...
@@ -3178,7 +3178,7 @@ loop:
     int startLine = line;
     boolean saved = expandPE;
     boolean savedReport = doReport;
-    
+
     // Find the first delimiter.
     delim = readCh();
     if (delim != '"' && delim != '\'')
@@ -3192,7 +3192,7 @@ loop:
         expandPE = false;
       }
     doReport = false;
-    
+
     // Each level of input source has its own buffer; remember
     // ours, so we won't read the ending delimiter from any
     // other input source, regardless of entity processing.
@@ -3235,11 +3235,11 @@ loop:
                         break;
                       }
                     parseCharRef(false /* Do not do flushDataBuffer */);
-                    
+
                     // exotic WFness risk: this is an entity literal,
                     // dataBuffer [dataBufferPos - 1] == '&', and
                     // following chars are a _partial_ entity/char ref
-                    
+
                     // It looks like an entity ref ...
                   }
                 else
@@ -3258,7 +3258,7 @@ loop:
                     else if ((flags & LIT_DISABLE_EREF) != 0)
                       {
                         dataBufferAppend('&');
-                        
+
                         // OK, it will be an entity ref -- expanded later.
                       }
                     else
@@ -3272,7 +3272,7 @@ loop:
                   }
                 c = readCh();
                 continue loop;
-                
+
               case '<':
                 // and why?  Perhaps so "&foo;" expands the same
                 // inside and outside an attribute?
@@ -3283,7 +3283,7 @@ loop:
                 break;
 
                 // We don't worry about case '%' and PE refs, readCh does.
-                
+
               default:
                 break;
               }
@@ -3299,17 +3299,17 @@ loop:
     inLiteral = false;
     expandPE = saved;
     doReport = savedReport;
-    
+
     // Normalise whitespace if necessary.
     if ((flags & LIT_NORMALIZE) > 0)
       {
         dataBufferNormalize();
       }
-    
+
     // Return the value.
     return dataBufferToString();
   }
-  
+
   /**
    * Try reading external identifiers.
    * A system identifier is not required for notations.
@@ -3325,7 +3325,7 @@ loop:
     char c;
     ExternalIdentifiers ids = new ExternalIdentifiers();
     int flags = LIT_DISABLE_CREF | LIT_DISABLE_PE | LIT_DISABLE_EREF;
-    
+
     if (tryRead("PUBLIC"))
       {
         requireWhitespace();
@@ -3345,7 +3345,7 @@ loop:
             requireWhitespace();
             ids.systemId = readLiteral(flags);
           }
-        
+
         for (int i = 0; i < ids.publicId.length(); i++)
           {
             c = ids.publicId.charAt(i);
@@ -3374,7 +3374,7 @@ loop:
       {
         error("missing SYSTEM or PUBLIC keyword");
       }
-      
+
     if (ids.systemId != null)
       {
         if (ids.systemId.indexOf('#') != -1)
@@ -3388,7 +3388,7 @@ loop:
                          + ids.systemId);
           }
       }
-    
+
     return ids;
   }
 
@@ -3416,7 +3416,7 @@ loop:
   //////////////////////////////////////////////////////////////////////
   // Utility routines.
   //////////////////////////////////////////////////////////////////////
-    
+
   /**
    * Add a character to the data buffer.
    */
@@ -3446,7 +3446,7 @@ loop:
   {
     dataBuffer = (char[]) extendArray(dataBuffer, dataBuffer.length,
                                       dataBufferPos + length);
-    
+
     System.arraycopy(ch, start, dataBuffer, dataBufferPos, length);
     dataBufferPos += length;
   }
@@ -3459,13 +3459,13 @@ loop:
     int i = 0;
     int j = 0;
     int end = dataBufferPos;
-    
+
     // Skip spaces at the start.
     while (j < end && dataBuffer[j] == ' ')
       {
         j++;
       }
-    
+
     // Skip whitespace at the end.
     while (end > j && dataBuffer[end - 1] == ' ')
       {
@@ -3475,9 +3475,9 @@ loop:
     // Start copying to the left.
     while (j < end)
       {
-        
+
         char c = dataBuffer[j++];
-        
+
         // Normalise all other spaces to
         // a single space.
         if (c == ' ')
@@ -3494,7 +3494,7 @@ loop:
             dataBuffer[i++] = c;
           }
       }
-    
+
     // The new length is <= the old one.
     dataBufferPos = i;
   }
@@ -3554,7 +3554,7 @@ loop:
   {
     int length = delim.length();
     char[] ch;
-    
+
     if (length < dataBuffer.length)
       {
         ch = dataBuffer;
@@ -3564,11 +3564,11 @@ loop:
       {
         ch = delim.toCharArray();
       }
-      
+
     if (USE_CHEATS && length <= (readBufferLength - readBufferPos))
       {
         int offset = readBufferPos;
-        
+
         for (int i = 0; i < length; i++, offset++)
           {
             if (ch[i] != readBuffer[offset])
@@ -3577,7 +3577,7 @@ loop:
               }
           }
         readBufferPos = offset;
-        
+
       }
     else
       {
@@ -3595,13 +3595,13 @@ loop:
     throws SAXException, IOException
   {
     char c = readCh();
-    
+
     if (c != delim)
       {
         error("required character", c, Character.toString(delim));
       }
   }
-  
+
   /**
    * Create an interned string from a character array.
    * &AElig;lfred uses this method to create an interned version
@@ -3631,13 +3631,13 @@ loop:
         hash = 31 * hash + ch[i];
       }
     hash = (hash & 0x7fffffff) % SYMBOL_TABLE_LENGTH;
-    
+
     // Get the bucket -- consists of {array,String} pairs
     if ((bucket = symbolTable[hash]) == null)
       {
         // first string in this bucket
         bucket = new Object[8];
-        
+
         // Search for a matching tuple, and
         // return the string if we find one.
       }
@@ -3646,13 +3646,13 @@ loop:
         while (index < bucket.length)
           {
             char[] chFound = (char[]) bucket[index];
-        
+
             // Stop when we hit an empty entry.
             if (chFound == null)
               {
                 break;
               }
-            
+
             // If they're the same length, check for a match.
             if (chFound.length == length)
               {
@@ -3673,12 +3673,12 @@ loop:
             index += 2;
           }
         // Not found -- we'll have to add it.
-        
+
         // Do we have to grow the bucket?
         bucket = (Object[]) extendArray(bucket, bucket.length, index);
       }
     symbolTable[hash] = bucket;
-    
+
     // OK, add it to the end of the bucket -- "local" interning.
     // Intern "globally" to let applications share interning benefits.
     // That is, "!=" and "==" work on our strings, not just equals().
@@ -3690,7 +3690,7 @@ loop:
 
   /**
    * Ensure the capacity of an array, allocating a new one if
-   * necessary.  Usually extends only for name hash collisions. 
+   * necessary.  Usually extends only for name hash collisions.
    */
   private Object extendArray(Object array, int currentSize, int requiredSize)
   {
@@ -3702,12 +3702,12 @@ loop:
       {
         Object newArray = null;
         int newSize = currentSize * 2;
-        
+
         if (newSize <= requiredSize)
           {
             newSize = requiredSize + 1;
           }
-        
+
         if (array instanceof char[])
           {
             newArray = new char[newSize];
@@ -3720,7 +3720,7 @@ loop:
           {
             throw new RuntimeException();
           }
-        
+
         System.arraycopy(array, 0, newArray, 0, currentSize);
         return newArray;
       }
@@ -3729,20 +3729,20 @@ loop:
   //////////////////////////////////////////////////////////////////////
   // XML query routines.
   //////////////////////////////////////////////////////////////////////
-  
+
   boolean isStandalone()
   {
     return docIsStandalone;
   }
-    
+
   //
   // Elements
   //
-  
+
   private int getContentType(ElementDecl element, int defaultType)
   {
     int retval;
-    
+
     if (element == null)
       {
         return defaultType;
@@ -3770,7 +3770,7 @@ loop:
     ElementDecl element = (ElementDecl) elementInfo.get(name);
     return getContentType(element, CONTENT_UNDECLARED);
   }
-  
+
   /**
    * Register an element.
    * Array format:
@@ -3788,7 +3788,7 @@ loop:
       }
 
     ElementDecl element = (ElementDecl) elementInfo.get(name);
-    
+
     // first <!ELEMENT ...> or <!ATTLIST ...> for this type?
     if (element == null)
       {
@@ -3799,7 +3799,7 @@ loop:
         elementInfo.put(name, element);
         return;
       }
-    
+
     // <!ELEMENT ...> declaration?
     if (contentType != CONTENT_UNDECLARED)
       {
@@ -3816,14 +3816,14 @@ loop:
                            + name);
           }
       }
-    
+
     // first <!ATTLIST ...>, before <!ELEMENT ...> ?
     else if (attributes != null)
       {
         element.attributes = attributes;
       }
   }
-  
+
   /**
    * Look up the attribute hash table for an element.
    * The hash table is the second item in the element array.
@@ -3837,7 +3837,7 @@ loop:
   //
   // Attributes
   //
-  
+
   /**
    * Get the declared attributes for an element type.
    * @param elname The name of the element type.
@@ -3853,7 +3853,7 @@ loop:
   private Iterator declaredAttributes(ElementDecl element)
   {
     HashMap attlist;
-    
+
     if (element == null)
       {
         return null;
@@ -3977,8 +3977,8 @@ loop:
     AttributeDecl attribute = getAttribute(name, aname);
     return (attribute == null) ? ATTRIBUTE_DEFAULT_UNDECLARED :
       attribute.valueType;
-  }  
-  
+  }
+
   /**
    * Register an attribute declaration for later retrieval.
    * Format:
@@ -3993,19 +3993,19 @@ loop:
     throws Exception
   {
     HashMap attlist;
-    
+
     if (skippedPE)
       {
         return;
       }
-    
+
     // Create a new hashtable if necessary.
     attlist = getElementAttributes(elName);
     if (attlist == null)
       {
         attlist = new HashMap();
       }
-    
+
     // ignore multiple attribute declarations!
     if (attlist.get(name) != null)
       {
@@ -4020,7 +4020,7 @@ loop:
         attribute.valueType = valueType;
         attribute.enumeration = enumeration;
         attlist.put(name, attribute);
-      
+
         // save; but don't overwrite any existing <!ELEMENT ...>
         setElement(elName, CONTENT_UNDECLARED, null, attlist);
       }
@@ -4038,7 +4038,7 @@ loop:
   //
   // Entities
   //
-  
+
   /**
    * Find the type of an entity.
    * @returns An integer constant representing the entity type.
@@ -4135,7 +4135,7 @@ loop:
   //
   // Notations.
   //
-  
+
   /**
    * Report a notation declaration, checking for duplicates.
    */
@@ -4146,7 +4146,7 @@ loop:
       {
         return;
       }
-    
+
     handler.notationDecl(nname, ids.publicId, ids.systemId, ids.baseUri);
     if (notationInfo.get(nname) == null)
       {
@@ -4158,11 +4158,11 @@ loop:
         handler.verror("Duplicate notation name decl: " + nname);
       }
   }
-  
+
   //
   // Location.
   //
-  
+
   /**
    * Return the current line number.
    */
@@ -4182,7 +4182,7 @@ loop:
   //////////////////////////////////////////////////////////////////////
   // High-level I/O.
   //////////////////////////////////////////////////////////////////////
-  
+
   /**
    * Read a single character from the readBuffer.
    * <p>The readDataChunk () method maintains the buffer.
@@ -4223,16 +4223,16 @@ loop:
                   }
               }
             break;
-            
+
           default:
-            
+
             popInput();
             break;
           }
       }
-    
+
     char c = readBuffer[readBufferPos++];
-    
+
     if (c == '\n')
       {
         line++;
@@ -4245,7 +4245,7 @@ loop:
             /* the most common return to parseContent () ... NOP */
           }
         else if (((c < 0x0020 && (c != '\t') && (c != '\r')) || c > 0xFFFD)
-                 || ((c >= 0x007f) && (c <= 0x009f) && (c != 0x0085) 
+                 || ((c >= 0x007f) && (c <= 0x009f) && (c != 0x0085)
                      && xmlVersion == XML_11))
           {
             error("illegal XML character U+" + Integer.toHexString(c));
@@ -4274,7 +4274,7 @@ loop:
    * Push a single character back onto the current input stream.
    * <p>This method usually pushes the character back onto
    * the readBuffer.
-   * <p>I don't think that this would ever be called with 
+   * <p>I don't think that this would ever be called with
    * readBufferPos = 0, because the methods always reads a character
    * before unreading it, but just in case, I've added a boundary
    * condition.
@@ -4451,7 +4451,7 @@ loop:
     scratch.setCharacterStream(null);
     scratch.setByteStream(null);
     scratch.setEncoding(null);
-    
+
     // Push the existing status.
     pushInput(ename);
 
@@ -4475,7 +4475,7 @@ loop:
         tryEncodingDecl(true);
         return;
       }
-  
+
     // Else we handle the conversion, and need to ensure
     // it's done right.
     sourceType = INPUT_STREAM;
@@ -4487,12 +4487,12 @@ loop:
       {
         // We have to open our own stream to the URL.
         URL url = new URL(systemId);
-        
+
         externalEntity = url.openConnection();
         externalEntity.connect();
         is = externalEntity.getInputStream();
       }
-    
+
     // If we get to here, there must be
     // an InputStream available.
     if (!is.markSupported())
@@ -4509,11 +4509,11 @@ loop:
         if (!"file".equals(externalEntity.getURL().getProtocol()))
           {
             int temp;
-          
+
             // application/xml;charset=something;otherAttr=...
             // ... with many variants on 'something'
             encoding = externalEntity.getContentType();
-          
+
             // MHK code (fix for Saxon 5.5.1/007):
             // protect against encoding==null
             if (encoding == null)
@@ -4524,7 +4524,7 @@ loop:
               {
                 temp = encoding.indexOf("charset");
               }
-          
+
             // RFC 2376 sez MIME text defaults to ASCII, but since the
             // JDK will create a MIME type out of thin air, we always
             // autodetect when there's no explicit charset attribute.
@@ -4539,11 +4539,11 @@ loop:
                   {
                     encoding = encoding.substring(0, temp);
                   }
-                
+
                 if ((temp = encoding.indexOf('=', temp + 7)) > 0)
                   {
                     encoding = encoding.substring(temp + 1);
-                    
+
                     // attributes can have comment fields (RFC 822)
                     if ((temp = encoding.indexOf('(')) > 0)
                       {
@@ -4567,14 +4567,14 @@ loop:
               }
           }
       }
-    
+
     // if we got an external encoding label, use it ...
     if (encoding != null)
       {
         this.encoding = ENCODING_EXTERNAL;
         setupDecoding(encoding);
         ignoreEncoding = true;
-        
+
         // ... else autodetect from first bytes.
       }
     else
@@ -4608,13 +4608,13 @@ loop:
             readBufferOverflow = -1;
             line = 1;
             currentByteCount = column = 0;
-            
+
             sourceType = INPUT_READER;
             this.reader = new InputStreamReader(is, encoding);
             is = null;
-            
+
             tryEncodingDecl(true);
-            
+
           }
         catch (IOException e)
           {
@@ -4672,7 +4672,7 @@ loop:
   /**
    * Attempt to detect the encoding of an entity.
    * <p>The trick here (as suggested in the XML standard) is that
-   * any entity not in UTF-8, or in UCS-2 with a byte-order mark, 
+   * any entity not in UTF-8, or in UCS-2 with a byte-order mark,
    * <b>must</b> begin with an XML declaration or an encoding
    * declaration; we simply have to look for "&lt;?xml" in various
    * encodings.
@@ -4792,7 +4792,7 @@ loop:
       {
         // 4c 6f a7 94 ... we don't understand EBCDIC flavors
         // ... but we COULD at least kick in some fixed code page
-        
+
         // (default) UTF-8 without encoding/XML declaration
         encoding = ENCODING_UTF_8;
       }
@@ -4832,7 +4832,7 @@ loop:
 
   /**
    * This method pushes a string back onto input.
-   * <p>It is useful either as the expansion of an internal entity, 
+   * <p>It is useful either as the expansion of an internal entity,
    * or for backtracking during the parse.
    * <p>Call pushCharArray () to do the actual work.
    * @param s The string to push back onto input.
@@ -4918,13 +4918,13 @@ loop:
           }
       }
     entityStack.addLast(ename);
-    
+
     // Don't bother if there is no current input.
     if (sourceType == INPUT_NONE)
       {
         return;
       }
-    
+
     // Set up a snapshot of the current
     // input source.
     Input input = new Input();
@@ -4941,7 +4941,7 @@ loop:
     input.currentByteCount = currentByteCount;
     input.column = column;
     input.reader = reader;
-    
+
     // Push it onto the stack.
     inputStack.addLast(input);
   }
@@ -5010,7 +5010,7 @@ loop:
     column = input.column;
     reader = input.reader;
   }
-  
+
   /**
    * Return true if we can read the expected character.
    * <p>Note that the character will be removed from the input stream
@@ -5026,7 +5026,7 @@ loop:
     throws SAXException, IOException
   {
     char c;
-    
+
     // Read the character
     c = readCh();
 
@@ -5069,7 +5069,7 @@ loop:
 
     // Compare the input, character-
     // by character.
-    
+
     for (int i = 0; i < ch.length; i++)
       {
         c = readCh();
@@ -5109,7 +5109,7 @@ loop:
         return false;
       }
   }
-  
+
   /**
    * Read all data until we find the specified string.
    * This is useful for scanning CDATA sections and PIs.
@@ -5130,7 +5130,7 @@ loop:
   {
     char c;
     int startLine = line;
-    
+
     try
       {
         while (!tryRead(delim))
@@ -5150,7 +5150,7 @@ loop:
   //////////////////////////////////////////////////////////////////////
   // Low-level I/O.
   //////////////////////////////////////////////////////////////////////
-  
+
   /**
    * Prefetch US-ASCII XML/text decl from input stream into read buffer.
    * Doesn't buffer more than absolutely needed, so that when an encoding
@@ -5163,7 +5163,7 @@ loop:
   {
     int ch;
     readBufferPos = readBufferLength = 0;
-    
+
     is.mark(readBuffer.length);
     while (true)
       {
@@ -5201,7 +5201,7 @@ loop:
     throws SAXException, IOException
   {
     int count;
-    
+
     // See if we have any overflow (filterCR sets for CR at end)
     if (readBufferOverflow > -1)
       {
@@ -5236,7 +5236,7 @@ loop:
         sawCR = false;
         return;
       }
-    
+
     // Read as many bytes as possible into the raw buffer.
     count = is.read(rawReadBuffer, 0, READ_BUFFER_MAX);
 
@@ -5265,7 +5265,7 @@ loop:
           case ENCODING_UCS_2_21:
             copyUcs2ReadBuffer(count, 0, 8);
             break;
-            
+
             // four byte builtins
           case ENCODING_UCS_4_1234:
             copyUcs4ReadBuffer(count, 24, 16, 8, 0);
@@ -5287,27 +5287,27 @@ loop:
       }
 
     readBufferPos = 0;
-    
+
     // Filter out all carriage returns if we've seen any
     // (including any saved from a previous read)
     if (sawCR)
       {
         filterCR(count >= 0);
         sawCR = false;
-        
+
         // must actively report EOF, lest some CRs get lost.
         if (readBufferLength == 0 && count >= 0)
           {
             readDataChunk();
           }
       }
-    
+
     if (count > 0)
       {
         currentByteCount += count;
       }
   }
-  
+
   /**
    * Filter carriage returns in the read buffer.
    * CRLF becomes LF; CR becomes LF.
@@ -5321,7 +5321,7 @@ loop:
     int i, j;
 
     readBufferOverflow = -1;
-    
+
 loop:
     for (i = j = readBufferPos; j < readBufferLength; i++, j++)
       {
@@ -5359,8 +5359,8 @@ loop:
 
   /**
    * Convert a buffer of UTF-8-encoded bytes into UTF-16 characters.
-   * <p>When readDataChunk () calls this method, the raw bytes are in 
-   * rawReadBuffer, and the final characters will appear in 
+   * <p>When readDataChunk () calls this method, the raw bytes are in
+   * rawReadBuffer, and the final characters will appear in
    * readBuffer.
    * <p>Note that as of Unicode 3.1, good practice became a requirement,
    * so that each Unicode character has exactly one UTF-8 representation.
@@ -5377,7 +5377,7 @@ loop:
     int j = readBufferPos;
     int b1;
     char c = 0;
-    
+
     /*
     // check once, so the runtime won't (if it's smart enough)
     if (count < 0 || count > rawReadBuffer.length)
@@ -5403,7 +5403,7 @@ loop:
                     encodingError("Illegal two byte UTF-8 sequence",
                                   c, 0);
                   }
-                
+
                 //Sec 2.11
                 // [1] the two-character sequence #xD #xA
                 // [2] the two-character sequence #xD #x85
@@ -5411,10 +5411,10 @@ loop:
                   {
                     continue;
                   }
-                
+
                 // Sec 2.11
                 // [3] the single character #x85
-                
+
                 if (c == 0x0085 && xmlVersion == XML_11)
                   {
                     readBuffer[j++] = '\r';
@@ -5453,7 +5453,7 @@ loop:
                 iso646 = (iso646 << 6) + getNextUtf8Byte(i++, count);
                 iso646 = (iso646 << 6) + getNextUtf8Byte(i++, count);
                 iso646 = (iso646 << 6) + getNextUtf8Byte(i++, count);
-                
+
                 if (iso646 <= 0xffff)
                   {
                     encodingError("Illegal four byte UTF-8 sequence",
@@ -5497,7 +5497,7 @@ loop:
     // How many characters have we read?
     readBufferLength = j;
   }
-   
+
   /**
    * Return the next byte value in a UTF-8 sequence.
    * If it is not possible to get a byte from the current
@@ -5512,7 +5512,7 @@ loop:
     throws SAXException, IOException
   {
     int val;
-    
+
     // Take a character from the buffer
     // or from the actual input stream.
     if (pos < count)
@@ -5544,8 +5544,8 @@ loop:
    * Convert a buffer of US-ASCII or ISO-8859-1-encoded bytes into
    * UTF-16 characters.
    *
-   * <p>When readDataChunk () calls this method, the raw bytes are in 
-   * rawReadBuffer, and the final characters will appear in 
+   * <p>When readDataChunk () calls this method, the raw bytes are in
+   * rawReadBuffer, and the final characters will appear in
    * readBuffer.
    *
    * @param count The number of bytes to convert.
@@ -5583,8 +5583,8 @@ loop:
    * Convert a buffer of UCS-2-encoded bytes into UTF-16 characters
    * (as used in Java string manipulation).
    *
-   * <p>When readDataChunk () calls this method, the raw bytes are in 
-   * rawReadBuffer, and the final characters will appear in 
+   * <p>When readDataChunk () calls this method, the raw bytes are in
+   * rawReadBuffer, and the final characters will appear in
    * readBuffer.
    * @param count The number of bytes to convert.
    * @param shift1 The number of bits to shift byte 1.
@@ -5597,7 +5597,7 @@ loop:
     throws SAXException
   {
     int j = readBufferPos;
-    
+
     if (count > 0 && (count % 2) != 0)
       {
         encodingError("odd number of bytes in UCS-2 encoding", -1, count);
@@ -5635,8 +5635,8 @@ loop:
   /**
    * Convert a buffer of UCS-4-encoded bytes into UTF-16 characters.
    *
-   * <p>When readDataChunk () calls this method, the raw bytes are in 
-   * rawReadBuffer, and the final characters will appear in 
+   * <p>When readDataChunk () calls this method, the raw bytes are in
+   * rawReadBuffer, and the final characters will appear in
    * readBuffer.
    * <p>Java has Unicode chars, and this routine uses surrogate pairs
    * for ISO-10646 values between 0x00010000 and 0x000fffff.  An
@@ -5657,7 +5657,7 @@ loop:
     throws SAXException
   {
     int j = readBufferPos;
-    
+
     if (count > 0 && (count % 4) != 0)
       {
         encodingError("number of bytes in UCS-4 encoding " +
@@ -5706,11 +5706,11 @@ loop:
         error(message);
       }
   }
-  
+
   //////////////////////////////////////////////////////////////////////
   // Local Variables.
   //////////////////////////////////////////////////////////////////////
-  
+
   /**
    * Re-initialize the variables for each parse.
    */
@@ -5719,7 +5719,7 @@ loop:
     // First line
     line = 1;
     column = 0;
-    
+
     // Set up the buffers for data and names
     dataBufferPos = 0;
     dataBuffer = new char[DATA_BUFFER_INITIAL];
@@ -5736,7 +5736,7 @@ loop:
     // element context.
     currentElement = null;
     currentElementContent = CONTENT_UNDECLARED;
-    
+
     // Set up the input variables
     sourceType = INPUT_NONE;
     inputStack = new LinkedList();
@@ -5752,11 +5752,11 @@ loop:
     inLiteral = false;
     expandPE = false;
     peIsError = false;
-    
+
     doReport = false;
-    
+
     inCDATA = false;
-    
+
     symbolTable = new Object[SYMBOL_TABLE_LENGTH][];
   }
 
@@ -5777,7 +5777,7 @@ loop:
       this.systemId = systemId;
       this.baseUri = baseUri;
     }
-    
+
   }
 
   static class EntityInfo
@@ -5787,12 +5787,12 @@ loop:
     ExternalIdentifiers ids;
     String value;
     String notationName;
-    
+
   }
 
   static class AttributeDecl
   {
-    
+
     String type;
     String value;
     int valueType;
@@ -5803,16 +5803,16 @@ loop:
 
   static class ElementDecl
   {
-    
+
     int contentType;
     String contentModel;
     HashMap attributes;
-  
+
   }
- 
+
   static class Input
   {
-    
+
     int sourceType;
     URLConnection externalEntity;
     char[] readBuffer;
@@ -5825,8 +5825,7 @@ loop:
     int currentByteCount;
     int column;
     Reader reader;
-    
-  }
-  
-}
 
+  }
+
+}

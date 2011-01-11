@@ -1,4 +1,4 @@
-/* AnyType.java -- 
+/* AnyType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -43,7 +43,7 @@ import javax.xml.namespace.QName;
 final class AnyType
   extends SimpleType
 {
-  
+
   AnyType()
   {
     super(new QName(XMLConstants.W3C_XML_SCHEMA_NS_URI, "anyType"),
@@ -55,4 +55,3 @@ final class AnyType
   }
 
 }
-

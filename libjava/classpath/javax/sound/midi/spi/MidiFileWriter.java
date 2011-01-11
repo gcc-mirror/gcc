@@ -45,20 +45,20 @@ import java.io.OutputStream;
 import javax.sound.midi.Sequence;
 
 /**
- * MidiFileWriter provides MIDI file writing services. 
- * 
- * There are three types of Standard MIDI File (SMF) formats, 
+ * MidiFileWriter provides MIDI file writing services.
+ *
+ * There are three types of Standard MIDI File (SMF) formats,
  * represented by integers 0, 1, and 2.
- * 
+ *
  * Type 0 files contain a single track and represents a single song
  * performance.
  * Type 1 may contain multiple tracks for a single song performance.
  * Type 2 may contain multiple tracks, each representing a
  * separate song performance.
- * 
+ *
  * See http://en.wikipedia.org/wiki/MIDI#MIDI_file_formats for more
  * information.
- *  
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -67,23 +67,23 @@ public abstract class MidiFileWriter
 {
   /**
    * Return the MIDI file types supported by this writer.
-   * 
+   *
    * @return the MIDI file types, or an empty array
    */
   public abstract int[] getMidiFileTypes();
-  
+
   /**
    * Return the MIDI file types supported by this writer for the
    * given sequence.
-   * 
+   *
    * @param sequence the sequence we'd like to write
    * @return the MIDI file types, or an empty array
    */
   public abstract int[] getMidiFileTypes(Sequence sequence);
-  
+
   /**
    * Returns true if this writer supports the given file type.
-   * 
+   *
    * @param fileType the file type we're asking about
    * @return true if this writer supports fileType, false otherwise
    */
@@ -101,7 +101,7 @@ public abstract class MidiFileWriter
   /**
    * Returns true if this writer supports the given file type for the
    * given sequence.
-   * 
+   *
    * @param fileType the file type we're asking about
    * @param sequence the sequence we'd like to write
    * @return true if this writer supports fileType, false otherwise
@@ -119,7 +119,7 @@ public abstract class MidiFileWriter
 
   /**
    * Write a sequence to a stream using the specified MIDI file type.
-   * 
+   *
    * @param in the sequence to write
    * @param fileType the MIDI file type to use
    * @param out the output stream to write to
@@ -131,7 +131,7 @@ public abstract class MidiFileWriter
 
   /**
    * Write a sequence to a file using the specified MIDI file type.
-   * 
+   *
    * @param in the sequence to write
    * @param fileType the MIDI file type to use
    * @param out the file to write to

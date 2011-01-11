@@ -57,7 +57,7 @@ final class VMPipe
         System.loadLibrary ("javanio");
       }
   }
-  
+
   /**
    * Create a pipe, consisting of a readable VMChannel and a writable
    * VMChannel. The readable channel is returned is the first element
@@ -75,6 +75,6 @@ final class VMPipe
     pipe[1] = new VMChannel(fds[1]);
     return pipe;
   }
-  
+
   private static native int[] pipe0() throws IOException;
 }

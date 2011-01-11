@@ -1,4 +1,4 @@
-/* GnomeNodeList.java - 
+/* GnomeNodeList.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -62,5 +62,5 @@ implements NodeList
   public native Node item (int index);
 
   public native int getLength ();
-  
+
 }

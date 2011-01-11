@@ -1,4 +1,4 @@
-/* TransformerFactory.java -- 
+/* TransformerFactory.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -72,7 +72,7 @@ public abstract class TransformerFactory
    * <li>the default factory class</li>
    * </ol>
    */
-  public static TransformerFactory newInstance() 
+  public static TransformerFactory newInstance()
     throws TransformerFactoryConfigurationError
   {
     ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -98,10 +98,10 @@ public abstract class TransformerFactory
                 className = null;
               }
             catch (Exception e)
-              { 
+              {
                 throw new TransformerFactoryConfigurationError(e,
                     "error instantiating class " + className);
-              } 
+              }
           }
       }
     while (className == null && count < 3);
@@ -116,7 +116,7 @@ public abstract class TransformerFactory
         throw new TransformerFactoryConfigurationError(e);
       }
   }
-  
+
   private static String getFactoryClassName(ClassLoader loader, int attempt)
   {
     final String propertyName = "javax.xml.transform.TransformerFactory";
@@ -140,7 +140,7 @@ public abstract class TransformerFactory
             {
               return null;
             }
-        case 2: 
+        case 2:
           try
             {
               String serviceKey = "/META-INF/services/" + propertyName;
@@ -164,19 +164,19 @@ public abstract class TransformerFactory
           return null;
       }
   }
-  
+
   /**
    * Creates a new transformer using the specified stylesheet.
    * @param source the source of an <a href='http://www.w3.org/TR/xslt'>XSLT
    * stylesheet</a> specifying the transformation to apply
    */
-  public abstract Transformer newTransformer(Source source) 
+  public abstract Transformer newTransformer(Source source)
     throws TransformerConfigurationException;
 
   /**
    * Creates a new transformer that applies the identity transform.
    */
-  public abstract Transformer newTransformer() 
+  public abstract Transformer newTransformer()
     throws TransformerConfigurationException;
 
   /**
@@ -184,7 +184,7 @@ public abstract class TransformerFactory
    * @param source the source of an <a href='http://www.w3.org/TR/xslt'>XSLT
    * stylesheet</a> specifying the transformation to apply
    */
-  public abstract Templates newTemplates(Source source) 
+  public abstract Templates newTemplates(Source source)
     throws TransformerConfigurationException;
 
   /**
@@ -201,10 +201,10 @@ public abstract class TransformerFactory
    * @param charset the charset attribute to match, or <code>null</code> to
    * match any
    */
-  public abstract Source getAssociatedStylesheet(Source source, 
+  public abstract Source getAssociatedStylesheet(Source source,
                                                  String media,
                                                  String title,
-                                                 String charset) 
+                                                 String charset)
     throws TransformerConfigurationException;
 
   /**
@@ -265,14 +265,14 @@ public abstract class TransformerFactory
    * @param name the attribute name
    * @exception IllegalArgumentException if the attribute is not supported
    */
-  public abstract Object getAttribute(String name) 
+  public abstract Object getAttribute(String name)
     throws IllegalArgumentException;
 
   /**
    * Sets the callback to be used by transformers obtained from this factory
    * to report transformation errors.
    */
-  public abstract void setErrorListener(ErrorListener listener) 
+  public abstract void setErrorListener(ErrorListener listener)
     throws IllegalArgumentException;
 
   /**

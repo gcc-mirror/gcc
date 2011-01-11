@@ -125,7 +125,7 @@ public class ActivationDataFlavor extends DataFlavor
     {
         this.humanPresentableName = humanPresentableName;
     }
-    
+
     public boolean equals(DataFlavor dataFlavor)
     {
         return (isMimeTypeEqual(dataFlavor) &&

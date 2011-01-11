@@ -1,4 +1,4 @@
-/* GnuRSAPublicKey.java -- 
+/* GnuRSAPublicKey.java --
    Copyright 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -72,7 +72,7 @@ public class GnuRSAPublicKey
    * Conveience constructor. Calls the constructor with 3 arguments passing
    * {@link Registry#RAW_ENCODING_ID} as the identifier of the preferred
    * encoding format.
-   * 
+   *
    * @param n the modulus.
    * @param e the public exponent.
    */
@@ -84,7 +84,7 @@ public class GnuRSAPublicKey
   /**
    * Constructs a new instance of <code>GnuRSAPublicKey</code> given the
    * designated arguments.
-   * 
+   *
    * @param preferredFormat the identifier of the preferred encoding format to
    *          use when externalizing this key.
    * @param n the modulus.
@@ -102,7 +102,7 @@ public class GnuRSAPublicKey
    * method of an RSA keypair codec object (an instance implementing
    * {@link IKeyPairCodec} for RSA keys, and re-constructs an instance of this
    * object.
-   * 
+   *
    * @param k the contents of a previously encoded instance of this object.
    * @throws ArrayIndexOutOfBoundsException if there is not enough bytes, in
    *           <code>k</code>, to represent a valid encoding of an instance
@@ -128,7 +128,7 @@ public class GnuRSAPublicKey
   /**
    * Returns the encoded form of this public key according to the designated
    * format.
-   * 
+   *
    * @param format the desired format identifier of the resulting encoding.
    * @return the byte sequence encoding this key according to the designated
    *         format.
@@ -156,7 +156,7 @@ public class GnuRSAPublicKey
   /**
    * Returns <code>true</code> if the designated object is an instance of this
    * class and has the same RSA parameter values as this one.
-   * 
+   *
    * @param obj the other non-null RSA key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

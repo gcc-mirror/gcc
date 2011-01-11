@@ -96,7 +96,7 @@ final class RETokenNamedProperty extends REToken
   };
 
   RETokenNamedProperty (int subIndex, String name, boolean insens,
-			boolean negate) throws REException
+                        boolean negate) throws REException
   {
     super (subIndex);
     this.name = name;
@@ -121,8 +121,8 @@ final class RETokenNamedProperty extends REToken
     boolean retval = matchOneChar (ch);
     if (retval)
       {
-	++mymatch.index;
-	return mymatch;
+        ++mymatch.index;
+        return mymatch;
       }
     return null;
   }
@@ -135,9 +135,9 @@ final class RETokenNamedProperty extends REToken
     boolean retval = handler.includes (ch);
     if (insens)
       {
-	retval = retval ||
-	  handler.includes (toUpperCase (ch, unicodeAware)) ||
-	  handler.includes (toLowerCase (ch, unicodeAware));
+        retval = retval ||
+          handler.includes (toUpperCase (ch, unicodeAware)) ||
+          handler.includes (toLowerCase (ch, unicodeAware));
       }
 
     if (negate)
@@ -156,12 +156,12 @@ final class RETokenNamedProperty extends REToken
     int numRepeats = 0;
     while (true)
       {
-	if (numRepeats >= max)
-	  break;
-	char ch = input.charAt (index++);
-	if (!matchOneChar (ch))
-	  break;
-	numRepeats++;
+        if (numRepeats >= max)
+          break;
+        char ch = input.charAt (index++);
+        if (!matchOneChar (ch))
+          break;
+        numRepeats++;
       }
     return numRepeats;
   }
@@ -179,37 +179,37 @@ final class RETokenNamedProperty extends REToken
   private Handler getHandler (String name) throws REException
   {
     if (name.equals ("Lower") || name.equals ("Upper") ||
-	// name.equals("ASCII") ||
-	name.equals ("Alpha") ||
-	name.equals ("Digit") ||
-	name.equals ("Alnum") ||
-	name.equals ("Punct") ||
-	name.equals ("Graph") ||
-	name.equals ("Print") ||
-	name.equals ("Blank") ||
-	name.equals ("Cntrl") ||
-	name.equals ("XDigit") || name.equals ("Space"))
+        // name.equals("ASCII") ||
+        name.equals ("Alpha") ||
+        name.equals ("Digit") ||
+        name.equals ("Alnum") ||
+        name.equals ("Punct") ||
+        name.equals ("Graph") ||
+        name.equals ("Print") ||
+        name.equals ("Blank") ||
+        name.equals ("Cntrl") ||
+        name.equals ("XDigit") || name.equals ("Space"))
       {
-	return new POSIXHandler (name);
+        return new POSIXHandler (name);
       }
     if (name.startsWith ("In"))
       {
-	try
-	{
-	  name = name.substring (2);
-	  Character.UnicodeBlock block =
-	    Character.UnicodeBlock.forName (name);
-	  return new UnicodeBlockHandler (block);
-	}
-	catch (IllegalArgumentException e)
-	{
-	  throw new REException ("Invalid Unicode block name: " + name,
-				 REException.REG_ESCAPE, 0);
-	}
+        try
+        {
+          name = name.substring (2);
+          Character.UnicodeBlock block =
+            Character.UnicodeBlock.forName (name);
+          return new UnicodeBlockHandler (block);
+        }
+        catch (IllegalArgumentException e)
+        {
+          throw new REException ("Invalid Unicode block name: " + name,
+                                 REException.REG_ESCAPE, 0);
+        }
       }
     if (name.startsWith ("Is"))
       {
-	name = name.substring (2);
+        name = name.substring (2);
       }
 
     // "grouped properties"
@@ -291,27 +291,27 @@ final class RETokenNamedProperty extends REToken
     if (name.equals ("all"))
       return new Handler ()
       {
-	public boolean includes (char c)
-	{
-	  return true;
-	}
+        public boolean includes (char c)
+        {
+          return true;
+        }
       };
     if (name.startsWith ("java"))
       {
-	try
-	{
-	  Method m = Character.class.getMethod ("is" + name.substring (4),
-						Character.TYPE);
-	  return new JavaCategoryHandler (m);
-	}
-	catch (NoSuchMethodException e)
-	{
-	  throw new REException ("Unsupported Java handler: " + name, e,
-				 REException.REG_ESCAPE, 0);
-	}
+        try
+        {
+          Method m = Character.class.getMethod ("is" + name.substring (4),
+                                                Character.TYPE);
+          return new JavaCategoryHandler (m);
+        }
+        catch (NoSuchMethodException e)
+        {
+          throw new REException ("Unsupported Java handler: " + name, e,
+                                 REException.REG_ESCAPE, 0);
+        }
       }
     throw new REException ("unsupported name " + name, REException.REG_ESCAPE,
-			   0);
+                           0);
   }
 
   private static class POSIXHandler extends Handler
@@ -321,9 +321,9 @@ final class RETokenNamedProperty extends REToken
     {
       int posixId = RETokenPOSIX.intValue (name.toLowerCase ());
       if (posixId != -1)
-	  retoken = new RETokenPOSIX (0, posixId, false, false);
+          retoken = new RETokenPOSIX (0, posixId, false, false);
       else
-	  throw new RuntimeException ("Unknown posix ID: " + name);
+          throw new RuntimeException ("Unknown posix ID: " + name);
     }
     public boolean includes (char c)
     {
@@ -355,8 +355,8 @@ final class RETokenNamedProperty extends REToken
     {
       int category = Character.getType (c);
       for (int i = 0; i < categories.length; i++)
-	if (category == categories[i])
-	  return true;
+        if (category == categories[i])
+          return true;
       return false;
     }
   }
@@ -394,15 +394,15 @@ final class RETokenNamedProperty extends REToken
     {
       try
       {
-	return (Boolean) method.invoke (null, c);
+        return (Boolean) method.invoke (null, c);
       }
       catch (IllegalAccessException e)
       {
-	throw new InternalError ("Unable to access method " + method);
+        throw new InternalError ("Unable to access method " + method);
       }
       catch (InvocationTargetException e)
       {
-	throw new InternalError ("Error invoking " + method);
+        throw new InternalError ("Error invoking " + method);
       }
     }
   }

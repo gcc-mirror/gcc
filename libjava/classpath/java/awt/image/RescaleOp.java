@@ -44,20 +44,20 @@ import java.util.Arrays;
 
 /**
  * RescaleOp is a filter that changes each pixel by a scaling factor and offset.
- * 
+ *
  * For filtering Rasters, either one scaling factor and offset can be specified,
  * which will be applied to all bands; or a scaling factor and offset can be
  * specified for each band.
- * 
+ *
  * For BufferedImages, the scaling may apply to both color and alpha components.
  * If only one scaling factor is provided, or if the number of factors provided
  * equals the number of color components, the scaling is performed on all color
  * components.  Otherwise, the scaling is performed on all components including
  * alpha.  Alpha premultiplication is ignored.
- * 
+ *
  * After filtering, if color conversion is necessary, the conversion happens,
  * taking alpha premultiplication into account.
- * 
+ *
  * @author Jerry Quinn (jlquinn@optonline.net)
  * @author Francis Kung (fkung@redhat.com)
  */
@@ -66,47 +66,47 @@ public class RescaleOp implements BufferedImageOp, RasterOp
   private float[] scale;
   private float[] offsets;
   private RenderingHints hints = null;
-  
+
   /**
    * Create a new RescaleOp object using the given scale factors and offsets.
-   * 
+   *
    * The length of the arrays must be equal to the number of bands (or number of
    * data or color components) of the raster/image that this Op will be used on,
    * otherwise an IllegalArgumentException will be thrown when calling the
    * filter method.
-   *  
+   *
    * @param scaleFactors an array of scale factors.
    * @param offsets an array of offsets.
    * @param hints any rendering hints to use (can be null).
    * @throws NullPointerException if the scaleFactors or offsets array is null.
    */
   public RescaleOp(float[] scaleFactors,
-		   float[] offsets,
-		   RenderingHints hints)
+                   float[] offsets,
+                   RenderingHints hints)
   {
     int length = Math.min(scaleFactors.length, offsets.length);
-    
+
     scale = new float[length];
     System.arraycopy(scaleFactors, 0, this.scale, 0, length);
-    
+
     this.offsets = new float[length];
     System.arraycopy(offsets, 0, this.offsets, 0, length);
-    
+
     this.hints = hints;
   }
-  
+
   /**
    * Create a new RescaleOp object using the given scale factor and offset.
-   * 
+   *
    * The same scale factor and offset will be used on all bands/components.
-   *  
+   *
    * @param scaleFactor the scale factor to use.
    * @param offset the offset to use.
    * @param hints any rendering hints to use (can be null).
    */
   public RescaleOp(float scaleFactor,
-		   float offset,
-		   RenderingHints hints)
+                   float offset,
+                   RenderingHints hints)
   {
     scale = new float[]{ scaleFactor };
     offsets = new float[]{offset};
@@ -115,10 +115,10 @@ public class RescaleOp implements BufferedImageOp, RasterOp
 
   /**
    * Returns the scaling factors.  This method accepts an optional array, which
-   * will be used to store the factors if not null (this avoids allocating a 
+   * will be used to store the factors if not null (this avoids allocating a
    * new array).  If this array is too small to hold all the scaling factors,
    * the array will be filled and the remaining factors discarded.
-   * 
+   *
    * @param scaleFactors array to store the scaling factors in (can be null).
    * @return an array of scaling factors.
    */
@@ -133,10 +133,10 @@ public class RescaleOp implements BufferedImageOp, RasterOp
 
   /**
    * Returns the offsets.  This method accepts an optional array, which
-   * will be used to store the offsets if not null (this avoids allocating a 
-   * new array).  If this array is too small to hold all the offsets, the array 
+   * will be used to store the offsets if not null (this avoids allocating a
+   * new array).  If this array is too small to hold all the offsets, the array
    * will be filled and the remaining factors discarded.
-   * 
+   *
    * @param offsets array to store the offsets in (can be null).
    * @return an array of offsets.
    */
@@ -151,7 +151,7 @@ public class RescaleOp implements BufferedImageOp, RasterOp
 
   /**
    * Returns the number of scaling factors / offsets.
-   * 
+   *
    * @return the number of scaling factors / offsets.
    */
   public final int getNumFactors()
@@ -168,13 +168,13 @@ public class RescaleOp implements BufferedImageOp, RasterOp
   }
 
   /**
-   * Converts the source image using the scale factors and offsets specified in 
-   * the constructor.  The resulting image is stored in the destination image if 
-   * one is provided; otherwise a new BufferedImage is created and returned. 
-   * 
+   * Converts the source image using the scale factors and offsets specified in
+   * the constructor.  The resulting image is stored in the destination image if
+   * one is provided; otherwise a new BufferedImage is created and returned.
+   *
    * The source image cannot use an IndexColorModel, and the destination image
    * (if one is provided) must have the same size.
-   * 
+   *
    * If the final value of a sample is beyond the range of the color model, it
    * will be clipped to the appropriate maximum / minimum.
    *
@@ -264,16 +264,16 @@ public class RescaleOp implements BufferedImageOp, RasterOp
     Arrays.fill(bands, true);
     return filter(src, dest, bands);
   }
-  
+
   /**
    * Perform raster-based filtering on a selected number of bands.
-   * 
+   *
    * The length of the bands array should equal the number of bands; a true
    * element indicates filtering should happen on the corresponding band, while
    * a false element will skip the band.
-   * 
+   *
    * The rasters are assumed to be compatible and non-null.
-   * 
+   *
    * @param src the source raster.
    * @param dest the destination raster.
    * @param bands an array indicating which bands to filter.
@@ -285,12 +285,12 @@ public class RescaleOp implements BufferedImageOp, RasterOp
   {
     int[] values = new int[src.getHeight() * src.getWidth()];
     float scaleFactor, offset;
-    
+
     // Find max sample value, to be used for clipping later
     int[] maxValue = src.getSampleModel().getSampleSize();
     for (int i = 0; i < maxValue.length; i++)
       maxValue[i] = (int)Math.pow(2, maxValue[i]) - 1;
-    
+
     // TODO: can this be optimized further?
     // Filter all samples of all requested bands
     for (int band = 0; band < bands.length; band++)
@@ -324,22 +324,22 @@ public class RescaleOp implements BufferedImageOp, RasterOp
           dest.setSamples(dest.getMinX(), dest.getMinY(), dest.getWidth(),
                           dest.getHeight(), band, values);
         }
-    
+
     return dest;
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.awt.image.BufferedImageOp#createCompatibleDestImage(java.awt.image.BufferedImage,
    *      java.awt.image.ColorModel)
    */
   public BufferedImage createCompatibleDestImage(BufferedImage src,
-						 ColorModel dstCM)
+                                                 ColorModel dstCM)
   {
     if (dstCM == null)
       return new BufferedImage(src.getWidth(), src.getHeight(), src.getType());
-    
+
     return new BufferedImage(dstCM,
                              src.getRaster().createCompatibleWritableRaster(),
                              src.isAlphaPremultiplied(), null);
@@ -352,7 +352,7 @@ public class RescaleOp implements BufferedImageOp, RasterOp
   {
     return src.createCompatibleWritableRaster();
   }
-  
+
   /* (non-Javadoc)
    * @see java.awt.image.BufferedImageOp#getBounds2D(java.awt.image.BufferedImage)
    */
@@ -378,7 +378,7 @@ public class RescaleOp implements BufferedImageOp, RasterOp
       dst = (Point2D) src.clone();
     else
       dst.setLocation(src);
-    
+
     return dst;
   }
 

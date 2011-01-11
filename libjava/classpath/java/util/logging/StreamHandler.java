@@ -114,7 +114,7 @@ public class StreamHandler
   public StreamHandler(OutputStream out, Formatter formatter)
   {
     this(out, "java.util.logging.StreamHandler", Level.INFO,
-	 formatter, SimpleFormatter.class);
+         formatter, SimpleFormatter.class);
   }
 
 
@@ -125,7 +125,7 @@ public class StreamHandler
     Formatter formatter, Class defaultFormatterClass)
   {
     this.level = LogManager.getLevelProperty(propertyPrefix + ".level",
-					     defaultLevel);
+                                             defaultLevel);
 
     this.filter = (Filter) LogManager.getInstanceProperty(
       propertyPrefix + ".filter",
@@ -136,14 +136,14 @@ public class StreamHandler
       this.formatter = formatter;
     else
       this.formatter = (Formatter) LogManager.getInstanceProperty(
-	propertyPrefix + ".formatter",
+        propertyPrefix + ".formatter",
         /* must be instance of */       Formatter.class,
         /* default: new instance of */  defaultFormatterClass);
 
     try
     {
       String enc = LogManager.getLogManager().getProperty(propertyPrefix
-							  + ".encoding");
+                                                          + ".encoding");
 
       /* make sure enc actually is a valid encoding */
       if ((enc != null) && (enc.length() > 0))
@@ -163,10 +163,10 @@ public class StreamHandler
       }
       catch (UnsupportedEncodingException uex)
       {
-	/* This should never happen, since the validity of the encoding
-	 * name has been checked above.
-	 */
-	throw new RuntimeException(uex.getMessage());
+        /* This should never happen, since the validity of the encoding
+         * name has been checked above.
+         */
+        throw new RuntimeException(uex.getMessage());
       }
     }
   }
@@ -263,9 +263,9 @@ public class StreamHandler
        * null would throw an exception.
        */
       if (encoding == null)
-	writer = new OutputStreamWriter(out);
+        writer = new OutputStreamWriter(out);
       else
-	writer = new OutputStreamWriter(out, encoding);
+        writer = new OutputStreamWriter(out, encoding);
     }
   }
 
@@ -330,7 +330,7 @@ public class StreamHandler
    * would depend on the exact behavior in this rather obscure,
    * erroneous case -- especially since the API specification does not
    * prescribe what is supposed to happen.
-   * 
+   *
    * @param record the log event to be published.
    */
   public void publish(LogRecord record)
@@ -348,13 +348,13 @@ public class StreamHandler
       }
       catch (java.io.IOException ex)
       {
-	reportError(null, ex, ErrorManager.WRITE_FAILURE);
-	return;
+        reportError(null, ex, ErrorManager.WRITE_FAILURE);
+        return;
       }
       catch (Exception ex)
       {
-	reportError(null, ex, ErrorManager.GENERIC_FAILURE);
-	return;
+        reportError(null, ex, ErrorManager.GENERIC_FAILURE);
+        return;
       }
 
       streamState = STATE_PUBLISHED;
@@ -449,7 +449,7 @@ public class StreamHandler
   /**
    * Closes this <code>StreamHandler</code> after having forced any
    * data that may have been buffered to the underlying output
-   * device. 
+   * device.
    *
    * <p>As soon as <code>close</code> has been called,
    * a <code>Handler</code> should not be used anymore. Attempts
@@ -496,20 +496,20 @@ public class StreamHandler
 
       if (writer != null)
       {
-	if (formatter != null)
-	{
-	  /* Even if the StreamHandler has never published a record,
-	   * it emits head and tail upon closing. An earlier version
-	   * of the GNU Classpath implementation did not emitted
-	   * anything. However, this had caused XML log files to be
-	   * entirely empty instead of containing no log records.
-	   */
-	  if (streamState == STATE_FRESH)
+        if (formatter != null)
+        {
+          /* Even if the StreamHandler has never published a record,
+           * it emits head and tail upon closing. An earlier version
+           * of the GNU Classpath implementation did not emitted
+           * anything. However, this had caused XML log files to be
+           * entirely empty instead of containing no log records.
+           */
+          if (streamState == STATE_FRESH)
             writer.write(formatter.getHead(this));
-	  if (streamState != STATE_CLOSED)
-	    writer.write(formatter.getTail(this));
-	}
-	streamState = STATE_CLOSED;
+          if (streamState != STATE_CLOSED)
+            writer.write(formatter.getTail(this));
+        }
+        streamState = STATE_CLOSED;
         writer.close();
       }
     }

@@ -1,4 +1,4 @@
-/* GnomeDocumentType.java - 
+/* GnomeDocumentType.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,7 +56,7 @@ implements DocumentType
   {
     super (id);
   }
-  
+
   public String getName ()
   {
     return getNodeName ();

@@ -44,10 +44,10 @@ public interface AbstractMethodGenerator
    * Generate this method for the Stub (remote caller) class.
    */
   String generateStubMethod();
-  
+
   /**
    * Generate this method for the Tie (remote servant) class.
    */
   String generateTieMethod();
-  
+
 }

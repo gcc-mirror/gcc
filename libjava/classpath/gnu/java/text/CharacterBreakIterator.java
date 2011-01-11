@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -111,44 +111,44 @@ public class CharacterBreakIterator extends BaseBreakIterator
     char c;
     for (char prev = CharacterIterator.DONE; iter.getIndex() < end; prev = c)
       {
-	c = iter.next();
-	if (c == CharacterIterator.DONE)
-	  break;
-	int type = Character.getType(c);
+        c = iter.next();
+        if (c == CharacterIterator.DONE)
+          break;
+        int type = Character.getType(c);
 
-	// Break after paragraph separators.
-	if (type == Character.PARAGRAPH_SEPARATOR)
-	  break;
+        // Break after paragraph separators.
+        if (type == Character.PARAGRAPH_SEPARATOR)
+          break;
 
-	// Now we need some lookahead.
-	char ahead = iter.next();
-	iter.previous();
-	if (ahead == CharacterIterator.DONE)
-	  break;
-	int aheadType = Character.getType(ahead);
+        // Now we need some lookahead.
+        char ahead = iter.next();
+        iter.previous();
+        if (ahead == CharacterIterator.DONE)
+          break;
+        int aheadType = Character.getType(ahead);
 
-	if (aheadType != Character.NON_SPACING_MARK
-	    && ! isLowSurrogate (ahead)
-	    && ! isLVT (ahead))
-	  break;
-	if (! isLVT (c) && isLVT (ahead))
-	  break;
-	if (isL (c) && ! isLVT (ahead)
-	    && aheadType != Character.NON_SPACING_MARK)
-	  break;
-	if (isV (c) && ! isV (ahead) && !isT (ahead)
-	    && aheadType != Character.NON_SPACING_MARK)
-	  break;
-	if (isT (c) && ! isT (ahead)
-	    && aheadType != Character.NON_SPACING_MARK)
-	  break;
+        if (aheadType != Character.NON_SPACING_MARK
+            && ! isLowSurrogate (ahead)
+            && ! isLVT (ahead))
+          break;
+        if (! isLVT (c) && isLVT (ahead))
+          break;
+        if (isL (c) && ! isLVT (ahead)
+            && aheadType != Character.NON_SPACING_MARK)
+          break;
+        if (isV (c) && ! isV (ahead) && !isT (ahead)
+            && aheadType != Character.NON_SPACING_MARK)
+          break;
+        if (isT (c) && ! isT (ahead)
+            && aheadType != Character.NON_SPACING_MARK)
+          break;
 
-	if (! isHighSurrogate (c) && isLowSurrogate (ahead))
-	  break;
-	if (isHighSurrogate (c) && ! isLowSurrogate (ahead))
-	  break;
-	if (! isHighSurrogate (prev) && isLowSurrogate (c))
-	  break;
+        if (! isHighSurrogate (c) && isLowSurrogate (ahead))
+          break;
+        if (isHighSurrogate (c) && ! isLowSurrogate (ahead))
+          break;
+        if (! isHighSurrogate (prev) && isLowSurrogate (c))
+          break;
       }
 
     return iter.getIndex();
@@ -161,51 +161,51 @@ public class CharacterBreakIterator extends BaseBreakIterator
 
     while (iter.getIndex() >= iter.getBeginIndex())
       {
-	char c = iter.previous();
-	if (c == CharacterIterator.DONE)
-	  break;
-	int type = Character.getType(c);
+        char c = iter.previous();
+        if (c == CharacterIterator.DONE)
+          break;
+        int type = Character.getType(c);
 
-	if (type != Character.NON_SPACING_MARK
-	    && ! isLowSurrogate (c)
-	    && ! isLVT (c))
-	  break;
+        if (type != Character.NON_SPACING_MARK
+            && ! isLowSurrogate (c)
+            && ! isLVT (c))
+          break;
 
-	// Now we need some lookahead.
-	char ahead = iter.previous();
-	if (ahead == CharacterIterator.DONE)
-	  {
-	    iter.next();
-	    break;
-	  }
-	char ahead2 = iter.previous();
-	iter.next();
-	iter.next();
-	if (ahead2 == CharacterIterator.DONE)
-	  break;
-	int aheadType = Character.getType(ahead);
+        // Now we need some lookahead.
+        char ahead = iter.previous();
+        if (ahead == CharacterIterator.DONE)
+          {
+            iter.next();
+            break;
+          }
+        char ahead2 = iter.previous();
+        iter.next();
+        iter.next();
+        if (ahead2 == CharacterIterator.DONE)
+          break;
+        int aheadType = Character.getType(ahead);
 
-	if (aheadType == Character.PARAGRAPH_SEPARATOR)
-	  break;
+        if (aheadType == Character.PARAGRAPH_SEPARATOR)
+          break;
 
-	if (isLVT (c) && ! isLVT (ahead))
-	  break;
-	if (! isLVT (c) && type != Character.NON_SPACING_MARK
-	    && isL (ahead))
-	  break;
-	if (! isV (c) && ! isT (c) && type != Character.NON_SPACING_MARK
-	    && isV (ahead))
-	  break;
-	if (! isT (c) && type != Character.NON_SPACING_MARK
-	    && isT (ahead))
-	  break;
+        if (isLVT (c) && ! isLVT (ahead))
+          break;
+        if (! isLVT (c) && type != Character.NON_SPACING_MARK
+            && isL (ahead))
+          break;
+        if (! isV (c) && ! isT (c) && type != Character.NON_SPACING_MARK
+            && isV (ahead))
+          break;
+        if (! isT (c) && type != Character.NON_SPACING_MARK
+            && isT (ahead))
+          break;
 
-	if (isLowSurrogate (c) && ! isHighSurrogate (ahead))
-	  break;
-	if (! isLowSurrogate (c) && isHighSurrogate (ahead))
-	  break;
-	if (isLowSurrogate (ahead) && ! isHighSurrogate (ahead2))
-	  break;
+        if (isLowSurrogate (c) && ! isHighSurrogate (ahead))
+          break;
+        if (! isLowSurrogate (c) && isHighSurrogate (ahead))
+          break;
+        if (isLowSurrogate (ahead) && ! isHighSurrogate (ahead2))
+          break;
       }
 
     return iter.getIndex();

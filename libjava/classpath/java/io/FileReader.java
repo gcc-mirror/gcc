@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,7 +41,7 @@ package java.io;
 /**
  * This class provides a convenient way to set up a <code>Reader</code>
  * to read from a file.  It opens the specified file for reading and creates
- * the <code>InputStreamReader</code> to read from the 
+ * the <code>InputStreamReader</code> to read from the
  * resulting <code>FileInputStream</code>.  This class can only be used
  * to read from files using the default character encoding.  Use
  * <code>InputStreamReader</code> directly to use a non-default encoding.
@@ -56,7 +56,7 @@ public class FileReader extends InputStreamReader
    *
    * @param file The <code>File</code> object representing the file to read from
    *
-   * @exception FileNotFoundException If the file is not found or some other 
+   * @exception FileNotFoundException If the file is not found or some other
    *            error occurs
    */
   public FileReader(File file) throws FileNotFoundException
@@ -81,7 +81,7 @@ public class FileReader extends InputStreamReader
    *
    * @param name The name of the file to read from
    *
-   * @exception FileNotFoundException If the file is not found or some other 
+   * @exception FileNotFoundException If the file is not found or some other
    *            error occurs
    */
   public FileReader(String name) throws FileNotFoundException
@@ -89,4 +89,3 @@ public class FileReader extends InputStreamReader
     super(new FileInputStream(name));
   }
 } // class FileReader
-

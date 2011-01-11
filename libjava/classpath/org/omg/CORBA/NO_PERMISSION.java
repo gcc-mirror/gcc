@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means that the caller has no rights to invoke the operation.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class NO_PERMISSION
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -1533969523582458479L;
 

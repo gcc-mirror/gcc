@@ -69,7 +69,7 @@ import javax.rmi.CORBA.Util;
  * the alternative class that must implement
  * {@link PortableRemoteObjectDelegate}.
  * </p>
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class PortableRemoteObject
@@ -81,7 +81,7 @@ public class PortableRemoteObject
 
   /**
    * The protected constructor calls {@link exportObject} (this).
-   * 
+   *
    * @throws RemoteException if the exportObject(this) throws one.
    */
   protected PortableRemoteObject()
@@ -96,14 +96,14 @@ public class PortableRemoteObject
    * communication using the same communications runtime as for the passed
    * <code>a_source</code> parameter. The a_target is connected to the same
    * ORB (and, if applicable, to the same {@link POA}) as the a_source.
-   * 
+   *
    * @param target the target to connect to ORB, must be an instance of either
    * {@link ObjectImpl} (Stubs and old-style ties) or {@link Tie}.
-   * 
+   *
    * @param source the object, providing the connection information, must be
    * an instance of either {@link ObjectImpl} (Stubs and old-style ties) or
    * {@link Servant} (the next-generation Ties supporting {@link POA}).
-   * 
+   *
    * @throws RemoteException if the target is already connected to another ORB.
    */
   public static void connect(Remote target, Remote source)
@@ -122,9 +122,9 @@ public class PortableRemoteObject
    * This method only creates a tie object and caches it for future usage. The
    * created tie does not have a delegate or an ORB associated.
    * </p>
-   * 
+   *
    * @param object the object to export.
-   * 
+   *
    * @throws RemoteException if export fails due any reason.
    */
   public static void exportObject(Remote object)
@@ -160,16 +160,16 @@ public class PortableRemoteObject
    * <li>A {@link Tie} can be narrowed into Remote, representing the
    * implementation for this Tie (if one is set).</li>
    * </ul>
-   * 
+   *
    * @param object the object like CORBA Object, Stub or Remote that must be
    * narrowed to the given interface.
-   * 
+   *
    * @param narrowToInstaceOf the class of the interface to that the object must
    * be narrowed.
-   * 
+   *
    * @return On success, an object of type narrowTo or null, if narrowFrom =
    * null.
-   * 
+   *
    * @throws ClassCastException if no narrowing is possible.
    */
   public static Object narrow(Object object, Class narrowToInstaceOf)
@@ -183,7 +183,7 @@ public class PortableRemoteObject
    * Takes a server implementation object (name pattern *imp) and returns a stub
    * object that can be used to access that server object (target), name
    * (pattern _*_Stub).
-   * 
+   *
    * The returned stub is not connected to any ORB and must be explicitly
    * connected using {@link #connect}.
    * </p>
@@ -191,16 +191,16 @@ public class PortableRemoteObject
    * The method signature prevents it from returning stubs that does not
    * implement Remote (ClassCastException will be thrown).
    * </p>
-   * 
+   *
    * @param target a server side object implementation.
    * @return a stub object that can be used to access that server object.
-   * 
+   *
    * @throws NoSuchObjectException if a stub class cannot be located by supposed
    * name pattern, or an instance of stub fails to be instantiated.
-   * 
+   *
    * @throws ClassCastException if the stub class can be located, but it does
    * not inherit from Remote.
-   * 
+   *
    * @throws BAD_PARAM if the name of the passed class does not match the
    * implementation name pattern (does not end by 'Impl').
    */
@@ -214,9 +214,9 @@ public class PortableRemoteObject
    * Deregister a currently exported server object from the ORB runtimes. The
    * object to becomes available for garbage collection. This is usually
    * impemented via {@link Util#unexportObject}
-   * 
+   *
    * @param object the object to unexport.
-   * 
+   *
    * @throws NoSuchObjectException if the passed object is not currently
    * exported.
    */

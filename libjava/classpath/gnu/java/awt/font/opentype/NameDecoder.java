@@ -139,20 +139,20 @@ public class NameDecoder
       nameLen = nameTable.getShort();
       nameStart = offset + nameTable.getShort();
 
-      
+
       if (nameID != name)
         continue;
 
       // Handle PS seperately as it can be only ASCII, although
       // possibly encoded as UTF-16BE
       if ( name == NAME_POSTSCRIPT )
-	{
-	  if( nameTable.get(nameStart) == 0 ) // Peek at top byte
-	    result = decodeName("UTF-16BE", nameTable, nameStart, nameLen);
-	  else
-	    result = decodeName("ASCII", nameTable, nameStart, nameLen);
-	  return result;
-	}
+        {
+          if( nameTable.get(nameStart) == 0 ) // Peek at top byte
+            result = decodeName("UTF-16BE", nameTable, nameStart, nameLen);
+          else
+            result = decodeName("ASCII", nameTable, nameStart, nameLen);
+          return result;
+        }
 
       match = false;
       switch (namePlatform)
@@ -186,7 +186,7 @@ public class NameDecoder
         break;
       }
 
-      
+
       if (match)
       {
         result = decodeName(namePlatform, nameEncoding, nameLanguage,
@@ -316,7 +316,7 @@ public class NameDecoder
 
     if (loc == null)
       return -1;
-    
+
     code = findLanguageCode(loc.getLanguage(), macLanguageCodes);
     switch (code)
     {
@@ -333,10 +333,10 @@ public class NameDecoder
       // know what do do about them. See the method documentation for
       // details.
     }
-    
+
     return code;
   }
-  
+
 
   /**
    * Maps a Java Locale into a Microsoft language code.
@@ -348,7 +348,7 @@ public class NameDecoder
 
     if (locale == null)
       return -1;
-    
+
     isoCode = locale.getLanguage();
     code = findLanguageCode(isoCode, microsoftLanguageCodes);
     if (code == -1)
@@ -572,7 +572,7 @@ public class NameDecoder
     }
   }
 
-  
+
   /**
    * Maps a Microsoft locale ID (LCID) to the name of the
    * corresponding Java Charset.
@@ -664,7 +664,7 @@ public class NameDecoder
 
     case 3: /* Microsoft Windows */
       return getWindowsLocale(language);
-      
+
     default:
       return null;
     }

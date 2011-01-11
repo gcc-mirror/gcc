@@ -139,7 +139,7 @@ class RTFParser
 
     parseHeader();
     parseDocument();
-  
+
     Token t2 = scanner.peekToken();
     if (t2.type == Token.RCURLY)
       {

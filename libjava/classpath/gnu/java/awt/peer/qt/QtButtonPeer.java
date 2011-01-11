@@ -62,18 +62,14 @@ public class QtButtonPeer extends QtComponentPeer implements ButtonPeer
   void fireClick(int modifiers)
   {
     ActionEvent e = new ActionEvent(owner,
-				    ActionEvent.ACTION_PERFORMED,
-				    ((Button)owner).getActionCommand(),
-				    System.currentTimeMillis(),
-				    modifiers);
+                                    ActionEvent.ACTION_PERFORMED,
+                                    ((Button)owner).getActionCommand(),
+                                    System.currentTimeMillis(),
+                                    modifiers);
     QtToolkit.eventQueue.postEvent(e);
   }
 
   // ************ Public methods *********************
-  
+
   public native void setLabel( String label );
 }
-
-
-
-

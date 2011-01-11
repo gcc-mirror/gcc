@@ -1,4 +1,4 @@
-/* HexBinaryType.java -- 
+/* HexBinaryType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -85,6 +85,5 @@ final class HexBinaryType
           throw new DatatypeException(i, "invalid hexBinary value");
       }
   }
-  
-}
 
+}

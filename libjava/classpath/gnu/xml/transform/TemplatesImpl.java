@@ -1,4 +1,4 @@
-/* TemplatesImpl.java -- 
+/* TemplatesImpl.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

@@ -45,17 +45,17 @@ import javax.print.attribute.PrintRequestAttribute;
 import javax.print.attribute.SetOfIntegerSyntax;
 
 /**
- * The <code>PageRanges</code> printing attribute specifies the 
+ * The <code>PageRanges</code> printing attribute specifies the
  * range(s) of pages to be printed in a print job.
  * <p>
- * <b>Note:</b> The effect of this attribute on jobs with multiple 
- * documents is controlled by the job attribute 
+ * <b>Note:</b> The effect of this attribute on jobs with multiple
+ * documents is controlled by the job attribute
  * {@link javax.print.attribute.standard.MultipleDocumentHandling}.
  * </p>
  * <p>
  * <b>IPP Compatibility:</b> PageRanges is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -75,7 +75,7 @@ public final class PageRanges extends SetOfIntegerSyntax
   public PageRanges(int member)
   {
     super(member);
-    
+
     if (member < 1)
       throw new IllegalArgumentException("member may not be less than 1");
   }
@@ -87,13 +87,13 @@ public final class PageRanges extends SetOfIntegerSyntax
    * @param members the page ranges to be printed.
    *
    * @exception IllegalArgumentException if any element is invalid
-   * @exception NullPointerException if members is <code>null</code> or any 
+   * @exception NullPointerException if members is <code>null</code> or any
    * element of members is <code>null</code>.
    */
   public PageRanges(int[][] members)
   {
     super(members);
-    
+
     if (members == null)
       throw new NullPointerException("members may not be null");
   }
@@ -111,11 +111,11 @@ public final class PageRanges extends SetOfIntegerSyntax
   public PageRanges(int lowerBound, int upperBound)
   {
     super(lowerBound, upperBound);
-    
+
     if (lowerBound < 1)
       throw new IllegalArgumentException("lowerbound may not be less than 1");
   }
-  
+
   /**
    * Constructs a <code>PageRanges</code> object with a set
    * of ranges to be printed in string array form.
@@ -123,30 +123,30 @@ public final class PageRanges extends SetOfIntegerSyntax
    * @param members the page ranges to be printed in string form.
    *
    * @exception IllegalArgumentException if any element is invalid.
-   * @exception NullPointerException if members is <code>null</code> or any 
+   * @exception NullPointerException if members is <code>null</code> or any
    * element of members is <code>null</code>.
    */
   public PageRanges(String members)
   {
     super(members);
-    
+
     if (members == null)
       throw new NullPointerException("members may not be null");
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
   {
     if (! (obj instanceof PageRanges))
       return false;
-   
+
     return super.equals(obj);
   }
 

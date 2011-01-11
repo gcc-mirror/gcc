@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -35,7 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
- 
+
 package java.io;
 
 /**
@@ -121,7 +121,7 @@ public abstract class InputStream implements Closeable
    * if they support mark/reset functionality.
    *
    * @return <code>true</code> if mark/reset functionality is
-   * supported, <code>false</code> otherwise 
+   * supported, <code>false</code> otherwise
    */
   public boolean markSupported()
   {
@@ -200,18 +200,18 @@ public abstract class InputStream implements Closeable
 
     for (i = 0; i < len; ++i)
       try
-	{
-	  if ((ch = read()) < 0)
-	    return i == 0 ? -1 : i;		// EOF
-	  b[off + i] = (byte) ch;
-	}
+        {
+          if ((ch = read()) < 0)
+            return i == 0 ? -1 : i;             // EOF
+          b[off + i] = (byte) ch;
+        }
       catch (IOException ex)
-	{
-	  // Only reading the first byte should cause an IOException.
-	  if (i == 0)
-	    throw ex;
-	  return i;
-	}
+        {
+          // Only reading the first byte should cause an IOException.
+          if (i == 0)
+            throw ex;
+          return i;
+        }
 
     return i;
   }
@@ -259,10 +259,10 @@ public abstract class InputStream implements Closeable
 
     while (n > 0L)
       {
-	int numread = read(tmpbuf, 0, n > buflen ? buflen : (int) n);
-	if (numread <= 0)
-	  break;
-	n -= numread;
+        int numread = read(tmpbuf, 0, n > buflen ? buflen : (int) n);
+        if (numread <= 0)
+          break;
+        n -= numread;
       }
 
     return origN - n;

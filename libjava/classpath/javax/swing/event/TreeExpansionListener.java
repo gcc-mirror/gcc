@@ -43,7 +43,7 @@ import java.util.EventListener;
  * TreeExpansionListener public interface
  * @author Andrew Selkirk
  */
-public interface TreeExpansionListener extends EventListener 
+public interface TreeExpansionListener extends EventListener
 {
 
   /**

@@ -54,7 +54,7 @@ public interface ObjectFactory
   /**
    * Creates the object, using the specified name and location information. The
    * call of this method must be thread safe.
-   * 
+   *
    * @param refObj may provide the reference and location information. Can be null.
    * @param name the name of the new object in the scope of the specified naming
    *          context. Can be null if the name is not specified.
@@ -67,8 +67,8 @@ public interface ObjectFactory
    * @return the newly created object or null if the object cannot be created
    * @throws Exception if this factory suggest not to try creating of this
    *           object by other alternative factories
-   *           
-   * @see NamingManager#getObjectInstance(Object, Name, Context, Hashtable)           
+   *
+   * @see NamingManager#getObjectInstance(Object, Name, Context, Hashtable)
    */
   Object getObjectInstance (Object refObj, Name name, Context nameCtx,
                             Hashtable<?, ?> environment)

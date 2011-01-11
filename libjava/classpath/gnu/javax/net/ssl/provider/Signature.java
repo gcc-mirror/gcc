@@ -81,7 +81,7 @@ public class Signature implements Builder, Constructed
     this.buffer = buffer;
     this.alg = alg;
   }
-  
+
   public Signature (final byte[] sigValue, final SignatureAlgorithm alg)
   {
     buffer = ByteBuffer.allocate(sigValue.length + 2);
@@ -100,7 +100,7 @@ public class Signature implements Builder, Constructed
       return 0;
     return (buffer.getShort (0) & 0xFFFF) + 2;
   }
-  
+
   public ByteBuffer buffer()
   {
     return (ByteBuffer) buffer.duplicate().limit(length());

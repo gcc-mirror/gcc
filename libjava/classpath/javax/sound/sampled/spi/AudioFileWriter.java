@@ -94,7 +94,7 @@ public abstract class AudioFileWriter
    * @param ais the audio input stream to write
    */
   public boolean isFileTypeSupported(AudioFileFormat.Type type,
-				     AudioInputStream ais)
+                                     AudioInputStream ais)
   {
     AudioFileFormat.Type[] types = getAudioFileTypes(ais);
     for (int i = 0; i < types.length; ++i)
@@ -114,7 +114,7 @@ public abstract class AudioFileWriter
    * @throws IOException if an I/O error occurs when writing
    */
   public abstract int write(AudioInputStream ais, AudioFileFormat.Type type,
-			    File out)
+                            File out)
     throws IOException;
 
   /**
@@ -126,6 +126,6 @@ public abstract class AudioFileWriter
    * @throws IOException if an I/O error occurs when writing
    */
   public abstract int write(AudioInputStream ais, AudioFileFormat.Type type,
-			    OutputStream os)
+                            OutputStream os)
     throws IOException;
 }

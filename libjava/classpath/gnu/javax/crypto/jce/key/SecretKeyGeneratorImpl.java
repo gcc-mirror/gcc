@@ -97,8 +97,8 @@ public class SecretKeyGeneratorImpl
   {
     keySize >>>= 3; // Use bytes.
     if (! keySizes.contains(Integer.valueOf(keySize)))
-      throw new InvalidParameterException("unsupported key size: " + keySize 
-					  + ", valid sizes are: " + keySizes);
+      throw new InvalidParameterException("unsupported key size: " + keySize
+                                          + ", valid sizes are: " + keySizes);
     currentKeySize = keySize;
     this.random = random;
     init = true;

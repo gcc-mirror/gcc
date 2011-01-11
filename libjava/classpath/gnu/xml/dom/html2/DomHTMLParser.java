@@ -60,11 +60,11 @@ import org.w3c.dom.html2.HTMLDocument;
  * The tag attributes become the node attributes. The text inside
  * HTML tag is inserted as one or several text nodes. The nested
  * HTML tags are inserted as child nodes.
- * 
+ *
  * If the strict tree structure, closing the tag means closing all
  * nested tags. To work around this, this parser closes the nested
  * tags and immediately reopens them after the closed tag.
- * In this way, <code>&lt;b&gt;&lt;i&gt;c&lt;/b&gt;d</code> 
+ * In this way, <code>&lt;b&gt;&lt;i&gt;c&lt;/b&gt;d</code>
  * is parsed as <code>&lt;b&gt;&lt;i&gt;c&lt;/i&gt;&lt;/b&gt;&lt;i&gt;d</code> .
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
@@ -124,9 +124,9 @@ public class DomHTMLParser
         document = new DomHTMLDocument();
         document.setCheckWellformedness(false);
         document.setCheckingCharacters(false);
-        
+
         cursor = document;
-        
+
         parse(input);
 
         DomHTMLDocument h = document;
@@ -139,7 +139,7 @@ public class DomHTMLParser
         throw new IOException("Exception: " + ex.getMessage());
       }
   }
-  
+
   /**
    * Create a new node.
    * @param name the name of node, case insensitive.
@@ -165,13 +165,13 @@ public class DomHTMLParser
             natts.setNamedItem(attribute);
           }
 
-        // The default values are stored in a parent node. 
+        // The default values are stored in a parent node.
         hatts = hatts.getResolveParent();
       }
 
     return new_node;
   }
-  
+
   /**
    * Handle comment by inserting the comment node.
    * @param text the comment text.
@@ -181,7 +181,7 @@ public class DomHTMLParser
     Node c = document.createComment(new String(text));
     cursor.appendChild(c);
   }
-  
+
   /**
    * Handle the tag with no content.
    * @param tag the tag to handle.
@@ -196,7 +196,7 @@ public class DomHTMLParser
     Node c = createNode(name);
     cursor.appendChild(c);
   }
-  
+
   /**
    * Close the given tag. Close and reopen all nested tags.
    * @param tag the tag to close.
@@ -229,7 +229,7 @@ public class DomHTMLParser
         else
           cursor = close.getParentNode();
 
-        // Insert the copies of the opened nodes.   
+        // Insert the copies of the opened nodes.
         Iterator iter = open.iterator();
         while (iter.hasNext())
           {
@@ -251,7 +251,7 @@ public class DomHTMLParser
     cursor.appendChild(c);
     cursor = c;
   }
-  
+
   /**
    * Handle text by inserting the text node.
    * @param text the text to insert.

@@ -46,23 +46,23 @@ import java.util.EventListener;
  */
 public interface PopupMenuListener extends EventListener {
 
-	/**
-	 * Popup Menu Canceled
-	 * @param event Popup Menu Event
-	 */
-	void popupMenuCanceled(PopupMenuEvent event);
+        /**
+         * Popup Menu Canceled
+         * @param event Popup Menu Event
+         */
+        void popupMenuCanceled(PopupMenuEvent event);
 
-	/**
-	 * Popup Menu will become invisible
-	 * @param event Popup Menu Event
-	 */
-	void popupMenuWillBecomeInvisible(PopupMenuEvent event);
+        /**
+         * Popup Menu will become invisible
+         * @param event Popup Menu Event
+         */
+        void popupMenuWillBecomeInvisible(PopupMenuEvent event);
 
-	/**
-	 * Popup Menu will become visible
-	 * @param event Popup Menu Event
-	 */
-	void popupMenuWillBecomeVisible(PopupMenuEvent event);
+        /**
+         * Popup Menu will become visible
+         * @param event Popup Menu Event
+         */
+        void popupMenuWillBecomeVisible(PopupMenuEvent event);
 
 
 } // PopupMenuListener

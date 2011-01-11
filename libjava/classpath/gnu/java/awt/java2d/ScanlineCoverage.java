@@ -199,7 +199,7 @@ public final class ScanlineCoverage
     /**
      * Returns the X start position (left) on the scanline. This value
      * is considered to be in pixels and device space.
-     * 
+     *
      * @return the X position on the scanline
      */
     public int getXPos()
@@ -445,7 +445,7 @@ public final class ScanlineCoverage
    * Returns the maximum coverage value for the scanline.
    *
    * @return the maximum coverage value for the scanline
-   */  
+   */
   public int getMaxCoverage()
   {
     return maxCoverage;
@@ -574,7 +574,7 @@ public final class ScanlineCoverage
             // Testpoint 6.
             cov = new Coverage();
           }
-        
+
         cov.xPos = x;
         cov.covDelta = 0;
         cov.pixelCoverage = 0;

@@ -43,7 +43,7 @@ import gnu.CORBA.CDR.BufferedCdrOutput;
 import java.io.IOException;
 
 /**
- * Tests if the defaultWriteObject method has been called. 
+ * Tests if the defaultWriteObject method has been called.
  * This information is required by RMI-IIOP header.
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
@@ -55,7 +55,7 @@ public class DefaultWriteObjectTester
    * The flag, indicating, that the defaultWriteObject method was called.
    */
   public boolean dwo_called;
-  
+
   /**
    * Create an instance, delegating calls to the given CORBA stream.
    */

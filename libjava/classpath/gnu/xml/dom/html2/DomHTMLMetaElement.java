@@ -1,4 +1,4 @@
-/* DomHTMLMetaElement.java -- 
+/* DomHTMLMetaElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLMetaElement
   {
     setHTMLAttribute("content", content);
   }
-  
+
   public String getHttpEquiv()
   {
     return getHTMLAttribute("http-equiv");
@@ -74,7 +74,7 @@ public class DomHTMLMetaElement
   {
     setHTMLAttribute("http-equiv", httpEquiv);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -84,7 +84,7 @@ public class DomHTMLMetaElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public String getScheme()
   {
     return getHTMLAttribute("scheme");
@@ -94,6 +94,5 @@ public class DomHTMLMetaElement
   {
     setHTMLAttribute("scheme", scheme);
   }
-  
-}
 
+}

@@ -56,7 +56,7 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
-public class GIFImageReader extends ImageReader 
+public class GIFImageReader extends ImageReader
 {
   private GIFFile file;
 
@@ -65,7 +65,7 @@ public class GIFImageReader extends ImageReader
     super( originatingProvider );
     file = null;
   }
-  
+
   private void readImage() throws IOException
   {
     if( file != null )
@@ -73,14 +73,14 @@ public class GIFImageReader extends ImageReader
 
     try
       {
-	if( input instanceof InputStream )
-	  file = new GIFFile( (InputStream)input );
-	else
-	  file = new GIFFile( new IIOInputStream((ImageInputStream)input) );
+        if( input instanceof InputStream )
+          file = new GIFFile( (InputStream)input );
+        else
+          file = new GIFFile( new IIOInputStream((ImageInputStream)input) );
       }
     catch(GIFFile.GIFException ge)
       {
-	throw new IIOException(ge.getMessage());
+        throw new IIOException(ge.getMessage());
       }
   }
 
@@ -98,68 +98,68 @@ public class GIFImageReader extends ImageReader
 
     for(int i = 0; i < nc; i ++ )
       {
-	r[i] = data[ i * 3 ];
-	g[i] = data[ i * 3 + 1 ];
-	b[i] = data[ i * 3 + 2 ];
+        r[i] = data[ i * 3 ];
+        g[i] = data[ i * 3 + 1 ];
+        b[i] = data[ i * 3 + 2 ];
       }
 
     if( f.hasTransparency() )
       {
-	byte[] a = new byte[nc];
-	for(int i = 0; i < nc; i ++ )
-	  a[i] = (byte)0xFF;
-	a[f.getTransparentIndex()] = 0;
-	return new IndexColorModel(8, nc, r, g, b, a);
+        byte[] a = new byte[nc];
+        for(int i = 0; i < nc; i ++ )
+          a[i] = (byte)0xFF;
+        a[f.getTransparentIndex()] = 0;
+        return new IndexColorModel(8, nc, r, g, b, a);
       }
-    
+
     return new IndexColorModel(8, nc, r, g, b);
   }
 
-  private void validateIndex(int imageIndex) 
-    throws IndexOutOfBoundsException 
+  private void validateIndex(int imageIndex)
+    throws IndexOutOfBoundsException
   {
     if( imageIndex < 0 || imageIndex >= getNumImages(false) )
       throw new IndexOutOfBoundsException("Invalid image index.");
   }
 
-  public void setInput(Object input) 
+  public void setInput(Object input)
   {
     super.setInput(input);
   }
 
-  public void setInput(Object input, 
-		       boolean seekForwardOnly, 
-		       boolean ignoreMetadata) 
+  public void setInput(Object input,
+                       boolean seekForwardOnly,
+                       boolean ignoreMetadata)
   {
     super.setInput(input, seekForwardOnly, ignoreMetadata);
   }
-	
-  public void setInput(Object input, boolean isStreamable) 
+
+  public void setInput(Object input, boolean isStreamable)
   {
     super.setInput(input, isStreamable);
-	
-    if (!(input instanceof ImageInputStream) && 
-	!(input instanceof InputStream))
+
+    if (!(input instanceof ImageInputStream) &&
+        !(input instanceof InputStream))
       throw new IllegalArgumentException("Input not an ImageInputStream.");
   }
 
-  private void checkStream() throws IOException 
+  private void checkStream() throws IOException
   {
     if (!(input instanceof ImageInputStream) &&
-	!(input instanceof InputStream))
+        !(input instanceof InputStream))
       throw new IllegalStateException("Input not an ImageInputStream or InputStream.");
 
     if(input == null)
       throw new IllegalStateException("No input stream.");
   }
 
-  public int getWidth(int imageIndex) throws IOException 
+  public int getWidth(int imageIndex) throws IOException
   {
     validateIndex( imageIndex );
     return file.getImage( imageIndex ).getWidth();
   }
 
-  public int getHeight(int imageIndex) throws IOException 
+  public int getHeight(int imageIndex) throws IOException
   {
     validateIndex( imageIndex );
     return file.getImage( imageIndex ).getHeight();
@@ -172,17 +172,17 @@ public class GIFImageReader extends ImageReader
   }
 
   /**
-   * Returns the number of images. 
+   * Returns the number of images.
    */
   public int getNumImages(boolean allowSearch)
   {
     try // Image should be loaded here already. But just in case:
       {
-	readImage();
+        readImage();
       }
     catch(IOException ioe)
       {
-	return 0; // Well, now we're in trouble. But return something anyway.
+        return 0; // Well, now we're in trouble. But return something anyway.
       }
     return file.nImages();
   }
@@ -202,11 +202,11 @@ public class GIFImageReader extends ImageReader
   }
 
   /**
-   * Reads the image indexed by imageIndex and returns it as 
+   * Reads the image indexed by imageIndex and returns it as
    * a complete BufferedImage, using a supplied ImageReadParam.
-   */	      
-  public BufferedImage read(int imageIndex, ImageReadParam param) 
-    throws IOException, IIOException 
+   */
+  public BufferedImage read(int imageIndex, ImageReadParam param)
+    throws IOException, IIOException
   {
     validateIndex( imageIndex );
     GIFFile f = file.getImage( imageIndex );
@@ -216,26 +216,26 @@ public class GIFImageReader extends ImageReader
     switch( f.getNColors() )
       {
       case 16:
-	sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-					     width, height, 4);
-	break;
+        sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                             width, height, 4);
+        break;
       case 4:
-	sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-					     width, height, 2);
-	break;
+        sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                             width, height, 2);
+        break;
       case 2:
-	sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-					     width, height, 1);
-	break;
+        sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                             width, height, 1);
+        break;
       default:
-	sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-					      width, height, 
-					      new int[] {0xFF});
-	break;
+        sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                              width, height,
+                                              new int[] {0xFF});
+        break;
       }
     DataBuffer db = new DataBufferByte(f.getRawImage(), width * height, 0);
     WritableRaster raster = Raster.createWritableRaster(sm, db, null);
-    
+
     return new BufferedImage(getPalette( imageIndex ), raster, false, null);
   }
 }

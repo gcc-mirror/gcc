@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -158,15 +158,15 @@ public class ChunkedInputStream
       }
     else
       {
-	int canRead = Math.min(size - count, length);
-	int len = in.read(buffer, offset, canRead);
-	if (len == -1)
-	  {
-	    // This is an error condition but it isn't clear what we
-	    // should do with it.
-	    eof = true;
-	    return -1;
-	  }
+        int canRead = Math.min(size - count, length);
+        int len = in.read(buffer, offset, canRead);
+        if (len == -1)
+          {
+            // This is an error condition but it isn't clear what we
+            // should do with it.
+            eof = true;
+            return -1;
+          }
         count += len;
         if (count == size)
           {
@@ -205,20 +205,19 @@ public class ChunkedInputStream
   {
     if (meta)
       return 0;
-    
+
     return Math.min(in.available(), size - count);
   }
 
   /**
    * This method closes the ChunkedInputStream by closing the underlying
    * InputStream.
-   * 
+   *
    * @exception IOException If an error occurs
    */
   public void close() throws IOException
   {
     in.close();
   }
-  
-}
 
+}

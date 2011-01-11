@@ -1,4 +1,4 @@
-/* Pass.java -- Result code returned when test passed and was excepted to 
+/* Pass.java -- Result code returned when test passed and was excepted to
    Copyright (c) 1998 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

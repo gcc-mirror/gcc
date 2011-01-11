@@ -76,8 +76,8 @@ import javax.swing.plaf.basic.BasicRootPaneUI;
 
 /**
  * A UI delegate for the {@link JRootPane} component. This implementation
- * supports the JRootPane <code>windowDecorationStyle</code> property.  
- * 
+ * supports the JRootPane <code>windowDecorationStyle</code> property.
+ *
  * @author Roman Kennke (kennke@aicas.com)
  *
  * @since 1.4
@@ -115,7 +115,7 @@ public class MetalRootPaneUI
           newInsets.bottom = 5;
           newInsets.right = 5;
         }
-      return newInsets;  
+      return newInsets;
     }
 
     /**
@@ -132,7 +132,7 @@ public class MetalRootPaneUI
 
     /**
      * Paints the border for the specified component.
-     * 
+     *
      * @param c  the component
      * @param g  the graphics device
      * @param x  the x-coordinate
@@ -140,7 +140,7 @@ public class MetalRootPaneUI
      * @param w  the width
      * @param h  the height
      */
-    public void paintBorder(Component c, Graphics g, int x, int y, int w, 
+    public void paintBorder(Component c, Graphics g, int x, int y, int w,
                             int h)
     {
       JRootPane f = (JRootPane) c;
@@ -149,31 +149,31 @@ public class MetalRootPaneUI
         g.setColor(MetalLookAndFeel.getPrimaryControlDarkShadow());
       else
         g.setColor(MetalLookAndFeel.getControlDarkShadow());
-      
+
       // Fill the border background.
       g.fillRect(x, y, w, 5);
       g.fillRect(x, y, 5, h);
       g.fillRect(x + w - 5, y, 5, h);
       g.fillRect(x, y + h - 5, w, 5);
-      
+
       // Draw a dot in each corner.
       g.setColor(MetalLookAndFeel.getControl());
       g.fillRect(x, y, 1, 1);
       g.fillRect(x + w - 1, y, 1, 1);
       g.fillRect(x + w - 1, y + h - 1, 1, 1);
       g.fillRect(x, y + h - 1, 1, 1);
-      
+
       // Draw the lines.
       g.setColor(MetalLookAndFeel.getBlack());
       g.drawLine(x + 14, y + 2, x + w - 15, y + 2);
       g.drawLine(x + 14, y + h - 3, x + w - 15, y + h - 3);
       g.drawLine(x + 2, y + 14, x + 2, y + h - 15);
       g.drawLine(x + w - 3, y + 14, x + w - 3, y + h - 15);
-      
+
       // Draw the line highlights.
       if (frame.isActive())
         g.setColor(MetalLookAndFeel.getPrimaryControlShadow());
-      else 
+      else
         g.setColor(MetalLookAndFeel.getControlShadow());
       g.drawLine(x + 15, y + 3, x + w - 14, y + 3);
       g.drawLine(x + 15, y + h - 2, x + w - 14, y + h - 2);
@@ -248,7 +248,7 @@ public class MetalRootPaneUI
       {
         super("Close");
       }
-      
+
       /**
        * This method is called when something closes the frame.
        *
@@ -316,7 +316,7 @@ public class MetalRootPaneUI
             f.setExtendedState(Frame.ICONIFIED);
           }
       }
-        
+
     }
 
     /**
@@ -437,8 +437,8 @@ public class MetalRootPaneUI
           }
 
         Dimension titlePreferredSize = title.getPreferredSize();
-        title.setBounds(insets.left + 5, insets.top, 
-                Math.min(titlePreferredSize.width, loc - insets.left - 10), 
+        title.setBounds(insets.left + 5, insets.top,
+                Math.min(titlePreferredSize.width, loc - insets.left - 10),
                 height);
 
       }
@@ -501,7 +501,7 @@ public class MetalRootPaneUI
 
     /** The icon displayed in the close button. */
     Icon closeIcon;
-    
+
     /**
      * The background color of the TitlePane when the JInternalFrame is not
      * selected.
@@ -653,7 +653,7 @@ public class MetalRootPaneUI
 
     /**
      * Paints a representation of the current state of the internal frame.
-     * 
+     *
      * @param g  the graphics device.
      */
     public void paintComponent(Graphics g)
@@ -667,13 +667,13 @@ public class MetalRootPaneUI
         g.setColor(MetalLookAndFeel.getPrimaryControlDarkShadow());
       else
         g.setColor(MetalLookAndFeel.getControlDarkShadow());
-          
+
       // put a dot in each of the top corners
       g.drawLine(0, 0, 0, 0);
       g.drawLine(d.width - 1, 0, d.width - 1, 0);
-          
+
       g.drawLine(0, d.height - 1, d.width - 1, d.height - 1);
-          
+
       // draw the metal pattern
       if (UIManager.get("InternalFrame.activeTitleGradient") != null
           && frame.isActive())
@@ -688,7 +688,7 @@ public class MetalRootPaneUI
       int endX = startX;
       if (iconButton.isVisible())
         endX = Math.max(iconButton.getX(), endX);
-      else if (maxButton.isVisible()) 
+      else if (maxButton.isVisible())
         endX = Math.max(maxButton.getX(), endX);
       else if (closeButton.isVisible())
         endX = Math.max(closeButton.getX(), endX);
@@ -709,10 +709,10 @@ public class MetalRootPaneUI
 
       if (!isOpaque())
         return;
-      
+
       Color saved = g.getColor();
       Dimension dims = getSize();
-      
+
       Color bg = getBackground();
       if (frame.isActive())
         bg = selectedTitleColor;
@@ -736,8 +736,8 @@ public class MetalRootPaneUI
       maxIcon = UIManager.getIcon("InternalFrame.maximizeIcon");
       minIcon = MetalIconFactory.getInternalFrameAltMaximizeIcon(16);
       Frame frame = (Frame) SwingUtilities.getWindowAncestor(rootPane);
-      title = new JLabel(frame.getTitle(), 
-              MetalIconFactory.getInternalFrameDefaultMenuIcon(), 
+      title = new JLabel(frame.getTitle(),
+              MetalIconFactory.getInternalFrameDefaultMenuIcon(),
               SwingConstants.LEFT);
     }
   }
@@ -770,7 +770,7 @@ public class MetalRootPaneUI
      * The cached layout info for the title pane.
      */
     private Rectangle titlePaneBounds;
-    
+
     /**
      * The cached preferred size.
      */
@@ -832,7 +832,7 @@ public class MetalRootPaneUI
     public void removeLayoutComponent(Component component)
     {
       // TODO Auto-generated method stub
-      
+
     }
 
     public Dimension preferredLayoutSize(Container parent)
@@ -894,7 +894,7 @@ public class MetalRootPaneUI
           // 4. The menuBar is positioned at the upper edge of layeredPane.
           // 5. The contentPane fills viewable region minus menuBar minus
           //    titlePane, if present.
-      
+
           // +-------------------------------+
           // |  JLayeredPane                 |
           // |  +--------------------------+ |
@@ -952,7 +952,7 @@ public class MetalRootPaneUI
       contentPane.setBounds(contentPaneBounds);
       titlePane.setBounds(titlePaneBounds);
     }
-      
+
   }
 
   /**

@@ -45,7 +45,7 @@ import java.io.Serializable;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Eric Blake (ebb9@email.byu.edu)
- * @status 
+ * @status
  */
 public class Insets implements Cloneable, Serializable
 {

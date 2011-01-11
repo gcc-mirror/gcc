@@ -64,12 +64,12 @@ import javax.accessibility.AccessibleContext;
  */
 public class ProgressMonitor
 {
-  
+
   /**
    * The accessible content for this component
    */
   protected AccessibleContext accessibleContext;
-  
+
   /**
    * parentComponent
    */
@@ -108,13 +108,13 @@ public class ProgressMonitor
   boolean canceled;
 
   /**
-   * Creates a new <code>ProgressMonitor</code> instance.  This is used to 
-   * monitor a task and pops up a dialog if the task is taking a long time to 
+   * Creates a new <code>ProgressMonitor</code> instance.  This is used to
+   * monitor a task and pops up a dialog if the task is taking a long time to
    * run.
-   * 
-   * @param component The parent component of the progress dialog or 
+   *
+   * @param component The parent component of the progress dialog or
    *                  <code>null</code>.
-   * @param message A constant message object which works in the way it does 
+   * @param message A constant message object which works in the way it does
    *                in {@link JOptionPane}.
    * @param note A string message which can be changed while the operation goes
    *             on.
@@ -192,7 +192,7 @@ public class ProgressMonitor
 
   }
 
-  /** 
+  /**
    * Returns the minimum or start value of the operation.
    *
    * @return Minimum or start value of the operation.
@@ -283,9 +283,9 @@ public class ProgressMonitor
   /**
    * Returns the number of milliseconds to wait before displaying the progress
    * dialog.  The default value is 2000.
-   * 
+   *
    * @return The number of milliseconds.
-   * 
+   *
    * @see #setMillisToPopup(int)
    */
   public int getMillisToPopup()
@@ -296,9 +296,9 @@ public class ProgressMonitor
   /**
    * Sets the number of milliseconds to wait before displaying the progress
    * dialog.
-   * 
+   *
    * @param time  the number of milliseconds.
-   * 
+   *
    * @see #getMillisToPopup()
    */
   public void setMillisToPopup(int time)
@@ -336,7 +336,7 @@ public class ProgressMonitor
       }
   }
 
-  /** 
+  /**
    * Internal method that creates the progress dialog.
    */
   void createDialog()
@@ -408,9 +408,9 @@ public class ProgressMonitor
            first = false;
 
 
-           long expected = (progress - min == 0) ? 
-	     (now - timestamp) * (max - min) : 
-	     (now - timestamp) * (max - min) / (progress - min);
+           long expected = (progress - min == 0) ?
+             (now - timestamp) * (max - min) :
+             (now - timestamp) * (max - min) / (progress - min);
 
            if (expected > millisToPopup)
            {
@@ -428,7 +428,7 @@ public class ProgressMonitor
        {
          // The progress dialog is being displayed. We now calculate
          // whether setting the progress bar to the current progress
-         // value would result in a visual difference. 
+         // value would result in a visual difference.
          int delta = progress - progressBar.getValue();
 
          if ((delta * progressBar.getWidth() / (max - min)) > 0)
@@ -447,10 +447,10 @@ public class ProgressMonitor
       timestamp = now;
     }
   }
-  
+
   /**
    * Gets the accessible context.
-   * 
+   *
    * @return the accessible context.
    */
   public AccessibleContext getAccessibleContext()

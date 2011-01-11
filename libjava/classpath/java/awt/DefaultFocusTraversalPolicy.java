@@ -1,4 +1,4 @@
-/* DefaultFocusTraversalPolicy.java -- 
+/* DefaultFocusTraversalPolicy.java --
    Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -90,14 +90,14 @@ public class DefaultFocusTraversalPolicy
   protected boolean accept (Component comp)
   {
     if (comp.visible
-	&& comp.isDisplayable ()
-	&& comp.enabled)
+        && comp.isDisplayable ()
+        && comp.enabled)
       {
-	if (comp.isFocusTraversableOverridden != 0
-	    && (comp.isFocusTraversable () || comp.isFocusable()))
+        if (comp.isFocusTraversableOverridden != 0
+            && (comp.isFocusTraversable () || comp.isFocusable()))
           return true;
-        
-	if (!(comp instanceof Canvas
+
+        if (!(comp instanceof Canvas
               || comp instanceof Panel
               || comp instanceof Label
               || comp instanceof ScrollPane

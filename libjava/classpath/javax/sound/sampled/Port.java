@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -41,7 +41,7 @@ package javax.sound.sampled;
 /**
  * A Port is a Line which represents an audio device, for instance
  * a microphone.
- * 
+ *
  * @since 1.3
  */
 public interface Port extends Line
@@ -56,28 +56,28 @@ public interface Port extends Line
 
     /** A CD player.  */
     public static final Info COMPACT_DISC = new Info(Port.class,
-						     "Compact Disc",
-						     true);
+                                                     "Compact Disc",
+                                                     true);
 
     /** Headphones.  */
     public static final Info HEADPHONE = new Info(Port.class, "Headphone",
-						  false);
+                                                  false);
 
     /** Generic input line.  */
     public static final Info LINE_IN = new Info(Port.class, "Line in",
-						true);
+                                                true);
 
     /** Generic output line.  */
     public static final Info LINE_OUT = new Info(Port.class, "Line out",
-						 false);
+                                                 false);
 
     /** A microphone.  */
     public static final Info MICROPHONE = new Info(Port.class, "Microphone",
-						   true);
+                                                   true);
 
     /** A speaker.  */
     public static final Info SPEAKER = new Info(Port.class, "Speaker",
-						false);
+                                                false);
 
     private String name;
     private boolean isSource;

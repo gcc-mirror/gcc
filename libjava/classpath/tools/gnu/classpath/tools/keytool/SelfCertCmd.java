@@ -81,7 +81,7 @@ import javax.security.auth.x500.X500Principal;
  *      a default value of <code>mykey</code> shall be used when this option is
  *      omitted from the command line.
  *      <p></dd>
- *      
+ *
  *      <dt>-sigalg ALGORITHM</dt>
  *      <dd>The canonical name of the digital signature algorithm to use for
  *      signing the certificate. If this option is omitted, a default value will
@@ -91,7 +91,7 @@ import javax.security.auth.x500.X500Principal;
  *      If on the other hand the private key is an <code>RSA</code> one, then
  *      the tool will use <code>MD5withRSA</code> as the signature algorithm.
  *      <p></dd>
- *      
+ *
  *      <dt>-dname NAME</dt>
  *      <dd>Use this option to specify the <i>Distinguished Name</i> of the
  *      newly generated self-signed certificate. If this option is omitted, the
@@ -105,19 +105,19 @@ import javax.security.auth.x500.X500Principal;
  *      <dl>
  *              <dt>CN</dt>
  *              <dd>The Common Name; e.g. "host.domain.com"</dd>
- *              
+ *
  *              <dt>OU</dt>
  *              <dd>The Organizational Unit; e.g. "IT Department"</dd>
- *              
+ *
  *              <dt>O</dt>
  *              <dd>The Organization Name; e.g. "The Sample Company"</dd>
- *              
+ *
  *              <dt>L</dt>
  *              <dd>The Locality Name; e.g. "Sydney"</dd>
- *              
+ *
  *              <dt>ST</dt>
  *              <dd>The State Name; e.g. "New South Wales"</dd>
- *              
+ *
  *              <dt>C</dt>
  *              <dd>The 2-letter Country identifier; e.g. "AU"</dd>
  *      </dl>
@@ -130,11 +130,11 @@ import javax.security.auth.x500.X500Principal;
  *        CN=host.domain.com, O=The Sample Company, L=Sydney, ST=NSW, C=AU
  *      </pre>
  *      <p></dd>
- *      
+ *
  *      <dt>-validity DAY_COUNT</dt>
- *      
+ *
  *      <dt>-keypass PASSWORD</dt>
- *      
+ *
  *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
@@ -142,7 +142,7 @@ import javax.security.auth.x500.X500Principal;
  *      obtained by invoking the {@link java.security.KeyStore#getDefaultType()}
  *      static method.
  *      <p></dd>
- *      
+ *
  *      <dt>-keystore URL</dt>
  *      <dd>Use this option to specify the location of the key store to use.
  *      The default value is a file {@link java.net.URL} referencing the file
@@ -155,13 +155,13 @@ import javax.security.auth.x500.X500Principal;
  *      name (with absolute or relative path-name) of a key store --as if the
  *      protocol was <code>file:</code>.
  *      <p></dd>
- *      
+ *
  *      <dt>-storepass PASSWORD</dt>
  *      <dd>Use this option to specify the password protecting the key store. If
  *      this option is omitted from the command line, you will be prompted to
  *      provide a password.
  *      <p></dd>
- *      
+ *
  *      <dt>-provider PROVIDER_CLASS_NAME</dt>
  *      <dd>A fully qualified class name of a Security Provider to add to the
  *      current list of Security Providers already installed in the JVM in-use.
@@ -169,7 +169,7 @@ import javax.security.auth.x500.X500Principal;
  *      added to the runtime --i.e. it was not already installed-- then the tool
  *      will attempt to removed this Security Provider before exiting.
  *      <p></dd>
- *      
+ *
  *      <dt>-v</dt>
  *      <dd>Use this option to enable more verbose output.</dd>
  * </dl>

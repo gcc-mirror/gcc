@@ -39,7 +39,7 @@ exception statement from your version. */
 package javax.naming.ldap;
 
 import java.util.EventObject;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 5, 2001
@@ -47,12 +47,12 @@ import java.util.EventObject;
 public class UnsolicitedNotificationEvent extends EventObject
 {
   private static final long serialVersionUID = -2382603380799883705L;
-  
+
   // Serialized fields.
   private UnsolicitedNotification notice;
 
   public UnsolicitedNotificationEvent(Object src,
-  				      UnsolicitedNotification notice)
+                                      UnsolicitedNotification notice)
   {
     super(src);
     this.notice = notice;

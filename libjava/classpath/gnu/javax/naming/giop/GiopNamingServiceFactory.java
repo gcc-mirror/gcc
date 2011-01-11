@@ -61,7 +61,7 @@ import org.omg.CORBA.ORB;
  * parsed using the specification of the corbaname urls. Being the naming
  * service, the returned context supports creating the subcontexts, forwarding
  * this task to the existing naming service.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
  */
 public class GiopNamingServiceFactory
@@ -70,17 +70,17 @@ public class GiopNamingServiceFactory
    * The default naming service provider. It is assumed, that the naming service
    * is running on the port 900 of the local host, using the GIOP version 1.2
    */
-  public static final String DEFAULT_PROVIDER = 
+  public static final String DEFAULT_PROVIDER =
     "corbaloc:iiop:1.2@127.0.0.1:900/NameService";
-  
+
   /**
-   * The table of all instantiated ORB's that are found by they ORB 
+   * The table of all instantiated ORB's that are found by they ORB
    * properties signatures. If all ORB related properties are the same,
    * the ORB's are shared.
    */
   public static Hashtable orbs = new Hashtable();
-  
-  
+
+
   /**
    * Create a new instance of the corbaname URL context.
    */
@@ -116,13 +116,13 @@ public class GiopNamingServiceFactory
 
     return new GiopNamingServiceURLContext(environment, this, orb);
   }
-  
+
   /**
    * Check if this ORB is still in use (maybe it is time to shutdown it). This
    * method only works when the Classpath CORBA implementation is used
    * (otherwise it return without action). The method is called from the close()
    * method of the created context.
-   * 
+   *
    * @param orb
    *          the ORB that maybe is no longer referenced.
    */
@@ -139,7 +139,7 @@ public class GiopNamingServiceFactory
               {
                 cOrb.shutdown(false);
                 cOrb.destroy();
-                
+
                 Enumeration keys = orbs.keys();
                 Object key;
                 Remove: while (keys.hasMoreElements())
@@ -155,7 +155,7 @@ public class GiopNamingServiceFactory
           }
       }
   }
-  
+
   /**
    * Get all properties.
    */
@@ -164,7 +164,7 @@ public class GiopNamingServiceFactory
      TreeMap map = new TreeMap();
      map.putAll(props);
      CPStringBuilder b = new CPStringBuilder(50*props.size());
-     
+
      Iterator iter = map.entrySet().iterator();
      Map.Entry m;
      while (iter.hasNext())

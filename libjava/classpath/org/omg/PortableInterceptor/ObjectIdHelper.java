@@ -51,8 +51,8 @@ import org.omg.CORBA.portable.OutputStream;
 /**
  * The Object Id of this package is defined in OMG specification as a byte array.
  * As such, the Object Id needs no helper, but one is included in the API anyway.
- * 
- * @since 1.5 
+ *
+ * @since 1.5
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
@@ -72,7 +72,7 @@ public abstract class ObjectIdHelper
 
   /**
    * Extract the Object Id from Any.
-   * 
+   *
    * @param a the Any to extract from.
    */
   public static byte[] extract(Any a)

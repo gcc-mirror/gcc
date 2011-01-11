@@ -50,13 +50,13 @@ public final class GlyphMetrics
   public static final byte LIGATURE = 1;
   public static final byte STANDARD = 0;
   public static final byte WHITESPACE = 4;
- 
+
   private boolean horizontal;
   private float advanceX;
   private float advanceY;
   private Rectangle2D bounds;
   private byte glyphType;
-  
+
   public GlyphMetrics (boolean horizontal, float advanceX, float advanceY,
                        Rectangle2D bounds, byte glyphType)
   {
@@ -66,7 +66,7 @@ public final class GlyphMetrics
     this.bounds = bounds;
     this.glyphType = glyphType;
   }
-  
+
   public GlyphMetrics (float advance, Rectangle2D bounds, byte glyphType)
   {
     this (true, advance, advance, bounds, glyphType);

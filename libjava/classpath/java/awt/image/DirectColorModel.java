@@ -57,19 +57,19 @@ public class DirectColorModel extends PackedColorModel
    * Each mask should describe a fully contiguous set of bits in the
    * most likely order of alpha, red, green, blue from the most significant
    * byte to the least significant byte.
-   * 
+   *
    * @param pixelBits the number of bits wide used for bit size of pixel values
    * @param rmask the bits describing the red component of a pixel
    * @param gmask the bits describing the green component of a pixel
-   * @param bmask the bits describing the blue component of a pixel 
+   * @param bmask the bits describing the blue component of a pixel
    */
   public DirectColorModel(int pixelBits, int rmask, int gmask, int bmask)
   {
     this(ColorSpace.getInstance(ColorSpace.CS_sRGB), pixelBits,
-	 rmask, gmask, bmask, 0, 
-	 false, // not alpha premultiplied
-	 Buffers.smallestAppropriateTransferType(pixelBits) // find type
-	 );
+         rmask, gmask, bmask, 0,
+         false, // not alpha premultiplied
+         Buffers.smallestAppropriateTransferType(pixelBits) // find type
+         );
   }
 
   /**
@@ -78,34 +78,34 @@ public class DirectColorModel extends PackedColorModel
    * Each mask should describe a fully contiguous set of bits in the
    * most likely order of red, green, blue from the most significant
    * byte to the least significant byte.
-   * 
+   *
    * @param pixelBits the number of bits wide used for bit size of pixel values
    * @param rmask the bits describing the red component of a pixel
    * @param gmask the bits describing the green component of a pixel
-   * @param bmask the bits describing the blue component of a pixel 
-   * @param amask the bits describing the alpha component of a pixel 
+   * @param bmask the bits describing the blue component of a pixel
+   * @param amask the bits describing the alpha component of a pixel
    */
   public DirectColorModel(int pixelBits,
-			  int rmask, int gmask, int bmask, int amask)
+                          int rmask, int gmask, int bmask, int amask)
   {
     this(ColorSpace.getInstance(ColorSpace.CS_sRGB), pixelBits,
-	 rmask, gmask, bmask, amask,
-	 false, // not alpha premultiplied
-	 Buffers.smallestAppropriateTransferType(pixelBits) // find type
-	 );
+         rmask, gmask, bmask, amask,
+         false, // not alpha premultiplied
+         Buffers.smallestAppropriateTransferType(pixelBits) // find type
+         );
   }
 
   public DirectColorModel(ColorSpace cspace, int pixelBits,
-			  int rmask, int gmask, int bmask, int amask,
-			  boolean isAlphaPremultiplied,
-			  int transferType)
+                          int rmask, int gmask, int bmask, int amask,
+                          boolean isAlphaPremultiplied,
+                          int transferType)
   {
     super(cspace, pixelBits,
-	  rmask, gmask, bmask, amask, isAlphaPremultiplied,
-	  ((amask == 0) ? Transparency.OPAQUE : Transparency.TRANSLUCENT),
-	  transferType);
+          rmask, gmask, bmask, amask, isAlphaPremultiplied,
+          ((amask == 0) ? Transparency.OPAQUE : Transparency.TRANSLUCENT),
+          transferType);
   }
-    
+
   public final int getRedMask()
   {
     return getMask(0);
@@ -143,7 +143,7 @@ public class DirectColorModel extends PackedColorModel
   {
     return extractAndNormalizeSample(pixel, 1);
   }
-  
+
   /**
    * Get the blue component of the given pixel.
    * <br>
@@ -184,12 +184,12 @@ public class DirectColorModel extends PackedColorModel
 
   /**
    * Get the RGB color value of the given pixel using the default
-   * RGB color model. 
+   * RGB color model.
    * <br>
    *
    * @param pixel a pixel value
    */
-  public final int getRGB(int pixel) 
+  public final int getRGB(int pixel)
   {
     /* FIXME: The Sun docs show that this method is overridden, but I
        don't see any way to improve on the superclass
@@ -211,7 +211,7 @@ public class DirectColorModel extends PackedColorModel
   {
     return getBlue(getPixelFromArray(inData));
   }
-    
+
   public int getAlpha(Object inData)
   {
     return getAlpha(getPixelFromArray(inData));
@@ -221,7 +221,7 @@ public class DirectColorModel extends PackedColorModel
   {
     return getRGB(getPixelFromArray(inData));
   }
-    
+
   /**
    * Converts a normalized pixel int value in the sRGB color
    * space to an array containing a single pixel of the color space
@@ -231,7 +231,7 @@ public class DirectColorModel extends PackedColorModel
    * <code>getRGB(Object inData)</code>.
    *
    * @param rgb pixel as a normalized sRGB, 0xAARRGGBB value.
-   *  
+   *
    * @param pixel to avoid needless creation of arrays, an array to
    * use to return the pixel can be given. If null, a suitable array
    * will be created.
@@ -244,60 +244,60 @@ public class DirectColorModel extends PackedColorModel
   public Object getDataElements(int rgb, Object pixel)
   {
     // FIXME: handle alpha multiply
-    
+
     int pixelValue = 0;
     int a = 0;
     if (hasAlpha()) {
       a = (rgb >>> 24) & 0xff;
       pixelValue = valueToField(a, 3, 8);
     }
-	
+
     if (hasAlpha() && isAlphaPremultiplied())
       {
-	int r, g, b;
-	/* if r=0xff and a=0xff, then resulting
-	   value will be (r*a)>>>8 == 0xfe... This seems wrong.
-	   We should divide by 255 rather than shifting >>>8 after
-	   multiplying.
-	   
-	   Too bad, shifting is probably less expensive.
-	   r = ((rgb >>> 16) & 0xff)*a;
-	   g = ((rgb >>>  8) & 0xff)*a;
-	   b = ((rgb >>> 0) & 0xff)*a; */
-	/* The r, g, b values we calculate are 16 bit. This allows
-	   us to avoid discarding the lower 8 bits obtained if
-	   multiplying with the alpha band. */
-	
-	// using 16 bit values
-	r = ((rgb >>> 8) & 0xff00)*a/255;
-	g = ((rgb >>> 0) & 0xff00)*a/255;
-	b = ((rgb <<  8) & 0xff00)*a/255;
-	pixelValue |= 
-	  valueToField(r, 0, 16) |  // Red
-	  valueToField(g, 1, 16) |  // Green
-	  valueToField(b, 2, 16);   // Blue
+        int r, g, b;
+        /* if r=0xff and a=0xff, then resulting
+           value will be (r*a)>>>8 == 0xfe... This seems wrong.
+           We should divide by 255 rather than shifting >>>8 after
+           multiplying.
+
+           Too bad, shifting is probably less expensive.
+           r = ((rgb >>> 16) & 0xff)*a;
+           g = ((rgb >>>  8) & 0xff)*a;
+           b = ((rgb >>> 0) & 0xff)*a; */
+        /* The r, g, b values we calculate are 16 bit. This allows
+           us to avoid discarding the lower 8 bits obtained if
+           multiplying with the alpha band. */
+
+        // using 16 bit values
+        r = ((rgb >>> 8) & 0xff00)*a/255;
+        g = ((rgb >>> 0) & 0xff00)*a/255;
+        b = ((rgb <<  8) & 0xff00)*a/255;
+        pixelValue |=
+          valueToField(r, 0, 16) |  // Red
+          valueToField(g, 1, 16) |  // Green
+          valueToField(b, 2, 16);   // Blue
       }
     else
       {
-	int r, g, b;
-	// using 8 bit values
-	r = (rgb >>> 16) & 0xff;
-	g = (rgb >>>  8) & 0xff;
-	b = (rgb >>>  0) & 0xff;
-	
-	pixelValue |= 
-	  valueToField(r, 0, 8) |  // Red
-	  valueToField(g, 1, 8) |  // Green
-	  valueToField(b, 2, 8);   // Blue
+        int r, g, b;
+        // using 8 bit values
+        r = (rgb >>> 16) & 0xff;
+        g = (rgb >>>  8) & 0xff;
+        b = (rgb >>>  0) & 0xff;
+
+        pixelValue |=
+          valueToField(r, 0, 8) |  // Red
+          valueToField(g, 1, 8) |  // Green
+          valueToField(b, 2, 8);   // Blue
       }
-    
+
     /* In this color model, the whole pixel fits in the first element
        of the array. */
     DataBuffer buffer = Buffers.createBuffer(transferType, pixel, 1);
     buffer.setElem(0, pixelValue);
     return Buffers.getData(buffer);
   }
-    
+
   /**
    * Converts a value to the correct field bits based on the
    * information derived from the field masks.
@@ -307,13 +307,13 @@ public class DirectColorModel extends PackedColorModel
    */
   private int valueToField(int val, int component, int highBit)
   {
-    int toFieldShift = 
+    int toFieldShift =
       getComponentSize(component) + shifts[component] - highBit;
     int ret = (toFieldShift>0) ?
       (val << toFieldShift) :
       (val >>> (-toFieldShift));
     return ret & getMask(component);
-  }  
+  }
 
   /**
    * Converts a 16 bit value to the correct field bits based on the
@@ -336,15 +336,15 @@ public class DirectColorModel extends PackedColorModel
   {
     int numComponents = getNumComponents();
     if (components == null) components = new int[offset + numComponents];
-    
+
     for (int b=0; b<numComponents; b++)
       components[offset++] = (pixel&getMask(b)) >>> shifts[b];
-	
+
     return components;
   }
 
   public final int[] getComponents(Object pixel, int[] components,
-				   int offset)
+                                   int offset)
   {
     return getComponents(getPixelFromArray(pixel), components, offset);
   }
@@ -368,19 +368,19 @@ public class DirectColorModel extends PackedColorModel
 
     SampleModel sm = createCompatibleSampleModel(w, h);
     Point origin = new Point(0, 0);
-    return Raster.createWritableRaster(sm, origin);	
+    return Raster.createWritableRaster(sm, origin);
   }
 
   public int getDataElement(int[] components, int offset)
   {
     int numComponents = getNumComponents();
     int pixelValue = 0;
-    
+
     for (int c=0; c<numComponents; c++)
       pixelValue |= (components[offset++] << shifts[c]) & getMask(c);
 
     return pixelValue;
-  }  
+  }
 
   public Object getDataElements(int[] components, int offset, Object obj)
   {
@@ -392,26 +392,26 @@ public class DirectColorModel extends PackedColorModel
     buffer.setElem(0, pixelValue);
     return Buffers.getData(buffer);
   }
-    
+
   public final ColorModel coerceData (WritableRaster raster,
-				      boolean isAlphaPremultiplied)
+                                      boolean isAlphaPremultiplied)
   {
     if (this.isAlphaPremultiplied == isAlphaPremultiplied || !hasAlpha())
       return this;
-	
+
     /* TODO: provide better implementation based on the
        assumptions we can make due to the specific type of the
        color model. */
     coerceDataWorker(raster, isAlphaPremultiplied);
-    
+
     return new DirectColorModel(cspace, pixel_bits, getRedMask(),
                                 getGreenMask(), getBlueMask(), getAlphaMask(),
                                 isAlphaPremultiplied, transferType);
-  } 
+  }
 
   public boolean isCompatibleRaster(Raster raster)
   {
-    /* FIXME: the Sun docs say this method is overridden here, 
+    /* FIXME: the Sun docs say this method is overridden here,
        but I don't see any way to improve upon the implementation
        in ColorModel. */
     return super.isCompatibleRaster(raster);
@@ -433,4 +433,3 @@ public class DirectColorModel extends PackedColorModel
     return super.toString();
   }
 }
-

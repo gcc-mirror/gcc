@@ -1,4 +1,4 @@
-/* NameType.java -- 
+/* NameType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -99,6 +99,5 @@ final class NameType
         throw e2;
       }
   }
-  
-}
 
+}

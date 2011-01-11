@@ -1,6 +1,6 @@
 /* ThreadReferenceCommandSet.java -- class to implement the ThreadReference
    Command Set Copyright (C) 2005, 2007 Free Software Foundation
- 
+
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -57,7 +57,7 @@ import java.util.ArrayList;
 
 /**
  * A class representing the ThreadReference Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class ThreadReferenceCommandSet
@@ -107,7 +107,7 @@ public class ThreadReferenceCommandSet
             executeSuspendCount(bb, os);
             break;
           default:
-            throw new NotImplementedException("Command " + command + 
+            throw new NotImplementedException("Command " + command +
               " not found in Thread Reference Command Set.");
           }
       }
@@ -202,8 +202,8 @@ public class ThreadReferenceCommandSet
   {
     if (!VMVirtualMachine.canGetOwnedMonitorInfo)
       {
-	String msg = "getting owned monitors is not supported";
-	throw new NotImplementedException(msg);
+        String msg = "getting owned monitors is not supported";
+        throw new NotImplementedException(msg);
       }
 
     ThreadId tid = (ThreadId) idMan.readObjectId(bb);
@@ -213,8 +213,8 @@ public class ThreadReferenceCommandSet
     os.write(monitors.length);
     for (int i = 0; i < monitors.length; ++i)
       {
-	ObjectId id = idMan.getObjectId(monitors[i]);
-	id.writeTagged(os);
+        ObjectId id = idMan.getObjectId(monitors[i]);
+        id.writeTagged(os);
       }
   }
 
@@ -224,8 +224,8 @@ public class ThreadReferenceCommandSet
   {
     if (!VMVirtualMachine.canGetCurrentContendedMonitor)
       {
-	String msg = "getting current contended monitor is not supported";
-	throw new NotImplementedException(msg);
+        String msg = "getting current contended monitor is not supported";
+        throw new NotImplementedException(msg);
       }
 
     ThreadId tid = (ThreadId) idMan.readObjectId(bb);

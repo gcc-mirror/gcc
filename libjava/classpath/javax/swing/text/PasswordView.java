@@ -1,4 +1,4 @@
-/* PasswordView.java -- 
+/* PasswordView.java --
  Copyright (C) 2004 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
@@ -155,7 +155,7 @@ public class PasswordView
 
   /**
    * Determines the preferred span for this view along an axis.
-   * 
+   *
    * @param axis to get the preferred span of
    * @return the preferred span of the axis
    */
@@ -196,7 +196,7 @@ public class PasswordView
    * @param a - the allocated region to render into
    * @param b - typesafe enumeration to indicate bias to a position in the model.
    * @return the bounding box of the given position
-   * @throws BadLocationException if the given position does not 
+   * @throws BadLocationException if the given position does not
    * represent a valid location in the associated document
    */
   public Shape modelToView(int pos, Shape a, Position.Bias b)
@@ -206,7 +206,7 @@ public class PasswordView
 
     // Ensure metrics are up-to-date.
     updateMetrics();
-    
+
     // Get rectangle of the line containing position.
     int lineIndex = getElement().getElementIndex(pos);
     Rectangle rect = lineToRect(newAlloc, lineIndex);
@@ -234,16 +234,16 @@ public class PasswordView
   }
 
   /**
-   * Provides a mapping from the view coordinate space to the logical 
+   * Provides a mapping from the view coordinate space to the logical
    * coordinate space of the model.
-   * 
+   *
    * @param fx - the X coordinate >= 0.0f
    * @param fy - the Y coordinate >= 0.0f
-   * @param a - the allocated region to render into 
+   * @param a - the allocated region to render into
    * @param bias - typesafe enumeration to indicate bias to a position in the model.
-   * @return the location within the model that best represents 
+   * @return the location within the model that best represents
    * the given point in the view
-   * 
+   *
    */
   public int viewToModel(float fx, float fy, Shape a, Position.Bias[] bias)
   {

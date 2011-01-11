@@ -59,12 +59,12 @@ import org.xml.sax.SAXParseException;
 public class DefaultHandler
     implements EntityResolver, DTDHandler, ContentHandler, ErrorHandler
 {
-    
-
+
+
     ////////////////////////////////////////////////////////////////////
     // Default implementation of the EntityResolver interface.
     ////////////////////////////////////////////////////////////////////
-    
+
     /**
      * Resolve an external entity.
      *
@@ -76,7 +76,7 @@ public class DefaultHandler
      *
      * @param publicId The public identifer, or null if none is
      *                 available.
-     * @param systemId The system identifier provided in the XML 
+     * @param systemId The system identifier provided in the XML
      *                 document.
      * @return The new input source, or null to require the
      *         default behaviour.
@@ -87,18 +87,18 @@ public class DefaultHandler
      * @see org.xml.sax.EntityResolver#resolveEntity
      */
     public InputSource resolveEntity (String publicId, String systemId)
-	throws IOException, SAXException
+        throws IOException, SAXException
     {
-	return null;
+        return null;
     }
-    
-    
-
+
+
+
     ////////////////////////////////////////////////////////////////////
     // Default implementation of DTDHandler interface.
     ////////////////////////////////////////////////////////////////////
-    
-    
+
+
     /**
      * Receive notification of a notation declaration.
      *
@@ -115,12 +115,12 @@ public class DefaultHandler
      * @see org.xml.sax.DTDHandler#notationDecl
      */
     public void notationDecl (String name, String publicId, String systemId)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Receive notification of an unparsed entity declaration.
      *
@@ -138,19 +138,19 @@ public class DefaultHandler
      * @see org.xml.sax.DTDHandler#unparsedEntityDecl
      */
     public void unparsedEntityDecl (String name, String publicId,
-				    String systemId, String notationName)
-	throws SAXException
+                                    String systemId, String notationName)
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
-
+
+
+
     ////////////////////////////////////////////////////////////////////
     // Default implementation of ContentHandler interface.
     ////////////////////////////////////////////////////////////////////
-    
-    
+
+
     /**
      * Receive a Locator object for document events.
      *
@@ -164,10 +164,10 @@ public class DefaultHandler
      */
     public void setDocumentLocator (Locator locator)
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Receive notification of the beginning of the document.
      *
@@ -181,12 +181,12 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#startDocument
      */
     public void startDocument ()
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Receive notification of the end of the document.
      *
@@ -200,9 +200,9 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#endDocument
      */
     public void endDocument ()
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
 
 
@@ -220,9 +220,9 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#startPrefixMapping
      */
     public void startPrefixMapping (String prefix, String uri)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
 
 
@@ -239,12 +239,12 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#endPrefixMapping
      */
     public void endPrefixMapping (String prefix)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Receive notification of the start of an element.
      *
@@ -269,13 +269,13 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#startElement
      */
     public void startElement (String uri, String localName,
-			      String qName, Attributes attributes)
-	throws SAXException
+                              String qName, Attributes attributes)
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Receive notification of the end of an element.
      *
@@ -297,12 +297,12 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#endElement
      */
     public void endElement (String uri, String localName, String qName)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Receive notification of character data inside an element.
      *
@@ -320,12 +320,12 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#characters
      */
     public void characters (char ch[], int start, int length)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Receive notification of ignorable whitespace in element content.
      *
@@ -343,12 +343,12 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#ignorableWhitespace
      */
     public void ignorableWhitespace (char ch[], int start, int length)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Receive notification of a processing instruction.
      *
@@ -365,9 +365,9 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#processingInstruction
      */
     public void processingInstruction (String target, String data)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
 
 
@@ -385,18 +385,18 @@ public class DefaultHandler
      * @see org.xml.sax.ContentHandler#processingInstruction
      */
     public void skippedEntity (String name)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
-
+
+
+
     ////////////////////////////////////////////////////////////////////
     // Default implementation of the ErrorHandler interface.
     ////////////////////////////////////////////////////////////////////
-    
-    
+
+
     /**
      * Receive notification of a parser warning.
      *
@@ -412,12 +412,12 @@ public class DefaultHandler
      * @see org.xml.sax.SAXParseException
      */
     public void warning (SAXParseException e)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Receive notification of a recoverable parser error.
      *
@@ -433,12 +433,12 @@ public class DefaultHandler
      * @see org.xml.sax.SAXParseException
      */
     public void error (SAXParseException e)
-	throws SAXException
+        throws SAXException
     {
-	// no op
+        // no op
     }
-    
-    
+
+
     /**
      * Report a fatal XML parsing error.
      *
@@ -457,11 +457,11 @@ public class DefaultHandler
      * @see org.xml.sax.SAXParseException
      */
     public void fatalError (SAXParseException e)
-	throws SAXException
+        throws SAXException
     {
-	throw e;
+        throw e;
     }
-    
+
 }
 
 // end of DefaultHandler.java

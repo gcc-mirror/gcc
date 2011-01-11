@@ -13,62 +13,62 @@
 package org.w3c.dom.html2;
 
 /**
- * Regroups the <code>COL</code> and <code>COLGROUP</code> elements. See the 
+ * Regroups the <code>COL</code> and <code>COLGROUP</code> elements. See the
  * COL element definition in HTML 4.01.
  * <p>See also the <a href='http://www.w3.org/TR/2003/REC-DOM-Level-2-HTML-20030109'>Document Object Model (DOM) Level 2 HTML Specification</a>.
  */
 public interface HTMLTableColElement extends HTMLElement {
     /**
-     * Horizontal alignment of cell data in column. See the align attribute 
+     * Horizontal alignment of cell data in column. See the align attribute
      * definition in HTML 4.01.
      */
     public String getAlign();
     /**
-     * Horizontal alignment of cell data in column. See the align attribute 
+     * Horizontal alignment of cell data in column. See the align attribute
      * definition in HTML 4.01.
      */
     public void setAlign(String align);
 
     /**
-     * Alignment character for cells in a column. See the char attribute 
+     * Alignment character for cells in a column. See the char attribute
      * definition in HTML 4.01.
      */
     public String getCh();
     /**
-     * Alignment character for cells in a column. See the char attribute 
+     * Alignment character for cells in a column. See the char attribute
      * definition in HTML 4.01.
      */
     public void setCh(String ch);
 
     /**
-     * Offset of alignment character. See the charoff attribute definition in 
+     * Offset of alignment character. See the charoff attribute definition in
      * HTML 4.01.
      */
     public String getChOff();
     /**
-     * Offset of alignment character. See the charoff attribute definition in 
+     * Offset of alignment character. See the charoff attribute definition in
      * HTML 4.01.
      */
     public void setChOff(String chOff);
 
     /**
-     * Indicates the number of columns in a group or affected by a grouping. 
+     * Indicates the number of columns in a group or affected by a grouping.
      * See the span attribute definition in HTML 4.01.
      */
     public int getSpan();
     /**
-     * Indicates the number of columns in a group or affected by a grouping. 
+     * Indicates the number of columns in a group or affected by a grouping.
      * See the span attribute definition in HTML 4.01.
      */
     public void setSpan(int span);
 
     /**
-     * Vertical alignment of cell data in column. See the valign attribute 
+     * Vertical alignment of cell data in column. See the valign attribute
      * definition in HTML 4.01.
      */
     public String getVAlign();
     /**
-     * Vertical alignment of cell data in column. See the valign attribute 
+     * Vertical alignment of cell data in column. See the valign attribute
      * definition in HTML 4.01.
      */
     public void setVAlign(String vAlign);

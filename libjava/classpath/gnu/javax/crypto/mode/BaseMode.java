@@ -1,4 +1,4 @@
-/* BaseMode.java -- 
+/* BaseMode.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -74,7 +74,7 @@ public abstract class BaseMode
 
   /**
    * Trivial constructor for use by concrete subclasses.
-   * 
+   *
    * @param name the canonical name prefix of this mode.
    * @param underlyingCipher the implementation of the underlying cipher.
    * @param cipherBlockSize the block size, in bytes, in which to operate the
@@ -124,7 +124,7 @@ public abstract class BaseMode
    * the same block size as its underlying block cipher. As mentioned earlier,
    * the block size of the underlying block cipher itself is specified in one of
    * the method(s) available in the factory class.
-   * 
+   *
    * @return the default value, in bytes, of the mode's block size.
    * @see ModeFactory
    */
@@ -136,7 +136,7 @@ public abstract class BaseMode
   /**
    * Returns the default value, in bytes, of the underlying block cipher key
    * size.
-   * 
+   *
    * @return the default value, in bytes, of the underlying cipher's key size.
    */
   public int defaultKeySize()
@@ -152,7 +152,7 @@ public abstract class BaseMode
    * is that currently configured for the underlying block cipher. Concrete
    * implementations may override this behaviour to signal their ability to
    * support other values.
-   * 
+   *
    * @return an {@link Iterator} over the supported block sizes.
    */
   public Iterator blockSizes()
@@ -166,7 +166,7 @@ public abstract class BaseMode
    * Returns an {@link Iterator} over the supported underlying block cipher key
    * sizes. Each element returned by this object is an instance of
    * {@link Integer}.
-   * 
+   *
    * @return an {@link Iterator} over the supported key sizes.
    */
   public Iterator keySizes()

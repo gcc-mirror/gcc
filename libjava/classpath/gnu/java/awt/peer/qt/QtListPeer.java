@@ -84,26 +84,26 @@ public class QtListPeer extends QtComponentPeer implements ListPeer
     if( index == -1)
       ((List)owner).deselect( ((List)owner).getSelectedIndex() );
       else
-	{
-	  ((List)owner).select( index );
-	  ItemEvent e = new ItemEvent((List)owner, 
-				      ItemEvent.ITEM_STATE_CHANGED, 
-				      ""+index,
-				      ItemEvent.SELECTED);
-	  QtToolkit.eventQueue.postEvent(e);
-	}
+        {
+          ((List)owner).select( index );
+          ItemEvent e = new ItemEvent((List)owner,
+                                      ItemEvent.ITEM_STATE_CHANGED,
+                                      ""+index,
+                                      ItemEvent.SELECTED);
+          QtToolkit.eventQueue.postEvent(e);
+        }
   }
 
   /**
    * Called back when an item is double-clicked.
-   */ 
+   */
   private void itemDoubleClicked( int index, int modifiers )
   {
     ActionEvent e = new ActionEvent(owner,
-				    ActionEvent.ACTION_PERFORMED,
-				    ((List)owner).getItem( index ),
-				    System.currentTimeMillis(),
-				    modifiers);
+                                    ActionEvent.ACTION_PERFORMED,
+                                    ((List)owner).getItem( index ),
+                                    System.currentTimeMillis(),
+                                    modifiers);
     QtToolkit.eventQueue.postEvent(e);
   }
 
@@ -129,10 +129,10 @@ public class QtListPeer extends QtComponentPeer implements ListPeer
   public native void delItems(int start_index, int end_index);
 
   public void deselect(int index)
-  {   
+  {
     if( ignoreNextSelect == true )
       ignoreNextSelect = false;
-    else 
+    else
       select(index, false);
   }
 
@@ -159,7 +159,7 @@ public class QtListPeer extends QtComponentPeer implements ListPeer
   {
     if( ignoreNextSelect == true )
       ignoreNextSelect = false;
-    else 
+    else
       select(index, true);
   }
 

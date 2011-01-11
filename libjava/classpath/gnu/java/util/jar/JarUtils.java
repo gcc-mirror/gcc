@@ -73,7 +73,7 @@ public abstract class JarUtils
 
   /**
    * The original string representation of the manifest version attribute name.
-   */ 
+   */
   public static final String MANIFEST_VERSION = "Manifest-Version";
 
   /**
@@ -115,7 +115,7 @@ public abstract class JarUtils
       {
         String version = expectHeader(version_header, br);
         attr.putValue(SIGNATURE_VERSION, version);
-	// This may cause problems during VM bootstrap.
+        // This may cause problems during VM bootstrap.
         // if (! DEFAULT_SF_VERSION.equals(version))
         //  log.warning("Unexpected version number: " + version
         //              + ". Continue (but may fail later)");
@@ -382,20 +382,20 @@ public abstract class JarUtils
    * The basic method for writing <code>Mainfest</code> attributes. This
    * implementation respects the rule stated in the Jar Specification concerning
    * the maximum allowed line length; i.e.
-   * 
+   *
    * <pre>
    * No line may be longer than 72 bytes (not characters), in its UTF8-encoded
    * form. If a value would make the initial line longer than this, it should
    * be continued on extra lines (each starting with a single SPACE).
    * </pre>
-   * 
+   *
    * and
-   * 
+   *
    * <pre>
    * Because header names cannot be continued, the maximum length of a header
    * name is 70 bytes (there must be a colon and a SPACE after the name).
    * </pre>
-   * 
+   *
    * @param name the name of the attribute.
    * @param value the value of the attribute.
    * @param out the output stream to write the attribute's name/value pair to.

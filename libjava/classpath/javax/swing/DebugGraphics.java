@@ -153,7 +153,7 @@ public class DebugGraphics extends Graphics
 
   /**
    * Sets the color to draw stuff with.
-   * 
+   *
    * @param color The color
    */
   public void setColor(Color color)
@@ -301,7 +301,7 @@ public class DebugGraphics extends Graphics
 
   /**
    * Returns the color used for drawing.
-   * 
+   *
    * @return The color.
    */
   public Color getColor()
@@ -454,7 +454,7 @@ public class DebugGraphics extends Graphics
         // Ignore this.
       }
   }
-  
+
   /**
    * Draws a rectangle.
    *
@@ -552,8 +552,8 @@ public class DebugGraphics extends Graphics
    * @param arcWidth TODO
    * @param arcHeight TODO
    */
-  public void drawRoundRect(int x, int y, int width, int height, 
-			    int arcWidth, int arcHeight)
+  public void drawRoundRect(int x, int y, int width, int height,
+                            int arcWidth, int arcHeight)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -576,8 +576,8 @@ public class DebugGraphics extends Graphics
    * @param arcWidth TODO
    * @param arcHeight TODO
    */
-  public void fillRoundRect(int x, int y, int width, int height, 
-			    int arcWidth, int arcHeight)
+  public void fillRoundRect(int x, int y, int width, int height,
+                            int arcWidth, int arcHeight)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -593,7 +593,7 @@ public class DebugGraphics extends Graphics
   /**
    * drawLine
    *
-   * @param x1 The x-position of the start 
+   * @param x1 The x-position of the start
    * @param y1 The y-position of the start
    * @param x2 The x-position of the end
    * @param y2 The y-position of the end
@@ -699,8 +699,8 @@ public class DebugGraphics extends Graphics
    * @param startAngle TODO
    * @param arcAngle TODO
    */
-  public void drawArc(int x, int y, int width, int height, 
-		      int startAngle, int arcAngle)
+  public void drawArc(int x, int y, int width, int height,
+                      int startAngle, int arcAngle)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -723,8 +723,8 @@ public class DebugGraphics extends Graphics
    * @param startAngle TODO
    * @param arcAngle TODO
    */
-  public void fillArc(int x, int y, int width, int height, 
-		      int startAngle, int arcAngle)
+  public void fillArc(int x, int y, int width, int height,
+                      int startAngle, int arcAngle)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -817,7 +817,7 @@ public class DebugGraphics extends Graphics
    * @param y the y coordinate
    */
   public void drawString(AttributedCharacterIterator iterator,
-			 int x, int y)
+                         int x, int y)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -830,7 +830,7 @@ public class DebugGraphics extends Graphics
 
   /**
    * drawBytes
-   * 
+   *
    * @param data TODO
    * @param offset TODO
    * @param length TODO
@@ -838,7 +838,7 @@ public class DebugGraphics extends Graphics
    * @param y the y coordinate
    */
   public void drawBytes(byte[] data, int offset, int length,
-			int x, int y)
+                        int x, int y)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       logStream().println(prefix() + " Drawing bytes at: " + new Point(x, y));
@@ -848,15 +848,15 @@ public class DebugGraphics extends Graphics
 
   /**
    * drawChars
-   * 
+   *
    * @param data array of characters to draw
    * @param offset offset in array
    * @param length number of characters in array to draw
    * @param x x-position
    * @param y y-position
    */
-  public void drawChars(char[] data, int offset, int length, 
-			int x, int y)
+  public void drawChars(char[] data, int offset, int length,
+                        int x, int y)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       logStream().println(prefix() + " Drawing chars at: " + new Point(x, y));
@@ -889,7 +889,7 @@ public class DebugGraphics extends Graphics
    * @return boolean
    */
   public boolean drawImage(Image image, int x, int y,
-			   ImageObserver observer)
+                           ImageObserver observer)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -902,7 +902,7 @@ public class DebugGraphics extends Graphics
 
   /**
    * drawImage
-   * 
+   *
    * @param image The image to draw
    * @param x The x position
    * @param y The y position
@@ -912,8 +912,8 @@ public class DebugGraphics extends Graphics
    *
    * @return boolean
    */
-  public boolean drawImage(Image image, int x, int y, int width, 
-			   int height, ImageObserver observer)
+  public boolean drawImage(Image image, int x, int y, int width,
+                           int height, ImageObserver observer)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -926,7 +926,7 @@ public class DebugGraphics extends Graphics
 
   /**
    * drawImage
-   * 
+   *
    * @param image The image to draw
    * @param x The x position
    * @param y The y position
@@ -936,8 +936,8 @@ public class DebugGraphics extends Graphics
    *
    * @return boolean
    */
-  public boolean drawImage(Image image, int x, int y, 
-			   Color background, ImageObserver observer)
+  public boolean drawImage(Image image, int x, int y,
+                           Color background, ImageObserver observer)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -951,7 +951,7 @@ public class DebugGraphics extends Graphics
 
   /**
    * drawImage
-   * 
+   *
    * @param image The image to draw
    * @param x The x position
    * @param y The y position
@@ -963,8 +963,8 @@ public class DebugGraphics extends Graphics
    *
    * @return boolean
    */
-  public boolean drawImage(Image image, int x, int y, int width, int height, 
-			   Color background, ImageObserver observer)
+  public boolean drawImage(Image image, int x, int y, int width, int height,
+                           Color background, ImageObserver observer)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -978,7 +978,7 @@ public class DebugGraphics extends Graphics
 
   /**
    * drawImage
-   * 
+   *
    * @param image The image to draw
    * @param dx1 TODO
    * @param dy1 TODO
@@ -989,12 +989,12 @@ public class DebugGraphics extends Graphics
    * @param sx2 TODO
    * @param sy2 TODO
    * @param observer The image observer
-   * 
+   *
    * @return boolean
    */
   public boolean drawImage(Image image, int dx1, int dy1,
-			   int dx2, int dy2, int sx1, int sy1, int sx2, int sy2,
-			   ImageObserver observer)
+                           int dx2, int dy2, int sx1, int sy1, int sx2, int sy2,
+                           ImageObserver observer)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -1025,8 +1025,8 @@ public class DebugGraphics extends Graphics
    * @return boolean
    */
   public boolean drawImage(Image image, int dx1, int dy1,
-			   int dx2, int dy2, int sx1, int sy1, int sx2, int sy2,
-			   Color background, ImageObserver observer)
+                           int dx2, int dy2, int sx1, int sy1, int sx2, int sy2,
+                           Color background, ImageObserver observer)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -1049,8 +1049,8 @@ public class DebugGraphics extends Graphics
    * @param destx The x position of the destination area
    * @param desty The y posiiton of the destination area
    */
-  public void copyArea(int x, int y, int width, int height, 
-		       int destx, int desty)
+  public void copyArea(int x, int y, int width, int height,
+                       int destx, int desty)
   {
     if ((debugOptions & LOG_OPTION) != 0)
       {
@@ -1109,7 +1109,7 @@ public class DebugGraphics extends Graphics
   /**
    * Creates and returns the prefix that should be prepended to all logging
    * messages. The prefix is made up like this:
-   * 
+   *
    * <code>Graphics(<counter>-1)</code> where counter is an integer number
    * saying how many DebugGraphics objects have been created so far. The second
    * number always seem to be 1 on Sun's JDK, this has to be investigated a

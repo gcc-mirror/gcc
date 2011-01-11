@@ -47,7 +47,7 @@ public class GtkChoicePeer extends GtkComponentPeer
   implements ChoicePeer
 {
   private int selected;
-  
+
   public GtkChoicePeer (Choice c)
   {
     super (c);
@@ -95,7 +95,7 @@ public class GtkChoicePeer extends GtkComponentPeer
     // Ensure the triggering of an event when removing item zero if zero is the
     // selected item, even though the selected index doesn't change.
     if( index == 0 && selected == 0 )
-      selected = -1; 
+      selected = -1;
     nativeRemove( index );
   }
 
@@ -104,14 +104,14 @@ public class GtkChoicePeer extends GtkComponentPeer
     selected = -1; // we do not want to trigger a select event here.
     nativeRemoveAll();
   }
-  
+
   public void addItem (String item, int position)
   {
     add (item, position);
   }
 
   /**
-   * Callback from the native side on an item-select event, 
+   * Callback from the native side on an item-select event,
    * which posts an event. The event is only posted if it represents an actual
    * change. Selected is set to the peer's state initially, so that the
    * first call to select(int) from the constructor will not trigger an event.
@@ -122,7 +122,7 @@ public class GtkChoicePeer extends GtkComponentPeer
     if( selected != index )
       {
         selected = index;
-        postItemEvent (((Choice) awtComponent).getItem( selected ), 
+        postItemEvent (((Choice) awtComponent).getItem( selected ),
                        ItemEvent.SELECTED);
       }
   }
@@ -140,4 +140,3 @@ public class GtkChoicePeer extends GtkComponentPeer
         ((Choice)awtComponent).select( selected );
   }
 }
-

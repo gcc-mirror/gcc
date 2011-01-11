@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * A system exclusive MIDI message.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -48,14 +48,14 @@ package javax.sound.midi;
 public class SysexMessage extends MidiMessage
 {
   public static final int SYSTEM_EXCLUSIVE = 0xF0;
-  
+
   public static final int SPECIAL_SYSTEM_EXCLUSIVE = 0xF7;
-  
+
   /**
    * Create a default valid system exclusive message.
-   * 
+   *
    * The official specs don't specify what message is to be
-   * created.  Our implementation creates an empty 
+   * created.  Our implementation creates an empty
    * system exclusive message.
    */
   public SysexMessage()
@@ -64,20 +64,20 @@ public class SysexMessage extends MidiMessage
     data[0] = (byte) SYSTEM_EXCLUSIVE;
     data[1] = (byte) ShortMessage.END_OF_EXCLUSIVE;
   }
-  
+
   /**
    * Create a SysexMessage object.
    * @param data a complete system exclusive message
    */
   protected SysexMessage(byte[] data)
   {
-    super(data);   
+    super(data);
   }
-  
+
   /**
    * Set the sysex message.  The first data byte (status) must be
    * 0xF0 or 0xF7.
-   *  
+   *
    * @param data the message data
    * @param length the length of the message data
    * @throws InvalidMidiDataException if the status byte is not 0xF0 or 0xF7
@@ -95,7 +95,7 @@ public class SysexMessage extends MidiMessage
 
   /**
    * Set the sysex message.  status must be either 0xF0 or 0xF7.
-   *  
+   *
    * @param status the sysex statys byte (0xF0 or 0xF7)
    * @param data the message data
    * @param length the length of the message data
@@ -114,7 +114,7 @@ public class SysexMessage extends MidiMessage
     System.arraycopy(data, 0, this.data, 1, length);
     this.length = length+1;
   }
-  
+
   /**
    * Get the data for this message, not including the status byte.
    * @return the message data, not including the status byte
@@ -125,7 +125,7 @@ public class SysexMessage extends MidiMessage
     System.arraycopy(data, 1, result, 0, length - 1);
     return result;
   }
-  
+
   /* Create a deep-copy clone of this object.
    * @see java.lang.Object#clone()
    */
@@ -133,7 +133,6 @@ public class SysexMessage extends MidiMessage
   {
     byte message[] = new byte[length];
     System.arraycopy(data, 0, message, 0, length);
-    return new SysexMessage(message); 
+    return new SysexMessage(message);
   }
 }
-

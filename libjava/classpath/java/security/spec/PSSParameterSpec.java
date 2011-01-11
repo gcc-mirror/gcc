@@ -40,7 +40,7 @@ package java.security.spec;
 /**
  * An implementation of {@link AlgorithmParameterSpec} for the RSA PSS encoding
  * scheme.
- * 
+ *
  * @since 1.4
  * @see AlgorithmParameterSpec
  * @see java.security.Signature
@@ -58,7 +58,7 @@ public class PSSParameterSpec implements AlgorithmParameterSpec
   /**
    * Construct a new instance of <code>PSSParameterSpec</code> given a salt
    * length.
-   * 
+   *
    * @param saltLen
    *          the length in bits of the salt.
    * @throws IllegalArgumentException

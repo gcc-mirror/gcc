@@ -34,20 +34,17 @@ public class TestGarbageCollector
     Iterator beans = ManagementFactory.getGarbageCollectorMXBeans().iterator();
     while (beans.hasNext())
       {
-	GarbageCollectorMXBean bean = (GarbageCollectorMXBean) beans.next();
-	System.out.println("Bean: " + bean);
-	System.out.println("Name: " + bean.getName());
-	System.out.println("Memory pool names: " 
-			   + Arrays.toString(bean.getMemoryPoolNames()));
-	System.out.println("Is valid: " 
-			   + (bean.isValid() ? "yes" : "no"));
-	System.out.println("Collection count: " 
-			   + bean.getCollectionCount());
-	System.out.println("Collection time: " 
-			   + bean.getCollectionTime() + "ms");
+        GarbageCollectorMXBean bean = (GarbageCollectorMXBean) beans.next();
+        System.out.println("Bean: " + bean);
+        System.out.println("Name: " + bean.getName());
+        System.out.println("Memory pool names: "
+                           + Arrays.toString(bean.getMemoryPoolNames()));
+        System.out.println("Is valid: "
+                           + (bean.isValid() ? "yes" : "no"));
+        System.out.println("Collection count: "
+                           + bean.getCollectionCount());
+        System.out.println("Collection time: "
+                           + bean.getCollectionTime() + "ms");
       }
   }
 }
-
-
-

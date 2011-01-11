@@ -1,4 +1,4 @@
-/* OutputBuffer.java -- 
+/* OutputBuffer.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -75,7 +75,7 @@ public class OutputBuffer
   /**
    * Encodes a SASL scalar quantity, <code>count</code>-octet long, to the
    * current buffer.
-   * 
+   *
    * @param count number of octets to encode <code>b</code> with.
    * @param b the scalar quantity.
    * @throws SaslEncodingException if an encoding size constraint is violated.
@@ -94,7 +94,7 @@ public class OutputBuffer
 
   /**
    * Encodes a SASL OS to the current buffer.
-   * 
+   *
    * @param b the OS element.
    * @throws SaslEncodingException if an encoding size constraint is violated.
    * @throws IOException if any other I/O exception occurs during the operation.
@@ -110,7 +110,7 @@ public class OutputBuffer
 
   /**
    * Encodes a SASL EOS to the current buffer.
-   * 
+   *
    * @param b the EOS element.
    * @throws SaslEncodingException if an encoding size constraint is violated.
    * @throws IOException if any other I/O exception occurs during the operation.
@@ -127,7 +127,7 @@ public class OutputBuffer
 
   /**
    * Encodes a SASL MPI to the current buffer.
-   * 
+   *
    * @param val the MPI element.
    * @throws SaslEncodingException if an encoding size constraint is violated.
    * @throws IOException if any other I/O exception occurs during the operation.
@@ -145,7 +145,7 @@ public class OutputBuffer
 
   /**
    * Encodes a SASL Text to the current buffer.
-   * 
+   *
    * @param str the Text element.
    * @throws SaslEncodingException if an encoding size constraint is violated.
    * @throws SaslEncodingException if the UTF-8 encoding is not supported on
@@ -166,7 +166,7 @@ public class OutputBuffer
   /**
    * Returns the encoded form of the current buffer including the 4-byte length
    * header.
-   * 
+   *
    * @throws SaslEncodingException if an encoding size constraint is violated.
    */
   public byte[] encode() throws SaslEncodingException
@@ -185,7 +185,7 @@ public class OutputBuffer
   /**
    * Returns the encoded form of the current buffer excluding the 4-byte length
    * header.
-   * 
+   *
    * @throws SaslEncodingException if an encoding size constraint is violated.
    */
   public byte[] wrap() throws SaslEncodingException

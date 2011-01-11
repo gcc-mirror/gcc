@@ -65,10 +65,10 @@ public class MetalComboBoxEditor extends BasicComboBoxEditor
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Paints the border for the specified component.
-     * 
+     *
      * @param c  the component (ignored).
      * @param g  the graphics device.
      * @param x  the x-coordinate.
@@ -76,7 +76,7 @@ public class MetalComboBoxEditor extends BasicComboBoxEditor
      * @param w  the width.
      * @param h  the height.
      */
-    public void paintBorder(Component c, Graphics g, int x, int y, int w, 
+    public void paintBorder(Component c, Graphics g, int x, int y, int w,
         int h)
     {
       g.translate(x, y);
@@ -123,11 +123,11 @@ public class MetalComboBoxEditor extends BasicComboBoxEditor
     public Insets getBorderInsets(Component c)
     {
       return editorBorderInsets;
-    }    
+    }
   }
-    
+
   /**
-   * A subclass of {@link MetalComboBoxEditor} that implements the 
+   * A subclass of {@link MetalComboBoxEditor} that implements the
    * {@link javax.swing.plaf.UIResource} interface.
    */
   public static class UIResource extends MetalComboBoxEditor
@@ -177,7 +177,7 @@ public class MetalComboBoxEditor extends BasicComboBoxEditor
 
   /** The editor's border insets. */
   protected static Insets editorBorderInsets = new Insets(2, 2, 2, 0);
-  
+
   /**
    * Creates a new editor.
    */
@@ -186,5 +186,5 @@ public class MetalComboBoxEditor extends BasicComboBoxEditor
     editor = new EditorTextField("", 9);
     editor.setBorder(new MetalComboBoxEditorBorder());
   }
-  
+
 }

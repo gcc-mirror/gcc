@@ -1,4 +1,4 @@
-/* XMLStreamReader.java -- 
+/* XMLStreamReader.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -281,7 +281,7 @@ public interface XMLStreamReader
    * Indicates whether the standalone flag was set in the document.
    */
   boolean standaloneSet();
-  
+
   /**
    * Returns the encoding declared in the XML declaration.
    */
@@ -296,6 +296,5 @@ public interface XMLStreamReader
    * Returns the data of the current processing instruction event.
    */
   String getPIData();
-  
-}
 
+}

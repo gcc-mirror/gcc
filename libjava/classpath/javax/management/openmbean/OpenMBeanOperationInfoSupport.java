@@ -43,7 +43,7 @@ import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 
 /**
- * Describes a operation for an open management bean.  
+ * Describes a operation for an open management bean.
  *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
@@ -82,7 +82,7 @@ public class OpenMBeanOperationInfoSupport
    * description may not be equal to the empty string, and neither
    * the name, description nor the open return type may be
    * <code>null</code>.  The value of <code>impact</code> must be
-   * one of the four valid values 
+   * one of the four valid values
    * ({@link javax.management.MBeanOperationInfo#INFO},
    * {@link javax.management.MBeanOperationInfo#ACTION},
    * {@link javax.management.MBeanOperationInfo#ACTION_INFO} and
@@ -107,11 +107,11 @@ public class OpenMBeanOperationInfoSupport
    *                             {@link javax.management.MBeanParameterInfo}
    */
   public OpenMBeanOperationInfoSupport(String name, String desc,
-				       OpenMBeanParameterInfo[] sig,
-				       OpenType<?> type, int impact)
+                                       OpenMBeanParameterInfo[] sig,
+                                       OpenType<?> type, int impact)
   {
     super(name, desc, (MBeanParameterInfo[]) sig,
-	  type == null ? null : type.getClassName(), impact);
+          type == null ? null : type.getClassName(), impact);
     if (name == null)
       throw new IllegalArgumentException("The name may not be null.");
     if (desc == null)
@@ -122,9 +122,9 @@ public class OpenMBeanOperationInfoSupport
       throw new IllegalArgumentException("The name may not be the empty string.");
     if (desc.length() == 0)
       throw new IllegalArgumentException("The description may not be the " +
-					 "empty string.");
-    if (impact != ACTION && impact != INFO && 
-	impact != ACTION_INFO && impact != UNKNOWN)
+                                         "empty string.");
+    if (impact != ACTION && impact != INFO &&
+        impact != ACTION_INFO && impact != UNKNOWN)
       throw new IllegalArgumentException("The impact factor is an invalid value.");
     returnOpenType = type;
   }
@@ -136,7 +136,7 @@ public class OpenMBeanOperationInfoSupport
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link OpenMBeanParameterInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         <code>signature.equals(object.getSignature())</code>,
    *         <code>returnOpenType.equals(object.getReturnOpenType())</code>,
@@ -182,10 +182,10 @@ public class OpenMBeanOperationInfoSupport
   public int hashCode()
   {
     if (hashCode == null)
-      hashCode = Integer.valueOf(getName().hashCode() + 
-				 returnOpenType.hashCode() +
-				 Integer.valueOf(getImpact()).hashCode() +
-				 Arrays.asList(getSignature()).hashCode());
+      hashCode = Integer.valueOf(getName().hashCode() +
+                                 returnOpenType.hashCode() +
+                                 Integer.valueOf(getImpact()).hashCode() +
+                                 Arrays.asList(getSignature()).hashCode());
     return hashCode.intValue();
   }
 
@@ -209,30 +209,30 @@ public class OpenMBeanOperationInfoSupport
   {
     if (string == null)
       {
-	String impactString;
-	switch (getImpact())
-	  {
-	  case INFO:
-	    impactString = "INFO";
-	    break;
-	  case ACTION:
-	    impactString = "ACTION";
-	    break;
-	  case ACTION_INFO:
-	    impactString = "ACTION_INFO";
-	    break;
-	  case UNKNOWN:
-	    impactString = "UNKNOWN";
-	    break;
-	  default:
-	    impactString = "ERRONEOUS VALUE";
-	  }
-	string = getClass().getName()
-	  + "[name=" + getName() 
-	  + ",signature=" + Arrays.toString(getSignature())
-	  + ",returnOpenType=" + returnOpenType
-	  + ",impact=" + impactString
-	  + "]";
+        String impactString;
+        switch (getImpact())
+          {
+          case INFO:
+            impactString = "INFO";
+            break;
+          case ACTION:
+            impactString = "ACTION";
+            break;
+          case ACTION_INFO:
+            impactString = "ACTION_INFO";
+            break;
+          case UNKNOWN:
+            impactString = "UNKNOWN";
+            break;
+          default:
+            impactString = "ERRONEOUS VALUE";
+          }
+        string = getClass().getName()
+          + "[name=" + getName()
+          + ",signature=" + Arrays.toString(getSignature())
+          + ",returnOpenType=" + returnOpenType
+          + ",impact=" + impactString
+          + "]";
       }
     return string;
   }

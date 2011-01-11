@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -35,7 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
- 
+
 package java.io;
 
 /**
@@ -78,9 +78,9 @@ public class CharArrayReader extends Reader
    * of the array.  It is identical to calling an overloaded constructor
    * as <code>CharArrayReader(buf, 0, buf.length)</code>.
    * <p>
-   * Note that this array is not copied.  If its contents are changed 
+   * Note that this array is not copied.  If its contents are changed
    * while this stream is being read, those changes will be reflected in the
-   * chars supplied to the reader.  Please use caution in changing the 
+   * chars supplied to the reader.  Please use caution in changing the
    * contents of the buffer while this stream is open.
    *
    * @param buffer The char array buffer this stream will read from.
@@ -100,9 +100,9 @@ public class CharArrayReader extends Reader
    * The <code>length</code> value should be viewed as the array index
    * one greater than the last position in the buffer to read.
    * <p>
-   * Note that this array is not copied.  If its contents are changed 
+   * Note that this array is not copied.  If its contents are changed
    * while this stream is being read, those changes will be reflected in the
-   * chars supplied to the reader.  Please use caution in changing the 
+   * chars supplied to the reader.  Please use caution in changing the
    * contents of the buffer while this stream is open.
    *
    * @param buffer The char array buffer this stream will read from.
@@ -114,13 +114,13 @@ public class CharArrayReader extends Reader
     super();
     if (offset < 0  || length < 0 || offset > buffer.length)
       throw new IllegalArgumentException();
-    
+
     buf = buffer;
 
     count = offset + length;
     if (count > buf.length)
       count = buf.length;
-    
+
     pos = offset;
     markedPos = pos;
   }
@@ -132,7 +132,7 @@ public class CharArrayReader extends Reader
   {
     synchronized (lock)
       {
-	buf = null;
+        buf = null;
       }
   }
 
@@ -155,10 +155,10 @@ public class CharArrayReader extends Reader
   {
     synchronized (lock)
       {
-	if (buf == null)
-	  throw new IOException("Stream closed");
-	// readAheadLimit is ignored per Java Class Lib. book, p. 318.
-	markedPos = pos;
+        if (buf == null)
+          throw new IOException("Stream closed");
+        // readAheadLimit is ignored per Java Class Lib. book, p. 318.
+        markedPos = pos;
       }
   }
 
@@ -189,15 +189,15 @@ public class CharArrayReader extends Reader
   {
     synchronized (lock)
       {
-	if (buf == null)
-	  throw new IOException("Stream closed");
+        if (buf == null)
+          throw new IOException("Stream closed");
 
-	if (pos < 0)
-	  throw new ArrayIndexOutOfBoundsException(pos);
+        if (pos < 0)
+          throw new ArrayIndexOutOfBoundsException(pos);
 
-	if (pos < count)
-	  return ((int) buf[pos++]) & 0xFFFF;
-	return -1;
+        if (pos < count)
+          return ((int) buf[pos++]) & 0xFFFF;
+        return -1;
       }
   }
 
@@ -223,25 +223,25 @@ public class CharArrayReader extends Reader
   {
     synchronized (lock)
       {
-	if (buf == null)
-	  throw new IOException("Stream closed");
+        if (buf == null)
+          throw new IOException("Stream closed");
 
-	/* Don't need to check pos value, arraycopy will check it. */
-	if (off < 0 || len < 0 || off + len > b.length)
-	  throw new IndexOutOfBoundsException();
+        /* Don't need to check pos value, arraycopy will check it. */
+        if (off < 0 || len < 0 || off + len > b.length)
+          throw new IndexOutOfBoundsException();
 
-	if (pos >= count)
-	  return -1;
+        if (pos >= count)
+          return -1;
 
-	int numChars = Math.min(count - pos, len);
-	System.arraycopy(buf, pos, b, off, numChars);
-	pos += numChars;
-	return numChars;
+        int numChars = Math.min(count - pos, len);
+        System.arraycopy(buf, pos, b, off, numChars);
+        pos += numChars;
+        return numChars;
       }
   }
 
   /**
-   * Return true if more characters are available to be read. 
+   * Return true if more characters are available to be read.
    *
    * @return <code>true</code> to indicate that this stream is ready
    * to be read.
@@ -268,10 +268,10 @@ public class CharArrayReader extends Reader
   {
     synchronized (lock)
       {
-	if (buf == null)
-	  throw new IOException("Stream closed");
+        if (buf == null)
+          throw new IOException("Stream closed");
 
-	pos = markedPos;
+        pos = markedPos;
       }
   }
 
@@ -290,16 +290,16 @@ public class CharArrayReader extends Reader
   {
     synchronized (lock)
       {
-	if (buf == null)
-	  throw new IOException("Stream closed");
+        if (buf == null)
+          throw new IOException("Stream closed");
 
-	// Even though the var numChars is a long, in reality it can never
-	// be larger than an int since the result of subtracting 2 positive
-	// ints will always fit in an int.  Since we have to return a long
-	// anyway, numChars might as well just be a long.
-	long numChars = Math.min((long) (count - pos), n < 0 ? 0L : n);
-	pos += numChars;
-	return numChars;
+        // Even though the var numChars is a long, in reality it can never
+        // be larger than an int since the result of subtracting 2 positive
+        // ints will always fit in an int.  Since we have to return a long
+        // anyway, numChars might as well just be a long.
+        long numChars = Math.min((long) (count - pos), n < 0 ? 0L : n);
+        pos += numChars;
+        return numChars;
       }
   }
 }

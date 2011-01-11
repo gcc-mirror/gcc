@@ -1,4 +1,4 @@
-/* BlockCipherParameterSpec.java -- 
+/* BlockCipherParameterSpec.java --
    Copyright (C) 2002, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -58,7 +58,7 @@ public class BlockCipherParameterSpec
 
   /**
    * Create a new parameter specification.
-   * 
+   *
    * @param iv The initialization vector, or <code>null</code> if there is no
    *          IV.
    * @param blockSize The cipher's block size, in bytes.
@@ -73,7 +73,7 @@ public class BlockCipherParameterSpec
 
   /**
    * Create a new parameter specification with no IV.
-   * 
+   *
    * @param blockSize The cipher's block size, in bytes.
    * @param keySize The cipher's key size, in bytes.
    */
@@ -85,7 +85,7 @@ public class BlockCipherParameterSpec
   /**
    * Get the initialization vector for the cipher, or <code>null</code> if
    * there is no IV.
-   * 
+   *
    * @return The IV.
    */
   public byte[] getIV()
@@ -95,7 +95,7 @@ public class BlockCipherParameterSpec
 
   /**
    * Get the block size of the cipher these parameters are for.
-   * 
+   *
    * @return The block size.
    */
   public int getBlockSize()
@@ -105,7 +105,7 @@ public class BlockCipherParameterSpec
 
   /**
    * Get the key size of the cipher these parameters are for.
-   * 
+   *
    * @return The block size.
    */
   public int getKeySize()

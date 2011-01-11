@@ -1,4 +1,4 @@
-/* BMPImageWriter.java -- 
+/* BMPImageWriter.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -57,7 +57,7 @@ public class BMPImageWriter
 
   /**
    * Construct an bmp image writer.
-   * 
+   *
    * @param originatingProvider - the provider that is constructing this image
    *          writer, or null
    */
@@ -68,13 +68,13 @@ public class BMPImageWriter
     fileHeader = null;
     infoHeader = null;
   }
-  
+
   /**
    * Convert IIOMetadata from an input reader format, returning an IIOMetadata
    * suitable for use by an image writer. The ImageTypeSpecifier specifies the
    * destination image type. An optional ImageWriteParam argument is available
    * in case the image writing parameters affect the metadata conversion.
-   * 
+   *
    * @param inData - the metadata coming from an image reader
    * @param imageType - the output image type of the writer
    * @param param - the image writing parameters or null
@@ -91,7 +91,7 @@ public class BMPImageWriter
       throw new IllegalArgumentException("IIOMetadata and ImageTypeSpecifier cannot be null.");
     return null;
   }
-  
+
   /**
    * Convert IIOMetadata from an input stream format, returning an
    * IIOMetadata suitable for use by an image writer.
@@ -115,7 +115,7 @@ public class BMPImageWriter
       throw new IllegalArgumentException("IIOMetadata cannot be null.");
     return null;
   }
-  
+
   /**
    * Get a metadata object appropriate for encoding an image specified
    * by the given image type specifier and optional image write
@@ -131,7 +131,7 @@ public class BMPImageWriter
     // FIXME: Support metadata.
     return null;
   }
-  
+
   /**
    * Get a metadata object appropriate for encoding the default image
    * type handled by this writer, optionally considering image write
@@ -146,7 +146,7 @@ public class BMPImageWriter
     // FIXME: Support metadata.
     return null;
   }
-  
+
   /**
    * Write an image stream, including thumbnails and metadata to the
    * output stream.  The output must have been set prior to this
@@ -173,16 +173,16 @@ public class BMPImageWriter
     fileHeader = new BMPFileHeader(out, image);
     infoHeader = new BMPInfoHeader(out, image, param);
     encoder = BMPEncoder.getEncoder(fileHeader, infoHeader);
-    
+
     if (encoder != null)
       encoder.encode(out, streamMetadata, image, param);
     else
       throw new BMPException("Encoder has not been initialized.");
   }
-  
+
   /**
    * Checks the output stream.
-   * 
+   *
    * @throws IOException if there is an error with the output stream
    */
   private void checkStream() throws IOException

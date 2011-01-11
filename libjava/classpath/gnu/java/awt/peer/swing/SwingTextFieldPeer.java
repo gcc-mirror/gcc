@@ -76,7 +76,7 @@ public class SwingTextFieldPeer
 
     SwingTextField(TextField textField)
     {
-      this.textField = textField; 
+      this.textField = textField;
     }
 
     /**
@@ -173,7 +173,7 @@ public class SwingTextFieldPeer
       processFocusEvent(ev);
     }
 
-    
+
     public Container getParent()
     {
       Container par = null;
@@ -186,7 +186,7 @@ public class SwingTextFieldPeer
     {
       return SwingTextFieldPeer.this.getGraphics();
     }
-    
+
     public void requestFocus() {
         SwingTextFieldPeer.this.requestFocus(awtComponent, false, true, 0);
     }

@@ -444,7 +444,7 @@ public final class SystemColor extends Color implements Serializable
     if (context == null || color != context.color || !context.getColorModel().equals(cm))
       context = new ColorPaintContext(cm,color);
     return context;
-  }    
+  }
 
   /**
    * Returns a string describing this color. This is in the format

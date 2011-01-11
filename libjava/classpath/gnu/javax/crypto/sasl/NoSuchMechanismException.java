@@ -1,4 +1,4 @@
-/* NoSuchMechanismException.java -- 
+/* NoSuchMechanismException.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -51,7 +51,7 @@ public class NoSuchMechanismException
    * Constructs a <code>NoSuchMechanismException</code> with the specified
    * detail message. In the case of this exception, the detail message
    * designates the offending mechanism name.
-   * 
+   *
    * @param arg the detail message, which in this case is the offending
    *          mechanism name.
    */

@@ -56,7 +56,7 @@ public class QtMenuPeer extends QtMenuComponentPeer implements MenuPeer
   }
 
   protected native void init();
-  
+
   protected void setup()
   {
     items = new Vector();
@@ -65,29 +65,29 @@ public class QtMenuPeer extends QtMenuComponentPeer implements MenuPeer
       allowTearOff();
   }
 
-  // Recurse the menu tree adding items, 
+  // Recurse the menu tree adding items,
   // called from the MenuBar addMenus() method, called from the Frame peer.
   void addItems()
   {
     if(!itemsAdded)
       {
-	Menu o = (Menu)owner;
-	for( int i=0; i < o.getItemCount(); i++ )
-	  {
-	    MenuItem ci = o.getItem(i);
-	    if (ci instanceof Menu && ci.getPeer() != null)
-	      ((QtMenuPeer)ci.getPeer()).addItems();
-	    addItem( ci );
-	  }
-	itemsAdded = true;
+        Menu o = (Menu)owner;
+        for( int i=0; i < o.getItemCount(); i++ )
+          {
+            MenuItem ci = o.getItem(i);
+            if (ci instanceof Menu && ci.getPeer() != null)
+              ((QtMenuPeer)ci.getPeer()).addItems();
+            addItem( ci );
+          }
+        itemsAdded = true;
       }
   }
 
   private void fireClick()
   {
     ActionEvent e = new ActionEvent(owner,
-				    ActionEvent.ACTION_PERFORMED,
-				    ((Menu)owner).getActionCommand());
+                                    ActionEvent.ACTION_PERFORMED,
+                                    ((Menu)owner).getActionCommand());
     QtToolkit.eventQueue.postEvent(e);
   }
 
@@ -112,13 +112,13 @@ public class QtMenuPeer extends QtMenuComponentPeer implements MenuPeer
   {
     if( item instanceof Menu || item instanceof PopupMenu)
       insertMenu((QtMenuPeer)item.getPeer());
-    else 
+    else
       {
-	QtMenuItemPeer p = (QtMenuItemPeer)item.getPeer();
-	insertItem(p);
+        QtMenuItemPeer p = (QtMenuItemPeer)item.getPeer();
+        insertItem(p);
       }
   }
-  
+
   public void addSeparator()
   {
     insertSeperator();
@@ -147,6 +147,3 @@ public class QtMenuPeer extends QtMenuComponentPeer implements MenuPeer
 
   public native void setLabel(String text);
 }
-
-
-

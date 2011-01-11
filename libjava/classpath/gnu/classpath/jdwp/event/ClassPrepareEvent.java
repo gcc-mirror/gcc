@@ -141,7 +141,7 @@ public class ClassPrepareEvent
     tid.write (outStream);
     rid.writeTagged (outStream);
     JdwpString.writeString (outStream,
-			    Signature.computeClassSignature (_class));
+                            Signature.computeClassSignature (_class));
     outStream.writeInt (_status);
   }
 }

@@ -54,10 +54,10 @@ import org.omg.CORBA.portable.OutputStream;
  * specifications, DynAny is always a local object, so the two methods of this
  * helper ({@link #read} and {@link #write} are not in use, always throwing
  * {@link MARSHAL}.
- * 
+ *
  * @specnote always throwing MARSHAL in read and write ensures compatibility
  * with other popular implementations like Sun's.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public abstract class DynAnyHelper
@@ -65,7 +65,7 @@ public abstract class DynAnyHelper
   /**
    * Cast the passed object into the DynAny. As DynAny is a local object, the
    * method just uses java type cast.
-   * 
+   *
    * @param obj the object to narrow.
    * @return narrowed instance.
    * @throws BAD_PARAM if the passed object is not a DynAny.
@@ -81,23 +81,23 @@ public abstract class DynAnyHelper
         throw new BAD_PARAM(obj.getClass().getName() + " is not a DynAny");
       }
   }
-  
+
   /**
    * Narrow the given object to the DynAny. For the objects that are
    * always local, this operation does not differ from the ordinary
    * {@link #narrow} (ClassCastException will be thrown if narrowing something
    * different). See also OMG issue 4158.
-   * 
+   *
    * @param obj the object to cast.
-   * 
+   *
    * @return the casted DynAny.
-   * 
-   * @since 1.5 
+   *
+   * @since 1.5
    */
   public static DynAny unchecked_narrow(org.omg.CORBA.Object obj)
   {
     return narrow(obj);
-  }    
+  }
 
   /**
    * Get the type code of the {@link DynAny}.
@@ -109,9 +109,9 @@ public abstract class DynAnyHelper
 
   /**
    * Insert the DynAny into the given Any.
-   * 
+   *
    * @param any the Any to insert into.
-   * 
+   *
    * @param that the DynAny to insert.
    */
   public static void insert(Any any, DynAny that)
@@ -121,7 +121,7 @@ public abstract class DynAnyHelper
 
   /**
    * Extract the DynAny from given Any.
-   * 
+   *
    * @throws BAD_OPERATION if the passed Any does not contain DynAny.
    */
   public static DynAny extract(Any any)
@@ -131,7 +131,7 @@ public abstract class DynAnyHelper
 
   /**
    * Get the DynAny repository id.
-   * 
+   *
    * @return "IDL:omg.org/DynamicAny/DynAny:1.0", always.
    */
   public static String id()
@@ -142,11 +142,11 @@ public abstract class DynAnyHelper
   /**
    * This should read DynAny from the CDR input stream, but (following the JDK
    * 1.5 API) it does not.
-   * 
+   *
    * @param input a org.omg.CORBA.portable stream to read from.
-   * 
+   *
    * @specenote Sun throws the same exception.
-   * 
+   *
    * @throws MARSHAL always.
    */
   public static DynAny read(InputStream input)
@@ -157,11 +157,11 @@ public abstract class DynAnyHelper
   /**
    * This should read DynAny from the CDR input stream, but (following the JDK
    * 1.5 API) it does not.
-   * 
+   *
    * @param output a org.omg.CORBA.portable stream to write into.
-   * 
+   *
    * @specenote Sun throws the same exception.
-   * 
+   *
    * @throws MARSHAL always.
    */
   public static void write(OutputStream output, DynAny value)

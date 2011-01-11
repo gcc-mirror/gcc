@@ -67,9 +67,9 @@ public abstract class TextAction extends AbstractAction
    * Returns the <code>JTextComponent</code> object associated with the given
    * <code>ActionEvent</code>. If the source of the event is not a
    * <code>JTextComponent</code> the currently focused text component is returned.
-   * 
+   *
    * @param event the action event
-   * 
+   *
    * @return the <code>JTextComponent</code>
    */
   protected final JTextComponent getTextComponent(ActionEvent event)
@@ -88,7 +88,7 @@ public abstract class TextAction extends AbstractAction
 
   /**
    * Creates a new array of <code>Action</code> containing both given arrays.
-   * 
+   *
    * @param list1 the first action array
    * @param list2 the second action array
    *
@@ -112,7 +112,7 @@ public abstract class TextAction extends AbstractAction
         actions.put(name != null ? name : "", a);
       }
     Action[] augmented = new Action[actions.size()];
-    
+
     int i = 0;
     for (Iterator<Action> it = actions.values().iterator(); it.hasNext(); i++)
       augmented[i] = it.next();
@@ -122,7 +122,7 @@ public abstract class TextAction extends AbstractAction
 
   /**
    * Returns the current focused <code>JTextComponent</code> object.
-   * 
+   *
    * @return the <code>JTextComponent</code>
    */
   protected final JTextComponent getFocusedComponent()
@@ -135,21 +135,21 @@ public abstract class TextAction extends AbstractAction
       textComp = (JTextComponent) focused;
     return textComp;
   }
-  
+
   /** Abstract helper class which implements everything needed for an
    * Action implementation in <code>DefaultEditorKit</code> which
-   * does horizontal movement (and selection).  
+   * does horizontal movement (and selection).
    */
   abstract static class HorizontalMovementAction extends TextAction
   {
     int dir;
-    
+
     HorizontalMovementAction(String name, int direction)
     {
       super(name);
       dir = direction;
     }
-    
+
     public void actionPerformed(ActionEvent event)
     {
       JTextComponent t = getTextComponent(event);
@@ -161,34 +161,34 @@ public abstract class TextAction extends AbstractAction
               = Utilities.getNextVisualPositionFrom(t,
                                                     t.getCaretPosition(),
                                                     dir);
-              
+
             Caret c = t.getCaret();
-            
+
             actionPerformedImpl(c, offs);
-            
+
             c.setMagicCaretPosition(t.modelToView(offs).getLocation());
           }
       }
     catch(BadLocationException ble)
       {
-        throw 
+        throw
           (InternalError) new InternalError("Illegal offset").initCause(ble);
       }
-    
+
     }
-    
+
     protected abstract void actionPerformedImpl(Caret c, int offs)
       throws BadLocationException;
   }
-  
+
   /** Abstract helper class which implements everything needed for an
    * Action implementation in <code>DefaultEditorKit</code> which
    * does vertical movement (and selection).
-   */  
+   */
   abstract static class VerticalMovementAction extends TextAction
   {
     int dir;
-    
+
     VerticalMovementAction(String name, int direction)
     {
       super(name);
@@ -215,26 +215,26 @@ public abstract class TextAction extends AbstractAction
                 }
               else
                 pos = c.getDot();
-        
+
               pos = Utilities.getNextVisualPositionFrom(t,
                                                         t.getCaretPosition(),
                                                         dir);
-        
+
               if (pos > -1)
                 actionPerformedImpl(c, pos);
             }
         }
-      catch(BadLocationException ble) 
+      catch(BadLocationException ble)
       {
-        throw 
+        throw
           (InternalError) new InternalError("Illegal offset").initCause(ble);
       }
     }
-    
+
     protected abstract void actionPerformedImpl(Caret c, int offs)
     throws BadLocationException;
-    
+
   }
-  
-  
+
+
 }

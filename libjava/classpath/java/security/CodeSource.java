@@ -195,14 +195,14 @@ public class CodeSource implements Serializable
    *
    * <p>For example, each of these locations imply the location
    * "http://java.sun.com/classes/foo.jar":</p>
-   * 
+   *
    * <pre>
    * http:
    * http://*.sun.com/classes/*
    * http://java.sun.com/classes/-
    * http://java.sun.com/classes/foo.jar
    * </pre>
-   * 
+   *
    * <p>Note that the code source with null location and null certificates implies
    * all other code sources.</p>
    *

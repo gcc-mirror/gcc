@@ -1,4 +1,4 @@
-/* JViewport.java -- 
+/* JViewport.java --
    Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -62,7 +62,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ViewportUI;
 
 /**
- *  
+ *
  * <pre>
  *                                                     _
  *   +-------------------------------+    ...........Y1 \
@@ -89,7 +89,7 @@ import javax.swing.plaf.ViewportUI;
  *        \/
  *        VX = X2-X1
  *</pre>
- *  
+ *
  * <p>A viewport is, like all swing components, located at some position in
  * the swing component tree; that location is exactly the same as any other
  * components: the viewport's "bounds".</p>
@@ -226,7 +226,7 @@ public class JViewport extends JComponent implements Accessible
 
   /**
    * Stores the bounds of the area that needs to be repainted. This is a cached
-   * Rectangle object used in blitting calculations. 
+   * Rectangle object used in blitting calculations.
    */
   Rectangle cachedBlitPaint;
 
@@ -308,14 +308,14 @@ public class JViewport extends JComponent implements Accessible
    */
   public Dimension getViewSize()
   {
-    Dimension size; 
+    Dimension size;
     Component view = getView();
     if (view != null)
       {
         if (isViewSizeSet)
           size = view.getSize();
         else
-	  size = view.getPreferredSize();
+          size = view.getPreferredSize();
       }
     else
       size = new Dimension(0, 0);
@@ -409,7 +409,7 @@ public class JViewport extends JComponent implements Accessible
   {
     if (getComponentCount() == 0)
       return null;
-  
+
     return getComponents()[0];
   }
 
@@ -458,7 +458,7 @@ public class JViewport extends JComponent implements Accessible
     insets.right = 0;
     return insets;
   }
-    
+
 
   /**
    * Overridden to return <code>false</code>, so the JViewport's paint method
@@ -482,7 +482,7 @@ public class JViewport extends JComponent implements Accessible
     Rectangle viewBounds = view.getBounds();
     Rectangle portBounds = getBounds();
 
-    if (viewBounds.width == 0 
+    if (viewBounds.width == 0
         || viewBounds.height == 0
         || portBounds.width == 0
         || portBounds.height == 0)
@@ -515,7 +515,7 @@ public class JViewport extends JComponent implements Accessible
     listenerList.remove(ChangeListener.class, listener);
   }
 
-  public ChangeListener[] getChangeListeners() 
+  public ChangeListener[] getChangeListeners()
   {
     return (ChangeListener[]) getListeners(ChangeListener.class);
   }
@@ -536,7 +536,7 @@ public class JViewport extends JComponent implements Accessible
   public void updateUI()
   {
     setUI((ViewportUI) UIManager.getUI(this));
-  }            
+  }
 
   /**
    * This method returns the viewport's UI delegate.
@@ -573,7 +573,7 @@ public class JViewport extends JComponent implements Accessible
   {
     Component view = getView();
     if (view == null)
-      return;    
+      return;
 
     Point pos = getViewPosition();
     // We get the contentRect in the viewport coordinates. But we want to
@@ -582,7 +582,7 @@ public class JViewport extends JComponent implements Accessible
     int contentY = contentRect.y + pos.y;
     Rectangle viewBounds = getView().getBounds();
     Rectangle portBounds = getBounds();
-    
+
     if (isShowing())
       getView().validate();
 
@@ -641,7 +641,7 @@ public class JViewport extends JComponent implements Accessible
   {
     if (getComponentCount() > 0)
       remove(getComponents()[0]);
-    
+
     super.addImpl(comp, constraints, index);
   }
 
@@ -796,7 +796,7 @@ public class JViewport extends JComponent implements Accessible
         g.translate(-pos.x, -pos.y);
         translated = true;
         view.paint(g);
-      } 
+      }
     finally
       {
         if (translated)
@@ -861,7 +861,7 @@ public class JViewport extends JComponent implements Accessible
             // clip must be updated in the buffer.
             if (dx == 0 && dy == 0)
               g2.setClip(g.getClip());
-            
+
             paintSimple(g2);
           }
         g2.dispose();

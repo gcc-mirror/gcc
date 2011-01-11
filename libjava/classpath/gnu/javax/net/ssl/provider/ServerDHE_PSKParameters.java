@@ -1,4 +1,4 @@
-/* ServerDHE_PSKParameters.java -- 
+/* ServerDHE_PSKParameters.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -60,12 +60,12 @@ import java.nio.charset.Charset;
 public class ServerDHE_PSKParameters implements Constructed, Builder, ServerKeyExchangeParams
 {
   private ByteBuffer buffer;
-  
+
   public ServerDHE_PSKParameters(ByteBuffer buffer)
   {
     this.buffer = buffer.duplicate().order(ByteOrder.BIG_ENDIAN);
   }
-  
+
   public ServerDHE_PSKParameters(String identityHint, ServerDHParams dhParams)
   {
     this(identityHint, dhParams.buffer());
@@ -78,7 +78,7 @@ public class ServerDHE_PSKParameters implements Constructed, Builder, ServerKeyE
     buffer = ByteBuffer.allocate(2 + hintBuf.remaining() + dhParams.remaining());
     buffer.putShort((short) hintBuf.remaining());
     buffer.put(hintBuf);
-    buffer.put(dhParams);    
+    buffer.put(dhParams);
   }
 
   public KeyExchangeAlgorithm algorithm()
@@ -93,19 +93,19 @@ public class ServerDHE_PSKParameters implements Constructed, Builder, ServerKeyE
   {
     return (buffer.getShort(0) & 0xFFFF) + 2 + params().length();
   }
-  
+
   private int hintLength()
   {
     return (buffer.getShort(0) & 0xFFFF) + 2;
   }
-  
+
   public String identityHint()
   {
     Charset utf8 = Charset.forName("UTF-8");
     return utf8.decode((ByteBuffer) buffer.duplicate().position(2).limit
                        (hintLength())).toString();
   }
-  
+
   public ServerDHParams params()
   {
     return new ServerDHParams(((ByteBuffer) buffer.duplicate().position
@@ -119,7 +119,7 @@ public class ServerDHE_PSKParameters implements Constructed, Builder, ServerKeyE
   {
     return (ByteBuffer) buffer.duplicate().rewind().limit(length());
   }
-  
+
   public @Override String toString()
   {
     return toString(null);

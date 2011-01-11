@@ -1,4 +1,4 @@
-/* 
+/*
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -55,7 +55,7 @@ public class AudioInputStream extends InputStream
   /** The length of the audio stream in frames.  */
   protected long frameLength;
 
-  /** The current frame position, starting from frame zero.  */ 
+  /** The current frame position, starting from frame zero.  */
   protected long framePos;
 
   /** The size of a frame in bytes.  */
@@ -92,7 +92,7 @@ public class AudioInputStream extends InputStream
   public AudioInputStream(TargetDataLine line)
   {
     this(new TargetInputStream(line), line.getFormat(),
-	 AudioSystem.NOT_SPECIFIED);
+         AudioSystem.NOT_SPECIFIED);
   }
 
   /**
@@ -181,30 +181,30 @@ public class AudioInputStream extends InputStream
       result = -1;
     else
       {
-	int myFrameSize = (frameSize == AudioSystem.NOT_SPECIFIED
-			   ? 1 : frameSize);
-	// Ensure length is a multiple of frame size.
-	length -= length % myFrameSize;
+        int myFrameSize = (frameSize == AudioSystem.NOT_SPECIFIED
+                           ? 1 : frameSize);
+        // Ensure length is a multiple of frame size.
+        length -= length % myFrameSize;
 
-	result = 0;
-	while (result == 0 || result % myFrameSize != 0)
-	  {
-	    int val = input.read(buf, offset, length);
-	    if (val < 0)
-	      {
-		// This is a weird situation as we might have read a
-		// frame already.  It isn't clear at all what to do if
-		// we only found a partial frame.  For now we just
-		// return whatever we did find.
-		if (result == 0)
-		  return -1;
-		result -= result % myFrameSize;
-		break;
-	      }
-	    result += val;
-	  }
-	// assert result % myFrameSize == 0;
-	framePos += result / myFrameSize;
+        result = 0;
+        while (result == 0 || result % myFrameSize != 0)
+          {
+            int val = input.read(buf, offset, length);
+            if (val < 0)
+              {
+                // This is a weird situation as we might have read a
+                // frame already.  It isn't clear at all what to do if
+                // we only found a partial frame.  For now we just
+                // return whatever we did find.
+                if (result == 0)
+                  return -1;
+                result -= result % myFrameSize;
+                break;
+              }
+            result += val;
+          }
+        // assert result % myFrameSize == 0;
+        framePos += result / myFrameSize;
       }
     return result;
   }
@@ -212,7 +212,7 @@ public class AudioInputStream extends InputStream
   public void reset() throws IOException
   {
     input.reset();
-    framePos = markedFramePos;    
+    framePos = markedFramePos;
   }
 
   public long skip(long n) throws IOException
@@ -243,10 +243,10 @@ public class AudioInputStream extends InputStream
     public synchronized int read() throws IOException
     {
       if (buf == null)
-	buf = new byte[1];
+        buf = new byte[1];
       int count = read(buf, 0, 1);
       if (count < 0)
-	return -1;
+        return -1;
       return buf[0];
     }
 

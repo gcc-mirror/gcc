@@ -1,4 +1,4 @@
-/* IntegrityException.java -- 
+/* IntegrityException.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -61,7 +61,7 @@ public class IntegrityException
   /**
    * Constructs a new instance of <code>IntegrityException</code> with the
    * specified detail message.
-   * 
+   *
    * @param s the detail message.
    */
   public IntegrityException(String s)
@@ -72,7 +72,7 @@ public class IntegrityException
   /**
    * Constructs a new instance of <code>IntegrityException</code> with a
    * detailed message and a root exception.
-   * 
+   *
    * @param s possibly null additional detail about the exception.
    * @param x a possibly null root exception that caused this one.
    */

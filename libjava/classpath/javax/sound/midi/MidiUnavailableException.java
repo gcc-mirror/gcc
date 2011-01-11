@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * This exception is thrown when MIDI resources are not available.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -48,7 +48,7 @@ package javax.sound.midi;
 public class MidiUnavailableException extends Exception
 {
   private static final long serialVersionUID = 6093809578628944323L;
- 
+
   /**
    * Create a MidiUnavailableException.
    */
@@ -59,7 +59,7 @@ public class MidiUnavailableException extends Exception
 
   /**
    * Create an MidiUnavailableException object.
-   * 
+   *
    * @param s the exception message string
    */
   public MidiUnavailableException(String s)

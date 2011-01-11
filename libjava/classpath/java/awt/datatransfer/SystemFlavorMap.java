@@ -67,30 +67,30 @@ import java.util.WeakHashMap;
 public final class SystemFlavorMap implements FlavorMap, FlavorTable
 {
   /**
-   * The map which maps the thread's <code>ClassLoaders</code> to 
+   * The map which maps the thread's <code>ClassLoaders</code> to
    * <code>SystemFlavorMaps</code>.
    */
   private static final Map systemFlavorMaps = new WeakHashMap();
-  
+
   /**
    * Constant which is used to prefix encode Java MIME types.
    */
   private static final String GNU_JAVA_MIME_PREFIX = "gnu.java:";
-  
+
   /**
-   * This map maps native <code>String</code>s to lists of 
+   * This map maps native <code>String</code>s to lists of
    * <code>DataFlavor</code>s
    */
   private HashMap<String,List<DataFlavor>> nativeToFlavorMap =
     new HashMap<String,List<DataFlavor>>();
-  
+
   /**
-   * This map maps <code>DataFlavor</code>s to lists of native 
+   * This map maps <code>DataFlavor</code>s to lists of native
    * <code>String</code>s
    */
   private HashMap<DataFlavor, List<String>> flavorToNativeMap =
     new HashMap<DataFlavor, List<String>>();
-  
+
   /**
    * Private constructor.
    */
@@ -152,7 +152,7 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
             // Check valid mime type.
             MimeType type = new MimeType(mime);
             DataFlavor flav = new DataFlavor(mime);
-            
+
             List<DataFlavor> flavs = nativeToFlavorMap.get(nat);
             if (flavs == null)
               {
@@ -207,7 +207,7 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * @return A <code>Map</code> of data flavors to native type names.
    */
   public Map<String, DataFlavor> getFlavorsForNatives (String[] natives)
-  { 
+  {
     return new HashMap<String, DataFlavor>();
   }
 
@@ -219,18 +219,18 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
   {
     ClassLoader classLoader = Thread.currentThread()
         .getContextClassLoader();
-    
-    //if ContextClassLoader not set, use system default 
+
+    //if ContextClassLoader not set, use system default
     if (classLoader == null)
       {
         classLoader = ClassLoader.getSystemClassLoader();
       }
-    
+
     synchronized(systemFlavorMaps)
       {
-        FlavorMap map = (FlavorMap) 
+        FlavorMap map = (FlavorMap)
             systemFlavorMaps.get(classLoader);
-        if (map == null) 
+        if (map == null)
           {
             map = new SystemFlavorMap();
             systemFlavorMaps.put(classLoader, map);
@@ -268,7 +268,7 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
 
   /**
    * Encodes a <code>DataFlavor</code> for use as a <code>String</code>
-   * native. The format of an encoded <code>DataFlavor</code> is 
+   * native. The format of an encoded <code>DataFlavor</code> is
    * implementation-dependent. The only restrictions are:
    * <ul>
    * <li>The encoded representation is <code>null</code> if and only if the
@@ -313,7 +313,7 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * Decodes a <code>String</code> native for use as a Java MIME type.
    *
    * @param name the <code>String</code> to decode
-   * @return the decoded Java MIME type, or <code>null</code> if nat 
+   * @return the decoded Java MIME type, or <code>null</code> if nat
    *         is not an encoded <code>String</code> native
    */
   public static String decodeJavaMIMEType (String name)
@@ -322,7 +322,7 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
       {
         return name.substring(GNU_JAVA_MIME_PREFIX.length());
       }
-    else 
+    else
       return null;
   }
 
@@ -334,27 +334,27 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
     throws ClassNotFoundException
   {
     String javaMIMEType = decodeJavaMIMEType (name);
-    
+
     if (javaMIMEType != null)
       return new DataFlavor (javaMIMEType);
     else
       return null;
   }
 
-  /** 
-   * Returns a List of <code>DataFlavors</code> to which the specified 
-   * <code>String</code> native can be translated by the data transfer 
-   * subsystem. The <code>List</code> will be sorted from best 
-   * <code>DataFlavor</code> to worst. That is, the first <code>DataFlavor 
-   * </code> will best reflect data in the specified native to a Java 
-   * application. 
+  /**
+   * Returns a List of <code>DataFlavors</code> to which the specified
+   * <code>String</code> native can be translated by the data transfer
+   * subsystem. The <code>List</code> will be sorted from best
+   * <code>DataFlavor</code> to worst. That is, the first <code>DataFlavor
+   * </code> will best reflect data in the specified native to a Java
+   * application.
    * <p>
-   * If the specified native is previously unknown to the data transfer 
-   * subsystem, and that native has been properly encoded, then invoking 
-   * this method will establish a mapping in both directions between the 
-   * specified native and a DataFlavor whose MIME type is a decoded 
+   * If the specified native is previously unknown to the data transfer
+   * subsystem, and that native has been properly encoded, then invoking
+   * this method will establish a mapping in both directions between the
+   * specified native and a DataFlavor whose MIME type is a decoded
    * version of the native.
-   */ 
+   */
   public List<DataFlavor> getFlavorsForNative(String nat)
   {
     List<DataFlavor> ret = new ArrayList<DataFlavor>();
@@ -402,7 +402,7 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
       }
     return ret;
   }
-  
+
   /**
    * Adds a mapping from a single <code>String</code> native to a single
    * <code>DataFlavor</code>. Unlike <code>getFlavorsForNative</code>, the
@@ -421,13 +421,13 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * @see #addUnencodedNativeForFlavor
    * @since 1.4
    */
-  public synchronized void addFlavorForUnencodedNative(String nativeStr, 
+  public synchronized void addFlavorForUnencodedNative(String nativeStr,
                                                        DataFlavor flavor)
   {
     if ((nativeStr == null) || (flavor == null))
       throw new NullPointerException();
     List<DataFlavor> flavors = nativeToFlavorMap.get(nativeStr);
-    if (flavors == null) 
+    if (flavors == null)
       {
         flavors = new ArrayList<DataFlavor>();
         nativeToFlavorMap.put(nativeStr, flavors);
@@ -438,7 +438,7 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
           flavors.add(flavor);
       }
   }
-  
+
   /**
    * Adds a mapping from the specified <code>DataFlavor</code> (and all
    * <code>DataFlavor</code>s equal to the specified <code>DataFlavor</code>)
@@ -446,7 +446,7 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * Unlike <code>getNativesForFlavor</code>, the mapping will only be
    * established in one direction, and the native will not be encoded. To
    * establish a two-way mapping, call
-   * <code>addFlavorForUnencodedNative</code> as well. The new mapping will 
+   * <code>addFlavorForUnencodedNative</code> as well. The new mapping will
    * be of lower priority than any existing mapping.
    * This method has no effect if a mapping from the specified or equal
    * <code>DataFlavor</code> to the specified <code>String</code> native
@@ -460,12 +460,12 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * @since 1.4
    */
   public synchronized void addUnencodedNativeForFlavor(DataFlavor flavor,
-                                                       String nativeStr) 
+                                                       String nativeStr)
   {
     if ((nativeStr == null) || (flavor == null))
       throw new NullPointerException();
     List<String> natives = flavorToNativeMap.get(flavor);
-    if (natives == null) 
+    if (natives == null)
       {
         natives = new ArrayList<String>();
         flavorToNativeMap.put(flavor, natives);
@@ -476,11 +476,11 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
           natives.add(nativeStr);
       }
   }
-  
+
   /**
    * Discards the current mappings for the specified <code>DataFlavor</code>
    * and all <code>DataFlavor</code>s equal to the specified
-   * <code>DataFlavor</code>, and creates new mappings to the 
+   * <code>DataFlavor</code>, and creates new mappings to the
    * specified <code>String</code> natives.
    * Unlike <code>getNativesForFlavor</code>, the mappings will only be
    * established in one direction, and the natives will not be encoded. To
@@ -492,7 +492,7 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * If the array contains several elements that reference equal
    * <code>String</code> natives, this method will establish new mappings
    * for the first of those elements and ignore the rest of them.
-   * <p> 
+   * <p>
    * It is recommended that client code not reset mappings established by the
    * data transfer subsystem. This method should only be used for
    * application-level mappings.
@@ -506,18 +506,18 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * @since 1.4
    */
   public synchronized void setNativesForFlavor(DataFlavor flavor,
-                                               String[] natives) 
+                                               String[] natives)
   {
     if ((natives == null) || (flavor == null))
       throw new NullPointerException();
-    
+
     flavorToNativeMap.remove(flavor);
-    for (int i = 0; i < natives.length; i++) 
+    for (int i = 0; i < natives.length; i++)
       {
         addUnencodedNativeForFlavor(flavor, natives[i]);
       }
   }
-  
+
   /**
    * Discards the current mappings for the specified <code>String</code>
    * native, and creates new mappings to the specified
@@ -546,13 +546,13 @@ public final class SystemFlavorMap implements FlavorMap, FlavorTable
    * @since 1.4
    */
   public synchronized void setFlavorsForNative(String nativeStr,
-                                               DataFlavor[] flavors) 
+                                               DataFlavor[] flavors)
   {
     if ((nativeStr == null) || (flavors == null))
       throw new NullPointerException();
-    
+
     nativeToFlavorMap.remove(nativeStr);
-    for (int i = 0; i < flavors.length; i++) 
+    for (int i = 0; i < flavors.length; i++)
       {
         addFlavorForUnencodedNative(nativeStr, flavors[i]);
       }

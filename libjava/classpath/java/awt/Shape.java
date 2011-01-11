@@ -109,7 +109,7 @@ public interface Shape
    * Test if a high-precision rectangle intersects the shape. This is true
    * if any point in the rectangle is in the shape, with the caveat that the
    * operation may include high probability estimates when the actual
-   * calculation is prohibitively expensive. The {@link java.awt.geom.Area} 
+   * calculation is prohibitively expensive. The {@link java.awt.geom.Area}
    * class can be used for more precise answers.
    *
    * @param x the x coordinate of the rectangle
@@ -126,7 +126,7 @@ public interface Shape
    * Test if a high-precision rectangle intersects the shape. This is true
    * if any point in the rectangle is in the shape, with the caveat that the
    * operation may include high probability estimates when the actual
-   * calculation is prohibitively expensive. The {@link java.awt.geom.Area} 
+   * calculation is prohibitively expensive. The {@link java.awt.geom.Area}
    * class can be used for more precise answers.
    *
    * @param r the rectangle
@@ -141,7 +141,7 @@ public interface Shape
    * Test if a high-precision rectangle lies completely in the shape. This is
    * true if all points in the rectangle are in the shape, with the caveat
    * that the operation may include high probability estimates when the actual
-   * calculation is prohibitively expensive. The {@link java.awt.geom.Area} 
+   * calculation is prohibitively expensive. The {@link java.awt.geom.Area}
    * class can be used for more precise answers.
    *
    * @param x the x coordinate of the rectangle
@@ -158,7 +158,7 @@ public interface Shape
    * Test if a high-precision rectangle lies completely in the shape. This is
    * true if all points in the rectangle are in the shape, with the caveat
    * that the operation may include high probability estimates when the actual
-   * calculation is prohibitively expensive. The {@link java.awt.geom.Area} 
+   * calculation is prohibitively expensive. The {@link java.awt.geom.Area}
    * class can be used for more precise answers.
    *
    * @param r the rectangle
@@ -176,7 +176,7 @@ public interface Shape
    * not required, that the Shape isolate iterations from future changes to
    * the boundary, and document this fact.
    *
-   * @param transform an optional transform to apply to the 
+   * @param transform an optional transform to apply to the
    *                  iterator (<code>null</code> permitted).
    * @return a new iterator over the boundary
    * @since 1.2
@@ -195,11 +195,11 @@ public interface Shape
    * use. It is recommended, but not required, that the Shape isolate
    * iterations from future changes to the boundary, and document this fact.
    *
-   * @param transform an optional transform to apply to the 
+   * @param transform an optional transform to apply to the
    *                  iterator (<code>null</code> permitted).
    * @param flatness the maximum distance for deviation from the real boundary
    * @return a new iterator over the boundary
    * @since 1.2
    */
   PathIterator getPathIterator(AffineTransform transform, double flatness);
-} 
+}

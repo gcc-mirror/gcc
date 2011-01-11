@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -53,7 +53,7 @@ import java.util.Arrays;
 public class BinaryRefAddr extends RefAddr
 {
   static final long serialVersionUID = -3415254970957330361L;
-	
+
   /**
    * The possibly null content of this RefAddr.
    * Set by the constructor and returned by getContent.
@@ -109,7 +109,7 @@ public class BinaryRefAddr extends RefAddr
         {
           byte[] c1 = (byte[]) this.getContent();
           byte[] c2 = (byte[]) refAddr.getContent();
-	  return Arrays.equals(c1, c2);
+          return Arrays.equals(c1, c2);
         }
       }
     return false;
@@ -133,7 +133,7 @@ public class BinaryRefAddr extends RefAddr
   }
 
   private static char[] hex = {'0', '1', '2', '3', '4', '5', '6', '7',
-			       '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+                               '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
   /**
    * Returns a String representation of the RefAddr. Only the first 32 bytes
    * of the content are added as hex encoded characters.
@@ -147,8 +147,8 @@ public class BinaryRefAddr extends RefAddr
     byte[] b = (byte[]) getContent();
     for (int i=0; i < b.length && i < 32; i++)
       {
-	sb.append(hex[(b[i]&0xf0)>>4]);
-	sb.append(hex[b[i]&0x0f]);
+        sb.append(hex[(b[i]&0xf0)>>4]);
+        sb.append(hex[b[i]&0x0f]);
       }
     if (b.length > 32)
       sb.append("...");

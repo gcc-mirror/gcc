@@ -66,18 +66,18 @@ import javax.swing.text.NumberFormatter;
  * from a list.
  *
  * @author Ka-Hing Cheung
- * 
+ *
  * @since 1.4
  */
 public class JSpinner extends JComponent
 {
   /**
-   * The base class for the editor used by the {@link JSpinner} component.  
+   * The base class for the editor used by the {@link JSpinner} component.
    * The editor is in fact a panel containing a {@link JFormattedTextField}
    * component.
    */
-  public static class DefaultEditor 
-    extends JPanel 
+  public static class DefaultEditor
+    extends JPanel
     implements ChangeListener, PropertyChangeListener, LayoutManager
   {
     /** The spinner that the editor is allocated to. */
@@ -92,7 +92,7 @@ public class JSpinner extends JComponent
     private static final long serialVersionUID = -5317788736173368172L;
 
     /**
-     * Creates a new <code>DefaultEditor</code> object.  The editor is 
+     * Creates a new <code>DefaultEditor</code> object.  The editor is
      * registered with the spinner as a {@link ChangeListener} here.
      *
      * @param spinner the <code>JSpinner</code> associated with this editor
@@ -107,23 +107,23 @@ public class JSpinner extends JComponent
       ftf.setValue(spinner.getValue());
       ftf.addPropertyChangeListener(this);
       if (getComponentOrientation().isLeftToRight())
-	ftf.setHorizontalAlignment(JTextField.RIGHT);
+        ftf.setHorizontalAlignment(JTextField.RIGHT);
       else
-	ftf.setHorizontalAlignment(JTextField.LEFT);
+        ftf.setHorizontalAlignment(JTextField.LEFT);
       spinner.addChangeListener(this);
     }
 
     /**
      * Returns the <code>JSpinner</code> component that the editor is assigned
      * to.
-     * 
+     *
      * @return The spinner that the editor is assigned to.
      */
     public JSpinner getSpinner()
     {
       return spinner;
     }
-    
+
     /**
      * DOCUMENT ME!
      */
@@ -144,7 +144,7 @@ public class JSpinner extends JComponent
     }
 
     /**
-     * Returns the text field used to display and edit the current value in 
+     * Returns the text field used to display and edit the current value in
      * the spinner.
      *
      * @return The text field.
@@ -153,7 +153,7 @@ public class JSpinner extends JComponent
     {
       return ftf;
     }
-    
+
     /**
      * Sets the bounds for the child components in this container.  In this
      * case, the text field is the only component to be laid out.
@@ -168,7 +168,7 @@ public class JSpinner extends JComponent
                     size.width - insets.left - insets.right,
                     size.height - insets.top - insets.bottom);
     }
-    
+
     /**
      * Calculates the minimum size for this component.  In this case, the
      * text field is the only subcomponent, so the return value is the minimum
@@ -185,10 +185,10 @@ public class JSpinner extends JComponent
       return new Dimension(minSize.width + insets.left + insets.right,
                             minSize.height + insets.top + insets.bottom);
     }
-    
+
     /**
      * Calculates the preferred size for this component.  In this case, the
-     * text field is the only subcomponent, so the return value is the 
+     * text field is the only subcomponent, so the return value is the
      * preferred size of the text field plus the insets of this component.
      *
      * @param parent  the parent container.
@@ -202,26 +202,26 @@ public class JSpinner extends JComponent
       return new Dimension(prefSize.width + insets.left + insets.right,
                             prefSize.height + insets.top + insets.bottom);
     }
-    
+
     /**
-     * Receives notification of property changes.  If the text field's 'value' 
+     * Receives notification of property changes.  If the text field's 'value'
      * property changes, the spinner's model is updated accordingly.
      *
      * @param event the event.
      */
     public void propertyChange(PropertyChangeEvent event)
     {
-      if (event.getSource() == ftf) 
+      if (event.getSource() == ftf)
         {
           if (event.getPropertyName().equals("value"))
             spinner.getModel().setValue(event.getNewValue());
         }
     }
-    
+
     /**
      * Receives notification of changes in the state of the {@link JSpinner}
      * that the editor belongs to - the content of the text field is updated
-     * accordingly.  
+     * accordingly.
      *
      * @param event  the change event.
      */
@@ -229,12 +229,12 @@ public class JSpinner extends JComponent
     {
       ftf.setValue(spinner.getValue());
     }
-    
+
     /**
      * This method does nothing.  It is required by the {@link LayoutManager}
      * interface, but since this component has a single child, there is no
      * need to use this method.
-     * 
+     *
      * @param child  the child component to remove.
      */
     public void removeLayoutComponent(Component child)
@@ -246,7 +246,7 @@ public class JSpinner extends JComponent
      * This method does nothing.  It is required by the {@link LayoutManager}
      * interface, but since this component has a single child, there is no
      * need to use this method.
-     * 
+     *
      * @param name  the name.
      * @param child  the child component to add.
      */
@@ -260,7 +260,7 @@ public class JSpinner extends JComponent
    * A panel containing a {@link JFormattedTextField} that is configured for
    * displaying and editing numbers.  The panel is used as a subcomponent of
    * a {@link JSpinner}.
-   * 
+   *
    * @see JSpinner#createEditor(SpinnerModel)
    */
   public static class NumberEditor extends DefaultEditor
@@ -271,8 +271,8 @@ public class JSpinner extends JComponent
     private static final long serialVersionUID = 3791956183098282942L;
 
     /**
-     * Creates a new <code>NumberEditor</code> object for the specified 
-     * <code>spinner</code>.  The editor is registered with the spinner as a 
+     * Creates a new <code>NumberEditor</code> object for the specified
+     * <code>spinner</code>.  The editor is registered with the spinner as a
      * {@link ChangeListener}.
      *
      * @param spinner the component the editor will be used with.
@@ -295,7 +295,7 @@ public class JSpinner extends JComponent
     public NumberEditor(JSpinner spinner, String decimalFormatPattern)
     {
       super(spinner);
-      NumberEditorFormatter nef 
+      NumberEditorFormatter nef
           = new NumberEditorFormatter(decimalFormatPattern);
       nef.setMinimum(getModel().getMinimum());
       nef.setMaximum(getModel().getMaximum());
@@ -316,7 +316,7 @@ public class JSpinner extends JComponent
     /**
      * Returns the model used by the editor's {@link JSpinner} component,
      * cast to a {@link SpinnerNumberModel}.
-     * 
+     *
      * @return The model.
      */
     public SpinnerNumberModel getModel()
@@ -324,11 +324,11 @@ public class JSpinner extends JComponent
       return (SpinnerNumberModel) getSpinner().getModel();
     }
   }
-  
-  static class NumberEditorFormatter 
+
+  static class NumberEditorFormatter
     extends NumberFormatter
   {
-    public NumberEditorFormatter() 
+    public NumberEditorFormatter()
     {
       super(NumberFormat.getInstance());
     }
@@ -359,7 +359,7 @@ public class JSpinner extends JComponent
 
     /**
      * Returns the spinner's model cast as a {@link SpinnerListModel}.
-     * 
+     *
      * @return The spinner's model.
      */
     public SpinnerListModel getModel()
@@ -442,10 +442,10 @@ public class JSpinner extends JComponent
     }
   }
 
-  static class DateEditorFormatter 
+  static class DateEditorFormatter
     extends DateFormatter
   {
-    public DateEditorFormatter() 
+    public DateEditorFormatter()
     {
       super(DateFormat.getInstance());
     }
@@ -455,9 +455,9 @@ public class JSpinner extends JComponent
     }
   }
 
-  /** 
+  /**
    * A listener that forwards {@link ChangeEvent} notifications from the model
-   * to the {@link JSpinner}'s listeners. 
+   * to the {@link JSpinner}'s listeners.
    */
   class ModelListener implements ChangeListener
   {
@@ -468,10 +468,10 @@ public class JSpinner extends JComponent
     {
       // nothing to do here
     }
-    
+
     /**
      * Receives notification from the model that its state has changed.
-     * 
+     *
      * @param event  the event (ignored).
      */
     public void stateChanged(ChangeEvent event)
@@ -480,9 +480,9 @@ public class JSpinner extends JComponent
     }
   }
 
-  /** 
-   * The model that defines the current value and permitted values for the 
-   * spinner. 
+  /**
+   * The model that defines the current value and permitted values for the
+   * spinner.
    */
   private SpinnerModel model;
 
@@ -492,8 +492,8 @@ public class JSpinner extends JComponent
   private static final long serialVersionUID = 3412663575706551720L;
 
   /**
-   * Creates a new <code>JSpinner</code> with default instance of 
-   * {@link SpinnerNumberModel} (that is, a model with value 0, step size 1, 
+   * Creates a new <code>JSpinner</code> with default instance of
+   * {@link SpinnerNumberModel} (that is, a model with value 0, step size 1,
    * and no upper or lower limit).
    *
    * @see javax.swing.SpinnerNumberModel
@@ -504,12 +504,12 @@ public class JSpinner extends JComponent
   }
 
   /**
-   * Creates a new <code>JSpinner with the specified model.  The 
+   * Creates a new <code>JSpinner with the specified model.  The
    * {@link #createEditor(SpinnerModel)} method is used to create an editor
    * that is suitable for the model.
    *
    * @param model the model (<code>null</code> not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>model</code> is <code>null</code>.
    */
   public JSpinner(SpinnerModel model)
@@ -550,7 +550,7 @@ public class JSpinner extends JComponent
    *
    * @param editor the new editor (<code>null</code> not permitted.
    *
-   * @throws IllegalArgumentException if <code>editor</code> is 
+   * @throws IllegalArgumentException if <code>editor</code> is
    *                                  <code>null</code>.
    *
    * @see #getEditor
@@ -565,7 +565,7 @@ public class JSpinner extends JComponent
       ((DefaultEditor) oldEditor).dismiss(this);
     else if (oldEditor instanceof ChangeListener)
       removeChangeListener((ChangeListener) oldEditor);
-    
+
     this.editor = editor;
     firePropertyChange("editor", oldEditor, editor);
   }
@@ -574,7 +574,7 @@ public class JSpinner extends JComponent
    * Returns the model used by the {@link JSpinner} component.
    *
    * @return The model.
-   * 
+   *
    * @see #setModel(SpinnerModel)
    */
   public SpinnerModel getModel()
@@ -593,7 +593,7 @@ public class JSpinner extends JComponent
   {
     if (newModel == null)
       throw new IllegalArgumentException();
-    
+
     if (model == newModel)
       return;
 

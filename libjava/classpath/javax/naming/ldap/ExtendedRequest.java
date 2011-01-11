@@ -41,7 +41,7 @@ package javax.naming.ldap;
 import java.io.Serializable;
 
 import javax.naming.NamingException;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 1, 2001
@@ -51,7 +51,7 @@ public interface ExtendedRequest extends Serializable
   String getID();
   byte[] getEncodedValue();
   ExtendedResponse createExtendedResponse(String id,
-  						 byte[] berValue, int offset,
-						 int length)
-						 throws NamingException;
+                                                 byte[] berValue, int offset,
+                                                 int length)
+                                                 throws NamingException;
 }

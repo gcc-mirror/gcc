@@ -93,8 +93,8 @@ public abstract class SplitPaneUI extends ComponentUI
    * @return the current location of the divider.
    */
   public abstract int getDividerLocation(JSplitPane pane);
-  
-  
+
+
   /**
    * Determines the minimum location of the divider.
    *

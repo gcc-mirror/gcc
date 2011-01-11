@@ -16,10 +16,10 @@ package org.xml.sax;
  * </blockquote>
  *
  * <p>If a SAX application needs information about notations and
- * unparsed entities, then the application implements this 
- * interface and registers an instance with the SAX parser using 
- * the parser's setDTDHandler method.  The parser uses the 
- * instance to report notation and unparsed entity declarations to 
+ * unparsed entities, then the application implements this
+ * interface and registers an instance with the SAX parser using
+ * the parser's setDTDHandler method.  The parser uses the
+ * instance to report notation and unparsed entity declarations to
  * the application.</p>
  *
  * <p>Note that this interface includes only those DTD events that
@@ -35,7 +35,7 @@ package org.xml.sax;
  * used, these events must also be reported before the endDTD event.)
  * </p>
  *
- * <p>It is up to the application to store the information for 
+ * <p>It is up to the application to store the information for
  * future use (perhaps in a hash table or object tree).
  * If the application encounters attributes of type "NOTATION",
  * "ENTITY", or "ENTITIES", it can use the information that it
@@ -48,8 +48,8 @@ package org.xml.sax;
  * @see org.xml.sax.XMLReader#setDTDHandler
  */
 public interface DTDHandler {
-    
-    
+
+
     /**
      * Receive notification of a notation declaration event.
      *
@@ -78,19 +78,19 @@ public interface DTDHandler {
      * @see org.xml.sax.Attributes
      */
     public abstract void notationDecl (String name,
-				       String publicId,
-				       String systemId)
-	throws SAXException;
-    
-    
+                                       String publicId,
+                                       String systemId)
+        throws SAXException;
+
+
     /**
      * Receive notification of an unparsed entity declaration event.
      *
      * <p>Note that the notation name corresponds to a notation
-     * reported by the {@link #notationDecl notationDecl} event.  
-     * It is up to the application to record the entity for later 
+     * reported by the {@link #notationDecl notationDecl} event.
+     * It is up to the application to record the entity for later
      * reference, if necessary;
-     * unparsed entities may appear as attribute values. 
+     * unparsed entities may appear as attribute values.
      * </p>
      *
      * <p>If the system identifier is a URL, the parser must resolve it
@@ -107,11 +107,11 @@ public interface DTDHandler {
      * @see org.xml.sax.Attributes
      */
     public abstract void unparsedEntityDecl (String name,
-					     String publicId,
-					     String systemId,
-					     String notationName)
-	throws SAXException;
-    
+                                             String publicId,
+                                             String systemId,
+                                             String notationName)
+        throws SAXException;
+
 }
 
 // end of DTDHandler.java

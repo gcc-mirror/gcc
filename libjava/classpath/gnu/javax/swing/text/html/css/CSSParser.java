@@ -113,7 +113,7 @@ public class CSSParser
    *
    * @return <code>true</code> if the stylesheet could be parsed successfully,
    *         <code>false</code> otherwise
-   * 
+   *
    * @throws IOException if an IO or parse error occurs
    */
   private boolean parseStylesheet()
@@ -137,7 +137,7 @@ public class CSSParser
    * Parses a CSS statement.
    * @return <code>true</code> if the stylesheet could be parsed successfully,
    *         <code>false</code> otherwise
-   * 
+   *
    * @throws IOException if an IO or parse error occurs
    */
   private boolean parseStatement()
@@ -151,7 +151,7 @@ public class CSSParser
    *
    * @return <code>true</code> if the ruleset could be parsed successfully,
    *         <code>false</code> otherwise
-   * 
+   *
    * @throws IOException if an IO or parse error occurs
    */
   private boolean parseRuleset()
@@ -232,7 +232,7 @@ public class CSSParser
    *
    * @return <code>true</code> if the ruleset could be parsed successfully,
    *         <code>false</code> otherwise
-   * 
+   *
    * @throws IOException if an IO or parse error occurs
    */
   private boolean parseDeclaration()
@@ -282,7 +282,7 @@ public class CSSParser
             ret = false;
             error = "Expected colon to separate property and value";
           }
-          
+
       }
     else
       {
@@ -300,7 +300,7 @@ public class CSSParser
    *
    * @return <code>true</code> if the ruleset could be parsed successfully,
    *         <code>false</code> otherwise
-   * 
+   *
    * @throws IOException if an IO or parse error occurs
    */
   private boolean parseValue(StringBuilder s)
@@ -321,7 +321,7 @@ public class CSSParser
    *
    * @return <code>true</code> if the ruleset could be parsed successfully,
    *         <code>false</code> otherwise
-   * 
+   *
    * @throws IOException if an IO or parse error occurs
    */
   private boolean parseSelector(StringBuilder sel)
@@ -345,7 +345,7 @@ public class CSSParser
    *
    * @return <code>true</code> if the ruleset could be parsed successfully,
    *         <code>false</code> otherwise
-   * 
+   *
    * @throws IOException if an IO or parse error occurs
    */
   private boolean parseAny(StringBuilder s)
@@ -389,7 +389,7 @@ public class CSSParser
    *
    * @return <code>true</code> if the at-rule could be parsed successfully,
    *         <code>false</code> otherwise
-   * 
+   *
    * @throws IOException if an IO or parse error occurs
    */
   private boolean parseAtRule()

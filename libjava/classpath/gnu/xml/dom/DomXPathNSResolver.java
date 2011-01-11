@@ -1,4 +1,4 @@
-/* DomXPathNSResolver.java -- 
+/* DomXPathNSResolver.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -60,5 +60,5 @@ implements XPathNSResolver
   {
     return node.lookupNamespaceURI (prefix);
   }
-  
+
 }

@@ -62,37 +62,37 @@ import java.util.Locale;
  */
 class AppletTag
 {
-  
+
   /**
    * The document base of this applet.
    */
   URL documentbase;
-  
+
   /**
-   * name of applet tag. 
+   * name of applet tag.
    */
   String name = "";
-  
+
   /**
    * code of applet tag.
    */
   String code = "";
-  
+
   /**
    * codebase of applet tag.
    */
   String codebase = "";
-  
+
   /**
    * The archives.
    */
   ArrayList archives = new ArrayList();
-  
+
   /**
    * The parameters.
    */
   HashMap parameters = new HashMap();
-    
+
   /**
    * The screen size.
    */
@@ -105,14 +105,14 @@ class AppletTag
   {
     // Do nothing.
   }
-  
+
   /**
    * Constructs an AppletTag and parses the given applet element.
-   * 
+   *
    * @param appElement - the Applet element to parse.
    */
   AppletTag(DomHTMLAppletElement appElement)
-  {    
+  {
     name = appElement.getName();
     parameters.put("name", name);
 
@@ -123,9 +123,9 @@ class AppletTag
     parameters.put("hspace", Integer.toString(appElement.getHspace()));
     parameters.put("vspace", Integer.toString(appElement.getVspace()));
     parameters.put("width", appElement.getWidth());
-    
+
     TagParser.parseParams(appElement, this);
-    
+
     if (code.equals(""))
       {
         code = appElement.getCode();
@@ -140,26 +140,26 @@ class AppletTag
         if (codebase.equals(""))
           codebase = appElement.getSrc();
       }
-    
+
     if (archives.size() == 0)
       {
         String arcs = "";
         String arch = appElement.getArchive();
-        
+
         if (code.indexOf(".") < 0)
           arcs = code + ".jar";
-        
+
         if (!arch.equals(""))
           arcs += "," + arch;
-        
+
         if (!arcs.equals(""))
           archives = TagParser.parseArchives(arcs, this);
       }
   }
-  
+
   /**
    * Constructs an AppletTag and parses the given embed element.
-   * 
+   *
    * @param embElement - the Embed element to parse.
    */
   AppletTag(DomHTMLEmbedElement embElement)
@@ -172,10 +172,10 @@ class AppletTag
     // should be interpreted as a parameter. For example if "java_code"
     // and "code" attributes are present in the EMBED tag then the
     // "code" attribute is interpreted as a parameter.
-    
+
     name = embElement.getName();
     parameters.put("name", name);
-    
+
     String jobj = embElement.getJavaObject();
     if (!jobj.equals(""))
       parameters.put("java_object", jobj);
@@ -193,7 +193,7 @@ class AppletTag
     parameters.put("type", embElement.getType());
     parameters.put("java_type", embElement.getJavaType());
     parameters.put("vspace", Integer.toString(embElement.getVspace()));
-    
+
     TagParser.parseParams(embElement, this);
 
     // Must initialize codebase before archives
@@ -212,23 +212,23 @@ class AppletTag
         if (!jcode.equals(""))
           code = jcode;
         else
-          code = embElement.getCode(); 
+          code = embElement.getCode();
       }
-    
+
     if (archives.size() == 0)
       {
         String arcs = "";
         String jarch = embElement.getJavaArchive();
         String arch = embElement.getArchive();
-        
+
         if (code.indexOf(".") < 0)
           arcs = code + ".jar";
-        
+
         if (!jarch.equals(""))
           arcs += "," + jarch;
         else if (!arch.equals(""))
           arcs += "," + arch;
-        
+
         if (!arcs.equals(""))
           archives = TagParser.parseArchives(arcs, this);
       }
@@ -236,7 +236,7 @@ class AppletTag
 
   /**
    * Constructs an AppletTag and parses the given object element.
-   * 
+   *
    * @param objElement - the Object element to parse.
    */
   AppletTag(DomHTMLObjectElement objElement)
@@ -294,31 +294,31 @@ class AppletTag
         if (!jcode.equals(""))
           code = jcode;
         else
-          code = objElement.getCode(); 
+          code = objElement.getCode();
       }
-    
+
     if (archives.size() == 0)
       {
         String arcs = "";
         String jarch = objElement.getJavaArchive();
         String arch = objElement.getArchive();
-        
+
         if (code.indexOf(".") < 0)
           arcs = code + ".jar";
-        
+
         if (!jarch.equals(""))
           arcs += "," + jarch;
         else if (!arch.equals(""))
           arcs += "," + arch;
-        
+
         if (!arcs.equals(""))
           archives = TagParser.parseArchives(arcs, this);
       }
   }
-  
+
   /**
    * String representation of the tag.
-   * 
+   *
    * @return the string representation.
    */
   public String toString()
@@ -327,10 +327,10 @@ class AppletTag
             + codebase + "\n" + "  archive=" + archives + "\n" + "  parameters="
             + parameters + "\n" + "  documentbase=" + documentbase + "\n");
   }
-  
+
   /**
    * Returns the size of the applet.
-   * 
+   *
    * @return the size.
    */
   Dimension getSize()
@@ -340,7 +340,7 @@ class AppletTag
     try
       {
         String widthStr = (String) parameters.get("width");
-        
+
         if (widthStr != null && ! widthStr.equals(""))
           {
             if (widthStr.charAt(widthStr.length() - 1) == '%')
@@ -379,50 +379,50 @@ class AppletTag
 
     return size;
   }
-  
+
   /**
    * Gets the code base.
-   *  
+   *
    * @return the codebase.
    */
   String getCodeBase()
   {
     return codebase;
   }
-  
+
   /**
    * Gets the archive list.
-   *  
+   *
    * @return the archive list.
    */
   ArrayList getArchives()
   {
     return archives;
   }
-  
+
   /**
    * Gets the code.
-   * 
+   *
    * @return the code.
    */
   String getCode()
   {
     return code;
   }
-  
+
   /**
    * Gets the document base.
-   *  
+   *
    * @return the document base.
    */
   URL getDocumentBase()
   {
     return documentbase;
   }
-  
+
   /**
    * Gets the specified parameter.
-   * 
+   *
    * @param name - the specified parameter.
    * @return the parameter.
    */
@@ -430,17 +430,17 @@ class AppletTag
   {
     return (String) parameters.get(name.toLowerCase());
   }
-  
+
   /**
    * Prepends the base to the codebase.
-   * 
+   *
    * @return the new URL.
    */
   URL prependCodeBase(String base) throws MalformedURLException
   {
     if (documentbase == null)
       documentbase = TagParser.db;
-        
+
     URL fullcodebase;
 
     //If no codebase was specified, default to documentbase.
@@ -470,7 +470,7 @@ class AppletTag
       {
         // codebase was specified.
         URL codebaseURL = new URL(documentbase, codebase);
-        
+
         if ("file".equals(codebaseURL.getProtocol()))
           {
             if (new File(codebaseURL.getFile()).isDirectory() && !codebase.endsWith(File.separator))
@@ -483,7 +483,7 @@ class AppletTag
         else
           fullcodebase = new URL(documentbase, codebase + File.separator);
       }
-    
+
     return new URL(fullcodebase, base);
   }
 }

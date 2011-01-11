@@ -42,7 +42,7 @@ package javax.management;
  * may be used to list and enumerate management beans, via
  * the {@link MBeanServer}.  By using the methods in this class,
  * complex queries can be created from their more basic
- * components. 
+ * components.
  *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
@@ -61,7 +61,7 @@ public class Query
    * query to be used in serialization.
    */
   public static final int MINUS = 1;
-  
+
   /**
    * A code representing the {@link #times(ValueExp, ValueExp)
    * query to be used in serialization.
@@ -133,7 +133,7 @@ public class Query
    *         {@link MatchQueryExp}.
    */
   public static QueryExp anySubString(AttributeValueExp attrib,
-				      StringValueExp string)
+                                      StringValueExp string)
   {
     return new MatchQueryExp(attrib, "*" + string.getValue() + "*");
   }
@@ -168,7 +168,7 @@ public class Query
    *         {@link QualifiedAttributeValueExp}.
    */
   public static AttributeValueExp attr(String className,
-				       String name)
+                                       String name)
   {
     return new QualifiedAttributeValueExp(className, name);
   }
@@ -189,7 +189,7 @@ public class Query
    *         {@link BetweenQueryExp}.
    */
   public static QueryExp between(ValueExp v1, ValueExp v2,
-				 ValueExp v3)
+                                 ValueExp v3)
   {
     return new BetweenQueryExp(v1, v2, v3);
   }
@@ -213,7 +213,7 @@ public class Query
 
   /**
    * Returns a value expression which evaluates to the result of
-   * dividing <code>v1</code> by <code>v2</code>. 
+   * dividing <code>v1</code> by <code>v2</code>.
    *
    * @param v1 the left-hand operand.
    * @param v2 the right-hand operand.
@@ -229,7 +229,7 @@ public class Query
 
   /**
    * Returns a query expression which evaluates to the result of
-   * comparing <code>v1</code> to <code>v2</code> for equality. 
+   * comparing <code>v1</code> to <code>v2</code> for equality.
    *
    * @param v1 the left-hand operand.
    * @param v2 the right-hand operand.
@@ -257,7 +257,7 @@ public class Query
    *         {@link MatchQueryExp}.
    */
   public static QueryExp finalSubString(AttributeValueExp attrib,
-					StringValueExp string)
+                                        StringValueExp string)
   {
     return new MatchQueryExp(attrib, "*" + string.getValue());
   }
@@ -265,7 +265,7 @@ public class Query
   /**
    * Returns a query expression which evaluates to the result of
    * comparing <code>v1</code> to <code>v2</code> to see if
-   * <code>v1</code> is greater than or equal to <code>v2</code>. 
+   * <code>v1</code> is greater than or equal to <code>v2</code>.
    *
    * @param v1 the left-hand operand.
    * @param v2 the right-hand operand.
@@ -282,7 +282,7 @@ public class Query
   /**
    * Returns a query expression which evaluates to the result of
    * comparing <code>v1</code> to <code>v2</code> to see if
-   * <code>v1</code> is greater than <code>v2</code>. 
+   * <code>v1</code> is greater than <code>v2</code>.
    *
    * @param v1 the left-hand operand.
    * @param v2 the right-hand operand.
@@ -327,7 +327,7 @@ public class Query
    *         {@link MatchQueryExp}.
    */
   public static QueryExp initialSubString(AttributeValueExp attrib,
-					  StringValueExp string)
+                                          StringValueExp string)
   {
     return new MatchQueryExp(attrib, string.getValue() + "*");
   }
@@ -357,7 +357,7 @@ public class Query
   /**
    * Returns a query expression which evaluates to the result of
    * comparing <code>v1</code> to <code>v2</code> to see if
-   * <code>v1</code> is less than or equal to <code>v2</code>. 
+   * <code>v1</code> is less than or equal to <code>v2</code>.
    *
    * @param v1 the left-hand operand.
    * @param v2 the right-hand operand.
@@ -374,7 +374,7 @@ public class Query
   /**
    * Returns a query expression which evaluates to the result of
    * comparing <code>v1</code> to <code>v2</code> to see if
-   * <code>v1</code> is less than <code>v2</code>. 
+   * <code>v1</code> is less than <code>v2</code>.
    *
    * @param v1 the left-hand operand.
    * @param v2 the right-hand operand.
@@ -422,14 +422,14 @@ public class Query
    *         as the non-public class {@link MatchQueryExp}.
    */
   public static QueryExp match(AttributeValueExp attrib,
-			       StringValueExp string)
+                               StringValueExp string)
   {
     return new MatchQueryExp(attrib, string.getValue());
   }
 
   /**
    * Returns a value expression which evaluates to the result of
-   * subtracting <code>v2</code> from <code>v1</code>. 
+   * subtracting <code>v2</code> from <code>v1</code>.
    *
    * @param v1 the left-hand operand.
    * @param v2 the right-hand operand.
@@ -474,7 +474,7 @@ public class Query
 
   /**
    * Returns a value expression which evaluates to the result of
-   * adding <code>v1</code> to <code>v2</code>. 
+   * adding <code>v1</code> to <code>v2</code>.
    *
    * @param v1 the left-hand operand.
    * @param v2 the right-hand operand.
@@ -490,7 +490,7 @@ public class Query
 
   /**
    * Returns a value expression which evaluates to the result of
-   * multiplying <code>v1</code> by <code>v2</code>. 
+   * multiplying <code>v1</code> by <code>v2</code>.
    *
    * @param v1 the left-hand operand.
    * @param v2 the right-hand operand.
@@ -505,7 +505,7 @@ public class Query
   }
 
   /**
-   * Returns a value expression wrapping the specified value. 
+   * Returns a value expression wrapping the specified value.
    *
    * @param val the boolean value to wrap.
    * @return a value expression wrapping <code>val</code>.  This
@@ -518,7 +518,7 @@ public class Query
   }
 
   /**
-   * Returns a value expression wrapping the specified value. 
+   * Returns a value expression wrapping the specified value.
    *
    * @param val the double value to wrap.
    * @return a value expression wrapping <code>val</code>.  This
@@ -531,7 +531,7 @@ public class Query
   }
 
   /**
-   * Returns a value expression wrapping the specified value. 
+   * Returns a value expression wrapping the specified value.
    *
    * @param val the float value to wrap.
    * @return a value expression wrapping <code>val</code>.  This
@@ -544,7 +544,7 @@ public class Query
   }
 
   /**
-   * Returns a value expression wrapping the specified value. 
+   * Returns a value expression wrapping the specified value.
    *
    * @param val the integer value to wrap.
    * @return a value expression wrapping <code>val</code>.  This
@@ -557,7 +557,7 @@ public class Query
   }
 
   /**
-   * Returns a value expression wrapping the specified value. 
+   * Returns a value expression wrapping the specified value.
    *
    * @param val the long value to wrap.
    * @return a value expression wrapping <code>val</code>.  This
@@ -570,7 +570,7 @@ public class Query
   }
 
   /**
-   * Returns a value expression wrapping the specified value. 
+   * Returns a value expression wrapping the specified value.
    *
    * @param val the {@link Number} value to wrap.
    * @return a value expression wrapping <code>val</code>.  This
@@ -583,7 +583,7 @@ public class Query
   }
 
   /**
-   * Returns a value expression wrapping the specified string. 
+   * Returns a value expression wrapping the specified string.
    *
    * @param val the {@link String} to wrap.
    * @return a {@link StringValueExp} wrapping <code>val</code>.
@@ -609,7 +609,7 @@ public class Query
      * Compatible with JDK 1.6
      */
     private static final long serialVersionUID = -1081892073854801359L;
-    
+
     /**
      * The first operand.
      */
@@ -653,7 +653,7 @@ public class Query
      */
     public boolean apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       return exp1.apply(name) && exp2.apply(name);
     }
@@ -676,7 +676,7 @@ public class Query
      * Compatible with JDK 1.6
      */
     private static final long serialVersionUID = -7156603696948215014L;
-    
+
     /**
      * The attribute to match against.
      */
@@ -695,7 +695,7 @@ public class Query
      * @param pattern the pattern.
      */
     public MatchQueryExp(AttributeValueExp exp,
-			 String pattern)
+                         String pattern)
     {
       this.exp = exp;
       this.pattern = pattern;
@@ -720,7 +720,7 @@ public class Query
      */
     public boolean apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       String val = ((StringValueExp) exp.apply(name)).getValue();
       int valPos = 0;
@@ -728,83 +728,83 @@ public class Query
       int fallbackP = -1;
       boolean backslash = false;
       for (int a = 0; a < pattern.length(); ++a)
-	{
-	  boolean matched = false;
-	  int next = pattern.codePointAt(a);
-	  if (!backslash)
-	    {
-	      if (next == '?' && valPos < val.length())
-		{
-		  ++valPos;
-		  matched = true;
-		}
-	      else if (next == '*')
-		{
-		  fallback = valPos;
-		  fallbackP = a;
-		  matched = true;
-		}
-	      else if (next == '[' && valPos < val.length()) 
-		{
-		  boolean negated = false;
-		  int b = a + 1;
-		  int classChar = pattern.codePointAt(b);
-		  do
-		    {
-		      if (classChar == '!' && b == a + 1)
-			negated = true;
-		      else if (pattern.codePointAt(b + 1) == '-' &&
-			       pattern.codePointAt(b + 2) != ']')
-			{
-			  if (classChar > pattern.codePointAt(b + 2))
-			    throw new BadStringOperationException("Invalid range: " +
-								  classChar + " to " +
-								  pattern.codePointAt(b+2));
-			  for (int c = classChar; c <= pattern.codePointAt(b+2); ++c)
-			    if (val.codePointAt(valPos) == c)
-			      matched = true;
-			  b = b + 2;
-			}
-		      else if (val.codePointAt(valPos) == classChar)
-			matched = true;
-		      ++b;
-		      classChar = pattern.codePointAt(b);
-		    } while (classChar != ']');
-		  if (negated)
-		    matched = !matched;
-		  ++valPos;
-		  a = b;
-		}
-	      else if (next == '\\')
-		backslash = true;
-	      else if (valPos < val.length() && next == val.codePointAt(valPos))
-		{
-		  matched = true;
-		  ++valPos;
-		}
-	    }
-	  else
-	    {
-	      backslash = false;
-	      if (valPos < val.length() && next == val.codePointAt(valPos))
-		{
-		  matched = true;
-		  ++valPos;
-		}	
-	    }
-	  if (!matched)
-	    if (fallback != -1)
-	      {
-		++fallback;
-		valPos = fallback;
-		a = fallbackP;
-		if (valPos == val.length())
-		  return false;
-		continue;
-	      }
-	    else
-	      return false;
-	}
+        {
+          boolean matched = false;
+          int next = pattern.codePointAt(a);
+          if (!backslash)
+            {
+              if (next == '?' && valPos < val.length())
+                {
+                  ++valPos;
+                  matched = true;
+                }
+              else if (next == '*')
+                {
+                  fallback = valPos;
+                  fallbackP = a;
+                  matched = true;
+                }
+              else if (next == '[' && valPos < val.length())
+                {
+                  boolean negated = false;
+                  int b = a + 1;
+                  int classChar = pattern.codePointAt(b);
+                  do
+                    {
+                      if (classChar == '!' && b == a + 1)
+                        negated = true;
+                      else if (pattern.codePointAt(b + 1) == '-' &&
+                               pattern.codePointAt(b + 2) != ']')
+                        {
+                          if (classChar > pattern.codePointAt(b + 2))
+                            throw new BadStringOperationException("Invalid range: " +
+                                                                  classChar + " to " +
+                                                                  pattern.codePointAt(b+2));
+                          for (int c = classChar; c <= pattern.codePointAt(b+2); ++c)
+                            if (val.codePointAt(valPos) == c)
+                              matched = true;
+                          b = b + 2;
+                        }
+                      else if (val.codePointAt(valPos) == classChar)
+                        matched = true;
+                      ++b;
+                      classChar = pattern.codePointAt(b);
+                    } while (classChar != ']');
+                  if (negated)
+                    matched = !matched;
+                  ++valPos;
+                  a = b;
+                }
+              else if (next == '\\')
+                backslash = true;
+              else if (valPos < val.length() && next == val.codePointAt(valPos))
+                {
+                  matched = true;
+                  ++valPos;
+                }
+            }
+          else
+            {
+              backslash = false;
+              if (valPos < val.length() && next == val.codePointAt(valPos))
+                {
+                  matched = true;
+                  ++valPos;
+                }
+            }
+          if (!matched)
+            if (fallback != -1)
+              {
+                ++fallback;
+                valPos = fallback;
+                a = fallbackP;
+                if (valPos == val.length())
+                  return false;
+                continue;
+              }
+            else
+              return false;
+        }
       return true;
     }
   }
@@ -867,22 +867,22 @@ public class Query
      */
     public ValueExp apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       try
-	{
-	  if (!(QueryEval.getMBeanServer().getObjectInstance(name).getClassName().equals(className)))
-	    throw new BadAttributeValueExpException("The value is not from " +
-						    "the correct class.");
-	}
+        {
+          if (!(QueryEval.getMBeanServer().getObjectInstance(name).getClassName().equals(className)))
+            throw new BadAttributeValueExpException("The value is not from " +
+                                                    "the correct class.");
+        }
       catch (InstanceNotFoundException e)
-	{
-	  throw (BadAttributeValueExpException)
-	    new BadAttributeValueExpException("The named bean is not registered.").initCause(e);
-	}
+        {
+          throw (BadAttributeValueExpException)
+            new BadAttributeValueExpException("The named bean is not registered.").initCause(e);
+        }
       return super.apply(name);
     }
- 
+
   }
 
   /**
@@ -902,7 +902,7 @@ public class Query
      * Compatible with JDK 1.6
      */
     private static final long serialVersionUID = -2933597532866307444L;
-    
+
     /**
      * The value to compare.
      */
@@ -928,7 +928,7 @@ public class Query
      * @param exp3 the upper bound.
      */
     public BetweenQueryExp(ValueExp exp1, ValueExp exp2,
-			   ValueExp exp3)
+                           ValueExp exp3)
     {
       this.exp1 = exp1;
       this.exp2 = exp2;
@@ -954,7 +954,7 @@ public class Query
      */
     public boolean apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       String v1 = exp1.apply(name).toString();
       String v2 = exp2.apply(name).toString();
@@ -999,19 +999,19 @@ public class Query
      */
     public ValueExp apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       try
-	{
-	  return new StringValueExp(QueryEval.getMBeanServer().getObjectInstance(name).getClassName());
-	}
+        {
+          return new StringValueExp(QueryEval.getMBeanServer().getObjectInstance(name).getClassName());
+        }
       catch (InstanceNotFoundException e)
-	{
-	  throw (BadAttributeValueExpException)
-	    new BadAttributeValueExpException("The named bean is not registered.").initCause(e);
-	}
+        {
+          throw (BadAttributeValueExpException)
+            new BadAttributeValueExpException("The named bean is not registered.").initCause(e);
+        }
     }
- 
+
   }
 
   /**
@@ -1032,7 +1032,7 @@ public class Query
      * Compatible with JDK 1.6
      */
     private static final long serialVersionUID = 1216286847881456786L;
-    
+
     /**
      * The operation to perform.
      */
@@ -1082,23 +1082,23 @@ public class Query
      */
     public ValueExp apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       NumericValueExp v1 = (NumericValueExp) exp1.apply(name);
       NumericValueExp v2 = (NumericValueExp) exp2.apply(name);
       switch (op)
-	{
-	case PLUS:
-	  return v1.plus(v2);
-	case MINUS:
-	  return v1.minus(v2);
-	case TIMES:
-	  return v1.times(v2);
-	case DIV:
-	  return v1.div(v2);
-	default:
-	  throw new BadBinaryOpValueExpException(this);
-	}
+        {
+        case PLUS:
+          return v1.plus(v2);
+        case MINUS:
+          return v1.minus(v2);
+        case TIMES:
+          return v1.times(v2);
+        case DIV:
+          return v1.div(v2);
+        default:
+          throw new BadBinaryOpValueExpException(this);
+        }
     }
 
     /**
@@ -1110,22 +1110,22 @@ public class Query
     {
       String opS;
       switch (op)
-	{
-	case PLUS:
-	  opS = "+";
-	  break;
-	case MINUS:
-	  opS = "-";
-	  break;
-	case TIMES:
-	  opS = "x";
-	  break;
-	case DIV:
-	  opS = "/";
-	  break;
-	default:
-	  opS = "?";
-	}
+        {
+        case PLUS:
+          opS = "+";
+          break;
+        case MINUS:
+          opS = "-";
+          break;
+        case TIMES:
+          opS = "x";
+          break;
+        case DIV:
+          opS = "/";
+          break;
+        default:
+          opS = "?";
+        }
       return exp1 + " " + opS + " " + exp2;
     }
   }
@@ -1148,7 +1148,7 @@ public class Query
      * Compatible with JDK 1.6
      */
     private static final long serialVersionUID = -5690656271650491000L;
-    
+
     /**
      * The operation to perform.
      */
@@ -1198,25 +1198,25 @@ public class Query
      */
     public boolean apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       String v1 = exp1.apply(name).toString();
       String v2 = exp2.apply(name).toString();
       switch (relOp)
-	{
-	case EQ:
-	  return v1.equals(v2);
-	case GT:
-	  return v1.compareTo(v2) > 0;
-	case GE:
-	  return v1.compareTo(v2) >= 0;
-	case LE:
-	  return v1.compareTo(v2) <= 0;
-	case LT:
-	  return v1.compareTo(v2) < 0;
-	default:
-	  throw new BadStringOperationException("Invalid operator: " + relOp);
-	}
+        {
+        case EQ:
+          return v1.equals(v2);
+        case GT:
+          return v1.compareTo(v2) > 0;
+        case GE:
+          return v1.compareTo(v2) >= 0;
+        case LE:
+          return v1.compareTo(v2) <= 0;
+        case LT:
+          return v1.compareTo(v2) < 0;
+        default:
+          throw new BadStringOperationException("Invalid operator: " + relOp);
+        }
     }
 
     /**
@@ -1228,25 +1228,25 @@ public class Query
     {
       String op;
       switch (relOp)
-	{
-	case EQ:
-	  op = "=";
-	  break;
-	case GT:
-	  op = ">";
-	  break;
-	case GE:
-	  op = ">=";
-	  break;
-	case LE:
-	  op = "<=";
-	  break;
-	case LT:
-	  op = "<";
-	  break;
-	default:
-	  op = "?";
-	}
+        {
+        case EQ:
+          op = "=";
+          break;
+        case GT:
+          op = ">";
+          break;
+        case GE:
+          op = ">=";
+          break;
+        case LE:
+          op = "<=";
+          break;
+        case LT:
+          op = "<";
+          break;
+        default:
+          op = "?";
+        }
       return exp1 + " " + op + " " + exp2;
     }
   }
@@ -1268,7 +1268,7 @@ public class Query
      * Compatible with JDK 1.6
      */
     private static final long serialVersionUID = -5801329450358952434L;
-    
+
     /**
      * The value to look for.
      */
@@ -1312,12 +1312,12 @@ public class Query
      */
     public boolean apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       String v = val.apply(name).toString();
       for (ValueExp vl : valueList)
-	if (v.equals(vl.apply(name).toString()))
-	  return true;
+        if (v.equals(vl.apply(name).toString()))
+          return true;
       return false;
     }
 
@@ -1358,7 +1358,7 @@ public class Query
 
     /**
      * Checks that the bean specified by the supplied
-     * {@link ObjectName} is of the correct class 
+     * {@link ObjectName} is of the correct class
      * using {@link MBeanServer#isInstanceOf(ObjectName,String)}.
      * where the string is obtained by evaluating
      * <code>classNameValue</code>.
@@ -1378,21 +1378,21 @@ public class Query
      */
     public boolean apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       try
-	{
-	  String className = ((StringValueExp)
-			      classNameValue.apply(name)).getValue();
-	  return QueryEval.getMBeanServer().isInstanceOf(name, className);
-	}
+        {
+          String className = ((StringValueExp)
+                              classNameValue.apply(name)).getValue();
+          return QueryEval.getMBeanServer().isInstanceOf(name, className);
+        }
       catch (InstanceNotFoundException e)
-	{
-	  throw (BadAttributeValueExpException)
-	    new BadAttributeValueExpException("The named bean is not registered.").initCause(e);
-	}
+        {
+          throw (BadAttributeValueExpException)
+            new BadAttributeValueExpException("The named bean is not registered.").initCause(e);
+        }
     }
- 
+
   }
 
   /**
@@ -1411,7 +1411,7 @@ public class Query
      * Compatible with JDK 1.6
      */
     private static final long serialVersionUID = 5269643775896723397L;
-    
+
     /**
      * The expression to negate.
      */
@@ -1446,7 +1446,7 @@ public class Query
      */
     public boolean apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       return !(exp.apply(name));
     }
@@ -1469,7 +1469,7 @@ public class Query
      * Compatible with JDK 1.6
      */
     private static final long serialVersionUID = 2962973084421716523L;
-    
+
     /**
      * The first operand.
      */
@@ -1513,7 +1513,7 @@ public class Query
      */
     public boolean apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       return exp1.apply(name) || exp2.apply(name);
     }
@@ -1542,7 +1542,7 @@ public class Query
      * The boolean value.
      */
     private boolean val;
-    
+
     /**
      * Constructs a new {@link BooleanValueExp} using the
      * specified value.
@@ -1572,11 +1572,11 @@ public class Query
      */
     public ValueExp apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       return this;
     }
-    
+
     /**
      * Returns the value as a string.
      *
@@ -1613,7 +1613,7 @@ public class Query
      * The numeric value.
      */
     private Number val;
-    
+
     /**
      * Constructs a new {@link NumericValueExp} using the
      * specified value.
@@ -1643,11 +1643,11 @@ public class Query
      */
     public ValueExp apply(ObjectName name)
       throws BadStringOperationException, BadBinaryOpValueExpException,
-	     BadAttributeValueExpException, InvalidApplicationException
+             BadAttributeValueExpException, InvalidApplicationException
     {
       return this;
     }
-    
+
     /**
      * Returns the value.
      */
@@ -1677,51 +1677,51 @@ public class Query
     {
       Number v = o.getValue();
       if (val instanceof Double)
-	{
-	  double d = val.doubleValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(d + v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(d + v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(d + v.longValue());
-	  else
-	    return new NumericValueExp(d + v.intValue());
-	}
+        {
+          double d = val.doubleValue();
+          if (v instanceof Double)
+            return new NumericValueExp(d + v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(d + v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(d + v.longValue());
+          else
+            return new NumericValueExp(d + v.intValue());
+        }
       else if (val instanceof Float)
-	{
-	  float f = val.floatValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(f + v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(f + v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(f + v.longValue());
-	  else
-	    return new NumericValueExp(f + v.intValue());
-	}
+        {
+          float f = val.floatValue();
+          if (v instanceof Double)
+            return new NumericValueExp(f + v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(f + v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(f + v.longValue());
+          else
+            return new NumericValueExp(f + v.intValue());
+        }
       else if (val instanceof Long)
-	{
-	  long l = val.longValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(l + v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(l + v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(l + v.longValue());
-	  else
-	    return new NumericValueExp(l + v.intValue());
-	}
+        {
+          long l = val.longValue();
+          if (v instanceof Double)
+            return new NumericValueExp(l + v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(l + v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(l + v.longValue());
+          else
+            return new NumericValueExp(l + v.intValue());
+        }
       int i = val.intValue();
       if (v instanceof Double)
-	return new NumericValueExp(i + v.doubleValue());
+        return new NumericValueExp(i + v.doubleValue());
       else if (v instanceof Float)
-	return new NumericValueExp(i + v.floatValue());
+        return new NumericValueExp(i + v.floatValue());
       else if (v instanceof Long)
-	return new NumericValueExp(i + v.longValue());
+        return new NumericValueExp(i + v.longValue());
       else
-	return new NumericValueExp(i + v.intValue());   
-    }   
+        return new NumericValueExp(i + v.intValue());
+    }
 
     /**
      * Return New NumericValueExp(the result of subtracting the specified
@@ -1734,51 +1734,51 @@ public class Query
     {
       Number v = o.getValue();
       if (val instanceof Double)
-	{
-	  double d = val.doubleValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(d - v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(d - v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(d - v.longValue());
-	  else
-	    return new NumericValueExp(d - v.intValue());
-	}
+        {
+          double d = val.doubleValue();
+          if (v instanceof Double)
+            return new NumericValueExp(d - v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(d - v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(d - v.longValue());
+          else
+            return new NumericValueExp(d - v.intValue());
+        }
       else if (val instanceof Float)
-	{
-	  float f = val.floatValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(f - v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(f - v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(f - v.longValue());
-	  else
-	    return new NumericValueExp(f - v.intValue());
-	}
+        {
+          float f = val.floatValue();
+          if (v instanceof Double)
+            return new NumericValueExp(f - v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(f - v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(f - v.longValue());
+          else
+            return new NumericValueExp(f - v.intValue());
+        }
       else if (val instanceof Long)
-	{
-	  long l = val.longValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(l - v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(l - v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(l - v.longValue());
-	  else
-	    return new NumericValueExp(l - v.intValue());
-	}
+        {
+          long l = val.longValue();
+          if (v instanceof Double)
+            return new NumericValueExp(l - v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(l - v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(l - v.longValue());
+          else
+            return new NumericValueExp(l - v.intValue());
+        }
       int i = val.intValue();
       if (v instanceof Double)
-	return new NumericValueExp(i - v.doubleValue());
+        return new NumericValueExp(i - v.doubleValue());
       else if (v instanceof Float)
-	return new NumericValueExp(i - v.floatValue());
+        return new NumericValueExp(i - v.floatValue());
       else if (v instanceof Long)
-	return new NumericValueExp(i - v.longValue());
+        return new NumericValueExp(i - v.longValue());
       else
-	return new NumericValueExp(i - v.intValue());   
-    }   
+        return new NumericValueExp(i - v.intValue());
+    }
 
     /**
      * Return New NumericValueExp(the result of multiplying the specified
@@ -1791,51 +1791,51 @@ public class Query
     {
       Number v = o.getValue();
       if (val instanceof Double)
-	{
-	  double d = val.doubleValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(d * v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(d * v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(d * v.longValue());
-	  else
-	    return new NumericValueExp(d * v.intValue());
-	}
+        {
+          double d = val.doubleValue();
+          if (v instanceof Double)
+            return new NumericValueExp(d * v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(d * v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(d * v.longValue());
+          else
+            return new NumericValueExp(d * v.intValue());
+        }
       else if (val instanceof Float)
-	{
-	  float f = val.floatValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(f * v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(f * v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(f * v.longValue());
-	  else
-	    return new NumericValueExp(f * v.intValue());
-	}
+        {
+          float f = val.floatValue();
+          if (v instanceof Double)
+            return new NumericValueExp(f * v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(f * v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(f * v.longValue());
+          else
+            return new NumericValueExp(f * v.intValue());
+        }
       else if (val instanceof Long)
-	{
-	  long l = val.longValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(l * v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(l * v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(l * v.longValue());
-	  else
-	    return new NumericValueExp(l * v.intValue());
-	}
+        {
+          long l = val.longValue();
+          if (v instanceof Double)
+            return new NumericValueExp(l * v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(l * v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(l * v.longValue());
+          else
+            return new NumericValueExp(l * v.intValue());
+        }
       int i = val.intValue();
       if (v instanceof Double)
-	return new NumericValueExp(i * v.doubleValue());
+        return new NumericValueExp(i * v.doubleValue());
       else if (v instanceof Float)
-	return new NumericValueExp(i * v.floatValue());
+        return new NumericValueExp(i * v.floatValue());
       else if (v instanceof Long)
-	return new NumericValueExp(i * v.longValue());
+        return new NumericValueExp(i * v.longValue());
       else
-	return new NumericValueExp(i * v.intValue());   
-    }   
+        return new NumericValueExp(i * v.intValue());
+    }
 
     /**
      * Return New NumericValueExp(the result of dividing this
@@ -1849,53 +1849,52 @@ public class Query
     {
       Number v = o.getValue();
       if (val instanceof Double)
-	{
-	  double d = val.doubleValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(d / v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(d / v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(d / v.longValue());
-	  else
-	    return new NumericValueExp(d / v.intValue());
-	}
+        {
+          double d = val.doubleValue();
+          if (v instanceof Double)
+            return new NumericValueExp(d / v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(d / v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(d / v.longValue());
+          else
+            return new NumericValueExp(d / v.intValue());
+        }
       else if (val instanceof Float)
-	{
-	  float f = val.floatValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(f / v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(f / v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(f / v.longValue());
-	  else
-	    return new NumericValueExp(f / v.intValue());
-	}
+        {
+          float f = val.floatValue();
+          if (v instanceof Double)
+            return new NumericValueExp(f / v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(f / v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(f / v.longValue());
+          else
+            return new NumericValueExp(f / v.intValue());
+        }
       else if (val instanceof Long)
-	{
-	  long l = val.longValue();
-	  if (v instanceof Double)
-	    return new NumericValueExp(l / v.doubleValue());
-	  else if (v instanceof Float)
-	    return new NumericValueExp(l / v.floatValue());
-	  else if (v instanceof Long)
-	    return new NumericValueExp(l / v.longValue());
-	  else
-	    return new NumericValueExp(l / v.intValue());
-	}
+        {
+          long l = val.longValue();
+          if (v instanceof Double)
+            return new NumericValueExp(l / v.doubleValue());
+          else if (v instanceof Float)
+            return new NumericValueExp(l / v.floatValue());
+          else if (v instanceof Long)
+            return new NumericValueExp(l / v.longValue());
+          else
+            return new NumericValueExp(l / v.intValue());
+        }
       int i = val.intValue();
       if (v instanceof Double)
-	return new NumericValueExp(i / v.doubleValue());
+        return new NumericValueExp(i / v.doubleValue());
       else if (v instanceof Float)
-	return new NumericValueExp(i / v.floatValue());
+        return new NumericValueExp(i / v.floatValue());
       else if (v instanceof Long)
-	return new NumericValueExp(i / v.longValue());
+        return new NumericValueExp(i / v.longValue());
       else
-	return new NumericValueExp(i / v.intValue());   
-    }   
+        return new NumericValueExp(i / v.intValue());
+    }
 
   }
 
 }
-

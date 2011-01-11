@@ -43,16 +43,16 @@ import javax.print.attribute.PrintServiceAttribute;
 
 
 /**
- * The <code>PrinterIsAcceptingJobs</code> printing attribute signals 
+ * The <code>PrinterIsAcceptingJobs</code> printing attribute signals
  * if a print services is currently accepting jobs.
  * <p>
  * <b>IPP Compatibility:</b> PrinterIsAcceptingJobs is an IPP 1.1 attribute.
- * The IPP specification treats PrinterIsAcceptingJobs as boolean type which 
- * is not available in the Java Print Service API. The IPP boolean value "true" 
- * corresponds to <code>ACCEPTING_JOBS</code> and "false" 
+ * The IPP specification treats PrinterIsAcceptingJobs as boolean type which
+ * is not available in the Java Print Service API. The IPP boolean value "true"
+ * corresponds to <code>ACCEPTING_JOBS</code> and "false"
  * to <code>NOT_ACCEPTING_JOBS</code>.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -66,22 +66,22 @@ public final class PrinterIsAcceptingJobs extends EnumSyntax
    */
   public static final PrinterIsAcceptingJobs NOT_ACCEPTING_JOBS =
     new PrinterIsAcceptingJobs(0);
-  
+
   /**
    * The printer is accepting jobs.
    */
   public static final PrinterIsAcceptingJobs ACCEPTING_JOBS =
     new PrinterIsAcceptingJobs(1);
 
-  private static final String[] stringTable = { "not-accepting-jobs", 
+  private static final String[] stringTable = { "not-accepting-jobs",
                                                 "accepting-jobs" };
-  
-  private static final PrinterIsAcceptingJobs[] enumValueTable = 
+
+  private static final PrinterIsAcceptingJobs[] enumValueTable =
     { NOT_ACCEPTING_JOBS, ACCEPTING_JOBS };
-  
+
   /**
    * Constructs a <code>PrinterIsAcceptingJobs</code> object.
-   * 
+   *
    * @param value the enum value.
    */
   protected PrinterIsAcceptingJobs(int value)
@@ -108,7 +108,7 @@ public final class PrinterIsAcceptingJobs extends EnumSyntax
   {
     return "printer-is-accepting-jobs";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

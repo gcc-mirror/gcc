@@ -1,4 +1,4 @@
-/* TransformerHandler.java -- 
+/* TransformerHandler.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,12 +51,12 @@ import org.xml.sax.ext.LexicalHandler;
 public interface TransformerHandler
   extends ContentHandler, LexicalHandler, DTDHandler
 {
-  
+
   /**
    * Sets the result sink to be used as the output of the transformation.
    * @exception IllegalArgumentException if the result is not a valid target
    */
-  public void setResult(Result result) 
+  public void setResult(Result result)
     throws IllegalArgumentException;
 
   /**

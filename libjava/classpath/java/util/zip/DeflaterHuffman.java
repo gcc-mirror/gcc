@@ -44,7 +44,7 @@ package java.util.zip;
  * to the split of deflate and setInput.
  *
  * @author Jochen Hoenicke
- * @date Jan 6, 2000 
+ * @date Jan 6, 2000
  */
 class DeflaterHuffman
 {
@@ -79,7 +79,7 @@ class DeflaterHuffman
 
     void reset() {
       for (int i = 0; i < freqs.length; i++)
-	freqs[i] = 0;
+        freqs[i] = 0;
       codes = null;
       length = null;
     }
@@ -87,10 +87,10 @@ class DeflaterHuffman
     final void writeSymbol(int code)
     {
       if (DeflaterConstants.DEBUGGING)
- 	{
- 	  freqs[code]--;
-//  	  System.err.print("writeSymbol("+freqs.length+","+code+"): ");
- 	}
+        {
+          freqs[code]--;
+//        System.err.print("writeSymbol("+freqs.length+","+code+"): ");
+        }
       pending.writeBits(codes[code] & 0xffff, length[code]);
     }
 
@@ -98,13 +98,13 @@ class DeflaterHuffman
     {
       boolean empty = true;
       for (int i = 0; i < freqs.length; i++)
-	if (freqs[i] != 0)
-	  {
-	    System.err.println("freqs["+i+"] == "+freqs[i]);
-	    empty = false;
-	  }
+        if (freqs[i] != 0)
+          {
+            System.err.println("freqs["+i+"] == "+freqs[i]);
+            empty = false;
+          }
       if (!empty)
-	throw new InternalError();
+        throw new InternalError();
       System.err.println("checkEmpty suceeded!");
     }
 
@@ -120,31 +120,31 @@ class DeflaterHuffman
       codes = new short[freqs.length];
 
       if (DeflaterConstants.DEBUGGING)
-	System.err.println("buildCodes: "+freqs.length);
-      for (int bits = 0; bits < maxLength; bits++) 
-	{
-	  nextCode[bits] = code;
-	  code += bl_counts[bits] << (15 - bits);
-	  if (DeflaterConstants.DEBUGGING)
-	    System.err.println("bits: "+(bits+1)+" count: "+bl_counts[bits]
-			       +" nextCode: "+Integer.toHexString(code));
-	}
+        System.err.println("buildCodes: "+freqs.length);
+      for (int bits = 0; bits < maxLength; bits++)
+        {
+          nextCode[bits] = code;
+          code += bl_counts[bits] << (15 - bits);
+          if (DeflaterConstants.DEBUGGING)
+            System.err.println("bits: "+(bits+1)+" count: "+bl_counts[bits]
+                               +" nextCode: "+Integer.toHexString(code));
+        }
       if (DeflaterConstants.DEBUGGING && code != 65536)
-	throw new RuntimeException("Inconsistent bl_counts!");
-      
+        throw new RuntimeException("Inconsistent bl_counts!");
+
       for (int i=0; i < numCodes; i++)
-	{
-	  int bits = length[i];
-	  if (bits > 0)
-	    {
-	      if (DeflaterConstants.DEBUGGING)
-		System.err.println("codes["+i+"] = rev("
-				   +Integer.toHexString(nextCode[bits-1])+"),"
-				   +bits);
-	      codes[i] = bitReverse(nextCode[bits-1]);
-	      nextCode[bits-1] += 1 << (16 - bits);
-	    }
-	}
+        {
+          int bits = length[i];
+          if (bits > 0)
+            {
+              if (DeflaterConstants.DEBUGGING)
+                System.err.println("codes["+i+"] = rev("
+                                   +Integer.toHexString(nextCode[bits-1])+"),"
+                                   +bits);
+              codes[i] = bitReverse(nextCode[bits-1]);
+              nextCode[bits-1] += 1 << (16 - bits);
+            }
+        }
     }
 
     private void buildLength(int childs[])
@@ -153,63 +153,63 @@ class DeflaterHuffman
       int numNodes = childs.length / 2;
       int numLeafs = (numNodes + 1) / 2;
       int overflow = 0;
-      
+
       for (int i = 0; i < maxLength; i++)
-	bl_counts[i] = 0;
+        bl_counts[i] = 0;
 
       /* First calculate optimal bit lengths */
       int lengths[] = new int[numNodes];
       lengths[numNodes-1] = 0;
       for (int i = numNodes - 1; i >= 0; i--)
-	{
-	  if (childs[2*i+1] != -1)
-	    {
-	      int bitLength = lengths[i] + 1;
-	      if (bitLength > maxLength)
-		{
-		  bitLength = maxLength;
-		  overflow++;
-		}
-	      lengths[childs[2*i]] = lengths[childs[2*i+1]] = bitLength;
-	    }
-	  else
-	    {
-	      /* A leaf node */
-	      int bitLength = lengths[i];
-	      bl_counts[bitLength - 1]++;
-	      this.length[childs[2*i]] = (byte) lengths[i];
-	    }
-	}
-      
+        {
+          if (childs[2*i+1] != -1)
+            {
+              int bitLength = lengths[i] + 1;
+              if (bitLength > maxLength)
+                {
+                  bitLength = maxLength;
+                  overflow++;
+                }
+              lengths[childs[2*i]] = lengths[childs[2*i+1]] = bitLength;
+            }
+          else
+            {
+              /* A leaf node */
+              int bitLength = lengths[i];
+              bl_counts[bitLength - 1]++;
+              this.length[childs[2*i]] = (byte) lengths[i];
+            }
+        }
+
       if (DeflaterConstants.DEBUGGING)
-	{
-	  System.err.println("Tree "+freqs.length+" lengths:");
-	  for (int i=0; i < numLeafs; i++)
-	    System.err.println("Node "+childs[2*i]+" freq: "+freqs[childs[2*i]]
-			       + " len: "+length[childs[2*i]]);
-	}
-      
+        {
+          System.err.println("Tree "+freqs.length+" lengths:");
+          for (int i=0; i < numLeafs; i++)
+            System.err.println("Node "+childs[2*i]+" freq: "+freqs[childs[2*i]]
+                               + " len: "+length[childs[2*i]]);
+        }
+
       if (overflow == 0)
-	return;
-      
+        return;
+
       int incrBitLen = maxLength - 1;
       do
-	{
-	  /* Find the first bit length which could increase: */
-	  while (bl_counts[--incrBitLen] == 0)
-	    ;
-	  
-	  /* Move this node one down and remove a corresponding
-	   * amount of overflow nodes.
-	   */
-	  do
-	    {
-	      bl_counts[incrBitLen]--;
-	      bl_counts[++incrBitLen]++;
-	      overflow -= 1 << (maxLength - 1 - incrBitLen);
-	    }
-	  while (overflow > 0 && incrBitLen < maxLength - 1);
-	}
+        {
+          /* Find the first bit length which could increase: */
+          while (bl_counts[--incrBitLen] == 0)
+            ;
+
+          /* Move this node one down and remove a corresponding
+           * amount of overflow nodes.
+           */
+          do
+            {
+              bl_counts[incrBitLen]--;
+              bl_counts[++incrBitLen]++;
+              overflow -= 1 << (maxLength - 1 - incrBitLen);
+            }
+          while (overflow > 0 && incrBitLen < maxLength - 1);
+        }
       while (overflow > 0);
 
       /* We may have overshot above.  Move some nodes from maxLength to
@@ -217,7 +217,7 @@ class DeflaterHuffman
        */
       bl_counts[maxLength-1] += overflow;
       bl_counts[maxLength-2] -= overflow;
-      
+
       /* Now recompute all bit lengths, scanning in increasing
        * frequency.  It is simpler to reconstruct all lengths instead of
        * fixing only the wrong ones. This idea is taken from 'ar'
@@ -227,30 +227,30 @@ class DeflaterHuffman
        * array.
        */
       int nodePtr = 2 * numLeafs;
-      for (int bits = maxLength; bits != 0; bits--) 
-	{
-	  int n = bl_counts[bits-1];
-	  while (n > 0) 
-	    {
-	      int childPtr = 2*childs[nodePtr++];
-	      if (childs[childPtr + 1] == -1)
-		{
-		  /* We found another leaf */
-		  length[childs[childPtr]] = (byte) bits;
-		  n--;
-		}
-	    }
-	}
+      for (int bits = maxLength; bits != 0; bits--)
+        {
+          int n = bl_counts[bits-1];
+          while (n > 0)
+            {
+              int childPtr = 2*childs[nodePtr++];
+              if (childs[childPtr + 1] == -1)
+                {
+                  /* We found another leaf */
+                  length[childs[childPtr]] = (byte) bits;
+                  n--;
+                }
+            }
+        }
       if (DeflaterConstants.DEBUGGING)
-	{
-	  System.err.println("*** After overflow elimination. ***");
-	  for (int i=0; i < numLeafs; i++)
-	    System.err.println("Node "+childs[2*i]+" freq: "+freqs[childs[2*i]]
-			       + " len: "+length[childs[2*i]]);
-	}
+        {
+          System.err.println("*** After overflow elimination. ***");
+          for (int i=0; i < numLeafs; i++)
+            System.err.println("Node "+childs[2*i]+" freq: "+freqs[childs[2*i]]
+                               + " len: "+length[childs[2*i]]);
+        }
     }
-    
-    void buildTree() 
+
+    void buildTree()
     {
       int numSymbols = freqs.length;
 
@@ -266,123 +266,123 @@ class DeflaterHuffman
       int heapLen = 0;
       int maxCode = 0;
       for (int n = 0; n < numSymbols; n++)
-	{
-	  int freq = freqs[n];
-	  if (freq != 0)
-	    {
-	      /* Insert n into heap */
-	      int pos = heapLen++;
-	      int ppos;
-	      while (pos > 0 &&
-		     freqs[heap[ppos = (pos - 1) / 2]] > freq) {
-		heap[pos] = heap[ppos];
-		pos = ppos;
-	      }
-	      heap[pos] = n;
-	      maxCode = n;
-	    }
-	}
-      
+        {
+          int freq = freqs[n];
+          if (freq != 0)
+            {
+              /* Insert n into heap */
+              int pos = heapLen++;
+              int ppos;
+              while (pos > 0 &&
+                     freqs[heap[ppos = (pos - 1) / 2]] > freq) {
+                heap[pos] = heap[ppos];
+                pos = ppos;
+              }
+              heap[pos] = n;
+              maxCode = n;
+            }
+        }
+
       /* We could encode a single literal with 0 bits but then we
        * don't see the literals.  Therefore we force at least two
        * literals to avoid this case.  We don't care about order in
-       * this case, both literals get a 1 bit code.  
+       * this case, both literals get a 1 bit code.
        */
       while (heapLen < 2)
-	{
-	  int node = maxCode < 2 ? ++maxCode : 0;
-	  heap[heapLen++] = node;
-	}
+        {
+          int node = maxCode < 2 ? ++maxCode : 0;
+          heap[heapLen++] = node;
+        }
 
       numCodes = Math.max(maxCode + 1, minNumCodes);
-      
+
       int numLeafs = heapLen;
       int[] childs = new int[4*heapLen - 2];
       int[] values = new int[2*heapLen - 1];
       int numNodes = numLeafs;
       for (int i = 0; i < heapLen; i++)
-	{
-	  int node = heap[i];
-	  childs[2*i]   = node;
-	  childs[2*i+1] = -1;
-	  values[i] = freqs[node] << 8;
-	  heap[i] = i;
-	}
-      
+        {
+          int node = heap[i];
+          childs[2*i]   = node;
+          childs[2*i+1] = -1;
+          values[i] = freqs[node] << 8;
+          heap[i] = i;
+        }
+
       /* Construct the Huffman tree by repeatedly combining the least two
        * frequent nodes.
        */
       do
-	{
-	  int first = heap[0];
-	  int last  = heap[--heapLen];
-	  
-	  /* Propagate the hole to the leafs of the heap */
-	  int ppos = 0;
-	  int path = 1;
-	  while (path < heapLen)
-	    {
-	      if (path + 1 < heapLen 
-		  && values[heap[path]] > values[heap[path+1]])
-		path++;
-	      
-	      heap[ppos] = heap[path];
-	      ppos = path;
-	      path = path * 2 + 1;
-	    }
-	  
-	  /* Now propagate the last element down along path.  Normally
-	   * it shouldn't go too deep.
-	   */
-	  int lastVal = values[last];
-	  while ((path = ppos) > 0
-		 && values[heap[ppos = (path - 1)/2]] > lastVal)
-	    heap[path] = heap[ppos];
-	  heap[path] = last;
-	  
-	  
-	  int second = heap[0];
-	  
-	  /* Create a new node father of first and second */
-	  last = numNodes++;
-	  childs[2*last] = first;
-	  childs[2*last+1] = second;
-	  int mindepth = Math.min(values[first] & 0xff, values[second] & 0xff);
-	  values[last] = lastVal = values[first] + values[second] - mindepth + 1;
-	  
-	  /* Again, propagate the hole to the leafs */
-	  ppos = 0;
-	  path = 1;
-	  while (path < heapLen)
-	    {
-	      if (path + 1 < heapLen 
-		  && values[heap[path]] > values[heap[path+1]])
-		path++;
-	      
-	      heap[ppos] = heap[path];
-	      ppos = path;
-	      path = ppos * 2 + 1;
-	    }
-	  
-	  /* Now propagate the new element down along path */
-	  while ((path = ppos) > 0
-		 && values[heap[ppos = (path - 1)/2]] > lastVal)
-	    heap[path] = heap[ppos];
-	  heap[path] = last;
-	}
+        {
+          int first = heap[0];
+          int last  = heap[--heapLen];
+
+          /* Propagate the hole to the leafs of the heap */
+          int ppos = 0;
+          int path = 1;
+          while (path < heapLen)
+            {
+              if (path + 1 < heapLen
+                  && values[heap[path]] > values[heap[path+1]])
+                path++;
+
+              heap[ppos] = heap[path];
+              ppos = path;
+              path = path * 2 + 1;
+            }
+
+          /* Now propagate the last element down along path.  Normally
+           * it shouldn't go too deep.
+           */
+          int lastVal = values[last];
+          while ((path = ppos) > 0
+                 && values[heap[ppos = (path - 1)/2]] > lastVal)
+            heap[path] = heap[ppos];
+          heap[path] = last;
+
+
+          int second = heap[0];
+
+          /* Create a new node father of first and second */
+          last = numNodes++;
+          childs[2*last] = first;
+          childs[2*last+1] = second;
+          int mindepth = Math.min(values[first] & 0xff, values[second] & 0xff);
+          values[last] = lastVal = values[first] + values[second] - mindepth + 1;
+
+          /* Again, propagate the hole to the leafs */
+          ppos = 0;
+          path = 1;
+          while (path < heapLen)
+            {
+              if (path + 1 < heapLen
+                  && values[heap[path]] > values[heap[path+1]])
+                path++;
+
+              heap[ppos] = heap[path];
+              ppos = path;
+              path = ppos * 2 + 1;
+            }
+
+          /* Now propagate the new element down along path */
+          while ((path = ppos) > 0
+                 && values[heap[ppos = (path - 1)/2]] > lastVal)
+            heap[path] = heap[ppos];
+          heap[path] = last;
+        }
       while (heapLen > 1);
-      
+
       if (heap[0] != childs.length / 2 - 1)
-	throw new RuntimeException("Weird!");
-      
+        throw new RuntimeException("Weird!");
+
       buildLength(childs);
     }
 
-    int getEncodedLength() 
+    int getEncodedLength()
     {
       int len = 0;
       for (int i = 0; i < freqs.length; i++)
-	len += freqs[i] * length[i];
+        len += freqs[i] * length[i];
       return len;
     }
 
@@ -391,46 +391,46 @@ class DeflaterHuffman
       int min_count;               /* min repeat count */
       int count;                   /* repeat count of the current code */
       int curlen = -1;             /* length of current code */
-      
+
       int i = 0;
       while (i < numCodes)
-	{
-	  count = 1;
-	  int nextlen = length[i];
-	  if (nextlen == 0) 
-	    {
-	      max_count = 138;
-	      min_count = 3;
-	    }
-	  else
-	    {
-	      max_count = 6;
-	      min_count = 3;
-	      if (curlen != nextlen)
-		{
-		  blTree.freqs[nextlen]++;
-		  count = 0;
-		}
-	    }
-	  curlen = nextlen;
-	  i++;
+        {
+          count = 1;
+          int nextlen = length[i];
+          if (nextlen == 0)
+            {
+              max_count = 138;
+              min_count = 3;
+            }
+          else
+            {
+              max_count = 6;
+              min_count = 3;
+              if (curlen != nextlen)
+                {
+                  blTree.freqs[nextlen]++;
+                  count = 0;
+                }
+            }
+          curlen = nextlen;
+          i++;
 
-	  while (i < numCodes && curlen == length[i])
-	    {
-	      i++;
-	      if (++count >= max_count)
-		break;
-	    }
+          while (i < numCodes && curlen == length[i])
+            {
+              i++;
+              if (++count >= max_count)
+                break;
+            }
 
-	  if (count < min_count)
-	    blTree.freqs[curlen] += count;
-	  else if (curlen != 0)
-	    blTree.freqs[REP_3_6]++;
-	  else if (count <= 10)
-	    blTree.freqs[REP_3_10]++;
-	  else
-	    blTree.freqs[REP_11_138]++;
-	}
+          if (count < min_count)
+            blTree.freqs[curlen] += count;
+          else if (curlen != 0)
+            blTree.freqs[REP_3_6]++;
+          else if (count <= 10)
+            blTree.freqs[REP_3_10]++;
+          else
+            blTree.freqs[REP_11_138]++;
+        }
     }
 
     void writeTree(Tree blTree)
@@ -439,58 +439,58 @@ class DeflaterHuffman
       int min_count;               /* min repeat count */
       int count;                   /* repeat count of the current code */
       int curlen = -1;             /* length of current code */
-      
+
       int i = 0;
       while (i < numCodes)
-	{
-	  count = 1;
-	  int nextlen = length[i];
-	  if (nextlen == 0) 
-	    {
-	      max_count = 138;
-	      min_count = 3;
-	    }
-	  else
-	    {
-	      max_count = 6;
-	      min_count = 3;
-	      if (curlen != nextlen)
-		{
-		  blTree.writeSymbol(nextlen);
-		  count = 0;
-		}
-	    }
-	  curlen = nextlen;
-	  i++;
+        {
+          count = 1;
+          int nextlen = length[i];
+          if (nextlen == 0)
+            {
+              max_count = 138;
+              min_count = 3;
+            }
+          else
+            {
+              max_count = 6;
+              min_count = 3;
+              if (curlen != nextlen)
+                {
+                  blTree.writeSymbol(nextlen);
+                  count = 0;
+                }
+            }
+          curlen = nextlen;
+          i++;
 
-	  while (i < numCodes && curlen == length[i])
-	    {
-	      i++;
-	      if (++count >= max_count)
-		break;
-	    }
+          while (i < numCodes && curlen == length[i])
+            {
+              i++;
+              if (++count >= max_count)
+                break;
+            }
 
-	  if (count < min_count)
-	    {
-	      while (count-- > 0)
-		blTree.writeSymbol(curlen);
-	    }
-	  else if (curlen != 0)
-	    {
-	      blTree.writeSymbol(REP_3_6);
-	      pending.writeBits(count - 3, 2);
-	    }
-	  else if (count <= 10)
-	    {
-	      blTree.writeSymbol(REP_3_10);
-	      pending.writeBits(count - 3, 3);
-	    }
-	  else
-	    {
-	      blTree.writeSymbol(REP_11_138);
-	      pending.writeBits(count - 11, 7);
-	    }
-	}
+          if (count < min_count)
+            {
+              while (count-- > 0)
+                blTree.writeSymbol(curlen);
+            }
+          else if (curlen != 0)
+            {
+              blTree.writeSymbol(REP_3_6);
+              pending.writeBits(count - 3, 2);
+            }
+          else if (count <= 10)
+            {
+              blTree.writeSymbol(REP_3_10);
+              pending.writeBits(count - 3, 3);
+            }
+          else
+            {
+              blTree.writeSymbol(REP_11_138);
+              pending.writeBits(count - 11, 7);
+            }
+        }
     }
   }
 
@@ -514,9 +514,9 @@ class DeflaterHuffman
    */
   static short bitReverse(int value) {
     return (short) (bit4Reverse.charAt(value & 0xf) << 12
-		    | bit4Reverse.charAt((value >> 4) & 0xf) << 8
-		    | bit4Reverse.charAt((value >> 8) & 0xf) << 4
-		    | bit4Reverse.charAt(value >> 12));
+                    | bit4Reverse.charAt((value >> 4) & 0xf) << 8
+                    | bit4Reverse.charAt((value >> 8) & 0xf) << 4
+                    | bit4Reverse.charAt(value >> 12));
   }
 
   static {
@@ -550,8 +550,8 @@ class DeflaterHuffman
       staticDLength[i] = 5;
     }
   }
-    
-  public DeflaterHuffman(DeflaterPending pending) 
+
+  public DeflaterHuffman(DeflaterPending pending)
   {
     this.pending = pending;
 
@@ -578,8 +578,8 @@ class DeflaterHuffman
     int code = 257;
     while (len >= 8)
       {
-	code += 4;
-	len >>= 1;
+        code += 4;
+        len >>= 1;
       }
     return code + len;
   }
@@ -588,8 +588,8 @@ class DeflaterHuffman
     int code = 0;
     while (distance >= 4)
       {
-	code += 2;
-	distance >>= 1;
+        code += 2;
+        distance >>= 1;
       }
     return code + distance;
   }
@@ -610,58 +610,58 @@ class DeflaterHuffman
   }
 
   public void compressBlock() {
-    for (int i = 0; i < last_lit; i++) 
+    for (int i = 0; i < last_lit; i++)
       {
-	int litlen = l_buf[i] & 0xff;
-	int dist = d_buf[i];
-	if (dist-- != 0)
-	  {
-	    if (DeflaterConstants.DEBUGGING)
-	      System.err.print("["+(dist+1)+","+(litlen+3)+"]: ");
+        int litlen = l_buf[i] & 0xff;
+        int dist = d_buf[i];
+        if (dist-- != 0)
+          {
+            if (DeflaterConstants.DEBUGGING)
+              System.err.print("["+(dist+1)+","+(litlen+3)+"]: ");
 
-	    int lc = l_code(litlen);
-	    literalTree.writeSymbol(lc);
+            int lc = l_code(litlen);
+            literalTree.writeSymbol(lc);
 
-	    int bits = (lc - 261) / 4;
-	    if (bits > 0 && bits <= 5)
-	      pending.writeBits(litlen & ((1 << bits) - 1), bits);
+            int bits = (lc - 261) / 4;
+            if (bits > 0 && bits <= 5)
+              pending.writeBits(litlen & ((1 << bits) - 1), bits);
 
-	    int dc = d_code(dist);
-	    distTree.writeSymbol(dc);
+            int dc = d_code(dist);
+            distTree.writeSymbol(dc);
 
-	    bits = dc / 2 - 1;
-	    if (bits > 0)
-	      pending.writeBits(dist & ((1 << bits) - 1), bits);
-	  }
-	else
-	  {
-	    if (DeflaterConstants.DEBUGGING)
-	      {
-		if (litlen > 32 && litlen < 127)
-		  System.err.print("("+(char)litlen+"): ");
-		else
-		  System.err.print("{"+litlen+"}: ");
-	      }
-	    literalTree.writeSymbol(litlen);
-	  }
+            bits = dc / 2 - 1;
+            if (bits > 0)
+              pending.writeBits(dist & ((1 << bits) - 1), bits);
+          }
+        else
+          {
+            if (DeflaterConstants.DEBUGGING)
+              {
+                if (litlen > 32 && litlen < 127)
+                  System.err.print("("+(char)litlen+"): ");
+                else
+                  System.err.print("{"+litlen+"}: ");
+              }
+            literalTree.writeSymbol(litlen);
+          }
       }
     if (DeflaterConstants.DEBUGGING)
       System.err.print("EOF: ");
     literalTree.writeSymbol(EOF_SYMBOL);
     if (DeflaterConstants.DEBUGGING)
       {
-	literalTree.checkEmpty();
-	distTree.checkEmpty();
+        literalTree.checkEmpty();
+        distTree.checkEmpty();
       }
   }
 
-  public void flushStoredBlock(byte[] stored, 
-			       int stored_offset, int stored_len,
-			       boolean lastBlock) {
+  public void flushStoredBlock(byte[] stored,
+                               int stored_offset, int stored_len,
+                               boolean lastBlock) {
     if (DeflaterConstants.DEBUGGING)
       System.err.println("Flushing stored block "+ stored_len);
     pending.writeBits((DeflaterConstants.STORED_BLOCK << 1)
-		      + (lastBlock ? 1 : 0), 3);
+                      + (lastBlock ? 1 : 0), 3);
     pending.alignToByte();
     pending.writeShort(stored_len);
     pending.writeShort(~stored_len);
@@ -670,7 +670,7 @@ class DeflaterHuffman
   }
 
   public void flushBlock(byte[] stored, int stored_offset, int stored_len,
-			 boolean lastBlock) {
+                         boolean lastBlock) {
     literalTree.freqs[EOF_SYMBOL]++;
 
     /* Build trees */
@@ -687,8 +687,8 @@ class DeflaterHuffman
     int blTreeCodes = 4;
     for (int i = 18; i > blTreeCodes; i--)
       {
-	if (blTree.length[BL_ORDER[i]] > 0)
-	  blTreeCodes = i+1;
+        if (blTree.length[BL_ORDER[i]] > 0)
+          blTreeCodes = i+1;
       }
     int opt_len = 14 + blTreeCodes * 3 + blTree.getEncodedLength()
       + literalTree.getEncodedLength() + distTree.getEncodedLength()
@@ -701,36 +701,36 @@ class DeflaterHuffman
       static_len += distTree.freqs[i] * staticDLength[i];
     if (opt_len >= static_len)
       {
-	/* Force static trees */
-	opt_len = static_len;
+        /* Force static trees */
+        opt_len = static_len;
       }
 
     if (stored_offset >= 0 && stored_len+4 < opt_len >> 3)
       {
-	/* Store Block */
-	if (DeflaterConstants.DEBUGGING)
-	  System.err.println("Storing, since " + stored_len + " < " + opt_len
-			     + " <= " + static_len);
-	flushStoredBlock(stored, stored_offset, stored_len, lastBlock);
+        /* Store Block */
+        if (DeflaterConstants.DEBUGGING)
+          System.err.println("Storing, since " + stored_len + " < " + opt_len
+                             + " <= " + static_len);
+        flushStoredBlock(stored, stored_offset, stored_len, lastBlock);
       }
     else if (opt_len == static_len)
       {
-	/* Encode with static tree */
-	pending.writeBits((DeflaterConstants.STATIC_TREES << 1)
-			  + (lastBlock ? 1 : 0), 3);
-	literalTree.setStaticCodes(staticLCodes, staticLLength);
-	distTree.setStaticCodes(staticDCodes, staticDLength);
-	compressBlock();
-	reset();
+        /* Encode with static tree */
+        pending.writeBits((DeflaterConstants.STATIC_TREES << 1)
+                          + (lastBlock ? 1 : 0), 3);
+        literalTree.setStaticCodes(staticLCodes, staticLLength);
+        distTree.setStaticCodes(staticDCodes, staticDLength);
+        compressBlock();
+        reset();
       }
     else
       {
-	/* Encode with dynamic tree */
-	pending.writeBits((DeflaterConstants.DYN_TREES << 1)
-			  + (lastBlock ? 1 : 0), 3);
-	sendAllTrees(blTreeCodes);
-	compressBlock();
-	reset();
+        /* Encode with dynamic tree */
+        pending.writeBits((DeflaterConstants.DYN_TREES << 1)
+                          + (lastBlock ? 1 : 0), 3);
+        sendAllTrees(blTreeCodes);
+        compressBlock();
+        reset();
       }
   }
 
@@ -739,14 +739,14 @@ class DeflaterHuffman
     return last_lit == BUFSIZE;
   }
 
-  public final boolean tallyLit(int lit) 
+  public final boolean tallyLit(int lit)
   {
     if (DeflaterConstants.DEBUGGING)
       {
-	if (lit > 32 && lit < 127)
-	  System.err.println("("+(char)lit+")");
-	else
-	  System.err.println("{"+lit+"}");
+        if (lit > 32 && lit < 127)
+          System.err.println("("+(char)lit+")");
+        else
+          System.err.println("{"+lit+"}");
       }
     d_buf[last_lit] = 0;
     l_buf[last_lit++] = (byte) lit;
@@ -754,7 +754,7 @@ class DeflaterHuffman
     return last_lit == BUFSIZE;
   }
 
-  public final boolean tallyDist(int dist, int len) 
+  public final boolean tallyDist(int dist, int len)
   {
     if (DeflaterConstants.DEBUGGING)
       System.err.println("["+dist+","+len+"]");

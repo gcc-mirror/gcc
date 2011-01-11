@@ -1,4 +1,4 @@
-/* DelegateFactory.java -- 
+/* DelegateFactory.java --
    Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,7 +44,7 @@ import gnu.CORBA.ObjectCreator;
 /**
  * This class produces delegates, using the system properties. If not
  * corresponding property is specified, returns default implementations.
- * 
+ *
  * @author Wu Gansha (gansha.wu@intel.com)
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
@@ -73,11 +73,11 @@ public class DelegateFactory
   /**
    * Get an instance of the given delegate. As in all cases the singleton
    * instance is used, the caching here would be redundant.
-   * 
+   *
    * @param type a delegate type.
-   * 
+   *
    * @return the associated delegate.
-   * 
+   *
    * @throws InternalError if the delegate class, indicated in the system
    * properties, cannot be instantiated.
    */

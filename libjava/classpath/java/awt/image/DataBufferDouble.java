@@ -48,8 +48,8 @@ package java.awt.image;
 
 /**
  * A {@link DataBuffer} that uses an array of <code>double</code> primitives
- * to represent each of its banks. 
- * 
+ * to represent each of its banks.
+ *
  * @since 1.4
  *
  * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
@@ -60,11 +60,11 @@ public final class DataBufferDouble
 {
   private double[] data;
   private double[][] bankData;
-  
+
   /**
-   * Creates a new data buffer with a single data bank containing the 
+   * Creates a new data buffer with a single data bank containing the
    * specified number of <code>double</code> elements.
-   * 
+   *
    * @param size the number of elements in the data bank.
    */
   public DataBufferDouble(int size)
@@ -76,9 +76,9 @@ public final class DataBufferDouble
   }
 
   /**
-   * Creates a new data buffer with the specified number of data banks, 
+   * Creates a new data buffer with the specified number of data banks,
    * each containing the specified number of <code>double</code> elements.
-   * 
+   *
    * @param size the number of elements in the data bank.
    * @param numBanks the number of data banks.
    */
@@ -92,10 +92,10 @@ public final class DataBufferDouble
   /**
    * Creates a new data buffer backed by the specified data bank.
    * <p>
-   * Note: there is no exception when <code>dataArray</code> is 
+   * Note: there is no exception when <code>dataArray</code> is
    * <code>null</code>, but in that case an exception will be thrown
    * later if you attempt to access the data buffer.
-   * 
+   *
    * @param dataArray the data bank.
    * @param size the number of elements in the data bank.
    */
@@ -106,15 +106,15 @@ public final class DataBufferDouble
     data = dataArray;
     bankData[0] = data;
   }
-    
+
   /**
    * Creates a new data buffer backed by the specified data bank, with
    * the specified offset to the first element.
    * <p>
-   * Note: there is no exception when <code>dataArray</code> is 
+   * Note: there is no exception when <code>dataArray</code> is
    * <code>null</code>, but in that case an exception will be thrown
    * later if you attempt to access the data buffer.
-   * 
+   *
    * @param dataArray the data bank.
    * @param size the number of elements in the data bank.
    * @param offset the offset to the first element in the array.
@@ -129,11 +129,11 @@ public final class DataBufferDouble
 
   /**
    * Creates a new data buffer backed by the specified data banks.
-   * 
+   *
    * @param dataArray the data banks.
    * @param size the number of elements in the data bank.
-   * 
-   * @throws NullPointerException if <code>dataArray</code> is 
+   *
+   * @throws NullPointerException if <code>dataArray</code> is
    *         <code>null</code>.
    */
   public DataBufferDouble(double[][] dataArray, int size)
@@ -146,12 +146,12 @@ public final class DataBufferDouble
   /**
    * Creates a new data buffer backed by the specified data banks, with
    * the specified offsets to the first element in each bank.
-   * 
+   *
    * @param dataArray the data banks.
    * @param size the number of elements in the data bank.
    * @param offsets the offsets to the first element in each data bank.
-   * 
-   * @throws NullPointerException if <code>dataArray</code> is 
+   *
+   * @throws NullPointerException if <code>dataArray</code> is
    *         <code>null</code>.
    */
   public DataBufferDouble(double[][] dataArray, int size, int[] offsets)
@@ -163,17 +163,17 @@ public final class DataBufferDouble
 
   /**
    * Returns the first data bank.
-   * 
+   *
    * @return The first data bank.
    */
   public double[] getData()
   {
     return data;
   }
-    
+
   /**
    * Returns a data bank.
-   * 
+   *
    * @param bank the bank index.
    * @return A data bank.
    */
@@ -181,22 +181,22 @@ public final class DataBufferDouble
   {
     return bankData[bank];
   }
-    
+
   /**
    * Returns the array underlying this <code>DataBuffer</code>.
-   * 
+   *
    * @return The data banks.
    */
   public double[][] getBankData()
   {
     return bankData;
   }
-  
+
   /**
    * Returns an element from the first data bank.  The offset (specified in
-   * the constructor) is added to <code>i</code> before accessing the 
+   * the constructor) is added to <code>i</code> before accessing the
    * underlying data array.
-   * 
+   *
    * @param i the element index.
    * @return The element.
    */
@@ -207,9 +207,9 @@ public final class DataBufferDouble
 
   /**
    * Returns an element from a particular data bank.  The offset (specified in
-   * the constructor) is added to <code>i</code> before accessing the 
+   * the constructor) is added to <code>i</code> before accessing the
    * underlying data array.
-   * 
+   *
    * @param bank the bank index.
    * @param i the element index.
    * @return The element.
@@ -223,7 +223,7 @@ public final class DataBufferDouble
    * Sets an element in the first data bank.  The offset (specified in the
    * constructor) is added to <code>i</code> before updating the underlying
    * data array.
-   * 
+   *
    * @param i the element index.
    * @param val the new element value.
    */
@@ -236,7 +236,7 @@ public final class DataBufferDouble
    * Sets an element in a particular data bank.  The offset (specified in the
    * constructor) is added to <code>i</code> before updating the underlying
    * data array.
-   * 
+   *
    * @param bank the data bank index.
    * @param i the element index.
    * @param val the new element value.
@@ -250,7 +250,7 @@ public final class DataBufferDouble
   {
     return (float) data[i+offset];
   }
-    
+
   public float getElemFloat(int bank, int i)
   {
     return (float) bankData[bank][i+offsets[bank]];
@@ -270,7 +270,7 @@ public final class DataBufferDouble
   {
     return data[i + offset];
   }
-    
+
   public double getElemDouble(int bank, int i)
   {
     return bankData[bank][i + offsets[bank]];

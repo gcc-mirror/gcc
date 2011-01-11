@@ -1,4 +1,4 @@
-/* SchemaFactory.java -- 
+/* SchemaFactory.java --
    Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -188,33 +188,33 @@ public abstract class SchemaFactory
   {
     throw new SAXNotRecognizedException(name);
   }
-  
+
   public void setFeature(String name, boolean value)
     throws SAXNotRecognizedException, SAXNotSupportedException
   {
     throw new SAXNotRecognizedException(name);
   }
-  
+
   public Object getProperty(String name)
     throws SAXNotRecognizedException, SAXNotSupportedException
   {
     throw new SAXNotRecognizedException(name);
   }
-  
+
   public void setProperty(String name, Object value)
     throws SAXNotRecognizedException, SAXNotSupportedException
   {
     throw new SAXNotRecognizedException(name);
   }
-  
+
   public abstract ErrorHandler getErrorHandler();
-  
+
   public abstract void setErrorHandler(ErrorHandler errorHandler);
 
   public abstract LSResourceResolver getResourceResolver();
 
   public abstract void setResourceResolver(LSResourceResolver resourceResolver);
-  
+
   /**
    * Returns a schema based on the specified source resource.
    * @param schema the source resource
@@ -234,7 +234,7 @@ public abstract class SchemaFactory
   {
     return newSchema(new StreamSource(schema));
   }
-  
+
   /**
    * Returns a schema based on the specified URL.
    * @param schema the source resource
@@ -244,7 +244,7 @@ public abstract class SchemaFactory
   {
     return newSchema(new StreamSource(schema.toString()));
   }
-  
+
   /**
    * Parses the specified sources, and combine them into a single schema.
    * The exact procedure and semantics of this depends on the schema
@@ -253,12 +253,12 @@ public abstract class SchemaFactory
    */
   public abstract Schema newSchema(Source[] schemata)
     throws SAXException;
-  
+
   /**
    * Creates a special schema.
    * The exact semantics of this depends on the schema language.
    */
   public abstract Schema newSchema()
     throws SAXException;
-  
+
 }

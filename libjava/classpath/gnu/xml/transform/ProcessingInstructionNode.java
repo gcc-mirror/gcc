@@ -1,4 +1,4 @@
-/* ProcessingInstructionNode.java -- 
+/* ProcessingInstructionNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -104,7 +104,7 @@ final class ProcessingInstructionNode
                  context, pos, len,
                  parent, nextSibling);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("processing-instruction");
@@ -114,5 +114,5 @@ final class ProcessingInstructionNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

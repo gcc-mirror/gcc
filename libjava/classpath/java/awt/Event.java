@@ -115,10 +115,10 @@ public class Event implements java.io.Serializable
 
   public Object arg;
   public int clickCount;
-  boolean consumed;		// Required by serialization spec.
+  boolean consumed;             // Required by serialization spec.
   public Event evt;
   public int id;
-  public int key; 
+  public int key;
   public int modifiers;
   public Object target;
   public long when;
@@ -131,9 +131,9 @@ public class Event implements java.io.Serializable
     this.target = target;
     this.arg = arg;
   }
-  
-  public Event (Object target, long when, int id, int x, int y, int key, 
-		int modifiers)
+
+  public Event (Object target, long when, int id, int x, int y, int key,
+                int modifiers)
   {
     this.target = target;
     this.when = when;
@@ -144,8 +144,8 @@ public class Event implements java.io.Serializable
     this.modifiers = modifiers;
   }
 
-  public Event (Object target, long when, int id, int x, int y, int key, 
-	        int modifiers, Object arg) 
+  public Event (Object target, long when, int id, int x, int y, int key,
+                int modifiers, Object arg)
   {
     this (target, when, id, x, y, key, modifiers);
     this.arg = arg;
@@ -167,7 +167,7 @@ public class Event implements java.io.Serializable
       + ",target=" + target + ",arg=" + arg;
   }
 
-  public boolean shiftDown() 
+  public boolean shiftDown()
   {
     return ((modifiers & SHIFT_MASK) == 0 ? false : true);
   }

@@ -1,4 +1,4 @@
-/* SSLContextImpl.java -- 
+/* SSLContextImpl.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -68,14 +68,14 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * Our implementation of {@link SSLContextSpi}.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public final class SSLContextImpl extends SSLContextSpi
 {
   AbstractSessionContext serverContext;
   AbstractSessionContext clientContext;
-  
+
   PreSharedKeyManager pskManager;
   X509ExtendedKeyManager keyManager;
   X509TrustManager trustManager;
@@ -85,7 +85,7 @@ public final class SSLContextImpl extends SSLContextSpi
   public SSLContextImpl()
   {
   }
-  
+
   /* (non-Javadoc)
    * @see javax.net.ssl.SSLContextSpi#engineCreateSSLEngine()
    */
@@ -210,11 +210,11 @@ public final class SSLContextImpl extends SSLContextSpi
         this.random = defaultRandom();
       }
   }
-  
+
   /**
    * Create and return a default key manager. The default is the JessieX509
    * algorithm, loaded from either the jssecerts file, or the cacerts file.
-   * 
+   *
    * @return The default key manager instance.
    * @throws KeyManagementException If the instance cannot be created.
    */
@@ -257,7 +257,7 @@ public final class SSLContextImpl extends SSLContextSpi
   /**
    * Create and return a default trust manager. The default is the JessieX509
    * algorithm, loaded from either the jssecerts file, or the cacerts file.
-   * 
+   *
    * @return The default trust manager instance.
    * @throws KeyManagementException If the instance cannot be created.
    */
@@ -290,7 +290,7 @@ public final class SSLContextImpl extends SSLContextSpi
    * property, or Fortuna if that property is not set. If none of these
    * algorithms can be found, and instance created with the SecureRandom
    * constructor is returned.
-   * 
+   *
    * @return The default secure PRNG instance.
    */
   private SecureRandom defaultRandom()

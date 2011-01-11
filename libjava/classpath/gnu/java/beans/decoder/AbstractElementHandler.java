@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -91,21 +91,21 @@ abstract class AbstractElementHandler implements ElementHandler
   {
     try
       {
-	// lets the subclass create the appropriate Context instance
-	context = startElement(attributes, exceptionListener);
+        // lets the subclass create the appropriate Context instance
+        context = startElement(attributes, exceptionListener);
       }
     catch (AssemblyException pe)
       {
-	Throwable t = pe.getCause();
+        Throwable t = pe.getCause();
 
-	if (t instanceof Exception)
-	  exceptionListener.exceptionThrown((Exception) t);
-	else
-	  throw new InternalError("Unexpected Throwable type in AssemblerException. Please file a bug report.");
+        if (t instanceof Exception)
+          exceptionListener.exceptionThrown((Exception) t);
+        else
+          throw new InternalError("Unexpected Throwable type in AssemblerException. Please file a bug report.");
 
-	notifyContextFailed();
+        notifyContextFailed();
 
-	return;
+        return;
       }
   }
 
@@ -129,48 +129,48 @@ abstract class AbstractElementHandler implements ElementHandler
     // is then invalid or may not exist at all)
     if (!hasFailed)
       {
-	try
-	  {
-	    // note: the order of operations is very important here
-	    // sends the stored character data to the Context
-	    endElement(buffer.toString());
+        try
+          {
+            // note: the order of operations is very important here
+            // sends the stored character data to the Context
+            endElement(buffer.toString());
 
-	    // reports to the parent handler if this handler's Context is a
-	    // statement (returning no value BACK to the parent's Context)
-	    if (context.isStatement())
-	      {
-		// This may create a valid result in the parent's Context
-		// or let it fail
-		parent.notifyStatement(exceptionListener);
+            // reports to the parent handler if this handler's Context is a
+            // statement (returning no value BACK to the parent's Context)
+            if (context.isStatement())
+              {
+                // This may create a valid result in the parent's Context
+                // or let it fail
+                parent.notifyStatement(exceptionListener);
 
-		// skips any further processing if the parent handler is now marked
-		// as failed
-		if (parent.hasFailed())
-		  return;
-	      }
+                // skips any further processing if the parent handler is now marked
+                // as failed
+                if (parent.hasFailed())
+                  return;
+              }
 
-	    // processes the Context and stores the result
-	    putObject(context.getId(), context.endContext(parent.getContext()));
+            // processes the Context and stores the result
+            putObject(context.getId(), context.endContext(parent.getContext()));
 
-	    // transfers the Context's results to the parent's Context
-	    // if it is an expression (rather than a statement) 
-	    if (! context.isStatement())
-	      parent.getContext().addParameterObject(context.getResult());
-	  }
-	catch (AssemblyException pe)
-	  {
-	    // notifies that an exception was thrown in this handler's Context 
-	    Throwable t = pe.getCause();
+            // transfers the Context's results to the parent's Context
+            // if it is an expression (rather than a statement)
+            if (! context.isStatement())
+              parent.getContext().addParameterObject(context.getResult());
+          }
+        catch (AssemblyException pe)
+          {
+            // notifies that an exception was thrown in this handler's Context
+            Throwable t = pe.getCause();
 
-	    if (t instanceof Exception)
-	      exceptionListener.exceptionThrown((Exception) t);
-	    else
-	      throw (InternalError) new InternalError("Severe problem while decoding XML data.")
-	            .initCause(t);
+            if (t instanceof Exception)
+              exceptionListener.exceptionThrown((Exception) t);
+            else
+              throw (InternalError) new InternalError("Severe problem while decoding XML data.")
+                    .initCause(t);
 
-	    // marks the handler as failed
-	    notifyContextFailed();
-	  }
+            // marks the handler as failed
+            notifyContextFailed();
+          }
       }
   }
 
@@ -184,31 +184,31 @@ abstract class AbstractElementHandler implements ElementHandler
   {
     try
       {
-      	
-      	// propagates to parent handler first to generate objects
-      	// needed by this Context instance
-      	if(context.isStatement())
-      	{
-      		parent.notifyStatement(exceptionListener);
-      	}
-      	
-	// Some Context instances do stuff which can fail now. If that
-	// happens this handler is marked as failed.
-	context.notifyStatement(parent.getContext());
+
+        // propagates to parent handler first to generate objects
+        // needed by this Context instance
+        if(context.isStatement())
+        {
+                parent.notifyStatement(exceptionListener);
+        }
+
+        // Some Context instances do stuff which can fail now. If that
+        // happens this handler is marked as failed.
+        context.notifyStatement(parent.getContext());
       }
     catch (AssemblyException ae)
       {
-	// notifies that an exception was thrown in this handler's Context 
-	Throwable t = ae.getCause();
+        // notifies that an exception was thrown in this handler's Context
+        Throwable t = ae.getCause();
 
-	if (t instanceof Exception)
-	  exceptionListener.exceptionThrown((Exception) t);
-	else
-	  throw (InternalError) new InternalError("Severe problem while decoding XML data.")
-	        .initCause(t);
+        if (t instanceof Exception)
+          exceptionListener.exceptionThrown((Exception) t);
+        else
+          throw (InternalError) new InternalError("Severe problem while decoding XML data.")
+                .initCause(t);
 
-	// marks the handler as failed
-	notifyContextFailed();
+        // marks the handler as failed
+        notifyContextFailed();
       }
   }
 

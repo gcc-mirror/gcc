@@ -37,12 +37,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-/** 
+/**
  * @author Norman Hendrich
  */
 public class JNIOverhead
   extends JPanel
-  implements ActionListener 
+  implements ActionListener
 {
 
   static JNIOverhead fillRectDemo;
@@ -63,18 +63,18 @@ public class JNIOverhead
   long    lastMillis = System.currentTimeMillis();
 
   boolean enableRepaints = true;
-  
+
   /**
    * If true, test translation.
    */
   boolean testTranslation = false;
-  
+
   /**
    * If true, paint lines rather than rectangles
    */
   boolean paintLines;
 
-  public void actionPerformed(ActionEvent e) 
+  public void actionPerformed(ActionEvent e)
   {
     if (e.getActionCommand().equals("CLOSE"))
     {
@@ -96,7 +96,7 @@ public class JNIOverhead
     lcd   = new LCDCanvas();
     label = new JLabel();
     label.setText("not running");
-    
+
     translate = new JCheckBox("translate");
     translate.addActionListener(new ActionListener()
     {
@@ -105,7 +105,7 @@ public class JNIOverhead
         testTranslation = translate.isSelected();
       }
     });
-    
+
     lines = new JCheckBox("lines");
     lines.addActionListener(new ActionListener()
     {
@@ -114,11 +114,11 @@ public class JNIOverhead
         paintLines = lines.isSelected();
       }
     });
-    
+
     JPanel bottom = new JPanel();
     bottom.add(lines);
     bottom.add(translate);
-    
+
     p.add(lcd, BorderLayout.CENTER);
     p.add(bottom, BorderLayout.SOUTH);
     p.add(label, BorderLayout.NORTH);
@@ -270,7 +270,7 @@ public class JNIOverhead
     }
   }
 
-  /** 
+  /**
    * stupid animation algorithm: show binary representation of current
    * iteration.
    */
@@ -286,9 +286,9 @@ public class JNIOverhead
             // count neighbors
             long tmp2 = (1L << j);
 
-        
+
             long tmp3 = generation & tmp1 & tmp2;
-            if (tmp3 != 0) 
+            if (tmp3 != 0)
               matrix[i][j] = 1;
             else
               matrix[i][j] = 0;
@@ -312,7 +312,7 @@ public class JNIOverhead
 
   public static void usage()
   {
-    System.out.println( 
+    System.out.println(
       "Usage: <java> FillRect2 [-sleep <millis>] [-size <int>] [-nopaint]\n"
     + "Example: jamvm FillRect2 -sleep 10 -size 100\n"
     );
@@ -342,7 +342,7 @@ public class JNIOverhead
           }
         if ("-nopaint".equals(args[i]))
           {
-            fillRectDemo.enableRepaints = false; 
+            fillRectDemo.enableRepaints = false;
           }
       }
 
@@ -368,7 +368,7 @@ public class JNIOverhead
    * @return a DemoFactory that creates a SliderDemo
    */
   public static DemoFactory createDemoFactory()
-  {    
+  {
     return new DemoFactory()
     {
       public JComponent createDemo()

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -58,8 +58,8 @@ import java.util.EventObject;
 public class NodeChangeEvent extends EventObject {
 
   // We have this to placate the compiler.
-  private static final long serialVersionUID =8068949086596572957L; 
-  
+  private static final long serialVersionUID =8068949086596572957L;
+
     /**
      * The sub node that was added or removed.
      * Defined transient just like <code>EventObject.source</code> since
@@ -102,7 +102,7 @@ public class NodeChangeEvent extends EventObject {
     {
       throw new NotSerializableException("LineEvent is not serializable");
     }
-  
+
     private void writeObject(ObjectOutputStream oos)
       throws IOException
     {

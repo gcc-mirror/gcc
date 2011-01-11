@@ -43,7 +43,7 @@ import gnu.classpath.jdwp.event.Event;
 import gnu.classpath.jdwp.exception.InvalidStringException;
 
 /**
- * An event filter which includes events matching a 
+ * An event filter which includes events matching a
  * specified class pattern (exact match or start/end with "*").
  *
  * @author Keith Seitz  (keiths@redhat.com)
@@ -66,9 +66,9 @@ public class ClassMatchFilter
     int index = pattern.indexOf ('*');
     if (index != -1 && index != 0 && index != (pattern.length () - 1))
       {
-	// '*' must be first char or last char
-	throw new InvalidStringException ("pattern may be an exact match or "
-					  + "start/end with \"*\"");
+        // '*' must be first char or last char
+        throw new InvalidStringException ("pattern may be an exact match or "
+                                          + "start/end with \"*\"");
       }
     _pattern = pattern;
   }
@@ -93,18 +93,18 @@ public class ClassMatchFilter
     Object type = event.getParameter (Event.EVENT_CLASS);
     if (type != null)
       {
-	Class eventClass = (Class) type;
-	String name = eventClass.getName ();
-	
-	if (_pattern.startsWith ("*"))
-	  return name.endsWith (_pattern.substring (1));
-	else if (_pattern.endsWith ("*"))
-	  {
-	    int end = _pattern.length () - 1;
-	    return name.startsWith (_pattern.substring (0, end));
-	  }
-	else
-	  return name.matches (_pattern);
+        Class eventClass = (Class) type;
+        String name = eventClass.getName ();
+
+        if (_pattern.startsWith ("*"))
+          return name.endsWith (_pattern.substring (1));
+        else if (_pattern.endsWith ("*"))
+          {
+            int end = _pattern.length () - 1;
+            return name.startsWith (_pattern.substring (0, end));
+          }
+        else
+          return name.matches (_pattern);
       }
 
     return false;

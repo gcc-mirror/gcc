@@ -9,7 +9,7 @@ import org.xml.sax.Locator;
 
 
 /**
- * SAX2 extension to augment the entity information provided 
+ * SAX2 extension to augment the entity information provided
  * though a {@link Locator}.
  * If an implementation supports this extension, the Locator
  * provided in {@link org.xml.sax.ContentHandler#setDocumentLocator

@@ -63,7 +63,7 @@ public abstract class FileChooserUI extends ComponentUI
     // Nothing to do here.
   }
 
-  
+
   /**
    * Returns a <code>FileFilter</code> that accepts every file.  While
    * the filtering itself is not specific to any look and feel, the

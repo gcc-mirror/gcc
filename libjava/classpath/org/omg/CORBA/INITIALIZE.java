@@ -42,15 +42,15 @@ import java.io.Serializable;
 
 /**
  * Means that the server cannot be initialized because of the some reason.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public final class INITIALIZE
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = -3753094599663690309L;
 

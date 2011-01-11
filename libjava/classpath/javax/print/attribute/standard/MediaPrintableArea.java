@@ -1,4 +1,4 @@
-/* MediaPrintableArea.java -- 
+/* MediaPrintableArea.java --
    Copyright (C) 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,10 +47,10 @@ import javax.print.attribute.PrintRequestAttribute;
  * The <code>MediaPrintableArea</code> attribute specifies the area
  * of a media sheet which is available for printing.
  * <p>
- * Due to hardware limitation its not possible with most printers to use the 
- * whole area of a media sheet for printing. This attribute defines the area 
+ * Due to hardware limitation its not possible with most printers to use the
+ * whole area of a media sheet for printing. This attribute defines the area
  * for printing through the values of the upper left corner position (x,y)
- * on the sheet and the available width and height of the area. The units of 
+ * on the sheet and the available width and height of the area. The units of
  * the values are determined by two defined constants:
  * <ul>
  * <li>INCH - defines an inch</li>
@@ -59,12 +59,12 @@ import javax.print.attribute.PrintRequestAttribute;
  * </p>
  * <p>
  * <b>Internal storage:</b><br>
- * The values of x, y, width and height are stored internally in micrometers. 
+ * The values of x, y, width and height are stored internally in micrometers.
  * The values of the provided constants for inch (value 25400) and millimeters
  * (value 1000) are used as conversion factors to the internal storage units.
  * To get the internal micrometers values a multiplication of a given
  * size value with its units constant value is done. Retrieving the size value
- * for specific units is done by dividing the internal stored value by the 
+ * for specific units is done by dividing the internal stored value by the
  * units constant value.
  * </p>
  * <p>
@@ -84,13 +84,13 @@ public final class MediaPrintableArea
    * The actual value is the conversion factor to micrometers.
    */
   public static final int INCH = 25400;
-  
+
   /**
    * Constant for the units of millimeters.
    * The actual value is the conversion factor to micrometers.
    */
   public static final int MM = 1000;
-  
+
   /** x in micrometers. */
   private int x;
   /** y in micrometers. */
@@ -99,17 +99,17 @@ public final class MediaPrintableArea
   private int w;
   /** height in micrometers. */
   private int h;
-  
+
   /**
    * Creates a new <code>MediaPrintableArea</code> object with the given
    * float values for the given units.
-   * 
+   *
    * @param x start of the printable area on the sheet in x direction.
    * @param y start of the printable area on the sheet in y direction.
    * @param w the width of the printable area.
    * @param h the height of the printable area.
    * @param units the units of the given values.
-   * 
+   *
    * @throws IllegalArgumentException if x i&lt; 0 or y i&lt; 0 or w i&lt;= 0
    * or h i&lt;= 0 or units i&lt; 1
    */
@@ -127,13 +127,13 @@ public final class MediaPrintableArea
   /**
    * Creates a new <code>MediaPrintableArea</code> object with the given
    * int values for the given units.
-   * 
+   *
    * @param x start of the printable area on the sheet in x direction.
    * @param y start of the printable area on the sheet in y direction.
    * @param w the width of the printable area.
    * @param h the height of the printable area.
    * @param units the units of the given values.
-   * 
+   *
    * @throws IllegalArgumentException if x i&lt; 0 or y i&lt; 0 or w i&lt;= 0
    * or h i&lt;= 0 or units i&lt; 1
    */
@@ -170,10 +170,10 @@ public final class MediaPrintableArea
 
   /**
    * Returns the height of the printable area for the given units.
-   * 
+   *
    * @param units the units conversion factor.
    * @return The height.
-   * 
+   *
    * @throws IllegalArgumentException if <code>units</code> is &lt; 1
    */
   public float getHeight(int units)
@@ -186,10 +186,10 @@ public final class MediaPrintableArea
 
   /**
    * Returns the width of the printable area for the given units.
-   * 
+   *
    * @param units the units conversion factor.
    * @return The width.
-   * 
+   *
    * @throws IllegalArgumentException if <code>units</code> is &lt; 1
    */
   public float getWidth(int units)
@@ -201,12 +201,12 @@ public final class MediaPrintableArea
   }
 
   /**
-   * Returns the position in x direction of the printable area 
+   * Returns the position in x direction of the printable area
    * for the given units.
-   * 
+   *
    * @param units the units conversion factor.
    * @return The position in x direction.
-   * 
+   *
    * @throws IllegalArgumentException if <code>units</code> is &lt; 1
    */
   public float getX(int units)
@@ -218,12 +218,12 @@ public final class MediaPrintableArea
   }
 
   /**
-   * Returns the position in y direction of the printable area 
+   * Returns the position in y direction of the printable area
    * for the given units.
-   * 
+   *
    * @param units the units conversion factor.
    * @return The position in y direction.
-   * 
+   *
    * @throws IllegalArgumentException if <code>units</code> is &lt; 1
    */
   public float getY(int units)
@@ -233,7 +233,7 @@ public final class MediaPrintableArea
 
     return y / ((float)units);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
@@ -256,7 +256,7 @@ public final class MediaPrintableArea
    * Returns the string representation for this object in units of millimeters..
    * <p>
    * The returned string is in the form "(x,y)->(width,height)mm".
-   * </p> 
+   * </p>
    * @return The string representation in millimeters.
    */
   public String toString()
@@ -273,7 +273,7 @@ public final class MediaPrintableArea
   {
     return x ^ y + w ^ h;
   }
-  
+
   /**
    * Returns the string representation for this object in units of millimeters..
    * <p>
@@ -283,30 +283,30 @@ public final class MediaPrintableArea
    * @param unitsName the name of the used units, appended to the resulting
    * string if not <code>null</code>.
    * @return The string representation in millimeters.
-   * 
+   *
    * @throws IllegalArgumentException if <code>units</code> is &lt; 1
    */
   public String toString(int units, String unitsName)
   {
     if (units < 1)
       throw new IllegalArgumentException("units may not be less than 1");
-    
+
     String tmp = "(" + getX(units) + "," + getY(units) + ")->("
                  + getWidth(units) + "," + getHeight(units) + ")";
-    
+
     return unitsName == null ? tmp : tmp + unitsName;
   }
 
   /**
-   * Returns the printable area as an float[] with 4 values 
+   * Returns the printable area as an float[] with 4 values
    * (order x, y, width, height) in the given units.
-   * 
+   *
    * @param units the units to use.
    * @return The printable area as float array.
    */
   public float[] getPrintableArea(int units)
   {
-    return new float[] { getX(units), getY(units), 
+    return new float[] { getX(units), getY(units),
                          getWidth(units), getHeight(units) };
-  }  
+  }
 }

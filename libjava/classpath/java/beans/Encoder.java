@@ -119,11 +119,11 @@ public class Encoder
 
         pd = new CollectionPersistenceDelegate();
         delegates.put(AbstractCollection.class, pd);
-        
+
         pd = new MapPersistenceDelegate();
         delegates.put(java.util.AbstractMap.class, pd);
         delegates.put(java.util.Hashtable.class, pd);
-        
+
         defaultPersistenceDelegate = new DefaultPersistenceDelegate();
         delegates.put(Object.class, defaultPersistenceDelegate);
 
@@ -158,7 +158,7 @@ public class Encoder
     accessCounter++;
     pd.writeObject(o, this);
     accessCounter--;
-    
+
   }
 
   /**
@@ -169,8 +169,8 @@ public class Encoder
    */
   public void setExceptionListener(ExceptionListener listener)
   {
-    exceptionListener = (listener != null) 
-	? listener : DefaultExceptionListener.INSTANCE;
+    exceptionListener = (listener != null)
+        ? listener : DefaultExceptionListener.INSTANCE;
   }
 
   /**
@@ -261,7 +261,7 @@ public class Encoder
     // String instances are handled in a special way.
     // No one knows why this is not officially specified
     // because this is a rather important design decision.
-    return (oldInstance == null) ? null : 
+    return (oldInstance == null) ? null :
              (oldInstance.getClass() == String.class) ?
                oldInstance : candidates.get(oldInstance);
   }
@@ -338,8 +338,8 @@ public class Encoder
         exceptionListener.exceptionThrown(e);
         return;
       }
-    
-    
+
+
     newValue = get(value);
 
     if (newValue == null)
@@ -369,15 +369,15 @@ public class Encoder
                 newArgs[i] = get(args[i]);
               }
           }
-        
+
         Expression newExpr = new Expression(newTarget, expr.getMethodName(),
                                             newArgs);
-        
+
         // Fakes the result of Class.forName(<primitiveType>) to make it possible
         // to hand such a type to the encoding process.
         if (value instanceof Class && ((Class) value).isPrimitive())
           newExpr.setValue(value);
-        
+
         // Instantiates the new object.
         try
           {
@@ -388,10 +388,10 @@ public class Encoder
         catch (Exception e)
           {
             exceptionListener.exceptionThrown(e);
-            
+
             return;
           }
-        
+
         writeObject(value);
 
       }
@@ -404,10 +404,10 @@ public class Encoder
 
   /** Returns whether the given class is an immutable
    * type which has to be handled differently when serializing it.
-   * 
+   *
    * <p>Immutable objects always have to be instantiated instead of
    * modifying an existing instance.</p>
-   * 
+   *
    * @param type The class to test.
    * @return Whether the first argument is an immutable type.
    */
@@ -419,9 +419,9 @@ public class Encoder
       || type == Long.class || type == Float.class
       || type == Double.class;
   }
-  
+
   /** Sets the stream candidate for a given object.
-   * 
+   *
    * @param oldObject The object given to the encoder.
    * @param newObject The object the encoder generated.
    */
@@ -429,5 +429,5 @@ public class Encoder
   {
     candidates.put(oldObject, newObject);
   }
-  
+
 }

@@ -60,12 +60,12 @@ import gnu.java.beans.encoder.elements.StringReference;
  * This class is a {@link ScannerState} implementation that creates
  * suitable {@link gnu.java.beans.encoder.elements.Element} instances
  * for each transition variant.
- * 
+ *
  * <p>Furthermore it can optionally skip a certain number of child
- * elements. The algorithm can cope with the fact that one 
+ * elements. The algorithm can cope with the fact that one
  * <code>GenericScannerState</code> instance may be called at
  * different levels of recursions.</p>
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  */
 class GenericScannerState extends ScannerState
@@ -89,19 +89,19 @@ class GenericScannerState extends ScannerState
     if (skipElements > 0)
       skipValues = new HashMap();
   }
-  
+
   protected void enterImpl(Context ctx)
   {
     if (skipValues != null)
       {
         Integer skip = (Integer) skipValues.get(ctx);
-        
+
         if (skip == null)
           {
             skip = Integer.valueOf(initialSkipElements);
             skipValues.put(ctx, skip);
           }
-        
+
         skipElements = skip.intValue();
       }
   }

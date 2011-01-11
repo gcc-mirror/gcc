@@ -789,10 +789,10 @@ public class IdentityHashMap<K,V> extends AbstractMap<K,V>
           key = table[loc];
         }
       while (key == null);
-  
-      return (I) (type == KEYS ? unxform(key) 
-		  : (type == VALUES ? unxform(table[loc + 1])
-		     : new IdentityEntry(loc)));
+
+      return (I) (type == KEYS ? unxform(key)
+                  : (type == VALUES ? unxform(table[loc + 1])
+                     : new IdentityEntry(loc)));
     }
 
     /**

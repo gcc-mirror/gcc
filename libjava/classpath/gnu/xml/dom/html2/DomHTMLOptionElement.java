@@ -1,4 +1,4 @@
-/* DomHTMLOptionElement.java -- 
+/* DomHTMLOptionElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -82,7 +82,7 @@ public class DomHTMLOptionElement
   {
     return super.getIndex();
   }
-  
+
   public boolean getDisabled()
   {
     return getBooleanHTMLAttribute("disabled");
@@ -92,7 +92,7 @@ public class DomHTMLOptionElement
   {
     setBooleanHTMLAttribute("disabled", disabled);
   }
-  
+
   public String getLabel()
   {
     return getHTMLAttribute("label");
@@ -102,7 +102,7 @@ public class DomHTMLOptionElement
   {
     setHTMLAttribute("label", label);
   }
-  
+
   public boolean getSelected()
   {
     if (selected == null)
@@ -116,7 +116,7 @@ public class DomHTMLOptionElement
   {
     this.selected = Boolean.valueOf(selected);
   }
-  
+
   public String getValue()
   {
     return getHTMLAttribute("value");
@@ -126,6 +126,5 @@ public class DomHTMLOptionElement
   {
     setHTMLAttribute("value", value);
   }
-  
-}
 
+}

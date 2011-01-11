@@ -1,4 +1,4 @@
-/* DomDocumentFragment.java -- 
+/* DomDocumentFragment.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,14 +42,14 @@ import org.w3c.dom.DocumentFragment;
 /**
  * <p> "DocumentFragment" implementation.  </p>
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomDocumentFragment
   extends DomNode
   implements DocumentFragment
 {
-  
+
   /**
    * Constructs a DocumentFragment node associated with the
    * specified document.
@@ -71,6 +71,5 @@ public class DomDocumentFragment
   {
     return "#document-fragment";
   }
-  
-}
 
+}

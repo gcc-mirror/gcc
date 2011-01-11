@@ -61,7 +61,7 @@ public class RSAOtherPrimeInfo
 
   /**
    * Constructs a new <code>RSAOtherPrimeInfo</code> given the PKCS#1 MPIs.
-   * 
+   *
    * @param prime
    *          the prime factor of n.
    * @param primeExponent

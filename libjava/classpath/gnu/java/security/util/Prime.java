@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -55,49 +55,49 @@ public final class Prime
     BigInteger p = new BigInteger( (pmax + pmin)/2, new Random() );
     if( p.compareTo( BigInteger.valueOf( 1 ).shiftLeft( pmin ) ) <= 0 )
       {
-	p = p.add( BigInteger.valueOf( 1 ).shiftLeft( pmin ).subtract( p ) );
+        p = p.add( BigInteger.valueOf( 1 ).shiftLeft( pmin ).subtract( p ) );
       }
-	
+
     //Step 2 - test for even
     if( p.mod( BigInteger.valueOf(2) ).compareTo( BigInteger.valueOf( 0 )) == 0)
       p = p.add( BigInteger.valueOf( 1 ) );
 
     for(;;)
       {
-	//Step 3
-	if( p.compareTo( BigInteger.valueOf( 1 ).shiftLeft( pmax)) > 0)
-	  {
-	    //Step 3.1
-	    p = p.subtract( BigInteger.valueOf( 1 ).shiftLeft( pmax) );
-	    p = p.add( BigInteger.valueOf( 1 ).shiftLeft( pmin) );
-	    p = p.subtract( BigInteger.valueOf( 1 ) );
+        //Step 3
+        if( p.compareTo( BigInteger.valueOf( 1 ).shiftLeft( pmax)) > 0)
+          {
+            //Step 3.1
+            p = p.subtract( BigInteger.valueOf( 1 ).shiftLeft( pmax) );
+            p = p.add( BigInteger.valueOf( 1 ).shiftLeft( pmin) );
+            p = p.subtract( BigInteger.valueOf( 1 ) );
 
-	    //Step 3.2
-	    // put step 2 code here so looping code is cleaner
-	    //Step 2 - test for even
-	    if( p.mod( BigInteger.valueOf(2) ).compareTo( BigInteger.valueOf( 0 )) == 0)
-	      p = p.add( BigInteger.valueOf( 1 ) );
-	    continue;
-	  }
-	
-	//Step 4 - compute GCD
-	d = p.subtract( BigInteger.valueOf(1) );
-	d = d.gcd( f );
+            //Step 3.2
+            // put step 2 code here so looping code is cleaner
+            //Step 2 - test for even
+            if( p.mod( BigInteger.valueOf(2) ).compareTo( BigInteger.valueOf( 0 )) == 0)
+              p = p.add( BigInteger.valueOf( 1 ) );
+            continue;
+          }
 
-	//Step 5 - test d
-	if( d.compareTo( BigInteger.valueOf( 1 ) ) == 0)
-	  {
-	    //Step 5.1 - test primality
-	    if( p.isProbablePrime( 1 ) == true )
-	      {
-				//Step 5.2;
-		return p;
-	      }
-	  }
-	//Step 6
-	p = p.add( BigInteger.valueOf( 2 ) );
+        //Step 4 - compute GCD
+        d = p.subtract( BigInteger.valueOf(1) );
+        d = d.gcd( f );
 
-	//Step 7
+        //Step 5 - test d
+        if( d.compareTo( BigInteger.valueOf( 1 ) ) == 0)
+          {
+            //Step 5.1 - test primality
+            if( p.isProbablePrime( 1 ) == true )
+              {
+                                //Step 5.2;
+                return p;
+              }
+          }
+        //Step 6
+        p = p.add( BigInteger.valueOf( 2 ) );
+
+        //Step 7
       }
   }
 
@@ -122,43 +122,43 @@ public final class Prime
 
       //Step 4 - test for even
       if( p.mod( BigInteger.valueOf(2) ).compareTo( BigInteger.valueOf( 0 )) == 0)
-	p = p.add( r );
+        p = p.add( r );
 
       for(;;)
-	{
-	  //Step 5
-	  if( p.compareTo( BigInteger.valueOf( 1 ).shiftLeft( pmax)) > 0)
-	    {
-	      //Step 5.1
-	      p = p.subtract( BigInteger.valueOf( 1 ).shiftLeft( pmax) );
-	      p = p.add( BigInteger.valueOf( 1 ).shiftLeft( pmin) );
-	      p = p.subtract( BigInteger.valueOf( 1 ) );
+        {
+          //Step 5
+          if( p.compareTo( BigInteger.valueOf( 1 ).shiftLeft( pmax)) > 0)
+            {
+              //Step 5.1
+              p = p.subtract( BigInteger.valueOf( 1 ).shiftLeft( pmax) );
+              p = p.add( BigInteger.valueOf( 1 ).shiftLeft( pmin) );
+              p = p.subtract( BigInteger.valueOf( 1 ) );
 
-	      //Step 5.2 - goto to Step 2
-	      break steptwo;
-	    }
+              //Step 5.2 - goto to Step 2
+              break steptwo;
+            }
 
-	  //Step 6
-	  d = p.subtract( BigInteger.valueOf(1) );
-	  d = d.gcd( f );
+          //Step 6
+          d = p.subtract( BigInteger.valueOf(1) );
+          d = d.gcd( f );
 
-	  //Step 7 - test d
-	  if( d.compareTo( BigInteger.valueOf( 1 ) ) == 0)
-	    {
-	      //Step 7.1 - test primality
-	      if( p.isProbablePrime( 1 ) == true )
-		{
-				//Step 7.2;
-		  return p;
-		}
-	    }
-	  //Step 8
-	  p = p.add( r.multiply( BigInteger.valueOf(2) ) );
+          //Step 7 - test d
+          if( d.compareTo( BigInteger.valueOf( 1 ) ) == 0)
+            {
+              //Step 7.1 - test primality
+              if( p.isProbablePrime( 1 ) == true )
+                {
+                                //Step 7.2;
+                  return p;
+                }
+            }
+          //Step 8
+          p = p.add( r.multiply( BigInteger.valueOf(2) ) );
 
-	  //Step 9
-	}
+          //Step 9
+        }
     }
     //Should never reach here but makes the compiler happy
-    return BigInteger.valueOf(0);	
+    return BigInteger.valueOf(0);
   }
 }

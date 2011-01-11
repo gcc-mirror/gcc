@@ -246,7 +246,7 @@ public abstract class JTextComponent extends JComponent
     {
       return this;
     }
-    
+
     /**
      * Handle a text insertion event and fire an
      * AccessibleContext.ACCESSIBLE_TEXT_PROPERTY property change
@@ -313,7 +313,7 @@ public abstract class JTextComponent extends JComponent
     public Rectangle getCharacterBounds(int index)
     {
       // This is basically the same as BasicTextUI.modelToView().
-      
+
       Rectangle bounds = null;
       if (index >= 0 && index < doc.getLength() - 1)
         {
@@ -368,12 +368,12 @@ public abstract class JTextComponent extends JComponent
       return JTextComponent.this.getText().length();
     }
 
-   /** 
+   /**
     * Gets the character attributes of the character at index. If
     * the index is out of bounds, null is returned.
     *
     * @param index - index of the character
-    * 
+    *
     * @return the character's attributes
     */
     public AttributeSet getCharacterAttribute(int index)
@@ -402,24 +402,24 @@ public abstract class JTextComponent extends JComponent
     /**
      * Gets the text located at index. null is returned if the index
      * or part is invalid.
-     * 
+     *
      * @param part - {@link #CHARACTER}, {@link #WORD}, or {@link #SENTENCE}
      * @param index - index of the part
-     * 
+     *
      * @return the part of text at that index, or null
      */
     public String getAtIndex(int part, int index)
     {
       return getAtIndexImpl(part, index, 0);
     }
-    
+
     /**
      * Gets the text located after index. null is returned if the index
      * or part is invalid.
-     * 
+     *
      * @param part - {@link #CHARACTER}, {@link #WORD}, or {@link #SENTENCE}
      * @param index - index after the part
-     * 
+     *
      * @return the part of text after that index, or null
      */
     public String getAfterIndex(int part, int index)
@@ -430,10 +430,10 @@ public abstract class JTextComponent extends JComponent
     /**
      * Gets the text located before index. null is returned if the index
      * or part is invalid.
-     * 
+     *
      * @param part - {@link #CHARACTER}, {@link #WORD}, or {@link #SENTENCE}
      * @param index - index before the part
-     * 
+     *
      * @return the part of text before that index, or null
      */
     public String getBeforeIndex(int part, int index)
@@ -518,20 +518,20 @@ public abstract class JTextComponent extends JComponent
     /**
      * Returns the number of actions for this object. The zero-th
      * object represents the default action.
-     * 
+     *
      * @return the number of actions (0-based).
      */
     public int getAccessibleActionCount()
     {
       return getActions().length;
     }
-    
+
     /**
      * Returns the description of the i-th action. Null is returned if
      * i is out of bounds.
-     * 
+     *
      * @param i - the action to get the description for
-     * 
+     *
      * @return description of the i-th action
      */
     public String getAccessibleActionDescription(int i)
@@ -542,13 +542,13 @@ public abstract class JTextComponent extends JComponent
         desc = (String) actions[i].getValue(Action.NAME);
       return desc;
     }
-    
+
     /**
-     * Performs the i-th action. Nothing happens if i is 
+     * Performs the i-th action. Nothing happens if i is
      * out of bounds.
      *
      * @param i - the action to perform
-     * 
+     *
      * @return true if the action was performed successfully
      */
     public boolean doAccessibleAction(int i)
@@ -564,7 +564,7 @@ public abstract class JTextComponent extends JComponent
         }
       return ret;
     }
-    
+
     /**
      * Sets the text contents.
      *
@@ -727,7 +727,7 @@ public abstract class JTextComponent extends JComponent
    * objects, by delegation to the underlying {@link Keymap}.</li>
    *
    * <li>KeymapActionMap extends {@link ActionMap} also holds a reference to
-   * the underlying {@link Keymap} but only appears to use it for listing 
+   * the underlying {@link Keymap} but only appears to use it for listing
    * its keys. </li>
    *
    * <li>KeymapActionMap maps all {@link Action} objects to
@@ -774,7 +774,7 @@ public abstract class JTextComponent extends JComponent
     public KeyStroke[] keys()
     {
       KeyStroke[] superKeys = super.keys();
-      KeyStroke[] mapKeys = map.getBoundKeyStrokes(); 
+      KeyStroke[] mapKeys = map.getBoundKeyStrokes();
       KeyStroke[] bothKeys = new KeyStroke[superKeys.length + mapKeys.length];
       for (int i = 0; i < superKeys.length; ++i)
         bothKeys[i] = superKeys[i];
@@ -824,22 +824,22 @@ public abstract class JTextComponent extends JComponent
       return map.getBoundKeyStrokes().length + super.size();
     }
 
-    public Object[] keys() 
+    public Object[] keys()
     {
       Object[] superKeys = super.keys();
-      Object[] mapKeys = map.getBoundKeyStrokes(); 
+      Object[] mapKeys = map.getBoundKeyStrokes();
       Object[] bothKeys = new Object[superKeys.length + mapKeys.length];
       for (int i = 0; i < superKeys.length; ++i)
         bothKeys[i] = superKeys[i];
       for (int i = 0; i < mapKeys.length; ++i)
         bothKeys[i + superKeys.length] = mapKeys[i];
-      return bothKeys;      
+      return bothKeys;
     }
 
     public Object[] allKeys()
     {
       Object[] superKeys = super.allKeys();
-      Object[] mapKeys = map.getBoundKeyStrokes(); 
+      Object[] mapKeys = map.getBoundKeyStrokes();
       Object[] bothKeys = new Object[superKeys.length + mapKeys.length];
       for (int i = 0; i < superKeys.length; ++i)
         bothKeys[i] = superKeys[i];
@@ -929,10 +929,10 @@ public abstract class JTextComponent extends JComponent
       i = 0;
       e = map.keys();
       while (e.hasMoreElements())
-        {          
+        {
           KeyStroke k = (KeyStroke) e.nextElement();
           if (map.get(k).equals(a))
-            ret[i++] = k;            
+            ret[i++] = k;
         }
       return ret;
     }
@@ -978,21 +978,21 @@ public abstract class JTextComponent extends JComponent
     public boolean canImport(JComponent component, DataFlavor[] flavors)
     {
       JTextComponent textComponent = (JTextComponent) component;
-      
+
       if (! (textComponent.isEnabled()
-	     && textComponent.isEditable()
-	     && flavors != null))
+             && textComponent.isEditable()
+             && flavors != null))
         return false;
 
       for (int i = 0; i < flavors.length; ++i)
-	if (flavors[i].equals(DataFlavor.stringFlavor))
-	   return true;
+        if (flavors[i].equals(DataFlavor.stringFlavor))
+           return true;
 
       return false;
     }
-    
+
     public void exportToClipboard(JComponent component, Clipboard clipboard,
-				  int action)
+                                  int action)
     {
       JTextComponent textComponent = (JTextComponent) component;
       int start = textComponent.getSelectionStart();
@@ -1017,7 +1017,7 @@ public abstract class JTextComponent extends JComponent
           // Ignore this and do nothing.
         }
     }
-    
+
     public int getSourceActions()
     {
       return NONE;
@@ -1034,7 +1034,7 @@ public abstract class JTextComponent extends JComponent
       for (int i = 0; i < flavors.length; ++i)
         if (flavors[i].equals(DataFlavor.stringFlavor))
           flavor = flavors[i];
-      
+
       if (flavor == null)
         return false;
 
@@ -1059,10 +1059,10 @@ public abstract class JTextComponent extends JComponent
   }
 
   private static final long serialVersionUID = -8796518220218978795L;
-  
+
   public static final String DEFAULT_KEYMAP = "default";
   public static final String FOCUS_ACCELERATOR_KEY = "focusAcceleratorKey";
-  
+
   private static DefaultTransferHandler defaultTransferHandler;
   private static Hashtable keymaps = new Hashtable();
   private Keymap keymap;
@@ -1096,7 +1096,7 @@ public abstract class JTextComponent extends JComponent
    * @see #addKeymap
    * @see #getKeymap()
    * @see #keymaps
-   */  
+   */
   public static Keymap removeKeymap(String n)
   {
     Keymap km = (Keymap) keymaps.get(n);
@@ -1110,7 +1110,7 @@ public abstract class JTextComponent extends JComponent
    * in which case the new Keymap will <em>not</em> be added to the global
    * Keymap table. The parent may also be <code>null</code>, which is
    * harmless.
-   * 
+   *
    * @param n The name of the new Keymap, or <code>null</code>
    * @param parent The parent of the new Keymap, or <code>null</code>
    *
@@ -1137,7 +1137,7 @@ public abstract class JTextComponent extends JComponent
    * @see #setKeymap
    * @see #keymap
    */
-  public Keymap getKeymap() 
+  public Keymap getKeymap()
   {
     return keymap;
   }
@@ -1151,26 +1151,26 @@ public abstract class JTextComponent extends JComponent
    * @see #getKeymap()
    * @see #keymap
    */
-  public void setKeymap(Keymap k) 
+  public void setKeymap(Keymap k)
   {
 
     // phase 1: replace the KeymapWrapper entry in the InputMap chain.
     // the goal here is to always maintain the following ordering:
     //
     //   [InputMap]? -> [KeymapWrapper]? -> [InputMapUIResource]*
-    // 
+    //
     // that is to say, component-specific InputMaps need to remain children
     // of Keymaps, and Keymaps need to remain children of UI-installed
     // InputMaps (and the order of each group needs to be preserved, of
     // course).
-    
+
     KeymapWrapper kw = (k == null ? null : new KeymapWrapper(k));
     InputMap childInputMap = getInputMap(JComponent.WHEN_FOCUSED);
     if (childInputMap == null)
       setInputMap(JComponent.WHEN_FOCUSED, kw);
     else
       {
-        while (childInputMap.getParent() != null 
+        while (childInputMap.getParent() != null
                && !(childInputMap.getParent() instanceof KeymapWrapper)
                && !(childInputMap.getParent() instanceof InputMapUIResource))
           childInputMap = childInputMap.getParent();
@@ -1178,7 +1178,7 @@ public abstract class JTextComponent extends JComponent
         // option 1: there is nobody to replace at the end of the chain
         if (childInputMap.getParent() == null)
           childInputMap.setParent(kw);
-        
+
         // option 2: there is already a KeymapWrapper in the chain which
         // needs replacing (possibly with its own parents, possibly without)
         else if (childInputMap.getParent() instanceof KeymapWrapper)
@@ -1212,7 +1212,7 @@ public abstract class JTextComponent extends JComponent
       setActionMap(kam);
     else
       {
-        while (childActionMap.getParent() != null 
+        while (childActionMap.getParent() != null
                && !(childActionMap.getParent() instanceof KeymapActionMap)
                && !(childActionMap.getParent() instanceof ActionMapUIResource))
           childActionMap = childActionMap.getParent();
@@ -1220,7 +1220,7 @@ public abstract class JTextComponent extends JComponent
         // option 1: there is nobody to replace at the end of the chain
         if (childActionMap.getParent() == null)
           childActionMap.setParent(kam);
-        
+
         // option 2: there is already a KeymapActionMap in the chain which
         // needs replacing (possibly with its own parents, possibly without)
         else if (childActionMap.getParent() instanceof KeymapActionMap)
@@ -1269,8 +1269,8 @@ public abstract class JTextComponent extends JComponent
    * @see Action#getValue
    * @see KeyBinding#actionName
    */
-  public static void loadKeymap(Keymap map, 
-                                JTextComponent.KeyBinding[] bindings, 
+  public static void loadKeymap(Keymap map,
+                                JTextComponent.KeyBinding[] bindings,
                                 Action[] actions)
   {
     Hashtable acts = new Hashtable(actions.length);
@@ -1298,12 +1298,12 @@ public abstract class JTextComponent extends JComponent
   {
     return getUI().getEditorKit(this).getActions();
   }
-    
+
   // These are package-private to avoid an accessor method.
   Document doc;
   Caret caret;
   boolean editable;
-  
+
   private Highlighter highlighter;
   private Color caretColor;
   private Color disabledTextColor;
@@ -1445,10 +1445,10 @@ public abstract class JTextComponent extends JComponent
   {
     int start = getSelectionStart();
     int offset = getSelectionEnd() - start;
-    
+
     if (offset <= 0)
       return null;
-    
+
     try
       {
         return doc.getText(start, offset);
@@ -1565,7 +1565,7 @@ public abstract class JTextComponent extends JComponent
   {
     if (editable == newValue)
       return;
-    
+
     boolean oldValue = editable;
     editable = newValue;
     firePropertyChange("editable", oldValue, newValue);
@@ -1590,13 +1590,13 @@ public abstract class JTextComponent extends JComponent
   {
     if (caret != null)
       caret.deinstall(this);
-    
+
     Caret oldCaret = caret;
     caret = newCaret;
 
     if (caret != null)
       caret.install(this);
-    
+
     firePropertyChange("caret", oldCaret, newCaret);
   }
 
@@ -1698,13 +1698,13 @@ public abstract class JTextComponent extends JComponent
   {
     if (highlighter != null)
       highlighter.deinstall(this);
-    
+
     Highlighter oldHighlighter = highlighter;
     highlighter = newHighlighter;
 
     if (highlighter != null)
       highlighter.install(this);
-    
+
     firePropertyChange("highlighter", oldHighlighter, newHighlighter);
   }
 
@@ -1757,7 +1757,7 @@ public abstract class JTextComponent extends JComponent
   public void select(int start, int end)
   {
     int length = doc.getLength();
-    
+
     start = Math.max(start, 0);
     start = Math.min(start, length);
 
@@ -1803,7 +1803,7 @@ public abstract class JTextComponent extends JComponent
         // Set dot to new position,
         dot = start + content.length();
         setCaretPosition(dot);
-        
+
         // and update it's magic position.
         caret.setMagicCaretPosition(modelToView(dot).getLocation());
       }
@@ -1969,7 +1969,7 @@ public abstract class JTextComponent extends JComponent
     focusAccelerator = newKey;
     firePropertyChange(FOCUS_ACCELERATOR_KEY, oldKey, newKey);
   }
-  
+
   public char getFocusAccelerator()
   {
     return focusAccelerator;
@@ -1990,7 +1990,7 @@ public abstract class JTextComponent extends JComponent
   {
     navigationFilter = filter;
   }
-  
+
   /**
    * Read and set the content this component. If not overridden, the
    * method reads the component content as a plain text.

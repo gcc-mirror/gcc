@@ -43,7 +43,7 @@ package java.lang;
  * Java Virtual Machine tries to load a class and no definition of the class
  * can be found.  This could happen when using the <code>new</code> expression
  * or during a normal method call.  The reason this would occur at runtime is
- * because the missing class definition existed when the currently executing 
+ * because the missing class definition existed when the currently executing
  * class was compiled, but now that definition cannot be found.
  *
  * @author Brian Jones

@@ -51,8 +51,8 @@ import java.awt.peer.LightweightPeer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EmptyStackException;
 
-/* Written using on-line Java 2 Platform Standard Edition v1.3 API 
- * Specification, as well as "The Java Class Libraries", 2nd edition 
+/* Written using on-line Java 2 Platform Standard Edition v1.3 API
+ * Specification, as well as "The Java Class Libraries", 2nd edition
  * (Addison-Wesley, 1998).
  * Status:  Believed complete, but untested.
  */
@@ -225,9 +225,9 @@ public class EventQueue
    * is interrupted.
    *
    * @return The next event in the queue.
-   * @specnote Does not block. Returns null if there are no events on the 
-   *            queue. 
-   */ 
+   * @specnote Does not block. Returns null if there are no events on the
+   *            queue.
+   */
   public synchronized AWTEvent peekEvent()
   {
     if (next != null)
@@ -246,9 +246,9 @@ public class EventQueue
    *
    * @return The next event in the queue.
    *
-   * @specnote Does not block. Returns null if there are no matching events 
-   *            on the queue. 
-   */ 
+   * @specnote Does not block. Returns null if there are no matching events
+   *            on the queue.
+   */
   public synchronized AWTEvent peekEvent(int id)
   {
     if (next != null)
@@ -306,7 +306,7 @@ public class EventQueue
    * Actually performs the event posting. This is needed because the
    * RI doesn't use the public postEvent() method when transferring events
    * between event queues in push() and pop().
-   * 
+   *
    * @param evt the event to post
    * @param priority the priority of the event
    */
@@ -342,7 +342,7 @@ public class EventQueue
             Object src = qevt.getSource();
             if (qevt.id == evt.id && src == comp)
               {
-                // If there are, call coalesceEvents on the source component 
+                // If there are, call coalesceEvents on the source component
                 // to see if they can be combined.
                 Component srccmp = (Component) src;
                 AWTEvent coalescedEvt = srccmp.coalesceEvents(qevt, evt);
@@ -414,7 +414,7 @@ public class EventQueue
     if (isDispatchThread ())
       throw new Error("Can't call invokeAndWait from event dispatch thread");
 
-    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
     Object notifyObject = new Object();
 
     InvocationEvent ie =
@@ -441,9 +441,9 @@ public class EventQueue
    */
   public static void invokeLater(Runnable runnable)
   {
-    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
 
-    InvocationEvent ie = 
+    InvocationEvent ie =
       new InvocationEvent(eq, runnable, null, false);
 
     eq.postEvent(ie);
@@ -456,8 +456,8 @@ public class EventQueue
   public static boolean isDispatchThread()
   {
     EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
-    
-    /* Find last EventQueue in chain */ 
+
+    /* Find last EventQueue in chain */
     while (eq.next != null)
       eq = eq.next;
 
@@ -473,11 +473,11 @@ public class EventQueue
    */
   public static AWTEvent getCurrentEvent()
   {
-    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
     Thread ct = Thread.currentThread();
-    
+
     /* Find out if this thread is the dispatch thread for any of the
-       EventQueues in the chain */ 
+       EventQueues in the chain */
     while (ct != eq.dispatchThread)
       {
         // Try next EventQueue, if any
@@ -490,7 +490,7 @@ public class EventQueue
   }
 
   /**
-   * Allows a custom EventQueue implementation to replace this one. 
+   * Allows a custom EventQueue implementation to replace this one.
    * All pending events are transferred to the new queue. Calls to postEvent,
    * getNextEvent, and peekEvent and others are forwarded to the pushed queue
    * until it is removed with a pop().
@@ -650,7 +650,7 @@ public class EventQueue
    */
   public static long getMostRecentEventTime()
   {
-    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
+    EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue();
     if (Thread.currentThread() != eq.dispatchThread)
       return System.currentTimeMillis();
     return eq.lastWhen;

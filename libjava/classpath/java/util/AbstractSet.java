@@ -83,8 +83,8 @@ public abstract class AbstractSet<E>
   public boolean equals(Object o)
   {
     return (o == this
-	    || (o instanceof Set && ((Set) o).size() == size()
-		&& containsAll((Collection) o)));
+            || (o instanceof Set && ((Set) o).size() == size()
+                && containsAll((Collection) o)));
   }
 
   /**
@@ -128,18 +128,18 @@ public abstract class AbstractSet<E>
     int count = c.size();
     if (oldsize < count)
       {
-	Iterator<E> i;
-	for (i = iterator(), count = oldsize; count > 0; count--)
-	  {
-	    if (c.contains(i.next()))
-	      i.remove();
-	  }
+        Iterator<E> i;
+        for (i = iterator(), count = oldsize; count > 0; count--)
+          {
+            if (c.contains(i.next()))
+              i.remove();
+          }
       }
     else
       {
-	Iterator<?> i;
-	for (i = c.iterator(); count > 0; count--)
-	  remove(i.next());
+        Iterator<?> i;
+        for (i = c.iterator(); count > 0; count--)
+          remove(i.next());
       }
     return oldsize != size();
   }

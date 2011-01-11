@@ -41,7 +41,7 @@ package java.util.zip;
  * This class stores the pending output of the Deflater.
  *
  * @author Jochen Hoenicke
- * @date Jan 5, 2000 
+ * @date Jan 5, 2000
  */
 
 class DeflaterPending extends PendingBuffer
@@ -51,4 +51,3 @@ class DeflaterPending extends PendingBuffer
     super(DeflaterConstants.PENDING_BUF_SIZE);
   }
 }
-

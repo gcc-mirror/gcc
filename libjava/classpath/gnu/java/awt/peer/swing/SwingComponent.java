@@ -87,7 +87,7 @@ public interface SwingComponent
    * @param ev the key event
    */
   void handleKeyEvent(KeyEvent ev);
-  
+
   /**
    * Handles a focus event. This is usually forwarded to
    * {@link Component#processFocusEvent(FocusEvent)} of the swing

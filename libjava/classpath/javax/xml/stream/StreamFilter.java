@@ -1,4 +1,4 @@
-/* StreamFilter.java -- 
+/* StreamFilter.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,6 +48,5 @@ public interface StreamFilter
    * this stream.
    */
   boolean accept(XMLStreamReader reader);
-  
-}
 
+}

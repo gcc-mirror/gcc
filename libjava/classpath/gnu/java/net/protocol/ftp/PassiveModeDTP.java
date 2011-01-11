@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -118,7 +118,7 @@ final class PassiveModeDTP
     in.setTransferComplete(false);
     return in;
   }
-  
+
   /**
    * Returns an output stream to which a local file can be written for
    * upload.
@@ -147,12 +147,12 @@ final class PassiveModeDTP
     out.setTransferComplete(false);
     return out;
   }
-  
+
   public void setTransferMode(int mode)
   {
     transferMode = mode;
   }
-  
+
   public void complete()
   {
     completed = true;
@@ -198,4 +198,3 @@ final class PassiveModeDTP
   }
 
 }
-

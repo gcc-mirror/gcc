@@ -84,13 +84,13 @@ public class MBeanConstructorInfo
     signature = new MBeanParameterInfo[paramTypes.length];
     for (int a = 0; a < paramTypes.length; ++a)
       {
-	Type t = paramTypes[a];
-	if (t instanceof Class)
-	  signature[a] = new MBeanParameterInfo(null,
-						((Class<?>) t).getName(),
-						null);
-	else
-	  signature[a] = new MBeanParameterInfo(null, t.toString(), null);
+        Type t = paramTypes[a];
+        if (t instanceof Class)
+          signature[a] = new MBeanParameterInfo(null,
+                                                ((Class<?>) t).getName(),
+                                                null);
+        else
+          signature[a] = new MBeanParameterInfo(null, t.toString(), null);
       }
   }
 
@@ -108,15 +108,15 @@ public class MBeanConstructorInfo
    *            each parameter.
    */
   public MBeanConstructorInfo(String name, String desc,
-			      MBeanParameterInfo[] sig)
+                              MBeanParameterInfo[] sig)
   {
     super(name, desc);
     if (sig == null)
       signature = new MBeanParameterInfo[0];
     else
       {
-	signature = new MBeanParameterInfo[sig.length];
-	System.arraycopy(sig, 0, signature, 0, sig.length);
+        signature = new MBeanParameterInfo[sig.length];
+        System.arraycopy(sig, 0, signature, 0, sig.length);
       }
   }
 
@@ -134,13 +134,13 @@ public class MBeanConstructorInfo
   {
     try
       {
-	return super.clone();
+        return super.clone();
       }
     catch (CloneNotSupportedException e)
       {
-	/* This shouldn't happen; we implement Cloneable */
-	throw new IllegalStateException("clone() called on " +
-					"non-cloneable object.");
+        /* This shouldn't happen; we implement Cloneable */
+        throw new IllegalStateException("clone() called on " +
+                                        "non-cloneable object.");
       }
   }
 
@@ -155,7 +155,7 @@ public class MBeanConstructorInfo
    *
    * @param obj the object to compare.
    * @return true if the object is a {@link MBeanConstructorInfo}
-   *         instance, 
+   *         instance,
    *         <code>name.equals(object.getName())</code>,
    *         <code>description.equals(object.getDescription())</code>
    *         and the corresponding elements of the signature arrays are
@@ -171,14 +171,14 @@ public class MBeanConstructorInfo
     MBeanParameterInfo[] sig = o.getSignature();
     for (int a = 0; a < signature.length; ++a)
       {
-	if (a == sig.length)
-	  return true;
-	if (!(signature[a].equals(sig[a])))
-	  return false;
+        if (a == sig.length)
+          return true;
+        if (!(signature[a].equals(sig[a])))
+          return false;
       }
     return true;
   }
-  
+
   /**
    * Returns the constructor's signature, in the form of
    * information on each parameter.  Each parameter is
@@ -214,7 +214,7 @@ public class MBeanConstructorInfo
    * Returns a textual representation of this instance.  This
    * is constructed using the class name
    * (<code>javax.management.MBeanConstructorInfo</code>),
-   * the name and description of the constructor and the 
+   * the name and description of the constructor and the
    * contents of the array of parameters.
    * </p>
    * <p>
@@ -230,10 +230,10 @@ public class MBeanConstructorInfo
   {
     if (string == null)
       {
-	super.toString();
-	string = string.substring(0, string.length() - 1) 
-	  + ",signature=" + Arrays.toString(signature)
-	  + "]";
+        super.toString();
+        string = string.substring(0, string.length() - 1)
+          + ",signature=" + Arrays.toString(signature)
+          + "]";
       }
     return string;
   }

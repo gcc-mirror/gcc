@@ -71,11 +71,11 @@ import javax.transaction.TransactionRolledbackException;
 
 /**
  * A delegate, implementing the functionality, provided by the {@link Util}.
- * 
+ *
  * The default delegate can be altered by setting the system property
  * "javax.rmi.CORBA.UtilClass" to the name of the alternative class that must
  * implement this interface.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface UtilDelegate
@@ -195,7 +195,7 @@ public interface UtilDelegate
   /**
    * Get the Tie that handles invocations on the given target. The target/Tie
    * pair must be previously registered using {@link #registerTarget}.
-   * 
+   *
    * @return the Tie, or null if no such is known.
    */
   Tie getTie(Remote target);
@@ -242,14 +242,14 @@ public interface UtilDelegate
    * <td>{@link UnexpectedException}</td>
    * </tr>
    * </table>
-   * 
+   *
    * @param e an exception that was thrown on a server side implementation.
-   * 
+   *
    * @return the corresponding RemoteException unless it is a RuntimeException.
-   * 
+   *
    * @throws RuntimeException the passed exception if it is an instance of
    * RuntimeException.
-   * 
+   *
    * @specnote It is the same behavior, as in Suns implementations 1.4.0-1.5.0.
    */
   RemoteException wrapException(Throwable orig);
@@ -263,7 +263,7 @@ public interface UtilDelegate
    * possible. This method is used in write_value(..) method group in
    * {@link org.omg.CORBA_2_3.portable.OutputStream} and also may be called
    * directly from generated Stubs and Ties.
-   * 
+   *
    * @param output a stream to write to, must be
    * org.omg.CORBA_2_3.portable.OutputStream
    * @param obj an object to write.
@@ -278,10 +278,10 @@ public interface UtilDelegate
    * {@link #writeRemoteObject}. The written data contains discriminator,
    * defining, that was written. Another method that writes the same content is
    * {@link org.omg.CORBA_2_3.portable.OutputStream#write_abstract_interface(java.lang.Object)}.
-   * 
+   *
    * @param output a stream to write to, must be
    * {@link org.omg.CORBA_2_3.portable.OutputStream}.
-   * 
+   *
    * @param object an object to write, must be CORBA object, Remote
    */
   void writeAbstractObject(OutputStream output, Object object);
@@ -295,7 +295,7 @@ public interface UtilDelegate
    * method writes CORBA object, value type or value box. For value types Null
    * is written with the abstract interface, its typecode having repository id
    * "IDL:omg.org/CORBA/AbstractBase:1.0" and the empty string name.
-   * 
+   *
    * @param output the object to write.
    * @param object the java object that must be written in the form of the CORBA
    * {@link Any}.
@@ -303,7 +303,7 @@ public interface UtilDelegate
   void writeAny(OutputStream output, Object object);
 
   /**
-   * Read Any from the input stream. 
+   * Read Any from the input stream.
    */
   Object readAny(InputStream input);
 

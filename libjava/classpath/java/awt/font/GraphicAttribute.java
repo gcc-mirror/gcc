@@ -43,7 +43,7 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * This class represents a graphic embedded in text.
- * 
+ *
  * @author Michael Koch
  * @author Lillian Angel (langel at redhat dot com)
  */
@@ -59,7 +59,7 @@ public abstract class GraphicAttribute
 
   /**
    * Constructor.
-   * 
+   *
    * @param alignment - the alignment to use for the graphic
    */
   protected GraphicAttribute(int alignment)
@@ -71,7 +71,7 @@ public abstract class GraphicAttribute
 
   /**
    * Draws the graphic.
-   * 
+   *
    * @param graphics - the graphics configuration to use
    * @param x - the x location
    * @param y - the y location
@@ -81,7 +81,7 @@ public abstract class GraphicAttribute
   /**
    * Gets the distance from the origin of its graphic to the right side of the
    * bounds of its graphic.
-   * 
+   *
    * @return the advance
    */
   public abstract float getAdvance();
@@ -89,21 +89,21 @@ public abstract class GraphicAttribute
   /**
    * Gets the positive distance from the origin of its graphic to the top of
    * bounds.
-   * 
+   *
    * @return the ascent
    */
   public abstract float getAscent();
 
   /**
    * Gets the distance from the origin of its graphic to the bottom of the bounds.
-   * 
+   *
    * @return the descent
    */
   public abstract float getDescent();
 
   /**
    * Gets the alignment.
-   * 
+   *
    * @return the alignment
    */
   public final int getAlignment()
@@ -114,7 +114,7 @@ public abstract class GraphicAttribute
   /**
    * Returns a Rectangle2D that encloses the rendered area.
    * Default bounds is the rectangle (0, -ascent, advance, ascent+descent).
-   * 
+   *
    * @return the bounds of the rendered area
    */
   public Rectangle2D getBounds()
@@ -125,7 +125,7 @@ public abstract class GraphicAttribute
 
   /**
    * Returns the justification information for this object.
-   * 
+   *
    * @return the justification information
    */
   public GlyphJustificationInfo getJustificationInfo()

@@ -1,4 +1,4 @@
-/* GnomeAttr.java - 
+/* GnomeAttr.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,31 +59,31 @@ class GnomeAttr
   {
     super(id);
   }
-  
+
   public String getName()
   {
     return getNodeName();
   }
-  
+
   public native boolean getSpecified();
-  
+
   public native String getValue();
-  
+
   public native void setValue(String value)
     throws DOMException;
-  
+
   public Node getParentNode()
   {
     return null;
   }
-  
+
   public Element getOwnerElement()
   {
     return (Element) super.getParentNode();
   }
-  
+
   // DOM Level 3 methods
-  
+
   public TypeInfo getSchemaTypeInfo()
   {
     return new GnomeTypeInfo(id);
@@ -100,7 +100,7 @@ class GnomeAttr
             element.userIdAttrs != null &&
             element.userIdAttrs.contains(this));
   }
-  
+
   private native boolean xmljIsId();
 
   public String toString()
@@ -113,6 +113,5 @@ class GnomeAttr
     buffer.append("]");
     return buffer.toString();
   }
-  
-}
 
+}

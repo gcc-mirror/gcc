@@ -1,4 +1,4 @@
-/* KeyFunction.java -- 
+/* KeyFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -104,7 +104,7 @@ final class KeyFunction
     // Expand qualified name
     String uri = keyName.getNamespaceURI();
     String prefix = keyName.getPrefix();
-    if ((uri == null || uri.length() == 0) && 
+    if ((uri == null || uri.length() == 0) &&
         (prefix != null && prefix.length() > 0))
       {
         uri = stylesheet.getNamespaceURI(prefix);
@@ -158,7 +158,7 @@ final class KeyFunction
         addKeyNodes(ctx, keySet, value, acc);
       }
   }
-  
+
   final void addKeyNodeIfMatch(Node node, Collection keySet,
                                String value, Collection acc)
   {
@@ -225,4 +225,3 @@ final class KeyFunction
   }
 
 }
-

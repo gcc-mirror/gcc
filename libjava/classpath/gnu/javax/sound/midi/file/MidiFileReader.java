@@ -56,8 +56,8 @@ import javax.sound.midi.Track;
 
 /**
  * A MIDI file reader.
- * 
- * This code reads MIDI file types 0 and 1.  
+ *
+ * This code reads MIDI file types 0 and 1.
  *
  * There are many decent documents on the web describing the MIDI file
  * format.  I didn't bother looking for the official document.  If it
@@ -67,7 +67,7 @@ import javax.sound.midi.Track;
  * @author Anthony Green (green@redhat.com)
  *
  */
-public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader 
+public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
 {
   /* Get the MidiFileFormat for the given input stream.
    * @see javax.sound.midi.spi.MidiFileReader#getMidiFileFormat(java.io.InputStream)
@@ -80,28 +80,28 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
       din = (DataInputStream) in;
     else
       din = new DataInputStream(in);
-    
+
     int type, ntracks, division, resolution, bytes;
     float divisionType;
-    
+
     if (din.readInt() != 0x4d546864) // "MThd"
       throw new InvalidMidiDataException("Invalid MIDI chunk header.");
 
     bytes = din.readInt();
     if (bytes < 6)
-      throw new 
-	InvalidMidiDataException("Invalid MIDI chunk header length: " + bytes);
+      throw new
+        InvalidMidiDataException("Invalid MIDI chunk header length: " + bytes);
 
     type = din.readShort();
     if (type < 0 || type > 2)
-      throw new 
-	InvalidMidiDataException("Invalid MIDI file type value: " + type);
-    
+      throw new
+        InvalidMidiDataException("Invalid MIDI file type value: " + type);
+
     ntracks = din.readShort();
     if (ntracks <= 0)
-      throw new 
-	InvalidMidiDataException("Invalid number of MIDI tracks: " + ntracks);
-    
+      throw new
+        InvalidMidiDataException("Invalid number of MIDI tracks: " + ntracks);
+
     division = din.readShort();
     if ((division & 0x8000) != 0)
       {
@@ -125,9 +125,9 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
             break;
 
           default:
-            throw new 
-	      InvalidMidiDataException("Invalid MIDI frame division type: "
-				       + division);
+            throw new
+              InvalidMidiDataException("Invalid MIDI frame division type: "
+                                       + division);
           }
         resolution = division & 0xff;
       }
@@ -136,10 +136,10 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
         divisionType = Sequence.PPQ;
         resolution = division & 0x7fff;
       }
-    
+
     // If we haven't read every byte in the header now, just skip the rest.
     din.skip(bytes - 6);
-    
+
     return new ExtendedMidiFileFormat(type, divisionType, resolution,
                                       MidiFileFormat.UNKNOWN_LENGTH,
                                       MidiFileFormat.UNKNOWN_LENGTH, ntracks);
@@ -150,7 +150,7 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
    */
   public MidiFileFormat getMidiFileFormat(URL url)
     throws InvalidMidiDataException, IOException
-  {		  
+  {
     InputStream is = url.openStream();
     try
       {
@@ -178,7 +178,7 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
         is.close();
       }
   }
-  
+
   /* Get the MIDI Sequence found in this input stream.
    * @see javax.sound.midi.spi.MidiFileReader#getSequence(java.io.InputStream)
    */
@@ -272,7 +272,7 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
                           case ShortMessage.CHANNEL_PRESSURE:
                           case ShortMessage.SONG_SELECT:
                           case 0xF5: // FIXME: unofficial bus select. Not in
-			             // spec??
+                                     // spec??
                             sm = new ShortMessage();
                             sm.setMessage(runningStatus, sbyte, 0);
                             continue;
@@ -290,15 +290,15 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
                             continue;
 
                           default:
-                            throw new 
-			      InvalidMidiDataException("Invalid Short MIDI Event: "
-						       + sbyte);
+                            throw new
+                              InvalidMidiDataException("Invalid Short MIDI Event: "
+                                                       + sbyte);
                           }
                       }
                     else
-                      throw new 
-			InvalidMidiDataException("Invalid Short MIDI Event: "
-						 + sbyte);
+                      throw new
+                        InvalidMidiDataException("Invalid Short MIDI Event: "
+                                                 + sbyte);
                   }
                 mm = sm;
               }
@@ -346,16 +346,16 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
    * @see javax.sound.midi.spi.MidiFileReader#getSequence(java.net.URL)
    */
   public Sequence getSequence(URL url) throws InvalidMidiDataException,
-    IOException 
+    IOException
   {
     InputStream is = url.openStream();
     try
       {
-	return getSequence(is);
+        return getSequence(is);
       }
     finally
       {
-	is.close();
+        is.close();
       }
   }
 
@@ -363,16 +363,16 @@ public class MidiFileReader extends javax.sound.midi.spi.MidiFileReader
    * @see javax.sound.midi.spi.MidiFileReader#getSequence(java.io.File)
    */
   public Sequence getSequence(File file) throws InvalidMidiDataException,
-    IOException 
+    IOException
   {
     InputStream is = new FileInputStream(file);
     try
       {
-	return getSequence(is);
+        return getSequence(is);
       }
     finally
       {
-	is.close();
+        is.close();
       }
   }
 }

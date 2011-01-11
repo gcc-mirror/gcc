@@ -86,7 +86,7 @@ public class UnsupportedOperationException extends RuntimeException
    * automatically incorporated into the resulting detail message of
    * this exception.
    * </p>
-   * 
+   *
    * @param message the detail message, which should give the reason for
    *                this exception being thrown.
    * @param cause the cause of this exception, or null if the cause
@@ -114,7 +114,7 @@ public class UnsupportedOperationException extends RuntimeException
    * This makes this constructor very useful for simply wrapping another
    * exception.
    * </p>
-   * 
+   *
    * @param cause the cause of this exception, or null if the cause
    *              is unknown.
    * @since 1.5

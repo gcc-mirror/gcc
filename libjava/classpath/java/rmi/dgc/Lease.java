@@ -56,7 +56,7 @@ public final class Lease
 
   /**
    * Create the new lease with the given id and duration
-   * 
+   *
    * @param id the lease id
    * @param duration the lease duration
    */
@@ -68,7 +68,7 @@ public final class Lease
 
   /**
    * Get the lease id.
-   * 
+   *
    * @return the lease id
    */
   public VMID getVMID()
@@ -78,7 +78,7 @@ public final class Lease
 
   /**
    * Get the lease duration
-   * 
+   *
    * @return the lease duration
    */
   public long getValue()
@@ -88,7 +88,7 @@ public final class Lease
 
   /**
    * Get the string representation of this lease
-   * 
+   *
    * @return the string represenation (lease id, followed by the lease
    *         duration).
    */

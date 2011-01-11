@@ -48,7 +48,7 @@ import java.util.Map;
 
 /**
  * A simple, non-persistent SessionContext.
- * 
+ *
  * @author csm
  */
 public final class SimpleSessionContext
@@ -58,17 +58,17 @@ public final class SimpleSessionContext
    * By default, sessions last for 5 minutes.
    */
   public static final int DEFAULT_TIMEOUT = 300;
-  
+
   private final HashMap<Session.ID, Session> store;
   private int storeLimit;
-  
+
   public SimpleSessionContext()
   {
     super(DEFAULT_TIMEOUT);
     storeLimit = 0;
     store = new HashMap<Session.ID, Session>();
   }
-  
+
   @Override
   protected Session implGet(byte[] sessionId)
   {
@@ -116,12 +116,12 @@ public final class SimpleSessionContext
     return new Enumeration()
     {
       Iterator<Session.ID> it = store.keySet().iterator();
-      
+
       public boolean hasMoreElements()
       {
         return it.hasNext();
       }
-      
+
       public Object nextElement()
       {
         return it.next().id();

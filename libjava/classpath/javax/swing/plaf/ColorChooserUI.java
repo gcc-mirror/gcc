@@ -56,4 +56,3 @@ public abstract class ColorChooserUI extends ComponentUI
     /* The constructor does not do anything. */
   }
 }
-

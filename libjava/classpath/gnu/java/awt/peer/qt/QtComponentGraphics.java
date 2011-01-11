@@ -43,8 +43,8 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 /**
- * QtComponentPainter is a Graphics2D context for painting directly to AWT 
- * components. They require an existing QPainter object (the one passed into 
+ * QtComponentPainter is a Graphics2D context for painting directly to AWT
+ * components. They require an existing QPainter object (the one passed into
  * the native paint method), and are created there (ONLY).
  *
  * Since this context does direct on-screen drawing it is NOT thread-safe,
@@ -63,15 +63,15 @@ public class QtComponentGraphics extends QtGraphics
    *
    * @param ptr the pointer to the QPainter object.
    */
-  public QtComponentGraphics(long ptr, QtComponentPeer component, 
-			     int x, int y, int w, int h)
+  public QtComponentGraphics(long ptr, QtComponentPeer component,
+                             int x, int y, int w, int h)
   {
     nativeObject = ptr;
     peer = component;
 
     Rectangle r = new Rectangle(x, y, w, h);
     initialClip = r;
-    
+
     setAlpha( 1.0 );
     Color c = component.owner.getBackground();
     if(c == null)
@@ -103,11 +103,11 @@ public class QtComponentGraphics extends QtGraphics
 
   /**
    * This is a tricky one
-   */ 
-  public void copyArea(int x, int y, int width, int height, 
-		       int dx, int dy)
+   */
+  public void copyArea(int x, int y, int width, int height,
+                       int dx, int dy)
   {
-    // FIXME 
+    // FIXME
   }
 
   /**
@@ -117,6 +117,4 @@ public class QtComponentGraphics extends QtGraphics
   {
     return peer.getGraphicsConfiguration();
   }
-} 
-
-
+}

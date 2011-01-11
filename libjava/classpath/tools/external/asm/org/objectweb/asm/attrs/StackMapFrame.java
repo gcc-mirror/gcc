@@ -36,15 +36,15 @@ import org.objectweb.asm.Label;
 /**
  * Holds the state of the stack and local variables for a single execution
  * branch.
- * 
+ *
  * <i>Note that Long and Double types are represented by two entries in locals
  * and stack. Second entry should be always of type Top.</i>
- * 
+ *
  * @see <a href="http://www.jcp.org/en/jsr/detail?id=139">JSR 139 : Connected
  *      Limited Device Configuration 1.1</a>
- * 
+ *
  * @see "ClassFileFormat-Java6.fm Page 138 Friday, April 15, 2005 3:22 PM"
- * 
+ *
  * @author Eugene Kuleshov
  */
 public class StackMapFrame {

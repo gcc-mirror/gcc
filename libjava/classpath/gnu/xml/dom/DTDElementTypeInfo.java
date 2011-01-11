@@ -1,4 +1,4 @@
-/* DTDElementTypeInfo.java -- 
+/* DTDElementTypeInfo.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -107,6 +107,5 @@ class DTDElementTypeInfo
       }
     return attributes.values().iterator();
   }
-  
-}
 
+}

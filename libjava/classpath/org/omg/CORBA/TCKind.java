@@ -449,9 +449,9 @@ public class TCKind
 
   /**
    * The array of all tk_... instances, sorted by the kind number.
-   * 
+   *
    * As long as the kind numbers make the continuos sequence, starting from 0,
-   * the members can be found just by direct indexing. 
+   * the members can be found just by direct indexing.
    */
   private static final TCKind[] tk =
     new TCKind[]
@@ -500,5 +500,5 @@ public class TCKind
       throw new BAD_PARAM("Invalid _tk_ code "+_tk_nnn);
     }
   }
-  
+
 }

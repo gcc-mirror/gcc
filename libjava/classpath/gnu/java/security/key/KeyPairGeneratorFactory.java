@@ -1,4 +1,4 @@
-/* KeyPairGeneratorFactory.java -- 
+/* KeyPairGeneratorFactory.java --
    Copyright 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -60,7 +60,7 @@ public class KeyPairGeneratorFactory
 
   /**
    * Returns an instance of a keypair generator given its name.
-   * 
+   *
    * @param name the case-insensitive key generator name.
    * @return an instance of the keypair generator, or <code>null</code> if
    *         none found.
@@ -89,7 +89,7 @@ public class KeyPairGeneratorFactory
    * Returns a {@link Set} of keypair generator names supported by this
    * <i>Factory</i>. Those keypair generators may be used in conjunction with
    * the digital signature schemes with appendix supported by this library.
-   * 
+   *
    * @return a {@link Set} of keypair generator names (Strings).
    */
   public static final Set getNames()

@@ -71,8 +71,8 @@ final class RETokenAny extends REToken
     boolean retval = matchOneChar (ch);
     if (retval)
       {
-	++mymatch.index;
-	return mymatch;
+        ++mymatch.index;
+        return mymatch;
       }
     return null;
   }
@@ -80,9 +80,9 @@ final class RETokenAny extends REToken
   boolean matchOneChar (char ch)
   {
     if ((ch == CharIndexed.OUT_OF_BOUNDS)
-	|| (!newline && (ch == '\n')) || (matchNull && (ch == 0)))
+        || (!newline && (ch == '\n')) || (matchNull && (ch == 0)))
       {
-	return false;
+        return false;
       }
     return true;
   }
@@ -98,12 +98,12 @@ final class RETokenAny extends REToken
     int numRepeats = 0;
     while (true)
       {
-	if (numRepeats >= max)
-	  break;
-	char ch = input.charAt (index++);
-	if (!matchOneChar (ch))
-	  break;
-	numRepeats++;
+        if (numRepeats >= max)
+          break;
+        char ch = input.charAt (index++);
+        if (!matchOneChar (ch))
+          break;
+        numRepeats++;
       }
     return numRepeats;
   }

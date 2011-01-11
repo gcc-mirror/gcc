@@ -55,12 +55,12 @@ public class DefaultExceptionListener implements ExceptionListener
 {
   public final static DefaultExceptionListener INSTANCE
     = new DefaultExceptionListener();
-  
+
   public void exceptionThrown(Exception e)
   {
     System.err.println("exception thrown: "
                        + e + " - message: "
                        + e.getMessage());
   }
-  
+
 }

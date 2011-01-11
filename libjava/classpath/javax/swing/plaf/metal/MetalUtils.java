@@ -180,7 +180,7 @@ class MetalUtils
   {
     paintGradient(g, x, y, w, h, dir, uiProp, null);
   }
-  
+
   /**
    * Paints the typical Metal gradient. See {@link #paintGradient(Graphics,
    * int, int, int, int, float, float, Color, Color, Color, int, int[][])}
@@ -216,14 +216,14 @@ class MetalUtils
   /**
    * Paints the typical Metal gradient. The gradient is painted as follows:
    * <pre>
-   * 
+   *
    * +-------+--------+--------+-----------------------------+
    * |       |        |        |                             |
    * +-------+--------+--------+-----------------------------+
    * c1  ->  c2  --   c2  ->   c1         -------->          c3
    * < -g1- > < -g2- > < -g1- >
    * </pre>
-   * 
+   *
    * There are 4 distinct areas in this gradient:
    * <ol>
    * <li>A gradient from color 1 to color 2 with the relative width specified
@@ -306,7 +306,7 @@ class MetalUtils
                                       float g1, float g2, Color c1, Color c2,
                                       Color c3, int[][] mask)
   {
-    
+
     if (g instanceof Graphics2D
         && SystemProperties.getProperty("gnu.javax.swing.noGraphics2D") == null)
       {

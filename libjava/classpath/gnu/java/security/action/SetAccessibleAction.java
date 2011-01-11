@@ -41,7 +41,7 @@ import java.lang.reflect.AccessibleObject;
 import java.security.PrivilegedAction;
 
 /**
- * PrivilegedAction implementation that calls setAccessible(true) on the 
+ * PrivilegedAction implementation that calls setAccessible(true) on the
  * AccessibleObject passed to its constructor.
  *
  * Example of use:
@@ -53,22 +53,22 @@ import java.security.PrivilegedAction;
 public class SetAccessibleAction implements PrivilegedAction
 {
   AccessibleObject member;
-  
+
   public SetAccessibleAction()
   {
   }
-  
+
   public SetAccessibleAction(AccessibleObject member)
   {
     this.member = member;
   }
-  
+
   public Object run()
   {
     member.setAccessible(true);
     return null;
   }
-  
+
   public SetAccessibleAction setMember(AccessibleObject member)
   {
     this.member = member;

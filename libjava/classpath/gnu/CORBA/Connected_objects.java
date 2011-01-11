@@ -242,10 +242,10 @@ public class Connected_objects
     free_object_number++;
     return instance_number;
   }
-  
+
   /**
    * Get the number of the connected objects.
-   * 
+   *
    * @return the size of the internal map.
    */
   public int size()

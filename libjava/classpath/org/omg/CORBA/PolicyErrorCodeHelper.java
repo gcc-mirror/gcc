@@ -49,7 +49,7 @@ import org.omg.CORBA.portable.OutputStream;
 /**
  * A helper operations for the policy error code as an alias of
  * <code>short</code>.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public abstract class PolicyErrorCodeHelper
@@ -66,7 +66,7 @@ public abstract class PolicyErrorCodeHelper
 
   /**
    * Returns policy error code repository id.
-   * 
+   *
    * @return "IDL:omg.org/CORBA/PolicyErrorCode:1.0", always.
    */
   public static String id()
@@ -93,7 +93,7 @@ public abstract class PolicyErrorCodeHelper
   /**
    * Returns a typecode of the policy error code, stating it is an alias of
    * <code>short</code>, named "PolicyErrorCode".
-   * 
+   *
    * @return a typecode of synchronization scope.
    */
   public static TypeCode type()

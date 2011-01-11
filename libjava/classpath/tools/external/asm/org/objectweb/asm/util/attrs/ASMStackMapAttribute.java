@@ -41,7 +41,7 @@ import org.objectweb.asm.attrs.StackMapType;
 
 /**
  * An {@link ASMifiable} {@link StackMapAttribute} sub class.
- * 
+ *
  * @author Eugene Kuleshov
  */
 public class ASMStackMapAttribute extends StackMapAttribute implements

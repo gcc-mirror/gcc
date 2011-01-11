@@ -106,7 +106,7 @@ final class VMMemoryPoolMXBeanImpl
   static native MemoryUsage getPeakUsage(String name);
 
   /**
-   * Returns the type of memory used by the specified pool. 
+   * Returns the type of memory used by the specified pool.
    * The value must be either "HEAP" or "NON_HEAP".
    *
    * @param name the name of the pool to obtain statistics on.
@@ -149,7 +149,7 @@ final class VMMemoryPoolMXBeanImpl
    * @return the usage threshold count.
    */
   static native long getUsageThresholdCount(String name);
-  
+
   /**
    * Returns true if the specified pool is still valid i.e.
    * it is still in use by the virtual machine.
@@ -158,7 +158,7 @@ final class VMMemoryPoolMXBeanImpl
    * @return true if the pool is valid.
    */
   static native boolean isValid(String name);
-  
+
   /**
    * Resets the peak usage level to the current usage level for
    * the specified pool.
@@ -173,7 +173,7 @@ final class VMMemoryPoolMXBeanImpl
    * This is only called if this functionality is supported
    * by the virtual machine (i.e. the appropriate property,
    * <code>gnu.java.lang.management.CollectionUsageThresholdSupport</code>,
-   * is defined). 
+   * is defined).
    *
    * @param name the name of the pool to set the threshold of.
    * @param threshold the new threshold level.
@@ -185,7 +185,7 @@ final class VMMemoryPoolMXBeanImpl
    * This is only called if this functionality is supported
    * by the virtual machine (i.e. the appropriate property,
    * <code>gnu.java.lang.management.UsageThresholdSupport</code>,
-   * is defined). 
+   * is defined).
    *
    * @param name the name of the pool to set the threshold of.
    * @param threshold the new threshold level.

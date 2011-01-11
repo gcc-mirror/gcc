@@ -169,12 +169,12 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * Returns a string describing the attributes for the 
-   * <code>JRadioButtonMenuItem</code> component, for use in debugging.  The 
-   * return value is guaranteed to be non-<code>null</code>, but the format of 
+   * Returns a string describing the attributes for the
+   * <code>JRadioButtonMenuItem</code> component, for use in debugging.  The
+   * return value is guaranteed to be non-<code>null</code>, but the format of
    * the string may vary between implementations.
    *
-   * @return A string describing the attributes of the 
+   * @return A string describing the attributes of the
    *     <code>JRadioButtonMenuItem</code>.
    */
   protected String paramString()
@@ -187,7 +187,7 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
    * Returns the object that provides accessibility features for this
    * <code>JRadioButtonMenuItem</code> component.
    *
-   * @return The accessible context (an instance of 
+   * @return The accessible context (an instance of
    *     {@link AccessibleJRadioButtonMenuItem}).
    */
   public AccessibleContext getAccessibleContext()
@@ -199,9 +199,9 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
   }
 
   /**
-   * Provides the accessibility features for the 
+   * Provides the accessibility features for the
    * <code>JRadioButtonMenuItem</code> component.
-   * 
+   *
    * @see JRadioButtonMenuItem#getAccessibleContext()
    */
   protected class AccessibleJRadioButtonMenuItem extends AccessibleJMenuItem
@@ -217,7 +217,7 @@ public class JRadioButtonMenuItem extends JMenuItem implements Accessible
     }
 
     /**
-     * Returns the accessible role for the <code>JRadioButtonMenuItem</code> 
+     * Returns the accessible role for the <code>JRadioButtonMenuItem</code>
      * component.
      *
      * @return {@link AccessibleRole#RADIO_BUTTON}.

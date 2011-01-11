@@ -18,12 +18,12 @@ package org.w3c.dom.html2;
  */
 public interface HTMLHeadElement extends HTMLElement {
     /**
-     * URI [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>] designating a metadata profile. See the profile attribute 
+     * URI [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>] designating a metadata profile. See the profile attribute
      * definition in HTML 4.01.
      */
     public String getProfile();
     /**
-     * URI [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>] designating a metadata profile. See the profile attribute 
+     * URI [<a href='http://www.ietf.org/rfc/rfc2396.txt'>IETF RFC 2396</a>] designating a metadata profile. See the profile attribute
      * definition in HTML 4.01.
      */
     public void setProfile(String profile);

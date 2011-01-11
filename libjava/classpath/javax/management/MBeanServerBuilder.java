@@ -73,7 +73,7 @@ public class MBeanServerBuilder
    * same as that returned by {@link #newMBeanServerDelegate()} as the factory
    * can optionally wrap the delegate before calling this method.
    * </p>
-   * 
+   *
    * @param defaultDomain the default domain used by the new server.
    * @param outer the {@link MBeanServer} passed to the {@link MBeanRegistration}
    *              interface of management beans.
@@ -82,7 +82,7 @@ public class MBeanServerBuilder
    * @return a new instance of a server implementation.
    */
   public MBeanServer newMBeanServer(String defaultDomain, MBeanServer outer,
-				    MBeanServerDelegate delegate)
+                                    MBeanServerDelegate delegate)
   {
     return new Server(defaultDomain, outer, delegate);
   }

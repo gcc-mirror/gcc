@@ -91,9 +91,9 @@ public class AccessibleObject
    * <code>ReflectPermission("suppressAccessChecks")</code>.<p>
    *
    * It is forbidden to set the accessibility flag to true on any constructor
-   * for java.lang.Class. This will result in a SecurityException. If the 
+   * for java.lang.Class. This will result in a SecurityException. If the
    * SecurityException is thrown for any of the passed AccessibleObjects,
-   * the accessibility flag will be set on AccessibleObjects in the array prior 
+   * the accessibility flag will be set on AccessibleObjects in the array prior
    * to the one which resulted in the exception.
    *
    * @param array the array of accessible objects
@@ -115,7 +115,7 @@ public class AccessibleObject
    * manager exists, it is checked for
    * <code>ReflectPermission("suppressAccessChecks")</code>.<p>
    *
-   * It is forbidden to set the accessibility flag to true on any constructor for 
+   * It is forbidden to set the accessibility flag to true on any constructor for
    * java.lang.Class. This will result in a SecurityException.
    *
    * @param flag the desired state of accessibility, true to bypass security

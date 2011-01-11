@@ -52,7 +52,7 @@ import java.lang.reflect.Modifier;
 /**
  * Handles case when the CORBA IDL type with the known helper is wrapped into
  * Value type.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class IDLTypeHelper
@@ -118,7 +118,7 @@ public class IDLTypeHelper
     catch (Exception ex)
       {
         MARSHAL m = new MARSHAL(msg() + " read(..)");
-        m.minor = Minor.Boxed;        
+        m.minor = Minor.Boxed;
         m.initCause(ex);
         throw m;
       }
@@ -152,7 +152,7 @@ public class IDLTypeHelper
     catch (Exception ex)
       {
         MARSHAL m = new MARSHAL(msg() + " write(..)");
-        m.minor = Minor.Boxed;        
+        m.minor = Minor.Boxed;
         m.initCause(ex);
         throw m;
       }

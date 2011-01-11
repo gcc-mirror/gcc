@@ -413,7 +413,7 @@ public class BorderFactory
    * Create a matte-look border using a solid color. (The difference between
    * this border and a line border is that you can specify the individual border
    * dimensions.)
-   * 
+   *
    * @param top
    *          An int specifying the width of the top in pixels
    * @param left

@@ -61,11 +61,11 @@ import java.awt.Shape;
  *
  * <p>The NON_ZERO winding rule defines a point as inside a path if:
  * The path intersects the ray in an equal number of opposite directions.
- * Point <b>A</b> in the image is outside (one intersection in the 
+ * Point <b>A</b> in the image is outside (one intersection in the
  * &#x2019;up&#x2019;
- * direction, one in the &#x2019;down&#x2019; direction) Point <b>B</b> in 
+ * direction, one in the &#x2019;down&#x2019; direction) Point <b>B</b> in
  * the image is inside (one intersection &#x2019;down&#x2019;)
- * Point <b>C</b> in the image is inside (two intersections in the 
+ * Point <b>C</b> in the image is inside (two intersections in the
  * &#x2019;down&#x2019; direction)
  *
  * @see Line2D
@@ -135,9 +135,9 @@ public final class GeneralPath implements Shape, Cloneable
   /**
    * Constructs a GeneralPath with a specific winding rule
    * and the default initial capacity (20).
-   * @param rule the winding rule ({@link #WIND_NON_ZERO} or 
+   * @param rule the winding rule ({@link #WIND_NON_ZERO} or
    *     {@link #WIND_EVEN_ODD})
-   *     
+   *
    * @throws IllegalArgumentException if <code>rule</code> is not one of the
    *     listed values.
    */
@@ -150,10 +150,10 @@ public final class GeneralPath implements Shape, Cloneable
    * Constructs a GeneralPath with a specific winding rule
    * and the initial capacity. The initial capacity should be
    * the approximate number of path segments to be used.
-   * @param rule the winding rule ({@link #WIND_NON_ZERO} or 
+   * @param rule the winding rule ({@link #WIND_NON_ZERO} or
    *     {@link #WIND_EVEN_ODD})
    * @param capacity the inital capacity, in path segments
-   * 
+   *
    * @throws IllegalArgumentException if <code>rule</code> is not one of the
    *     listed values.
    */
@@ -172,9 +172,9 @@ public final class GeneralPath implements Shape, Cloneable
   /**
    * Constructs a GeneralPath from an arbitrary shape object.
    * The Shapes PathIterator path and winding rule will be used.
-   * 
+   *
    * @param s the shape (<code>null</code> not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>shape</code> is <code>null</code>.
    */
   public GeneralPath(Shape s)
@@ -189,7 +189,7 @@ public final class GeneralPath implements Shape, Cloneable
 
   /**
    * Adds a new point to a path.
-   * 
+   *
    * @param x  the x-coordinate.
    * @param y  the y-coordinate.
    */
@@ -269,13 +269,13 @@ public final class GeneralPath implements Shape, Cloneable
   }
 
   /**
-   * Appends the segments of a Shape to the path. If <code>connect</code> is 
+   * Appends the segments of a Shape to the path. If <code>connect</code> is
    * true, the new path segments are connected to the existing one with a line.
    * The winding rule of the Shape is ignored.
-   * 
+   *
    * @param s  the shape (<code>null</code> not permitted).
    * @param connect  whether to connect the new shape to the existing path.
-   * 
+   *
    * @throws NullPointerException if <code>s</code> is <code>null</code>.
    */
   public void append(Shape s, boolean connect)
@@ -306,42 +306,42 @@ public final class GeneralPath implements Shape, Cloneable
     float[] f = new float[6];
     while (! iter.isDone())
       {
-	switch (iter.currentSegment(f))
-	  {
-	  case PathIterator.SEG_MOVETO:
-	    if (! connect || (index == 0))
-	      {
-		moveTo(f[0], f[1]);
-		break;
-	      }
-	    if ((index >= 1) && (types[index - 1] == PathIterator.SEG_CLOSE)
-	        && (f[0] == xpoints[index - 1])
-	        && (f[1] == ypoints[index - 1]))
-	      break;
+        switch (iter.currentSegment(f))
+          {
+          case PathIterator.SEG_MOVETO:
+            if (! connect || (index == 0))
+              {
+                moveTo(f[0], f[1]);
+                break;
+              }
+            if ((index >= 1) && (types[index - 1] == PathIterator.SEG_CLOSE)
+                && (f[0] == xpoints[index - 1])
+                && (f[1] == ypoints[index - 1]))
+              break;
 
-	  // Fall through.
-	  case PathIterator.SEG_LINETO:
-	    lineTo(f[0], f[1]);
-	    break;
-	  case PathIterator.SEG_QUADTO:
-	    quadTo(f[0], f[1], f[2], f[3]);
-	    break;
-	  case PathIterator.SEG_CUBICTO:
-	    curveTo(f[0], f[1], f[2], f[3], f[4], f[5]);
-	    break;
-	  case PathIterator.SEG_CLOSE:
-	    closePath();
-	    break;
-	  }
+          // Fall through.
+          case PathIterator.SEG_LINETO:
+            lineTo(f[0], f[1]);
+            break;
+          case PathIterator.SEG_QUADTO:
+            quadTo(f[0], f[1], f[2], f[3]);
+            break;
+          case PathIterator.SEG_CUBICTO:
+            curveTo(f[0], f[1], f[2], f[3], f[4], f[5]);
+            break;
+          case PathIterator.SEG_CLOSE:
+            closePath();
+            break;
+          }
 
-	connect = false;
-	iter.next();
+        connect = false;
+        iter.next();
       }
   }
 
   /**
    * Returns the path&#x2019;s current winding rule.
-   * 
+   *
    * @return {@link #WIND_EVEN_ODD} or {@link #WIND_NON_ZERO}.
    */
   public int getWindingRule()
@@ -350,11 +350,11 @@ public final class GeneralPath implements Shape, Cloneable
   }
 
   /**
-   * Sets the path&#x2019;s winding rule, which controls which areas are 
-   * considered &#x2019;inside&#x2019; or &#x2019;outside&#x2019; the path 
-   * on drawing. Valid rules are WIND_EVEN_ODD for an even-odd winding rule, 
+   * Sets the path&#x2019;s winding rule, which controls which areas are
+   * considered &#x2019;inside&#x2019; or &#x2019;outside&#x2019; the path
+   * on drawing. Valid rules are WIND_EVEN_ODD for an even-odd winding rule,
    * or WIND_NON_ZERO for a non-zero winding rule.
-   * 
+   *
    * @param rule  the rule ({@link #WIND_EVEN_ODD} or {@link #WIND_NON_ZERO}).
    */
   public void setWindingRule(int rule)
@@ -366,7 +366,7 @@ public final class GeneralPath implements Shape, Cloneable
 
   /**
    * Returns the current appending point of the path.
-   * 
+   *
    * @return The point.
    */
   public Point2D getCurrentPoint()
@@ -387,7 +387,7 @@ public final class GeneralPath implements Shape, Cloneable
 
   /**
    * Applies a transform to the path.
-   * 
+   *
    * @param xform  the transform (<code>null</code> not permitted).
    */
   public void transform(AffineTransform xform)
@@ -398,10 +398,10 @@ public final class GeneralPath implements Shape, Cloneable
     xform.getMatrix(m);
     for (int i = 0; i < index; i++)
       {
-	nx = m[0] * xpoints[i] + m[2] * ypoints[i] + m[4];
-	ny = m[1] * xpoints[i] + m[3] * ypoints[i] + m[5];
-	xpoints[i] = (float) nx;
-	ypoints[i] = (float) ny;
+        nx = m[0] * xpoints[i] + m[2] * ypoints[i] + m[4];
+        ny = m[1] * xpoints[i] + m[3] * ypoints[i] + m[5];
+        xpoints[i] = (float) nx;
+        ypoints[i] = (float) ny;
       }
   }
 
@@ -437,18 +437,18 @@ public final class GeneralPath implements Shape, Cloneable
 
     if (index > 0)
       {
-	x1 = x2 = xpoints[0];
-	y1 = y2 = ypoints[0];
+        x1 = x2 = xpoints[0];
+        y1 = y2 = ypoints[0];
       }
     else
       x1 = x2 = y1 = y2 = 0.0f;
 
     for (int i = 0; i < index; i++)
       {
-	x1 = Math.min(xpoints[i], x1);
-	y1 = Math.min(ypoints[i], y1);
-	x2 = Math.max(xpoints[i], x2);
-	y2 = Math.max(ypoints[i], y2);
+        x1 = Math.min(xpoints[i], x1);
+        y1 = Math.min(ypoints[i], y1);
+        x2 = Math.max(xpoints[i], x2);
+        y2 = Math.max(ypoints[i], y2);
       }
     return (new Rectangle2D.Float(x1, y1, x2 - x1, y2 - y1));
   }
@@ -563,11 +563,11 @@ public final class GeneralPath implements Shape, Cloneable
     /**
      * The number of coordinate values for each segment type.
      */
-    private static final int[] NUM_COORDS = { 
-                                            /* 0: SEG_MOVETO */ 1, 
-                                            /* 1: SEG_LINETO */ 1, 
-                                            /* 2: SEG_QUADTO */ 2, 
-                                            /* 3: SEG_CUBICTO */ 3, 
+    private static final int[] NUM_COORDS = {
+                                            /* 0: SEG_MOVETO */ 1,
+                                            /* 1: SEG_LINETO */ 1,
+                                            /* 2: SEG_QUADTO */ 2,
+                                            /* 3: SEG_CUBICTO */ 3,
                                             /* 4: SEG_CLOSE */ 0};
 
     /**
@@ -630,9 +630,9 @@ public final class GeneralPath implements Shape, Cloneable
        */
       seg = path.types[pos];
       if (seg == SEG_CLOSE)
-	pos++;
+        pos++;
       else
-	pos += NUM_COORDS[seg];
+        pos += NUM_COORDS[seg];
     }
 
     /**
@@ -647,17 +647,17 @@ public final class GeneralPath implements Shape, Cloneable
       numCoords = NUM_COORDS[seg];
       if (numCoords > 0)
         {
-	  for (int i = 0; i < numCoords; i++)
-	    {
-	      coords[i << 1] = path.xpoints[pos + i];
-	      coords[(i << 1) + 1] = path.ypoints[pos + i];
-	    }
+          for (int i = 0; i < numCoords; i++)
+            {
+              coords[i << 1] = path.xpoints[pos + i];
+              coords[(i << 1) + 1] = path.ypoints[pos + i];
+            }
 
-	  if (transform != null)
-	    transform.transform( /* src */
-	    coords, /* srcOffset */
-	    0, /* dest */ coords, /* destOffset */
-	    0, /* numPoints */ numCoords);
+          if (transform != null)
+            transform.transform( /* src */
+            coords, /* srcOffset */
+            0, /* dest */ coords, /* destOffset */
+            0, /* numPoints */ numCoords);
         }
       return seg;
     }
@@ -674,16 +674,16 @@ public final class GeneralPath implements Shape, Cloneable
       numCoords = NUM_COORDS[seg];
       if (numCoords > 0)
         {
-	  for (int i = 0; i < numCoords; i++)
-	    {
-	      coords[i << 1] = (double) path.xpoints[pos + i];
-	      coords[(i << 1) + 1] = (double) path.ypoints[pos + i];
-	    }
-	  if (transform != null)
-	    transform.transform( /* src */
-	    coords, /* srcOffset */
-	    0, /* dest */ coords, /* destOffset */
-	    0, /* numPoints */ numCoords);
+          for (int i = 0; i < numCoords; i++)
+            {
+              coords[i << 1] = (double) path.xpoints[pos + i];
+              coords[(i << 1) + 1] = (double) path.ypoints[pos + i];
+            }
+          if (transform != null)
+            transform.transform( /* src */
+            coords, /* srcOffset */
+            0, /* dest */ coords, /* destOffset */
+            0, /* numPoints */ numCoords);
         }
       return seg;
     }
@@ -710,7 +710,7 @@ public final class GeneralPath implements Shape, Cloneable
   }
 
   /**
-   * Creates a new shape of the same run-time type with the same contents 
+   * Creates a new shape of the same run-time type with the same contents
    * as this one.
    *
    * @return the clone
@@ -728,7 +728,7 @@ public final class GeneralPath implements Shape, Cloneable
   /**
    * Helper method - ensure the size of the data arrays,
    * otherwise, reallocate new ones twice the size
-   * 
+   *
    * @param size  the minimum array size.
    */
   private void ensureSize(int size)
@@ -749,7 +749,7 @@ public final class GeneralPath implements Shape, Cloneable
   }
 
   /**
-   * Helper method - Get the total number of intersections from (x,y) along 
+   * Helper method - Get the total number of intersections from (x,y) along
    * a given axis, within a given distance.
    */
   private int getAxisIntersections(double x, double y, boolean useYaxis,
@@ -763,21 +763,21 @@ public final class GeneralPath implements Shape, Cloneable
    */
   private int getWindingNumber(double x, double y)
   {
-    /* Evaluate the crossings from x,y to infinity on the y axis (arbitrary 
-       choice). Note that we don't actually use Double.INFINITY, since that's 
+    /* Evaluate the crossings from x,y to infinity on the y axis (arbitrary
+       choice). Note that we don't actually use Double.INFINITY, since that's
        slower, and may cause problems. */
     return (evaluateCrossings(x, y, true, true, BIG_VALUE));
   }
 
   /**
-   * Helper method - evaluates the number of intersections on an axis from 
+   * Helper method - evaluates the number of intersections on an axis from
    * the point (x,y) to the point (x,y+distance) or (x+distance,y).
    * @param x x coordinate.
    * @param y y coordinate.
-   * @param neg True if opposite-directed intersections should cancel, 
+   * @param neg True if opposite-directed intersections should cancel,
    * false to sum all intersections.
    * @param useYaxis Use the Y axis, false uses the X axis.
-   * @param distance Interval from (x,y) on the selected axis to find 
+   * @param distance Interval from (x,y) on the selected axis to find
    * intersections.
    */
   private int evaluateCrossings(double x, double y, boolean neg,
@@ -808,186 +808,185 @@ public final class GeneralPath implements Shape, Cloneable
       return (0);
     if (useYaxis)
       {
-	float[] swap1;
-	swap1 = ypoints;
-	ypoints = xpoints;
-	xpoints = swap1;
-	double swap2;
-	swap2 = y;
-	y = x;
-	x = swap2;
+        float[] swap1;
+        swap1 = ypoints;
+        ypoints = xpoints;
+        xpoints = swap1;
+        double swap2;
+        swap2 = y;
+        y = x;
+        x = swap2;
       }
 
     /* Get a value which is hopefully small but not insignificant relative
      the path. */
     epsilon = ypoints[0] * 1E-7;
 
-    if(epsilon == 0) 
+    if(epsilon == 0)
       epsilon = 1E-7;
 
     pos = 0;
     while (pos < index)
       {
-	switch (types[pos])
-	  {
-	  case PathIterator.SEG_MOVETO:
-	    if (pathStarted) // close old path
-	      {
-		x0 = cx;
-		y0 = cy;
-		x1 = firstx;
-		y1 = firsty;
+        switch (types[pos])
+          {
+          case PathIterator.SEG_MOVETO:
+            if (pathStarted) // close old path
+              {
+                x0 = cx;
+                y0 = cy;
+                x1 = firstx;
+                y1 = firsty;
 
-		if (y0 == 0.0)
-		  y0 -= epsilon;
-		if (y1 == 0.0)
-		  y1 -= epsilon;
-		if (Line2D.linesIntersect(x0, y0, x1, y1, 
-					  epsilon, 0.0, distance, 0.0))
-		  windingNumber += (y1 < y0) ? 1 : negative;
+                if (y0 == 0.0)
+                  y0 -= epsilon;
+                if (y1 == 0.0)
+                  y1 -= epsilon;
+                if (Line2D.linesIntersect(x0, y0, x1, y1,
+                                          epsilon, 0.0, distance, 0.0))
+                  windingNumber += (y1 < y0) ? 1 : negative;
 
-		cx = firstx;
-		cy = firsty;
-	      }
-	    cx = firstx = xpoints[pos] - (float) x;
-	    cy = firsty = ypoints[pos++] - (float) y;
-	    pathStarted = true;
-	    break;
-	  case PathIterator.SEG_CLOSE:
-	    x0 = cx;
-	    y0 = cy;
-	    x1 = firstx;
-	    y1 = firsty;
+                cx = firstx;
+                cy = firsty;
+              }
+            cx = firstx = xpoints[pos] - (float) x;
+            cy = firsty = ypoints[pos++] - (float) y;
+            pathStarted = true;
+            break;
+          case PathIterator.SEG_CLOSE:
+            x0 = cx;
+            y0 = cy;
+            x1 = firstx;
+            y1 = firsty;
 
-	    if (y0 == 0.0)
-	      y0 -= epsilon;
-	    if (y1 == 0.0)
-	      y1 -= epsilon;
-	    if (Line2D.linesIntersect(x0, y0, x1, y1, 
-				      epsilon, 0.0, distance, 0.0))
-	      windingNumber += (y1 < y0) ? 1 : negative;
+            if (y0 == 0.0)
+              y0 -= epsilon;
+            if (y1 == 0.0)
+              y1 -= epsilon;
+            if (Line2D.linesIntersect(x0, y0, x1, y1,
+                                      epsilon, 0.0, distance, 0.0))
+              windingNumber += (y1 < y0) ? 1 : negative;
 
-	    cx = firstx;
-	    cy = firsty;
-	    pos++;
-	    pathStarted = false;
-	    break;
-	  case PathIterator.SEG_LINETO:
-	    x0 = cx;
-	    y0 = cy;
-	    x1 = xpoints[pos] - (float) x;
-	    y1 = ypoints[pos++] - (float) y;
+            cx = firstx;
+            cy = firsty;
+            pos++;
+            pathStarted = false;
+            break;
+          case PathIterator.SEG_LINETO:
+            x0 = cx;
+            y0 = cy;
+            x1 = xpoints[pos] - (float) x;
+            y1 = ypoints[pos++] - (float) y;
 
-	    if (y0 == 0.0)
-	      y0 -= epsilon;
-	    if (y1 == 0.0)
-	      y1 -= epsilon;
-	    if (Line2D.linesIntersect(x0, y0, x1, y1, 
-				      epsilon, 0.0, distance, 0.0))
-	      windingNumber += (y1 < y0) ? 1 : negative;
+            if (y0 == 0.0)
+              y0 -= epsilon;
+            if (y1 == 0.0)
+              y1 -= epsilon;
+            if (Line2D.linesIntersect(x0, y0, x1, y1,
+                                      epsilon, 0.0, distance, 0.0))
+              windingNumber += (y1 < y0) ? 1 : negative;
 
-	    cx = xpoints[pos - 1] - (float) x;
-	    cy = ypoints[pos - 1] - (float) y;
-	    break;
-	  case PathIterator.SEG_QUADTO:
-	    x0 = cx;
-	    y0 = cy;
-	    x1 = xpoints[pos] - x;
-	    y1 = ypoints[pos++] - y;
-	    x2 = xpoints[pos] - x;
-	    y2 = ypoints[pos++] - y;
+            cx = xpoints[pos - 1] - (float) x;
+            cy = ypoints[pos - 1] - (float) y;
+            break;
+          case PathIterator.SEG_QUADTO:
+            x0 = cx;
+            y0 = cy;
+            x1 = xpoints[pos] - x;
+            y1 = ypoints[pos++] - y;
+            x2 = xpoints[pos] - x;
+            y2 = ypoints[pos++] - y;
 
-	    /* check if curve may intersect X+ axis. */
-	    if ((x0 > 0.0 || x1 > 0.0 || x2 > 0.0)
-	        && (y0 * y1 <= 0 || y1 * y2 <= 0))
-	      {
-		if (y0 == 0.0)
-		  y0 -= epsilon;
-		if (y2 == 0.0)
-		  y2 -= epsilon;
+            /* check if curve may intersect X+ axis. */
+            if ((x0 > 0.0 || x1 > 0.0 || x2 > 0.0)
+                && (y0 * y1 <= 0 || y1 * y2 <= 0))
+              {
+                if (y0 == 0.0)
+                  y0 -= epsilon;
+                if (y2 == 0.0)
+                  y2 -= epsilon;
 
-		r[0] = y0;
-		r[1] = 2 * (y1 - y0);
-		r[2] = (y2 - 2 * y1 + y0);
+                r[0] = y0;
+                r[1] = 2 * (y1 - y0);
+                r[2] = (y2 - 2 * y1 + y0);
 
-		/* degenerate roots (=tangent points) do not
-		   contribute to the winding number. */
-		if ((nRoots = QuadCurve2D.solveQuadratic(r)) == 2)
-		  for (int i = 0; i < nRoots; i++)
-		    {
-		      float t = (float) r[i];
-		      if (t > 0.0f && t < 1.0f)
-		        {
-			  double crossing = t * t * (x2 - 2 * x1 + x0)
-			                    + 2 * t * (x1 - x0) + x0;
-			  if (crossing >= 0.0 && crossing <= distance)
-			    windingNumber += (2 * t * (y2 - 2 * y1 + y0)
-			                   + 2 * (y1 - y0) < 0) ? 1 : negative;
-		        }
-		    }
-	      }
+                /* degenerate roots (=tangent points) do not
+                   contribute to the winding number. */
+                if ((nRoots = QuadCurve2D.solveQuadratic(r)) == 2)
+                  for (int i = 0; i < nRoots; i++)
+                    {
+                      float t = (float) r[i];
+                      if (t > 0.0f && t < 1.0f)
+                        {
+                          double crossing = t * t * (x2 - 2 * x1 + x0)
+                                            + 2 * t * (x1 - x0) + x0;
+                          if (crossing >= 0.0 && crossing <= distance)
+                            windingNumber += (2 * t * (y2 - 2 * y1 + y0)
+                                           + 2 * (y1 - y0) < 0) ? 1 : negative;
+                        }
+                    }
+              }
 
-	    cx = xpoints[pos - 1] - (float) x;
-	    cy = ypoints[pos - 1] - (float) y;
-	    break;
-	  case PathIterator.SEG_CUBICTO:
-	    x0 = cx;
-	    y0 = cy;
-	    x1 = xpoints[pos] - x;
-	    y1 = ypoints[pos++] - y;
-	    x2 = xpoints[pos] - x;
-	    y2 = ypoints[pos++] - y;
-	    x3 = xpoints[pos] - x;
-	    y3 = ypoints[pos++] - y;
+            cx = xpoints[pos - 1] - (float) x;
+            cy = ypoints[pos - 1] - (float) y;
+            break;
+          case PathIterator.SEG_CUBICTO:
+            x0 = cx;
+            y0 = cy;
+            x1 = xpoints[pos] - x;
+            y1 = ypoints[pos++] - y;
+            x2 = xpoints[pos] - x;
+            y2 = ypoints[pos++] - y;
+            x3 = xpoints[pos] - x;
+            y3 = ypoints[pos++] - y;
 
-	    /* check if curve may intersect X+ axis. */
-	    if ((x0 > 0.0 || x1 > 0.0 || x2 > 0.0 || x3 > 0.0)
-	        && (y0 * y1 <= 0 || y1 * y2 <= 0 || y2 * y3 <= 0))
-	      {
-		if (y0 == 0.0)
-		  y0 -= epsilon;
-		if (y3 == 0.0)
-		  y3 -= epsilon;
+            /* check if curve may intersect X+ axis. */
+            if ((x0 > 0.0 || x1 > 0.0 || x2 > 0.0 || x3 > 0.0)
+                && (y0 * y1 <= 0 || y1 * y2 <= 0 || y2 * y3 <= 0))
+              {
+                if (y0 == 0.0)
+                  y0 -= epsilon;
+                if (y3 == 0.0)
+                  y3 -= epsilon;
 
-		r[0] = y0;
-		r[1] = 3 * (y1 - y0);
-		r[2] = 3 * (y2 + y0 - 2 * y1);
-		r[3] = y3 - 3 * y2 + 3 * y1 - y0;
+                r[0] = y0;
+                r[1] = 3 * (y1 - y0);
+                r[2] = 3 * (y2 + y0 - 2 * y1);
+                r[3] = y3 - 3 * y2 + 3 * y1 - y0;
 
-		if ((nRoots = CubicCurve2D.solveCubic(r)) != 0)
-		  for (int i = 0; i < nRoots; i++)
-		    {
-		      float t = (float) r[i];
-		      if (t > 0.0 && t < 1.0)
-		        {
-			  double crossing = -(t * t * t) * (x0 - 3 * x1
-			                    + 3 * x2 - x3)
-			                    + 3 * t * t * (x0 - 2 * x1 + x2)
-			                    + 3 * t * (x1 - x0) + x0;
-			  if (crossing >= 0 && crossing <= distance)
-			    windingNumber += (3 * t * t * (y3 + 3 * y1
-			                     - 3 * y2 - y0)
-			                     + 6 * t * (y0 - 2 * y1 + y2)
-			                   + 3 * (y1 - y0) < 0) ? 1 : negative;
-		        }
-		    }
-	      }
+                if ((nRoots = CubicCurve2D.solveCubic(r)) != 0)
+                  for (int i = 0; i < nRoots; i++)
+                    {
+                      float t = (float) r[i];
+                      if (t > 0.0 && t < 1.0)
+                        {
+                          double crossing = -(t * t * t) * (x0 - 3 * x1
+                                            + 3 * x2 - x3)
+                                            + 3 * t * t * (x0 - 2 * x1 + x2)
+                                            + 3 * t * (x1 - x0) + x0;
+                          if (crossing >= 0 && crossing <= distance)
+                            windingNumber += (3 * t * t * (y3 + 3 * y1
+                                             - 3 * y2 - y0)
+                                             + 6 * t * (y0 - 2 * y1 + y2)
+                                           + 3 * (y1 - y0) < 0) ? 1 : negative;
+                        }
+                    }
+              }
 
-	    cx = xpoints[pos - 1] - (float) x;
-	    cy = ypoints[pos - 1] - (float) y;
-	    break;
-	  }
+            cx = xpoints[pos - 1] - (float) x;
+            cy = ypoints[pos - 1] - (float) y;
+            break;
+          }
       }
 
     // swap coordinates back
     if (useYaxis)
       {
-	float[] swap;
-	swap = ypoints;
-	ypoints = xpoints;
-	xpoints = swap;
+        float[] swap;
+        swap = ypoints;
+        ypoints = xpoints;
+        xpoints = swap;
       }
     return (windingNumber);
   }
 } // class GeneralPath
-

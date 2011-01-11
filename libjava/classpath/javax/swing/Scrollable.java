@@ -1,4 +1,4 @@
-/* Scrollable.java -- 
+/* Scrollable.java --
    Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -54,14 +54,14 @@ public interface Scrollable
    * Return the preferred scrolling amount (in pixels) for the given
    * scrolling direction and orientation when scrolling in small amounts
    * like table lines.
-   * 
-   * @param visibleRect the currently visible part of the component. 
+   *
+   * @param visibleRect the currently visible part of the component.
    * @param orientation the scrolling orientation
    * @param direction the scrolling direction (negative - up, positive -down).
-   * The values greater than one means that more mouse wheel or similar 
+   * The values greater than one means that more mouse wheel or similar
    * events were generated, and hence it is better to scroll the longer
    * distance.
-   * 
+   *
    * @return the preferred scrolling distance, negative if up or left.
    */
   int getScrollableUnitIncrement(Rectangle visibleRect, int orientation,
@@ -71,15 +71,15 @@ public interface Scrollable
    * Return the preferred scrolling amount (in pixels) for the given
    * scrolling direction and orientation when scrolling in large amounts
    * (pages).
-   * 
-   * @param visibleRect the currently visible part of the component. 
+   *
+   * @param visibleRect the currently visible part of the component.
    * @param orientation the scrolling orientation
    * @param direction the scrolling direction (negative - up, positive -down).
-   * The values greater than one means that more mouse wheel or similar 
+   * The values greater than one means that more mouse wheel or similar
    * events were generated, and hence it is better to scroll the longer
    * distance.
-   * 
-   * @return the preferred scrolling distance, negative if up or left. 
+   *
+   * @return the preferred scrolling distance, negative if up or left.
    */
   int getScrollableBlockIncrement(Rectangle visibleRect, int orientation,
                                   int direction);
@@ -89,7 +89,7 @@ public interface Scrollable
    * view, where it is displayed, width (for instance, the text area with
    * the word wrap). In such case, the horizontal scrolling should not be
    * performed.
-   * 
+   *
    * @return true is no horizontal scrolling is assumed, faster otherwise.
    */
   boolean getScrollableTracksViewportWidth();
@@ -98,7 +98,7 @@ public interface Scrollable
    * Return true if the height of the scrollable is always equal to the view,
    * where it is displayed, height.In such case, the vertical scrolling should
    * not be performed.
-   * 
+   *
    * @return true is no horizontal scrolling is assumed, faster otherwise.
    */
   boolean getScrollableTracksViewportHeight();

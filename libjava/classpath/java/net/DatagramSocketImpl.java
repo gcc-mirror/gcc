@@ -200,9 +200,9 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * socket.  <b>Use <code>getTimeToLive()</code></b> instead.
    *
    * @return the current time-to-live
-   * 
+   *
    * @exception IOException If an error occurs
-   * 
+   *
    * @deprecated // FIXME: when ?
    */
   protected abstract byte getTTL() throws IOException;
@@ -222,7 +222,7 @@ public abstract class DatagramSocketImpl implements SocketOptions
    * socket.
    *
    * @return the current time-to-live
-   * 
+   *
    * @exception IOException If an error occurs
    */
   protected abstract int getTimeToLive() throws IOException;
@@ -276,7 +276,7 @@ public abstract class DatagramSocketImpl implements SocketOptions
 
   /**
    * Returns the FileDescriptor for this socket
-   * 
+   *
    * @return the file descriptor associated with this socket
    */
   protected FileDescriptor getFileDescriptor()

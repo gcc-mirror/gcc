@@ -55,7 +55,7 @@ public class UnsupportedDataTypeException extends IOException
   public UnsupportedDataTypeException()
   {
   }
-  
+
   /**
    * Constructs an UnsupportedDataTypeException with the specified detail
    * message.
@@ -65,6 +65,5 @@ public class UnsupportedDataTypeException extends IOException
   {
     super(message);
   }
-  
-}
 
+}

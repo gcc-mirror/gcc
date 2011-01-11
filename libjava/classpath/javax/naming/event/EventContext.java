@@ -41,7 +41,7 @@ package javax.naming.event;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 1, 2001
@@ -55,11 +55,11 @@ public interface EventContext extends Context
 
   void addNamingListener (Name target, int scope, NamingListener l)
     throws NamingException;
-  
+
   void addNamingListener (String target, int scope, NamingListener l)
     throws NamingException;
-  
+
   void removeNamingListener (NamingListener l) throws NamingException;
-  
+
   boolean targetMustExist() throws NamingException;
 }

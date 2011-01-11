@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -55,60 +55,60 @@ public class BeanContextMembershipEvent extends BeanContextEvent {
         private static final long serialVersionUID = 3499346510334590959L;
 
         /**
-	 * The children that were added or removed.
-	 */
-	protected Collection children;
+         * The children that were added or removed.
+         */
+        protected Collection children;
 
-	/**
-	 * Create a new membership event.
-	 * @param context the event source.
-	 * @param children the children added to or removed from the source.
-	 */
-	public BeanContextMembershipEvent(BeanContext context, Collection children) {
-		super(context);
-		this.children = children;
-	}
+        /**
+         * Create a new membership event.
+         * @param context the event source.
+         * @param children the children added to or removed from the source.
+         */
+        public BeanContextMembershipEvent(BeanContext context, Collection children) {
+                super(context);
+                this.children = children;
+        }
 
-	/**
-	 * Create a new membership event.
-	 * @param context the event source.
-	 * @param children the children added to or removed from the source.
-	 */
-	public BeanContextMembershipEvent(BeanContext context, Object[] children) {
-		super(context);
-		this.children = Arrays.asList(children);
-	}
+        /**
+         * Create a new membership event.
+         * @param context the event source.
+         * @param children the children added to or removed from the source.
+         */
+        public BeanContextMembershipEvent(BeanContext context, Object[] children) {
+                super(context);
+                this.children = Arrays.asList(children);
+        }
 
-	/**
-	 * The number of children removed or added.
-	 * @return the number of children removed or added.
-	 */
-	public int size() {
-		return children.size();
-	}
+        /**
+         * The number of children removed or added.
+         * @return the number of children removed or added.
+         */
+        public int size() {
+                return children.size();
+        }
 
-	/**
-	 * An iterator that will step through all the children.
-	 * @return an iterator over all the children.
-	 */
-	public Iterator iterator() {
-		return children.iterator();
-	}
+        /**
+         * An iterator that will step through all the children.
+         * @return an iterator over all the children.
+         */
+        public Iterator iterator() {
+                return children.iterator();
+        }
 
-	/**
-	 * An array of the children.
-	 * @return an array of the children.
-	 */
-	public Object[] toArray() {
-		return children.toArray();
-	}
+        /**
+         * An array of the children.
+         * @return an array of the children.
+         */
+        public Object[] toArray() {
+                return children.toArray();
+        }
 
-	/**
-	 * Tell whether the <code>Object</code> is one of the children added or removed.
-	 * @param child the child to check.
-	 * @return whether the <code>Object</code> is added or removed.
-	 */
-	public boolean contains(Object child) {
-		return children.contains(child);
-	}
+        /**
+         * Tell whether the <code>Object</code> is one of the children added or removed.
+         * @param child the child to check.
+         * @return whether the <code>Object</code> is added or removed.
+         */
+        public boolean contains(Object child) {
+                return children.contains(child);
+        }
 }

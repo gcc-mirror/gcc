@@ -46,11 +46,11 @@ import javax.print.attribute.PrintRequestAttribute;
 
 /**
  * The <code>Sides</code> printing attribute specifies how consecutive
- * printing pages are arranged on the media sheet. 
+ * printing pages are arranged on the media sheet.
  * <p>
  * <b>IPP Compatibility:</b> Sides is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -59,41 +59,41 @@ public final class Sides extends EnumSyntax
 {
   private static final long serialVersionUID = -6890309414893262822L;
 
-  /** 
-   * Specifies that each page should be printed on one sheet. 
+  /**
+   * Specifies that each page should be printed on one sheet.
    */
   public static final Sides ONE_SIDED = new Sides(0);
-  
-  /** 
-   * Specifies that two following pages should be printed on the 
+
+  /**
+   * Specifies that two following pages should be printed on the
    * front and back of one sheet for binding on the long edge.
    */
   public static final Sides TWO_SIDED_LONG_EDGE = new Sides(1);
-  
-  /** 
-   * Specifies that two following pages should be printed on the 
+
+  /**
+   * Specifies that two following pages should be printed on the
    * front and back of one sheet for binding on the short edge.
    */
   public static final Sides TWO_SIDED_SHORT_EDGE = new Sides(2);
-  
-  /** 
-   * An alias constant for "two sided long edge". 
+
+  /**
+   * An alias constant for "two sided long edge".
    */
   public static final Sides DUPLEX = new Sides(1);
-  
-  /** 
-   * An alias constant for "two sided short edge". 
+
+  /**
+   * An alias constant for "two sided short edge".
    */
   public static final Sides TUMBLE = new Sides(2);
 
-  private static final String[] stringTable = { "one-sided", 
+  private static final String[] stringTable = { "one-sided",
                                                 "two-sided-long-edge",
                                                 "two-sided-short-edge" };
-  
-  private static final Sides[] enumValueTable = { ONE_SIDED, 
-                                                  TWO_SIDED_LONG_EDGE, 
-                                                  TWO_SIDED_SHORT_EDGE };  
-  
+
+  private static final Sides[] enumValueTable = { ONE_SIDED,
+                                                  TWO_SIDED_LONG_EDGE,
+                                                  TWO_SIDED_SHORT_EDGE };
+
   /**
    * Creates a <code>Sides</code> object.
    *
@@ -123,7 +123,7 @@ public final class Sides extends EnumSyntax
   {
     return "sides";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

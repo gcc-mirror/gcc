@@ -50,7 +50,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A factory to create JDWP Values.
- * 
+ *
  * @author Kyle Galloway <kgallowa@redhat.com>
  */
 public class ValueFactory
@@ -58,7 +58,7 @@ public class ValueFactory
   /**
    * Creates a new Value of appropriate type for the value in the ByteBuffer
    * by reading the tag byte from the front of the buffer.
-   * 
+   *
    * @param bb contains the Object
    * @return A new Value of appropriate type
    * @throws JdwpInternalErrorException
@@ -69,11 +69,11 @@ public class ValueFactory
   {
     return create(bb, bb.get());
   }
-  
+
   /**
    * Creates a new Value of appropriate type for the value in the ByteBuffer
    * by checking the type of the Class passed in.
-   * 
+   *
    * @param bb contains the Object
    * @param type a Class representing the type of the value in the ByteBuffer
    * @return A new Value of appropriate type
@@ -84,7 +84,7 @@ public class ValueFactory
   throws JdwpInternalErrorException, InvalidObjectException, InvalidClassException
   {
     byte tag = getTagForClass(type);
-    
+
     try
       {
         return create(bb, tag);
@@ -94,10 +94,10 @@ public class ValueFactory
         throw new InvalidClassException(ite);
       }
   }
-  
+
   /**
    * Creates a new Value of appropriate type for the value in the ByteBuffer.
-   * 
+   *
    * @param bb contains the Object
    * @param tag a byte representing the type of the object
    * @return A new Value of appropriate type
@@ -152,13 +152,13 @@ public class ValueFactory
       default:
         throw new InvalidTagException(tag);
     }
-    
+
     return val;
   }
-  
+
   /**
    * Creates a tag for the type of the class.
-   * 
+   *
    * @param klass the type to get a tag for
    * @return a byte tag representing the class
    * @throws JdwpInternalErrorException
@@ -168,7 +168,7 @@ public class ValueFactory
     throws JdwpInternalErrorException
   {
     byte tag;
-    
+
     if (klass.isPrimitive())
       {
         if (klass == byte.class)
@@ -196,15 +196,15 @@ public class ValueFactory
       {
         tag = JdwpConstants.Tag.OBJECT;
       }
-    
+
     return tag;
   }
-  
+
   /**
    * Create a value type for an Object of type determined by a Class.  This is
    * a special case where a value needs to be created, but the value to create
    * it for is already in an object, not in a buffer.
-   * 
+   *
    * @param value the Object to convert to a Value
    * @param type the Class type of the object
    * @return a new Value representing this object
@@ -212,7 +212,7 @@ public class ValueFactory
   public static Value createFromObject(Object value, Class type)
   {
     Value val = null;
-    
+
     if (type.isPrimitive())
       {
         if (type == byte.class)
@@ -241,7 +241,7 @@ public class ValueFactory
         else
           val = new ObjectValue(value);
       }
-    
+
     return val;
   }
 }

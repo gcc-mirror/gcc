@@ -1,4 +1,4 @@
-/* SSLv3HMacSHA.java -- 
+/* SSLv3HMacSHA.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -59,7 +59,7 @@ public class SSLv3HMacSHAImpl extends MacSpi
   {
     adaptee = new SSLHMac("SHA-160");
   }
-  
+
   /* (non-Javadoc)
    * @see javax.crypto.MacSpi#engineDoFinal()
    */

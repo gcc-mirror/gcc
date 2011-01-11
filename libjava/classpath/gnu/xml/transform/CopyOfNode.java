@@ -1,4 +1,4 @@
-/* CopyOfNode.java -- 
+/* CopyOfNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -153,14 +153,14 @@ final class CopyOfNode
                  context, pos, len,
                  parent, nextSibling);
   }
-  
+
   public boolean references(QName var)
   {
     if (select != null && select.references(var))
       return true;
     return super.references(var);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("copy-of");
@@ -170,5 +170,5 @@ final class CopyOfNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

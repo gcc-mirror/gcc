@@ -228,15 +228,15 @@ public abstract class RectangularShape implements Shape, Cloneable
   {
     if (x1 > x2)
       {
-	double t = x2;
-	x2 = x1;
-	x1 = t;
+        double t = x2;
+        x2 = x1;
+        x1 = t;
       }
     if (y1 > y2)
       {
-	double t = y2;
-	y2 = y1;
-	y1 = t;
+        double t = y2;
+        y2 = y1;
+        y1 = t;
       }
     setFrame(x1, y1, x2 - x1, y2 - y1);
   }

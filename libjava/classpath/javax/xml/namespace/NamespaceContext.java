@@ -1,4 +1,4 @@
-/* NamespaceContext.java -- 
+/* NamespaceContext.java --
    Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -63,5 +63,5 @@ public interface NamespaceContext
    */
   @SuppressWarnings("unchecked")
   public Iterator getPrefixes(String namespaceURI);
-  
+
 }

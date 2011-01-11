@@ -44,7 +44,7 @@ import java.rmi.registry.Registry;
 
 /**
  * Finds and returns the default activation system for this jre.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public abstract class DefaultActivationSystem
@@ -53,17 +53,17 @@ public abstract class DefaultActivationSystem
    * The activation system (assigned if once found).
    */
   static ActivationSystem system;
-  
+
   /**
    * The default activation registry port.
    */
   static int ACTIVATION_REGISTRY_PORT;
-  
+
   /**
    * The name of the activation system registry port property.
    */
   static String AS_PORT_PROPERTY = "java.rmi.activation.port";
-  
+
   /**
    * The defalut name of the activation system in the activation registry.
    */

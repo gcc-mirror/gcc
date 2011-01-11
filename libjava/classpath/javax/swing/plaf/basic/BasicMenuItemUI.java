@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -128,7 +128,7 @@ public class BasicMenuItemUI extends MenuItemUI
    * Number of spaces between icon and text.
    */
   protected int defaultTextIconGap = 4;
-  
+
   /**
    * Color of the text when menu item is disabled
    */
@@ -222,14 +222,14 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * A class to handle PropertChangeEvents for the JMenuItem
-   * @author Anthony Balkissoon abalkiss at redhat dot com.   
+   * @author Anthony Balkissoon abalkiss at redhat dot com.
    */
   class PropertyChangeHandler implements PropertyChangeListener
   {
     /**
      * This method is called when a property of the menuItem is changed.
      * Currently it is only used to update the accelerator key bindings.
-     * 
+     *
      * @param e
      *          the PropertyChangeEvent
      */
@@ -238,7 +238,7 @@ public class BasicMenuItemUI extends MenuItemUI
       String property = e.getPropertyName();
       if (property.equals("accelerator"))
         {
-          InputMap map = SwingUtilities.getUIInputMap(menuItem, 
+          InputMap map = SwingUtilities.getUIInputMap(menuItem,
               JComponent.WHEN_IN_FOCUSED_WINDOW);
           if (map != null)
             map.remove((KeyStroke) e.getOldValue());
@@ -266,7 +266,7 @@ public class BasicMenuItemUI extends MenuItemUI
         }
     }
   }
-  
+
   /**
    * A class to handle accelerator keys.  This is the Action we will
    * perform when the accelerator key for this JMenuItem is pressed.
@@ -282,9 +282,9 @@ public class BasicMenuItemUI extends MenuItemUI
     public void actionPerformed(ActionEvent event)
     {
       doClick(MenuSelectionManager.defaultManager());
-    }    
+    }
   }
-  
+
   /**
    * Creates a new BasicMenuItemUI object.
    */
@@ -308,7 +308,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Create MenuDragMouseListener to listen for mouse dragged events.
-   * 
+   *
    * @param c
    *          menu item to listen to
    * @return The MenuDragMouseListener
@@ -321,7 +321,7 @@ public class BasicMenuItemUI extends MenuItemUI
   /**
    * Creates MenuKeyListener to listen to key events occuring when menu item is
    * visible on the screen.
-   * 
+   *
    * @param c
    *          menu item to listen to
    * @return The MenuKeyListener
@@ -333,7 +333,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Handles mouse input events occuring for this menu item
-   * 
+   *
    * @param c
    *          menu item to listen to
    * @return The MouseInputListener
@@ -346,7 +346,7 @@ public class BasicMenuItemUI extends MenuItemUI
   /**
    * Factory method to create a BasicMenuItemUI for the given {@link
    * JComponent}, which should be a {@link JMenuItem}.
-   * 
+   *
    * @param c
    *          The {@link JComponent} a UI is being created for.
    * @return A BasicMenuItemUI for the {@link JComponent}.
@@ -358,7 +358,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Programatically clicks menu item.
-   * 
+   *
    * @param msm
    *          MenuSelectionManager for the menu hierarchy
    */
@@ -370,7 +370,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Returns maximum size for the specified menu item
-   * 
+   *
    * @param c
    *          component for which to get maximum size
    * @return Maximum size for the specified menu item.
@@ -382,7 +382,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Returns minimum size for the specified menu item
-   * 
+   *
    * @param c
    *          component for which to get minimum size
    * @return Minimum size for the specified menu item.
@@ -394,7 +394,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Returns path to this menu item.
-   * 
+   *
    * @return $MenuElement[]$ Returns array of menu elements that constitute a
    *         path to this menu item.
    */
@@ -420,7 +420,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Returns preferred size for the given menu item.
-   * 
+   *
    * @param c
    *          menu item for which to get preferred size
    * @param checkIcon
@@ -504,20 +504,20 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Returns preferred size of the given component
-   * 
+   *
    * @param c
    *          component for which to return preferred size
    * @return $Dimension$ preferred size for the given component
    */
   public Dimension getPreferredSize(JComponent c)
   {
-    return getPreferredMenuItemSize(c, checkIcon, arrowIcon, 
+    return getPreferredMenuItemSize(c, checkIcon, arrowIcon,
                                     defaultTextIconGap);
   }
 
   /**
    * Returns the prefix for entries in the {@link UIDefaults} table.
-   * 
+   *
    * @return "MenuItem"
    */
   protected String getPropertyPrefix()
@@ -527,7 +527,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * This method installs the components for this {@link JMenuItem}.
-   * 
+   *
    * @param menuItem
    *          The {@link JMenuItem} to install components for.
    */
@@ -548,15 +548,15 @@ public class BasicMenuItemUI extends MenuItemUI
                                      prefix + ".foreground", prefix + ".font");
     menuItem.setMargin(UIManager.getInsets(prefix + ".margin"));
     acceleratorFont = UIManager.getFont(prefix + ".acceleratorFont");
-    acceleratorForeground = UIManager.getColor(prefix 
+    acceleratorForeground = UIManager.getColor(prefix
         + ".acceleratorForeground");
-    acceleratorSelectionForeground = UIManager.getColor(prefix 
+    acceleratorSelectionForeground = UIManager.getColor(prefix
         + ".acceleratorSelectionForeground");
     selectionBackground = UIManager.getColor(prefix + ".selectionBackground");
     selectionForeground = UIManager.getColor(prefix + ".selectionForeground");
     acceleratorDelimiter = UIManager.getString(prefix + ".acceleratorDelimiter");
     checkIcon = UIManager.getIcon(prefix + ".checkIcon");
-    
+
     menuItem.setHorizontalTextPosition(SwingConstants.TRAILING);
     menuItem.setHorizontalAlignment(SwingConstants.LEADING);
   }
@@ -566,16 +566,16 @@ public class BasicMenuItemUI extends MenuItemUI
    */
   protected void installKeyboardActions()
   {
-    InputMap focusedWindowMap = SwingUtilities.getUIInputMap(menuItem, 
+    InputMap focusedWindowMap = SwingUtilities.getUIInputMap(menuItem,
         JComponent.WHEN_IN_FOCUSED_WINDOW);
     if (focusedWindowMap == null)
       focusedWindowMap = new ComponentInputMapUIResource(menuItem);
     KeyStroke accelerator = menuItem.getAccelerator();
     if (accelerator != null)
       focusedWindowMap.put(accelerator, "doClick");
-    SwingUtilities.replaceUIInputMap(menuItem, 
+    SwingUtilities.replaceUIInputMap(menuItem,
         JComponent.WHEN_IN_FOCUSED_WINDOW, focusedWindowMap);
-    
+
     ActionMap UIActionMap = SwingUtilities.getUIActionMap(menuItem);
     if (UIActionMap == null)
       UIActionMap = new ActionMapUIResource();
@@ -605,7 +605,7 @@ public class BasicMenuItemUI extends MenuItemUI
    * Installs and initializes all fields for this UI delegate. Any properties of
    * the UI that need to be initialized and/or set to defaults will be done now.
    * It will also install any listeners necessary.
-   * 
+   *
    * @param c
    *          The {@link JComponent} that is having this UI installed.
    */
@@ -621,7 +621,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Paints given menu item using specified graphics context
-   * 
+   *
    * @param g
    *          The graphics context used to paint this menu item
    * @param c
@@ -635,7 +635,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Paints background of the menu item
-   * 
+   *
    * @param g
    *          The graphics context used to paint this menu item
    * @param menuItem
@@ -664,7 +664,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Paints specified menu item
-   * 
+   *
    * @param g
    *          The graphics context used to paint this menu item
    * @param c
@@ -808,7 +808,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * Paints label for the given menu item
-   * 
+   *
    * @param g
    *          The graphics context used to paint this menu item
    * @param menuItem
@@ -864,7 +864,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * This method uninstalls the components for this {@link JMenuItem}.
-   * 
+   *
    * @param menuItem
    *          The {@link JMenuItem} to uninstall components for.
    */
@@ -901,7 +901,7 @@ public class BasicMenuItemUI extends MenuItemUI
    * Uninstalls any keyboard actions.
    */
   protected void uninstallKeyboardActions()
-  {   
+  {
     SwingUtilities.replaceUIInputMap(menuItem,
                                      JComponent.WHEN_IN_FOCUSED_WINDOW, null);
   }
@@ -922,7 +922,7 @@ public class BasicMenuItemUI extends MenuItemUI
    * Performs the opposite of installUI. Any properties or resources that need
    * to be cleaned up will be done now. It will also uninstall any listeners it
    * has. In addition, any properties of this UI will be nulled.
-   * 
+   *
    * @param c
    *          The {@link JComponent} that is having this UI uninstalled.
    */
@@ -937,7 +937,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
   /**
    * This method calls paint.
-   * 
+   *
    * @param g
    *          The graphics context used to paint this menu item
    * @param c
@@ -966,7 +966,7 @@ public class BasicMenuItemUI extends MenuItemUI
     /**
      * This method is called when mouse is clicked on the menu item. It forwards
      * this event to MenuSelectionManager.
-     * 
+     *
      * @param e
      *          A {@link MouseEvent}.
      */
@@ -979,7 +979,7 @@ public class BasicMenuItemUI extends MenuItemUI
     /**
      * This method is called when mouse is dragged inside the menu item. It
      * forwards this event to MenuSelectionManager.
-     * 
+     *
      * @param e
      *          A {@link MouseEvent}.
      */
@@ -994,7 +994,7 @@ public class BasicMenuItemUI extends MenuItemUI
      * item is considered to be selected and selection path in
      * MenuSelectionManager is set. This event is also forwarded to
      * MenuSelection Manager for further processing.
-     * 
+     *
      * @param e
      *          A {@link MouseEvent}.
      */
@@ -1012,7 +1012,7 @@ public class BasicMenuItemUI extends MenuItemUI
     /**
      * This method is called when mouse exits menu item. The event is forwarded
      * to MenuSelectionManager for processing.
-     * 
+     *
      * @param e
      *          A {@link MouseEvent}.
      */
@@ -1025,7 +1025,7 @@ public class BasicMenuItemUI extends MenuItemUI
     /**
      * This method is called when mouse is inside the menu item. This event is
      * forwarder to MenuSelectionManager for further processing.
-     * 
+     *
      * @param e
      *          A {@link MouseEvent}.
      */
@@ -1038,7 +1038,7 @@ public class BasicMenuItemUI extends MenuItemUI
     /**
      * This method is called when mouse is pressed. This event is forwarded to
      * MenuSelectionManager for further processing.
-     * 
+     *
      * @param e
      *          A {@link MouseEvent}.
      */
@@ -1052,7 +1052,7 @@ public class BasicMenuItemUI extends MenuItemUI
      * This method is called when mouse is released. If the mouse is released
      * inside this menuItem, then this menu item is considered to be chosen and
      * the menu hierarchy should be closed.
-     * 
+     *
      * @param e
      *          A {@link MouseEvent}.
      */
@@ -1078,7 +1078,7 @@ public class BasicMenuItemUI extends MenuItemUI
   {
     /**
      * Tbis method is invoked when mouse is dragged over the menu item.
-     * 
+     *
      * @param e
      *          The MenuDragMouseEvent
      */
@@ -1091,7 +1091,7 @@ public class BasicMenuItemUI extends MenuItemUI
     /**
      * Tbis method is invoked when mouse enters the menu item while it is being
      * dragged.
-     * 
+     *
      * @param e
      *          The MenuDragMouseEvent
      */
@@ -1104,7 +1104,7 @@ public class BasicMenuItemUI extends MenuItemUI
     /**
      * Tbis method is invoked when mouse exits the menu item while it is being
      * dragged
-     * 
+     *
      * @param e the MenuDragMouseEvent
      */
     public void menuDragMouseExited(MenuDragMouseEvent e)
@@ -1115,7 +1115,7 @@ public class BasicMenuItemUI extends MenuItemUI
     /**
      * Tbis method is invoked when mouse was dragged and released inside the
      * menu item.
-     * 
+     *
      * @param e
      *          The MenuDragMouseEvent
      */
@@ -1140,7 +1140,7 @@ public class BasicMenuItemUI extends MenuItemUI
   {
     /**
      * This method is invoked when key has been pressed
-     * 
+     *
      * @param e
      *          A {@link MenuKeyEvent}.
      */
@@ -1151,7 +1151,7 @@ public class BasicMenuItemUI extends MenuItemUI
 
     /**
      * This method is invoked when key has been pressed
-     * 
+     *
      * @param e
      *          A {@link MenuKeyEvent}.
      */
@@ -1163,7 +1163,7 @@ public class BasicMenuItemUI extends MenuItemUI
     /**
      * This method is invoked when key has been typed It handles the mnemonic
      * key for the menu item.
-     * 
+     *
      * @param e
      *          A {@link MenuKeyEvent}.
      */
@@ -1172,7 +1172,7 @@ public class BasicMenuItemUI extends MenuItemUI
       // TODO: What should be done here, if anything?
     }
   }
-  
+
   /**
    * Helper class that listens for item changes to the properties of the {@link
    * JMenuItem}.

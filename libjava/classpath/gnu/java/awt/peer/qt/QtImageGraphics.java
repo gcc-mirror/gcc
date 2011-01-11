@@ -65,17 +65,17 @@ public class QtImageGraphics extends QtGraphics
     int w, h;
     if(image instanceof QtImage)
       {
-	w = ((QtImage)image).width; 
-	h = ((QtImage)image).height; 
-	initImage((QtImage) image );
-	((QtImage)image).putPainter( this );
-      } 
+        w = ((QtImage)image).width;
+        h = ((QtImage)image).height;
+        initImage((QtImage) image );
+        ((QtImage)image).putPainter( this );
+      }
     else
       {
-	w = ((QtVolatileImage)image).width; 
-	h = ((QtVolatileImage)image).height; 
-	initVolatileImage((QtVolatileImage) image );
-	((QtVolatileImage)image).putPainter( this );
+        w = ((QtVolatileImage)image).width;
+        h = ((QtVolatileImage)image).height;
+        initVolatileImage((QtVolatileImage) image );
+        ((QtVolatileImage)image).putPainter( this );
       }
 
     parentImage = image;
@@ -92,7 +92,7 @@ public class QtImageGraphics extends QtGraphics
    */
   QtImageGraphics( QtImageGraphics g )
   {
-    super( g ); 
+    super( g );
     parentImage = g.parentImage;
     if(parentImage instanceof QtImage)
       ((QtImage)parentImage).putPainter( this );
@@ -119,9 +119,9 @@ public class QtImageGraphics extends QtGraphics
 
   /**
    * Copy an area.
-   */ 
-  public void copyArea(int x, int y, int width, int height, 
-		       int dx, int dy)
+   */
+  public void copyArea(int x, int y, int width, int height,
+                       int dx, int dy)
   {
     if(parentImage instanceof QtImage)
       ((QtImage)parentImage).copyArea(x, y, width, height, dx, dy);
@@ -136,6 +136,4 @@ public class QtImageGraphics extends QtGraphics
   {
     throw new UnsupportedOperationException("Not implemented yet");
   }
-} 
-
-
+}

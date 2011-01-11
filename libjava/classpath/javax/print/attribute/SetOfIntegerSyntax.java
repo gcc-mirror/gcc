@@ -1,4 +1,4 @@
-/* SetOfIntegerSyntax.java -- 
+/* SetOfIntegerSyntax.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,14 +45,14 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 /**
- * <code>SetOfIntegerSyntax</code> is the abstract base class of all attribute 
+ * <code>SetOfIntegerSyntax</code> is the abstract base class of all attribute
  * classes which provide a set of non-negative integers as value (e.g. the
  * page ranges to print) represented as single values or ranges of values.
  * <p>
  * A <code>SetOfIntegerSyntax</code> instance consists of an integer array of
  * ranges. Ranges may have the same lower and upper bound representing a single
- * integer value. Ranges with a lower bound greater than the upper bound are 
- * null ranges and discarded. Ranges may overlap in their values. In no case 
+ * integer value. Ranges with a lower bound greater than the upper bound are
+ * null ranges and discarded. Ranges may overlap in their values. In no case
  * negative integers are allowed.
  * </p>
  * <p>
@@ -65,21 +65,21 @@ import java.util.Comparator;
  * Constructor for an instance with one range of integer values.
  * </li><br>
  * <li><code>SetOfIntegerSyntax(int[][] members)</code><br>
- * Flexible constructor for an instance with several single integer values 
- * and/or several ranges of integer values. The allowed array form is an 
- * array of integer arrays of length one or two. Examples are: 
+ * Flexible constructor for an instance with several single integer values
+ * and/or several ranges of integer values. The allowed array form is an
+ * array of integer arrays of length one or two. Examples are:
  * <code>int[0][]</code> for empty set of integers, <code>int[][] {{1}}</code>
  * , <code>int[][] {{1,5}}</code>, <code>int[][] {{1,5},{7,9}}</code>,
  * <code>int[][] {{3,7},{19}}</code>.
  * </li><br>
  * <li><code>SetOfIntegerSyntax(String s)</code><br>
- * Flexible constructor for an instance with several single integer values 
+ * Flexible constructor for an instance with several single integer values
  * and/or several ranges of integer values. The allowed String instance have
- * to be a String with comma separated ranges of integer values or single 
+ * to be a String with comma separated ranges of integer values or single
  * values. Ranges are represented by two integer with a hypen (-) or colon (:)
  * between the lower and upper bound value. Whitespace characters are ignored.
- * Examples are: <code>""</code> for an empty set of integers, 
- * <code>"1"</code>, <code>"1-5"</code>, <code>"1-5,7-9"</code>, 
+ * Examples are: <code>""</code> for an empty set of integers,
+ * <code>"1"</code>, <code>"1-5"</code>, <code>"1-5,7-9"</code>,
  * <code>"3-7,19"</code> and <code>"1:2,4"</code>.
  * </li>
  * </ul>
@@ -88,9 +88,9 @@ import java.util.Comparator;
  * <b>Internal storage:</b><br>
  * The set of integers are stored internally in a normalized array form.
  * In the normalized array form the set of integer ranges are represented
- * in as few ranges as possible and overlapping ranges are merged. The ranges 
- * are always represented as an integer array of length two with ranges 
- * stored in {lower bound, upper bound} form. The ranges are stored in 
+ * in as few ranges as possible and overlapping ranges are merged. The ranges
+ * are always represented as an integer array of length two with ranges
+ * stored in {lower bound, upper bound} form. The ranges are stored in
  * ascending order, without any null ranges.
  * </p>
  * @author Michael Koch (konqueror@gmx.de)
@@ -132,13 +132,13 @@ public abstract class SetOfIntegerSyntax
           }
         values[outIndex++] = values[save];
       }
-    
+
     int[][] result = new int[outIndex][];
     System.arraycopy(values, 0, result, 0, outIndex);
-    
+
     return result;
   }
-  
+
   /**
    * Creates a <code>SetOfIntegerSyntax</code> object.
    *
@@ -203,17 +203,17 @@ public abstract class SetOfIntegerSyntax
               }
           }
       }
-    
+
     this.members = normalize(newMembers, outIndex);
   }
-  
+
   private boolean skipWhitespace(StringCharacterIterator i)
   {
     while (Character.isWhitespace(i.current()))
       i.next();
     return i.current() == CharacterIterator.DONE;
   }
-  
+
   private boolean skipNumber(StringCharacterIterator i)
   {
     boolean readAny = false;
@@ -238,24 +238,24 @@ public abstract class SetOfIntegerSyntax
     if (s == null)
       this.members = normalize(new int[0][], 0);
     else
-      {      
+      {
         ArrayList vals = new ArrayList();
-        
+
         StringCharacterIterator it = new StringCharacterIterator(s);
-        
+
         while (true)
           {
             // Skip whitespace.
             if (skipWhitespace(it))
               break;
-            
+
             // Parse integer.
             int index = it.getIndex();
             if (! skipNumber(it))
               throw new IllegalArgumentException();
             int[] item = new int[2];
             item[0] = Integer.parseInt(s.substring(index, it.getIndex()));
-            
+
             if (! skipWhitespace(it))
               {
                 char c = it.current();
@@ -274,17 +274,17 @@ public abstract class SetOfIntegerSyntax
               }
             else
               item[1] = item[0];
-            
-            if (item[0] <= item[1]) 
+
+            if (item[0] <= item[1])
               vals.add(item);
-            
+
             if (skipWhitespace(it))
               break;
             if (it.current() != ',')
               throw new IllegalArgumentException();
             it.next();
           }
-        
+
         members = normalize((int[][]) vals.toArray(new int[0][]), vals.size());
       }
   }
@@ -393,7 +393,7 @@ public abstract class SetOfIntegerSyntax
    *
    * @param x an integer value
    *
-   * @return The next smallest integer value, or <code>-1</code> if there 
+   * @return The next smallest integer value, or <code>-1</code> if there
    * is no greater integer in the set.
    */
   public int next(int x)

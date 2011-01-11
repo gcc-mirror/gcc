@@ -1,4 +1,4 @@
-/* Steps.java -- 
+/* Steps.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -86,7 +86,7 @@ public final class Steps
     if (pos > 0)
       {
         Pattern left = (Pattern) path.get(pos - 1);
-	for (Node candidate : possibleContexts(right, context))
+        for (Node candidate : possibleContexts(right, context))
           {
             if (left.matches(candidate) &&
                 matches(candidate, pos - 1))
@@ -160,7 +160,7 @@ public final class Steps
     return Collections.emptySet();
   }
 
-  @Override 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     //System.err.println(toString()+" evaluate");
@@ -172,16 +172,16 @@ public final class Steps
     while (val instanceof Collection && i.hasNext())
       {
         Path rhs = (Path) i.next();
-	/* Suppression is safe, as we know context produces Collection<Node> */
+        /* Suppression is safe, as we know context produces Collection<Node> */
         @SuppressWarnings("unchecked")
-	  Collection<Node> nodes = (Collection<Node>) val;
-	val = rhs.evaluate(context, nodes);
+          Collection<Node> nodes = (Collection<Node>) val;
+        val = rhs.evaluate(context, nodes);
         //System.err.println("\tevaluate "+rhs+" = "+val);
       }
     return val;
   }
 
-  @Override 
+  @Override
   Collection<Node> evaluate(Node context, Collection<Node> ns)
   {
     // Left to right
@@ -195,14 +195,14 @@ public final class Steps
       {
         Set<Node> acc = new LinkedHashSet<Node>();
         int pos = 1, len = ns.size();
-	for (Node node : ns)
+        for (Node node : ns)
           {
             Object ret = lhs.evaluate(node, pos++, len);
             if (ret instanceof Collection)
               {
-		/* Suppression is safe, as we know context produces Collection<Node> */
-		@SuppressWarnings("unchecked")
-		  Collection<Node> nodes = (Collection<Node>) ret;
+                /* Suppression is safe, as we know context produces Collection<Node> */
+                @SuppressWarnings("unchecked")
+                  Collection<Node> nodes = (Collection<Node>) ret;
                 acc.addAll(nodes);
               }
           }

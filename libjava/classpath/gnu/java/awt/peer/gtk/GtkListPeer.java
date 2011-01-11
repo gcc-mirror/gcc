@@ -73,7 +73,7 @@ public class GtkListPeer extends GtkComponentPeer
   public GtkListPeer (List list)
   {
     super (list);
-    
+
     setMultipleMode (list.isMultipleMode ());
 
     if (list.getItemCount () > 0)
@@ -83,20 +83,20 @@ public class GtkListPeer extends GtkComponentPeer
   native void append (String items[]);
 
   public native void add (String item, int index);
-  
+
   public void addItem (String item, int index)
   {
     add (item, index);
   }
-  
+
   public void clear ()
   {
     removeAll ();
   }
-  
+
   public native void delItems (int start, int end);
   public native void deselect (int index);
-  
+
   public Dimension getMinimumSize (int rows)
   {
     return minimumSize (rows);
@@ -106,7 +106,7 @@ public class GtkListPeer extends GtkComponentPeer
   {
     return preferredSize (rows);
   }
-  
+
   public native int[] getSelectedIndexes ();
   public native void makeVisible (int index);
 
@@ -158,7 +158,7 @@ public class GtkListPeer extends GtkComponentPeer
             // Double-click only generates an Action event if
             // something is selected.
             if (selectedItem != null)
-              postActionEvent (((List) awtComponent).getSelectedItem (), 
+              postActionEvent (((List) awtComponent).getSelectedItem (),
                                me.getModifiersEx ());
           }
       }

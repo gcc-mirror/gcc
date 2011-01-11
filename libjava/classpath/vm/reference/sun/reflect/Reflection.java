@@ -42,7 +42,7 @@ import gnu.classpath.VMStackWalker;
 public class Reflection
 {
   /**
-   * A stack-walking wrapper method used by the JSR 166 RI. 
+   * A stack-walking wrapper method used by the JSR 166 RI.
    */
   public static Class getCallerClass(int depth)
   {

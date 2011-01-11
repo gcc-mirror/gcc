@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -49,8 +49,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.rmi.RemoteException;
 
-public class UnicastConnection 
-	implements Runnable, ProtocolConstants {
+public class UnicastConnection
+        implements Runnable, ProtocolConstants {
 
 UnicastConnectionManager manager;
 Socket sock;
@@ -64,78 +64,78 @@ long reviveTime = 0;
 long expireTime = Long.MAX_VALUE;
 
 UnicastConnection(UnicastConnectionManager man, Socket sock) {
-	this.manager = man;
-	this.sock = sock;
+        this.manager = man;
+        this.sock = sock;
 }
 
 void acceptConnection() throws IOException {
 //System.out.println("Accepting connection on " + sock);
     //Use BufferedXXXStream would be more efficient
-	din = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
-	dout = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
+        din = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
+        dout = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
 
-	int sig = din.readInt();
-	if (sig != PROTOCOL_HEADER) {
-		throw new IOException("bad protocol header");
-	}
-	short ver = din.readShort();
-	if (ver != PROTOCOL_VERSION) {
-		throw new IOException("bad protocol version");
-	}
-	int protocol = din.readUnsignedByte();
-	if (protocol != SINGLE_OP_PROTOCOL) {
-		// Send an ACK
-		dout.writeByte(PROTOCOL_ACK);
+        int sig = din.readInt();
+        if (sig != PROTOCOL_HEADER) {
+                throw new IOException("bad protocol header");
+        }
+        short ver = din.readShort();
+        if (ver != PROTOCOL_VERSION) {
+                throw new IOException("bad protocol version");
+        }
+        int protocol = din.readUnsignedByte();
+        if (protocol != SINGLE_OP_PROTOCOL) {
+                // Send an ACK
+                dout.writeByte(PROTOCOL_ACK);
 
-		// Send my hostname and port
-		dout.writeUTF(manager.serverName);
-		dout.writeInt(manager.serverPort);
-		dout.flush();
+                // Send my hostname and port
+                dout.writeUTF(manager.serverName);
+                dout.writeInt(manager.serverPort);
+                dout.flush();
 
-		// Read their hostname and port
-		String rhost = din.readUTF();
-		int rport = din.readInt();
-	}
-	// Okay, ready to roll ...
+                // Read their hostname and port
+                String rhost = din.readUTF();
+                int rport = din.readInt();
+        }
+        // Okay, ready to roll ...
 }
 
 void makeConnection(int protocol) throws IOException {
     //Use BufferedXXXStream would be more efficient
-	din = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
+        din = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
 
-	dout = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
+        dout = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
 
-	// Send header
-	dout.writeInt(PROTOCOL_HEADER);
-	dout.writeShort(PROTOCOL_VERSION);
-	dout.writeByte(protocol);
+        // Send header
+        dout.writeInt(PROTOCOL_HEADER);
+        dout.writeShort(PROTOCOL_VERSION);
+        dout.writeByte(protocol);
     dout.flush();
-    
-	if (protocol != SINGLE_OP_PROTOCOL) {
-		// Get back ack.
-		int ack = din.readUnsignedByte();
-		if (ack != PROTOCOL_ACK) {
-			throw new RemoteException("Unsupported protocol");
-		}
 
-		// Read in host and port
-		String dicard_rhost = din.readUTF();
-		int discard_rport = din.readInt();
+        if (protocol != SINGLE_OP_PROTOCOL) {
+                // Get back ack.
+                int ack = din.readUnsignedByte();
+                if (ack != PROTOCOL_ACK) {
+                        throw new RemoteException("Unsupported protocol");
+                }
 
-		// Send them my endpoint
-		dout.writeUTF(manager.serverName);
-		dout.writeInt(manager.serverPort);
-		dout.flush();
-	}
-	// Okay, ready to roll ...
+                // Read in host and port
+                String dicard_rhost = din.readUTF();
+                int discard_rport = din.readInt();
+
+                // Send them my endpoint
+                dout.writeUTF(manager.serverName);
+                dout.writeInt(manager.serverPort);
+                dout.flush();
+        }
+        // Okay, ready to roll ...
 }
 
 DataInputStream getDataInputStream() throws IOException {
-	return (din);
+        return (din);
 }
 
 DataOutputStream getDataOutputStream() throws IOException {
-	return (dout);
+        return (dout);
 }
 
 /*
@@ -144,10 +144,10 @@ DataOutputStream getDataOutputStream() throws IOException {
 *
 */
 ObjectInputStream getObjectInputStream() throws IOException {
-	if (oin == null) {
-		throw new IOException("no ObjectInputtream for reading more objects");
-	}
-	return (oin);
+        if (oin == null) {
+                throw new IOException("no ObjectInputtream for reading more objects");
+        }
+        return (oin);
 }
 
 /**
@@ -156,7 +156,7 @@ ObjectInputStream getObjectInputStream() throws IOException {
 *
 */
 ObjectInputStream startObjectInputStream() throws IOException {
-	return (oin = new RMIObjectInputStream(din));
+        return (oin = new RMIObjectInputStream(din));
 }
 
 /**
@@ -165,10 +165,10 @@ ObjectInputStream startObjectInputStream() throws IOException {
 *
 */
 ObjectOutputStream getObjectOutputStream() throws IOException {
-	if (oout == null) {
-		throw new IOException("no ObjectOutputStream for sending more objects");
-	} 
-	return (oout);
+        if (oout == null) {
+                throw new IOException("no ObjectOutputStream for sending more objects");
+        }
+        return (oout);
 }
 
 /**
@@ -177,23 +177,23 @@ ObjectOutputStream getObjectOutputStream() throws IOException {
 *
 */
 ObjectOutputStream startObjectOutputStream() throws IOException {
-	return (oout = new RMIObjectOutputStream(dout));
-} 
+        return (oout = new RMIObjectOutputStream(dout));
+}
 
 void disconnect() {
-	try {
-	    if(oout != null)
-	        oout.close();
+        try {
+            if(oout != null)
+                oout.close();
         sock.close();
-	}
-	catch (IOException _) {
+        }
+        catch (IOException _) {
     }
 
-	oin = null;
+        oin = null;
     oout = null;
-	din = null;
-	dout = null;
-	sock = null;
+        din = null;
+        dout = null;
+        sock = null;
 }
 
 public static final long CONNECTION_TIMEOUT = 10000L;
@@ -215,15 +215,15 @@ static void resetTime(UnicastConnection conn){
  */
 public void run() {
     do{
-	try {
-		UnicastServer.dispatch(this);
+        try {
+                UnicastServer.dispatch(this);
             //don't discardConnection explicitly, only when
-            //  exception happens or the connection's expireTime 
+            //  exception happens or the connection's expireTime
             //  comes
         } catch (Exception e ){
-		manager.discardConnection(this);
+                manager.discardConnection(this);
             break;
-	}
+        }
     }while(true);
 }
 

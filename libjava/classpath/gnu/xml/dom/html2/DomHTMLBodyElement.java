@@ -1,4 +1,4 @@
-/* DomHTMLBodyElement.java -- 
+/* DomHTMLBodyElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLBodyElement
   {
     setHTMLAttribute("alink", alink);
   }
-  
+
   public String getBackground()
   {
     return getHTMLAttribute("background");
@@ -74,7 +74,7 @@ public class DomHTMLBodyElement
   {
     setHTMLAttribute("background", background);
   }
-  
+
   public String getBgColor()
   {
     return getHTMLAttribute("bgcolor");
@@ -84,7 +84,7 @@ public class DomHTMLBodyElement
   {
     setHTMLAttribute("bgcolor", bgcolor);
   }
-  
+
   public String getLink()
   {
     return getHTMLAttribute("link");
@@ -94,7 +94,7 @@ public class DomHTMLBodyElement
   {
     setHTMLAttribute("link", link);
   }
-  
+
   public String getText()
   {
     return getHTMLAttribute("text");
@@ -104,7 +104,7 @@ public class DomHTMLBodyElement
   {
     setHTMLAttribute("text", text);
   }
-  
+
   public String getVLink()
   {
     return getHTMLAttribute("vlink");
@@ -114,6 +114,5 @@ public class DomHTMLBodyElement
   {
     setHTMLAttribute("vlink", vlink);
   }
-  
-}
 
+}

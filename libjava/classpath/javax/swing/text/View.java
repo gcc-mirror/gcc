@@ -1,4 +1,4 @@
-/* View.java -- 
+/* View.java --
    Copyright (C) 2002, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,7 +56,7 @@ public abstract class View implements SwingConstants
 
   public static final int X_AXIS = 0;
   public static final int Y_AXIS = 1;
-    
+
   private Element elt;
   private View parent;
 
@@ -104,12 +104,12 @@ public abstract class View implements SwingConstants
 
     this.parent = parent;
   }
-    
+
   public View getParent()
   {
     return parent;
   }
-    
+
   public Container getContainer()
   {
     View parent = getParent();
@@ -118,12 +118,12 @@ public abstract class View implements SwingConstants
     else
       return parent.getContainer();
   }
-  
+
   public Document getDocument()
   {
     return getElement().getDocument();
   }
-    
+
   public Element getElement()
   {
     return elt;
@@ -189,12 +189,12 @@ public abstract class View implements SwingConstants
       min = getPreferredSpan(axis);
     return min;
   }
-  
+
   public void setSize(float width, float height)
   {
     // The default implementation does nothing.
   }
-  
+
   /**
    * Returns the alignment of this view along the baseline of the parent view.
    * An alignment of <code>0.0</code> will align this view with the left edge
@@ -218,7 +218,7 @@ public abstract class View implements SwingConstants
   {
     return getElement().getAttributes();
   }
-  
+
   public boolean isVisible()
   {
     return true;
@@ -228,7 +228,7 @@ public abstract class View implements SwingConstants
   {
     return 0;
   }
-  
+
   public View getView(int index)
   {
     return null;
@@ -274,7 +274,7 @@ public abstract class View implements SwingConstants
 
   public void remove(int index)
   {
-    replace(index, 1, null); 
+    replace(index, 1, null);
   }
 
   public View createFragment(int p0, int p1)
@@ -297,7 +297,7 @@ public abstract class View implements SwingConstants
   {
     return null;
   }
-  
+
   /**
    * @since 1.4
    */
@@ -305,7 +305,7 @@ public abstract class View implements SwingConstants
   {
     return -1;
   }
-  
+
   /**
    * @since 1.4
    */
@@ -674,15 +674,15 @@ public abstract class View implements SwingConstants
    *         listed valid values
    */
   public Shape modelToView(int p1, Position.Bias b1,
-			   int p2, Position.Bias b2, Shape a)
+                           int p2, Position.Bias b2, Shape a)
     throws BadLocationException
   {
     if (b1 != Position.Bias.Forward && b1 != Position.Bias.Backward)
       throw new IllegalArgumentException
-	("b1 must be either Position.Bias.Forward or Position.Bias.Backward");
+        ("b1 must be either Position.Bias.Forward or Position.Bias.Backward");
     if (b2 != Position.Bias.Forward && b2 != Position.Bias.Backward)
       throw new IllegalArgumentException
-	("b2 must be either Position.Bias.Forward or Position.Bias.Backward");
+        ("b2 must be either Position.Bias.Forward or Position.Bias.Backward");
 
     Shape s1 = modelToView(p1, a, b1);
     // Special case for p2 == end index.
@@ -867,7 +867,7 @@ public abstract class View implements SwingConstants
         ret = parent.viewToModel(r.x, r.y - 1, a, biasRet);
         break;
       case SOUTH:
-        // Try to find a suitable offset by examining the area below. 
+        // Try to find a suitable offset by examining the area below.
         parent = getParent();
         r =  parent.modelToView(pos, a, b).getBounds();
         ret = parent.viewToModel(r.x + r.width, r.y + r.height, a, biasRet);
@@ -875,7 +875,7 @@ public abstract class View implements SwingConstants
       default:
         throw new IllegalArgumentException("Illegal value for d");
     }
-    
+
     return ret;
   }
 }

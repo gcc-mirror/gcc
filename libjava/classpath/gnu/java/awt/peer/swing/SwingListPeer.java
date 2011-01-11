@@ -63,7 +63,7 @@ public class SwingListPeer
 {
 
   /**
-   * A spezialized Swing scroller used to hold the list. 
+   * A spezialized Swing scroller used to hold the list.
    *
    * @author Roman Kennke (kennke@aicas.com)
    */
@@ -139,7 +139,7 @@ public class SwingListPeer
       processFocusEvent(ev);
     }
 
-    
+
     /**
      * Overridden so that this method returns the correct value even without a
      * peer.
@@ -356,7 +356,7 @@ public class SwingListPeer
     super.peerPaint(g, update);
     jList.doLayout();
     jList.list();
-    
+
     Rectangle r = getBounds();
     g.setColor(Color.RED);
     g.drawRect(r.x, r.y, r.width, r.height);

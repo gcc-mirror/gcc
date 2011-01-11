@@ -48,7 +48,7 @@ import java.io.FilenameFilter;
 public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
 {
   static final String FS = System.getProperty("file.separator");
-  
+
   private String currentFile = null;
   private String currentDirectory = null;
   private FilenameFilter filter;
@@ -66,7 +66,7 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
            ((FileDialog) awtComponent).getMode());
 
     FileDialog fd = (FileDialog) awtComponent;
-    
+
     nativeSetDirectory(System.getProperty("user.dir"));
     setDirectory(fd.getDirectory());
     setFile(fd.getFile());
@@ -136,7 +136,7 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
         nativeSetDirectory(FS);
         return;
       }
-    
+
     // GtkFileChooser requires absolute directory names. If the given directory
     // name is not absolute, construct it based on current directory if it is not
     // null. Otherwise, use FS.
@@ -175,15 +175,15 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
 
   // called back by native side: handle_response_cb
   // only called from the GTK thread
-  void gtkHideFileDialog () 
+  void gtkHideFileDialog ()
   {
     // hide calls back the peer's setVisible method, so locking is a
     // problem.
     ((Dialog) awtComponent).hide();
   }
-  
+
   // called back by native side: handle_response_cb
-  void gtkDisposeFileDialog () 
+  void gtkDisposeFileDialog ()
   {
     ((Dialog) awtComponent).dispose();
   }

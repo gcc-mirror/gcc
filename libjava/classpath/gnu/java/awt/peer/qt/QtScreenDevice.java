@@ -113,4 +113,3 @@ public class QtScreenDevice extends GraphicsDevice
   {
   }
 }
-

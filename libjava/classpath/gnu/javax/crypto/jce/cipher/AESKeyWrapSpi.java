@@ -56,7 +56,7 @@ abstract class AESKeyWrapSpi
    * <p>
    * In wrapping, the number of 8-byte output blocks is ALWAYS one block longer
    * than the input.
-   * 
+   *
    * @param inputLength the size of the plain text.
    * @return the size in bytes of <code>n + 1</code> 8-byte blocks where
    * <code>n</code> is the smallest number of 8-byte blocks that contain the
@@ -74,7 +74,7 @@ abstract class AESKeyWrapSpi
    * <p>
    * In unwrapping, the number of 8-byte output blocks is ALWAYS one block
    * shorter than the input.
-   * 
+   *
    * @param inputLength the size of the cipher text.
    * @return the size in bytes of <code>n - 1</code> 8-byte blocks where
    * <code>n</code> is the smallest number of 8-byte blocks that contain the

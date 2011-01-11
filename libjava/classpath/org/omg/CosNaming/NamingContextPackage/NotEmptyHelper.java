@@ -112,7 +112,7 @@ public abstract class NotEmptyHelper
    */
   public static TypeCode type()
   {
-    return OrbRestricted.Singleton.create_struct_tc(id(), 
+    return OrbRestricted.Singleton.create_struct_tc(id(),
       "NotEmpty", new StructMember[0]);
   }
 

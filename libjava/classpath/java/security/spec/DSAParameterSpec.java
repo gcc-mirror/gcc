@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -62,19 +62,19 @@ public class DSAParameterSpec implements AlgorithmParameterSpec, DSAParams
    * @param q the sub-prime
    * @param g the base
    */
-  public DSAParameterSpec(BigInteger p, BigInteger q, BigInteger g) 
+  public DSAParameterSpec(BigInteger p, BigInteger q, BigInteger g)
   {
     this.p = p;
     this.q = q;
     this.g = g;
   }
-  
+
   /**
    * Returns p for the DSA algorithm.
    *
    * @return Returns the requested BigInteger
    */
-  public BigInteger getP() 
+  public BigInteger getP()
   {
     return this.p;
   }
@@ -84,7 +84,7 @@ public class DSAParameterSpec implements AlgorithmParameterSpec, DSAParams
    *
    * @return Returns the requested BigInteger
    */
-  public BigInteger getQ() 
+  public BigInteger getQ()
   {
     return this.q;
   }

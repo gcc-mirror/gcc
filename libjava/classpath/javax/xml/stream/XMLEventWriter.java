@@ -1,4 +1,4 @@
-/* XMLEventWriter.java -- 
+/* XMLEventWriter.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -104,6 +104,5 @@ public interface XMLEventWriter
    * Returns the namespace context.
    */
   NamespaceContext getNamespaceContext();
-  
-}
 
+}

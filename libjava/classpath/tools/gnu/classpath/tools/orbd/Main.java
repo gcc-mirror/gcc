@@ -54,12 +54,12 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
 /**
- * The server for the GNU Classpath persistent naming service. 
- * 
+ * The server for the GNU Classpath persistent naming service.
+ *
  * GNU Classpath currently works with this naming service and is also
  * interoperable with the Sun Microsystems naming services from releases 1.3 and
  * 1.4, both transient <i>tnameserv</i> and persistent <i>orbd</i>.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class Main
@@ -78,7 +78,7 @@ public class Main
   /**
    * Get the object key for the naming service. The default key is the string
    * "NameService" in ASCII.
-   * 
+   *
    * @return the byte array.
    */
   public static byte[] getDefaultKey()

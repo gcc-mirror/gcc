@@ -94,7 +94,7 @@ public class AWTKeyStroke implements Serializable
 
     /** Prune stale entries. */
     protected boolean removeEldestEntry(Map.Entry<AWTKeyStroke,AWTKeyStroke>
-					eldest)
+                                        eldest)
     {
       return size() > MAX_CACHE_SIZE;
     }
@@ -256,7 +256,7 @@ public class AWTKeyStroke implements Serializable
                        IllegalAccessException, InvocationTargetException
               {
                 Constructor<?> c =
-		  subclass.getDeclaredConstructor((Class<?>[])null);
+                  subclass.getDeclaredConstructor((Class<?>[])null);
                 c.setAccessible(true);
                 // Create a new instance, to make sure that we can, and
                 // to cause any ClassCastException.
@@ -279,7 +279,7 @@ public class AWTKeyStroke implements Serializable
   /**
    * Returns a keystroke representing a typed character.
    *
-   * @param keyChar the typed character 
+   * @param keyChar the typed character
    * @return the specified keystroke
    */
   public static AWTKeyStroke getAWTKeyStroke(char keyChar)
@@ -396,7 +396,7 @@ public class AWTKeyStroke implements Serializable
    * "alt shift released X" =&gt; getAWTKeyStroke(KeyEvent.VK_X,
    *    InputEvent.ALT_MASK | InputEvent.SHIFT_MASK, true);<br>
    * "typed a" =&gt; getAWTKeyStroke('a');
-   * </code>      
+   * </code>
    *
    * @param s the string to parse
    * @throws IllegalArgumentException if s is null or cannot be parsed
@@ -416,25 +416,25 @@ public class AWTKeyStroke implements Serializable
       {
         token = t.nextToken();
         if ("shift".equals(token))
-	  {
-	    modifiers |= KeyEvent.SHIFT_MASK;
-	    modifiers |= KeyEvent.SHIFT_DOWN_MASK;
-	  }
+          {
+            modifiers |= KeyEvent.SHIFT_MASK;
+            modifiers |= KeyEvent.SHIFT_DOWN_MASK;
+          }
         else if ("ctrl".equals(token) || "control".equals(token))
-	  {
-	    modifiers |= KeyEvent.CTRL_MASK;
-	    modifiers |= KeyEvent.CTRL_DOWN_MASK;
-	  }
+          {
+            modifiers |= KeyEvent.CTRL_MASK;
+            modifiers |= KeyEvent.CTRL_DOWN_MASK;
+          }
         else if ("meta".equals(token))
-	  {
-	    modifiers |= KeyEvent.META_MASK;
-	    modifiers |= KeyEvent.META_DOWN_MASK;
-	  }
+          {
+            modifiers |= KeyEvent.META_MASK;
+            modifiers |= KeyEvent.META_DOWN_MASK;
+          }
         else if ("alt".equals(token))
-	  {
-	    modifiers |= KeyEvent.ALT_MASK;
-	    modifiers |= KeyEvent.ALT_DOWN_MASK;
-	  }
+          {
+            modifiers |= KeyEvent.ALT_MASK;
+            modifiers |= KeyEvent.ALT_DOWN_MASK;
+          }
         else if ("button1".equals(token))
           modifiers |= KeyEvent.BUTTON1_DOWN_MASK;
         else if ("button2".equals(token))
@@ -452,7 +452,7 @@ public class AWTKeyStroke implements Serializable
                                          false);
               }
             throw new IllegalArgumentException("Invalid 'typed' argument '"
-			    		       + s + "'");
+                                               + s + "'");
           }
         else if ("pressed".equals(token))
           {
@@ -475,7 +475,7 @@ public class AWTKeyStroke implements Serializable
     Integer code = (Integer) vktable.get(token);
     if (code == null)
       throw new IllegalArgumentException("Unknown token '" + token
-					 + "' in '" + s + "'");
+                                         + "' in '" + s + "'");
     if (t.hasMoreTokens())
       throw new IllegalArgumentException("Too many tokens: " + s);
     return getAWTKeyStroke(KeyEvent.CHAR_UNDEFINED, code.intValue(),

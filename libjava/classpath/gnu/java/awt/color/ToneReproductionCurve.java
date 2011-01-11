@@ -103,20 +103,20 @@ public class ToneReproductionCurve
 
     if (trc == null)
       {
-	if (in == 0f)
-	  return 0.0f;
-	return (float) Math.exp(gamma * Math.log(in));
+        if (in == 0f)
+          return 0.0f;
+        return (float) Math.exp(gamma * Math.log(in));
       }
     else
       {
-	double alpha = in * (trc.length - 1);
-	int index = (int) Math.floor(alpha);
-	alpha = alpha - (double) index;
-	if (index >= trc.length - 1)
-	  return trc[trc.length - 1];
-	if (index <= 0)
-	  return trc[0];
-	out = (float) (trc[index] * (1.0 - alpha) + trc[index + 1] * alpha);
+        double alpha = in * (trc.length - 1);
+        int index = (int) Math.floor(alpha);
+        alpha = alpha - (double) index;
+        if (index >= trc.length - 1)
+          return trc[trc.length - 1];
+        if (index <= 0)
+          return trc[0];
+        out = (float) (trc[index] * (1.0 - alpha) + trc[index + 1] * alpha);
       }
     return out;
   }
@@ -130,21 +130,21 @@ public class ToneReproductionCurve
 
     if (trc == null)
       {
-	if (in == 0f)
-	  return 0.0f;
-	return (float) Math.exp((1.0 / gamma) * Math.log(in));
+        if (in == 0f)
+          return 0.0f;
+        return (float) Math.exp((1.0 / gamma) * Math.log(in));
       }
     else
       {
-	double alpha = in * (reverseTrc.length - 1);
-	int index = (int) Math.floor(alpha);
-	alpha = alpha - (double) index;
-	if (index >= reverseTrc.length - 1)
-	  return reverseTrc[reverseTrc.length - 1];
-	if (index <= 0)
-	  return reverseTrc[0];
-	out = (float) (reverseTrc[index] * (1.0 - alpha)
-	      + reverseTrc[index + 1] * alpha);
+        double alpha = in * (reverseTrc.length - 1);
+        int index = (int) Math.floor(alpha);
+        alpha = alpha - (double) index;
+        if (index >= reverseTrc.length - 1)
+          return reverseTrc[reverseTrc.length - 1];
+        if (index <= 0)
+          return reverseTrc[0];
+        out = (float) (reverseTrc[index] * (1.0 - alpha)
+              + reverseTrc[index + 1] * alpha);
       }
     return out;
   }
@@ -164,14 +164,14 @@ public class ToneReproductionCurve
     int j = 0;
     for (int i = 0; i < 10000; i++)
       {
-	float n = ((float) i) / 10000f;
-	while (trc[j + 1] < n && j < trc.length - 2)
-	  j++;
+        float n = ((float) i) / 10000f;
+        while (trc[j + 1] < n && j < trc.length - 2)
+          j++;
 
-	if (j == trc.length - 2)
-	  reverseTrc[i] = trc[trc.length - 1];
-	else
-	  reverseTrc[i] = (j + (n - trc[j]) / (trc[j + 1] - trc[j])) / ((float) trc.length);
+        if (j == trc.length - 2)
+          reverseTrc[i] = trc[trc.length - 1];
+        else
+          reverseTrc[i] = (j + (n - trc[j]) / (trc[j + 1] - trc[j])) / ((float) trc.length);
       }
   }
 }

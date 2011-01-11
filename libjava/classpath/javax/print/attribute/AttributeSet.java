@@ -1,4 +1,4 @@
-/* AttributeSet.java -- 
+/* AttributeSet.java --
    Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -57,26 +57,26 @@ package javax.print.attribute;
  * </ul>
  * </p>
  * <p>
- * Attribute sets may be unmodifiable depending on the context of usage. If 
- * used as read-only attribute set modifying operations throw an 
+ * Attribute sets may be unmodifiable depending on the context of usage. If
+ * used as read-only attribute set modifying operations throw an
  * {@link javax.print.attribute.UnmodifiableSetException}.
  * </p>
  * <p>
  * The Java Print Service API provides implementation classes for the existing
  * attribute set interfaces but applications may use their own implementations.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface AttributeSet
 {
   /**
-   * Adds the specified attribute value to this attribute set 
+   * Adds the specified attribute value to this attribute set
    * if it is not already present.
-   * 
-   * This operation removes any existing attribute of the same category 
-   * before adding the given attribute to the set. 
-   * 
+   *
+   * This operation removes any existing attribute of the same category
+   * before adding the given attribute to the set.
+   *
    * @param attribute the attribute to add.
    * @return <code>true</code> if the set is changed, false otherwise.
    * @throws NullPointerException if the attribute is <code>null</code>.
@@ -86,73 +86,73 @@ public interface AttributeSet
 
   /**
    * Adds all of the elements in the specified set to this attribute set.
-   * 
+   *
    * @param attributes the set of attributes to add.
    * @return <code>true</code> if the set is changed, false otherwise.
    * @throws UnmodifiableSetException if the set does not support modification.
-   * 
+   *
    * @see #add(Attribute)
    */
   boolean addAll (AttributeSet attributes);
-  
+
   /**
    * Removes all attributes from this attribute set.
-   * 
+   *
    * @throws UnmodifiableSetException if the set does not support modification.
    */
   void clear ();
-  
+
   /**
-   * Checks if this attributes set contains an attribute with the given 
+   * Checks if this attributes set contains an attribute with the given
    * category.
-   * 
+   *
    * @param category the category to test for.
    * @return <code>true</code> if an attribute of the category is contained
    * in the set, <code>false</code> otherwise.
    */
   boolean containsKey (Class<?> category);
-  
+
   /**
    * Checks if this attribute set contains the given attribute.
-   * 
+   *
    * @param attribute the attribute to test for.
    * @return <code>true</code> if the attribute is contained in the set,
    * <code>false</code> otherwise.
    */
   boolean containsValue (Attribute attribute);
-  
+
   /**
    * Tests this set for equality with the given object. <code>true</code> is
    * returned, if the given object is also of type <code>AttributeSet</code>
    * and the contained attributes are the same as in this set.
-   * 
+   *
    * @param obj the Object to test.
    * @return <code>true</code> if equal, false otherwise.
    */
   boolean equals (Object obj);
-  
+
   /**
    * Returns the attribute object contained in this set for the given attribute
-   * category. 
-   * 
-   * @param category the category of the attribute. A <code>Class</code> 
-   * instance of a class implementing the <code>Attribute</code> interface. 
-   * @return The attribute for this category or <code>null</code> if no 
-   * attribute is contained for the given category. 
+   * category.
+   *
+   * @param category the category of the attribute. A <code>Class</code>
+   * instance of a class implementing the <code>Attribute</code> interface.
+   * @return The attribute for this category or <code>null</code> if no
+   * attribute is contained for the given category.
    * @throws NullPointerException if category is null.
-   * @throws ClassCastException if category is not implementing 
+   * @throws ClassCastException if category is not implementing
    * <code>Attribute</code>.
    */
   Attribute get (Class<?> category);
-  
+
   /**
    * Returns the hashcode value. The hashcode value is the sum of all hashcodes
    * of the attributes contained in this set.
-   * 
+   *
    * @return The hashcode for this attribute set.
    */
   int hashCode ();
-  
+
   /**
    * Checks if the attribute set is empty.
    *
@@ -163,30 +163,30 @@ public interface AttributeSet
   /**
    * Removes the given attribute from the set. If the given attribute is <code>null</code>
    * nothing is done and <code>false</code> is returned.
-   * 
-   * @param attribute the attribute to remove.  
-   * @return <code>true</code> if removed, false in all other cases. 
+   *
+   * @param attribute the attribute to remove.
+   * @return <code>true</code> if removed, false in all other cases.
    * @throws UnmodifiableSetException if the set does not support modification.
    */
   boolean remove (Attribute attribute);
-  
+
   /**
    * Removes the attribute entry of the given category from the set. If the given
    * category is <code>null</code> nothing is done and <code>false</code> is returned.
-   * 
+   *
    * @param category the category of the entry to be removed.
-   * @return <code>true</code> if an attribute is removed, false in all other cases. 
+   * @return <code>true</code> if an attribute is removed, false in all other cases.
    * @throws UnmodifiableSetException if the set does not support modification.
    */
   boolean remove (Class<?> category);
-  
+
   /**
    * Returns the number of elements in this attribute set.
    *
    * @return The number of elements.
    */
   int size ();
-  
+
   /**
    * Returns the content of the attribute set as an array
    *

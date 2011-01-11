@@ -1,4 +1,4 @@
-/* XMLOutputFactory.java -- 
+/* XMLOutputFactory.java --
    Copyright (C) 2005,2006,2009  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -77,7 +77,7 @@ public abstract class XMLOutputFactory
    * If true, the writer will create a namespace declaration for any
    * attribute that doesn't have a namespace declaration in scope.
    */
-  public static final java.lang.String IS_REPAIRING_NAMESPACES = 
+  public static final java.lang.String IS_REPAIRING_NAMESPACES =
     "javax.xml.stream.isRepairingNamespaces";
 
   protected XMLOutputFactory()
@@ -229,7 +229,7 @@ public abstract class XMLOutputFactory
    */
   public abstract XMLStreamWriter createXMLStreamWriter(Result result)
     throws XMLStreamException;
-  
+
   /**
    * Creates a new event writer.
    * @exception UnsupportedOperationException if this method is not
@@ -277,4 +277,3 @@ public abstract class XMLOutputFactory
   public abstract boolean isPropertySupported(String name);
 
 }
-

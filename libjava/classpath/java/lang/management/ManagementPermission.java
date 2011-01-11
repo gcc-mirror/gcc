@@ -71,7 +71,7 @@ import java.security.BasicPermission;
  * usage limits changed.  Malicious code could use
  * this to alter the behaviour of the system.</li>
  * </ul>
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
@@ -127,6 +127,5 @@ public final class ManagementPermission
     if (!(actions == null || actions.equals("")))
       throw new IllegalArgumentException("Invalid actions.");
   }
-  
-}
 
+}

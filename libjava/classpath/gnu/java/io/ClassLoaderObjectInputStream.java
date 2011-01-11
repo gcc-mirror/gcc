@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -52,22 +52,22 @@ import java.io.StreamCorruptedException;
  */
 
 public class ClassLoaderObjectInputStream extends ObjectInputStream {
-	ClassLoader myClassLoader;
+        ClassLoader myClassLoader;
 
-	/** Create the new ClassLoaderObjectInputStream.
-	 * @param in the InputStream to read the Objects from.
-	 * @param myClassLoader the ClassLoader to load classes
-	 *        with.
-	 */
-	public ClassLoaderObjectInputStream(InputStream in, ClassLoader myClassLoader) throws IOException,StreamCorruptedException {
-		super(in);
-		this.myClassLoader = myClassLoader;
-	}
+        /** Create the new ClassLoaderObjectInputStream.
+         * @param in the InputStream to read the Objects from.
+         * @param myClassLoader the ClassLoader to load classes
+         *        with.
+         */
+        public ClassLoaderObjectInputStream(InputStream in, ClassLoader myClassLoader) throws IOException,StreamCorruptedException {
+                super(in);
+                this.myClassLoader = myClassLoader;
+        }
 
-	/** Overriden method to use the loadClass() method from
-	 * the ClassLoader.
-	 */
-	public Class resolveClass(String name) throws IOException, ClassNotFoundException {
-		return myClassLoader.loadClass(name);
-	}
+        /** Overriden method to use the loadClass() method from
+         * the ClassLoader.
+         */
+        public Class resolveClass(String name) throws IOException, ClassNotFoundException {
+                return myClassLoader.loadClass(name);
+        }
 }

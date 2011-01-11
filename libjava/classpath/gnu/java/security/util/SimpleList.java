@@ -54,7 +54,7 @@ public final class SimpleList
 
   /**
    * Create a singleton list.
-   * 
+   *
    * @param element The first element.
    */
   public SimpleList(final Object element)
@@ -65,7 +65,7 @@ public final class SimpleList
 
   /**
    * Create an ordered pair (2-tuple).
-   * 
+   *
    * @param e1 The first element.
    * @param e2 The second element.
    */
@@ -78,7 +78,7 @@ public final class SimpleList
 
   /**
    * Create a 3-tuple.
-   * 
+   *
    * @param e1 The first element.
    * @param e2 The second element.
    * @param e3 The third element.
@@ -93,7 +93,7 @@ public final class SimpleList
 
   /**
    * Create a 4-tuple.
-   * 
+   *
    * @param e1 The first element.
    * @param e2 The second element.
    * @param e3 The third element.
@@ -121,7 +121,7 @@ public final class SimpleList
    * Create an n-tuple of arbitrary size. Even if the supplied collection has no
    * natural order, the created n-tuple will have the order that the elements
    * are returned by the collection's iterator.
-   * 
+   *
    * @param c The collection.
    */
   public SimpleList(Collection c)

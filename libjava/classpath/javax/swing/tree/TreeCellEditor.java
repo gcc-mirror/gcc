@@ -46,26 +46,26 @@ import javax.swing.JTree;
 /**
  * A <code>TreeCellEditor</code> is used by the {@link JTree} component to
  * edit individual tree elements (nodes).
- * 
+ *
  * @author Andrew Selkirk
  */
 public interface TreeCellEditor extends CellEditor
 {
   /**
-   * Returns a component that has been configured to edit one element (or 
+   * Returns a component that has been configured to edit one element (or
    * node) in a {@link JTree} component.  The arguments to this method are used
    * to pass in the value and state of the element to be edited.
-   * 
+   *
    * @param tree  the tree.
    * @param value  the value to render.
    * @param isSelected  is the tree element selected?
    * @param expanded  is the tree element expanded?
    * @param leaf  is the tree element a leaf node?
    * @param row  the row index.
-   * 
+   *
    * @return A component that is configured for editing the tree element.
    */
   Component getTreeCellEditorComponent(JTree tree, Object value,
-				       boolean isSelected, boolean expanded,
-				       boolean leaf, int row);
+                                       boolean isSelected, boolean expanded,
+                                       boolean leaf, int row);
 }

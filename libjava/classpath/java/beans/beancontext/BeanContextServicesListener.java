@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -46,11 +46,11 @@ package java.beans.beancontext;
  */
 
 public interface BeanContextServicesListener extends BeanContextServiceRevokedListener {
-	/**
-	 * Called by <code>BeanContextServices</code> whenever a service is made available.
-	 *
-	 * @param event the service revoked event, with useful information
-	 *        about the new service.
-	 */
-	void serviceAvailable(BeanContextServiceAvailableEvent event);
+        /**
+         * Called by <code>BeanContextServices</code> whenever a service is made available.
+         *
+         * @param event the service revoked event, with useful information
+         *        about the new service.
+         */
+        void serviceAvailable(BeanContextServiceAvailableEvent event);
 }

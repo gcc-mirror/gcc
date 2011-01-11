@@ -63,7 +63,7 @@ public abstract class Option
 
   /**
    * Create a new option with the given short name and description.
-   * 
+   *
    * @param shortName the short name
    * @param description the description
    */
@@ -77,7 +77,7 @@ public abstract class Option
 
   /**
    * Create a new option with the given short name and description.
-   * 
+   *
    * @param shortName the short name
    * @param description the description
    * @param argumentName the descriptive name of the argument, if this option
@@ -94,7 +94,7 @@ public abstract class Option
 
   /**
    * Create a new option with the given short name and description.
-   * 
+   *
    * @param shortName the short name
    * @param description the description
    * @param argumentName the descriptive name of the argument, if this option
@@ -115,7 +115,7 @@ public abstract class Option
   /**
    * Create a new option with the given long name and description. The long name
    * should be specified without any leading dashes.
-   * 
+   *
    * @param longName the long name
    * @param description the description
    */
@@ -128,7 +128,7 @@ public abstract class Option
   /**
    * Create a new option with the given long name and description. The long name
    * should be specified without any leading dashes.
-   * 
+   *
    * @param longName the long name
    * @param description the description
    * @param argumentName the descriptive name of the argument, if this option
@@ -144,7 +144,7 @@ public abstract class Option
   /**
    * Create a new option with the given short and long names and description.
    * The long name should be specified without any leading dashes.
-   * 
+   *
    * @param longName the long name
    * @param shortName the short name
    * @param description the description
@@ -161,7 +161,7 @@ public abstract class Option
   /**
    * Create a new option with the given short and long names and description.
    * The long name should be specified without any leading dashes.
-   * 
+   *
    * @param longName the long name
    * @param shortName the short name
    * @param description the description
@@ -182,7 +182,7 @@ public abstract class Option
   /**
    * Create a new option with the given short and long names and description.
    * The long name should be specified without any leading dashes.
-   * 
+   *
    * @param longName the long name
    * @param shortName the short name
    * @param description the description
@@ -258,7 +258,7 @@ public abstract class Option
    * called multiple times during a single parse. If this option takes an
    * argument, the argument will be passed in. Otherwise the argument will be
    * null.
-   * 
+   *
    * @param argument the argument
    * @throws OptionException if the option or its argument is somehow invalid
    */

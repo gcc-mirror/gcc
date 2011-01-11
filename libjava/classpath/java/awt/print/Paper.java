@@ -40,7 +40,7 @@ package java.awt.print;
 
 /**
  * This class describes a particular type of paper.
- * 
+ *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class Paper
@@ -79,7 +79,7 @@ public class Paper
 
   /**
    * This method returns the height of the paper in 1/72nds of an inch.
-   * 
+   *
    * @return The height of the paper in 1/72nds of an inch.
    */
   public double getHeight()
@@ -89,7 +89,7 @@ public class Paper
 
   /**
    * Returns the width of the paper in 1/72nds of an inch.
-   * 
+   *
    * @return The width of the paper in 1/72nds of an inch.
    */
   public double getWidth()
@@ -100,7 +100,7 @@ public class Paper
   /**
    * This method returns the X coordinate of the upper left hand corner of the
    * imageable area of the paper.
-   * 
+   *
    * @return The X coordinate of the upper left hand corner of the imageable
    *         area of the paper.
    */
@@ -112,7 +112,7 @@ public class Paper
   /**
    * This method returns the Y coordinate of the upper left hand corner of the
    * imageable area of the paper.
-   * 
+   *
    * @return The Y coordinate of the upper left hand corner of the imageable
    *         area of the paper.
    */
@@ -123,7 +123,7 @@ public class Paper
 
   /**
    * Returns the width of the imageable area of the paper.
-   * 
+   *
    * @return The width of the imageable area of the paper.
    */
   public double getImageableWidth()
@@ -133,7 +133,7 @@ public class Paper
 
   /**
    * Returns the height of the imageable area of the paper.
-   * 
+   *
    * @return The height of the imageable area of the paper.
    */
   public double getImageableHeight()
@@ -144,7 +144,7 @@ public class Paper
   /**
    * This method sets the size of the paper to the specified width and height,
    * which are specified in 1/72nds of an inch.
-   * 
+   *
    * @param width The width of the paper in 1/72nds of an inch.
    * @param height The height of the paper in 1/72nds of an inch.
    */
@@ -156,9 +156,9 @@ public class Paper
 
   /**
    * This method sets the imageable area of the paper by specifying the
-   * coordinates of the upper left hand corner of that area, and its length 
+   * coordinates of the upper left hand corner of that area, and its length
    * and height. All values are in 1/72nds of an inch.
-   * 
+   *
    * @param imageableX The X coordinate of the upper left hand corner of the
    *          imageable area, in 1/72nds of an inch.
    * @param imageableY The Y coordinate of the upper left hand corner of the
@@ -179,7 +179,7 @@ public class Paper
 
   /**
    * This method creates a copy of this object.
-   * 
+   *
    * @return A copy of this object.
    */
   public Object clone()

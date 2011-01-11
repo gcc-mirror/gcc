@@ -1,4 +1,4 @@
-/* GeneralSubtree.java -- 
+/* GeneralSubtree.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -63,20 +63,20 @@ public class GeneralSubtree
   private final GeneralName base;
   private final int minimum;
   private final int maximum;
-  
+
   public GeneralSubtree(byte[] encoded) throws IOException
   {
     DERReader reader = new DERReader(encoded);
     DERValue generalSubtree = reader.read();
-    
+
     if (!generalSubtree.isConstructed())
       throw new IOException("malformed GeneralSubtree");
-    
+
     DERValue generalName = reader.read();
     base = new GeneralName(generalName.getEncoded());
     if (generalName.isConstructed())
       reader.skip(generalName.getLength());
-    
+
     int len = generalName.getEncodedLength();
     if (len < generalSubtree.getLength())
       {
@@ -116,7 +116,7 @@ public class GeneralSubtree
         maximum = -1;
       }
   }
-  
+
   /**
    * Returns the base name.
    *
@@ -126,7 +126,7 @@ public class GeneralSubtree
   {
     return base;
   }
-  
+
   /**
    * Returns the minimum base distance, possibly zero.
    *
@@ -136,7 +136,7 @@ public class GeneralSubtree
   {
     return minimum;
   }
-  
+
   /**
    * Returns the maximum base distance, or -1 if this value was not specified.
    *
@@ -146,7 +146,7 @@ public class GeneralSubtree
   {
     return maximum;
   }
-  
+
   public String toString()
   {
     return (GeneralSubtree.class.getName() + " [ base=" + base

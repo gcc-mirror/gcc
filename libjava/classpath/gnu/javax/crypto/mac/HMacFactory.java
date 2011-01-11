@@ -1,4 +1,4 @@
-/* HMacFactory.java -- 
+/* HMacFactory.java --
    Copyright (C) 2001, 2002, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -63,7 +63,7 @@ public class HMacFactory
    * Return an instance of a <i>HMAC</i> algorithm given the name of its
    * underlying hash function, prefixed with the literal defined in
    * {@link Registry#HMAC_NAME_PREFIX}.
-   * 
+   *
    * @param name the fully qualified name of the underlying algorithm: composed
    *          as the concatenation of a literal prefix (see
    *          {@link Registry#HMAC_NAME_PREFIX}) and the name of the underlying
@@ -96,7 +96,7 @@ public class HMacFactory
    * Returns a {@link java.util.Set} of names of <i>HMAC</i> algorithms
    * supported by this <i>Factory</i>.
    * </p>
-   * 
+   *
    * @return a {@link java.util.Set} of HMAC algorithm names (Strings).
    */
   public static final Set getNames()

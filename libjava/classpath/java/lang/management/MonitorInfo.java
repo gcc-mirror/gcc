@@ -82,16 +82,16 @@ public class MonitorInfo
    *                                  &lt; 0.
    */
   public MonitorInfo(String className, int identityHashCode, int stackDepth,
-		     StackTraceElement stackFrame)
+                     StackTraceElement stackFrame)
   {
     super(className, identityHashCode);
     if (stackFrame == null && stackDepth >= 0)
       throw new IllegalArgumentException("The stack frame is null, but the " +
-					 "stack depth is greater than or equal " +
-					 "to zero.");
+                                         "stack depth is greater than or equal " +
+                                         "to zero.");
     if (stackFrame != null && stackDepth < 0)
       throw new IllegalArgumentException("The stack frame is not null, but the " +
-					 "stack depth is less than zero.");
+                                         "stack depth is less than zero.");
     this.stackDepth = stackDepth;
     this.stackFrame = stackFrame;
   }
@@ -123,9 +123,9 @@ public class MonitorInfo
    * <tr><td>lineNumber</td><td>java.lang.Integer</td></tr>
    * <tr><td>nativeMethod</td><td>java.lang.Boolean</td></tr>
    * </table>
-   * 
+   *
    * @param data the composite data structure to take values from.
-   * @return a new instance containing the values from the 
+   * @return a new instance containing the values from the
    *         composite data structure, or <code>null</code>
    *         if the data structure was also <code>null</code>.
    * @throws IllegalArgumentException if the composite data structure
@@ -141,15 +141,15 @@ public class MonitorInfo
     ThreadInfo.checkAttribute(type, "IdentityHashCode", SimpleType.INTEGER);
     ThreadInfo.checkAttribute(type, "LockedStackDepth", SimpleType.INTEGER);
     ThreadInfo.checkAttribute(type, "LockedStackFrame",
-			      ThreadInfo.getStackTraceType());
+                              ThreadInfo.getStackTraceType());
     CompositeData frame = (CompositeData) data.get("LockedStackFrame");
     return new MonitorInfo((String) data.get("ClassName"),
-			   (Integer) data.get("IdentityHashCode"),
-			   (Integer) data.get("LockedStackDepth"),
-			   new StackTraceElement((String) frame.get("ClassName"),
-						 (String) frame.get("MethodName"),
-						 (String) frame.get("FileName"),
-						 (Integer) frame.get("LineNumber")));
+                           (Integer) data.get("IdentityHashCode"),
+                           (Integer) data.get("LockedStackDepth"),
+                           new StackTraceElement((String) frame.get("ClassName"),
+                                                 (String) frame.get("MethodName"),
+                                                 (String) frame.get("FileName"),
+                                                 (Integer) frame.get("LineNumber")));
   }
 
   /**

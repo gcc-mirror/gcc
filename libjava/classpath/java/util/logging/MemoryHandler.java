@@ -122,19 +122,19 @@ public class MemoryHandler
   public MemoryHandler()
   {
     this((Handler) LogManager.getInstanceProperty(
-	   "java.util.logging.MemoryHandler.target",
-	   Handler.class, /* default */ null),
-	 LogManager.getIntPropertyClamped(
-	   "java.util.logging.MemoryHandler.size",
-	   /* default */ 1000,
-	   /* minimum value */ 1,
-	   /* maximum value */ Integer.MAX_VALUE),
-	 LogManager.getLevelProperty(
-	   "java.util.logging.MemoryHandler.push",
-	   /* default push level */ Level.SEVERE));
+           "java.util.logging.MemoryHandler.target",
+           Handler.class, /* default */ null),
+         LogManager.getIntPropertyClamped(
+           "java.util.logging.MemoryHandler.size",
+           /* default */ 1000,
+           /* minimum value */ 1,
+           /* maximum value */ Integer.MAX_VALUE),
+         LogManager.getLevelProperty(
+           "java.util.logging.MemoryHandler.push",
+           /* default push level */ Level.SEVERE));
   }
 
-  
+
   /**
    * Constructs a <code>MemoryHandler</code> for keeping a circular
    * buffer of LogRecords, given some parameters. The values of the
@@ -162,7 +162,7 @@ public class MemoryHandler
    *         in those cases.
    */
   public MemoryHandler(Handler target, int size, Level pushLevel)
-  { 
+  {
     if ((target == null) || (size <= 0) || (pushLevel == null))
       throw new IllegalArgumentException();
 
@@ -235,9 +235,9 @@ public class MemoryHandler
     else
     {
       for (i = position; i < buffer.length; i++)
-	target.publish(buffer[i]);
+        target.publish(buffer[i]);
       for (i = 0; i < position; i++)
-	target.publish(buffer[i]);
+        target.publish(buffer[i]);
     }
 
     numPublished = 0;
@@ -298,7 +298,7 @@ public class MemoryHandler
     target.close();
   }
 
-    
+
 
   /**
    * Returns the push level threshold for this <code>Handler</code>.

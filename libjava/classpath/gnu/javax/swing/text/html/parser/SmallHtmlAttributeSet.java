@@ -50,18 +50,18 @@ import javax.swing.text.html.HTML.Tag;
  * Small fixed HTML attribute set. The most of the HTML elements contain only
  * several attributes. With four attributes, the number of operations in more
  * complex algorithms is not larger than using the naive algorithm.
- * 
+ *
  * Same as HtmlAttributeSet, this set allows both strings and non-string as
  * keys. The strings are case insensitive, the non strings are compared with
  * .equals.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class SmallHtmlAttributeSet
     implements AttributeSet, Cloneable, Serializable
 {
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The keys, stored in this attribute set.
    */
@@ -80,7 +80,7 @@ public class SmallHtmlAttributeSet
   /**
    * Create a new small fixed attribute set that contains the unchangeable copy
    * of the passed attribute set and inherits its parent.
-   * 
+   *
    * @param copyFrom the attribute set, containing the attribute values to copy.
    */
   public SmallHtmlAttributeSet(AttributeSet copyFrom)
@@ -143,7 +143,7 @@ public class SmallHtmlAttributeSet
   /**
    * Get the attribute value, matching this key. If not found in this set, the
    * call is delegated to parent.
-   * 
+   *
    * @return the value, matching key (or null if none).
    */
   public Object getAttribute(Object key)
@@ -218,7 +218,7 @@ public class SmallHtmlAttributeSet
       }
     };
   }
-  
+
   /**
    * Get the parent that this set uses to resolve the not found attributes.
    */
@@ -226,7 +226,7 @@ public class SmallHtmlAttributeSet
   {
     return parent;
   }
-  
+
   /**
    * Check if the given attribute is defined in this set (not in the parent).
    */
@@ -242,7 +242,7 @@ public class SmallHtmlAttributeSet
       }
     return false;
   }
-  
+
   /**
    * Check this set and another set for equality by content.
    */

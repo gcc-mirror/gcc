@@ -54,7 +54,7 @@ import javax.swing.JFormattedTextField;
  * a value, the value class must provide a single argument constructor that
  * takes a String object as argument value. If no such constructor is found,
  * the String itself is passed back by #stringToValue.
- *  
+ *
  * @author Roman Kennke (roman@kennke.org)
  */
 public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
@@ -89,7 +89,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
       checkValidInput();
       commitIfAllowed();
     }
-    
+
     /**
      * Invoked when text is inserted into a text component.
      *
@@ -115,7 +115,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
 
     /**
      * Invoked when text is replaced in a text component.
-     * 
+     *
      * @param bypass the FilterBypass to use to mutate the document
      * @param offset the start position of the modification
      * @param length the length of the removed text
@@ -176,9 +176,9 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
                 {
                   // if that happens, something serious must be wrong
                   AssertionError ae;
-		  ae = new AssertionError("values must be parseable");
-		  ae.initCause(pe);
-		  throw ae;
+                  ae = new AssertionError("values must be parseable");
+                  ae.initCause(pe);
+                  throw ae;
                 }
             }
         }
@@ -238,7 +238,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
    * one of the mentioned methods in order to customize behaviour.
    *
    * @param ftf the {@link JFormattedTextField} in which this formatter
-   *     is installed 
+   *     is installed
    */
   public void install(JFormattedTextField ftf)
   {
@@ -287,7 +287,7 @@ public class DefaultFormatter extends JFormattedTextField.AbstractFormatter
 
   /**
    * Sets the value of the <code>overwriteMode</code> property.
-   * 
+   *
    * If that is set to <code>true</code> then newly inserted characters
    * overwrite existing values, otherwise the characters are inserted like
    * normal. The default is <code>true</code>.

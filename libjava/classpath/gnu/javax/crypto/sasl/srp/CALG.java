@@ -1,4 +1,4 @@
-/* CALG.java -- 
+/* CALG.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -86,7 +86,7 @@ import javax.security.sasl.SaslException;
  * other words, the input is padded at the trailing end with one of the
  * following sequences:
  * <pre>
- * 
+ *
  *                     01 -- if l mod k = k-1
  *                    02 02 -- if l mod k = k-2
  *                              ...
@@ -121,7 +121,7 @@ public final class CALG
 
   /**
    * Returns an instance of a SASL-SRP CALG implementation.
-   * 
+   *
    * @param algorithm the name of the symmetric cipher algorithm.
    * @return an instance of this object.
    */
@@ -145,7 +145,7 @@ public final class CALG
 
   /**
    * Initialises a SASL-SRP CALG implementation.
-   * 
+   *
    * @param kdf the key derivation function.
    * @param iv the initial vector value to use.
    * @param dir whether this CALG is used for encryption or decryption.
@@ -184,7 +184,7 @@ public final class CALG
   /**
    * Encrypts or decrypts, depending on the mode already set, a designated array
    * of bytes and returns the result.
-   * 
+   *
    * @param data the data to encrypt/decrypt.
    * @return the decrypted/encrypted result.
    * @throws ConfidentialityException if an exception occurs duirng the process.
@@ -197,7 +197,7 @@ public final class CALG
   /**
    * Encrypts or decrypts, depending on the mode already set, a designated array
    * of bytes and returns the result.
-   * 
+   *
    * @param data the data to encrypt/decrypt.
    * @param offset where to start in <code>data</code>.
    * @param length how many bytes to consider in <code>data</code>.

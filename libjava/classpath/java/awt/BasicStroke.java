@@ -1,4 +1,4 @@
-/* BasicStroke.java -- 
+/* BasicStroke.java --
    Copyright (C) 2002, 2003, 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -53,7 +53,7 @@ import java.util.Arrays;
  * A general purpose {@link Stroke} implementation that can represent a wide
  * variety of line styles for use with subclasses of {@link Graphics2D}.
  * <p>
- * The line cap and join styles can be set using the options illustrated 
+ * The line cap and join styles can be set using the options illustrated
  * here:
  * <p>
  * <img src="doc-files/capjoin.png" width="350" height="180"
@@ -64,37 +64,37 @@ import java.util.Arrays;
  */
 public class BasicStroke implements Stroke
 {
-  /** 
+  /**
    * Indicates a mitered line join style. See the class overview for an
    * illustration.
    */
   public static final int JOIN_MITER = 0;
-  
-  /** 
+
+  /**
    * Indicates a rounded line join style. See the class overview for an
    * illustration.
    */
   public static final int JOIN_ROUND = 1;
-  
-  /** 
+
+  /**
    * Indicates a bevelled line join style. See the class overview for an
    * illustration.
    */
   public static final int JOIN_BEVEL = 2;
 
-  /** 
+  /**
    * Indicates a flat line cap style. See the class overview for an
    * illustration.
    */
   public static final int CAP_BUTT = 0;
-  
-  /** 
+
+  /**
    * Indicates a rounded line cap style. See the class overview for an
    * illustration.
    */
   public static final int CAP_ROUND = 1;
-  
-  /** 
+
+  /**
    * Indicates a square line cap style. See the class overview for an
    * illustration.
    */
@@ -102,19 +102,19 @@ public class BasicStroke implements Stroke
 
   /** The stroke width. */
   private final float width;
-  
+
   /** The line cap style. */
   private final int cap;
-  
+
   /** The line join style. */
   private final int join;
-  
+
   /** The miter limit. */
   private final float limit;
-  
+
   /** The dash array. */
   private final float[] dash;
-  
+
   /** The dash phase. */
   private final float phase;
 
@@ -125,9 +125,9 @@ public class BasicStroke implements Stroke
    * Creates a new <code>BasicStroke</code> instance with the given attributes.
    *
    * @param width  the line width (>= 0.0f).
-   * @param cap  the line cap style (one of {@link #CAP_BUTT}, 
+   * @param cap  the line cap style (one of {@link #CAP_BUTT},
    *             {@link #CAP_ROUND} or {@link #CAP_SQUARE}).
-   * @param join  the line join style (one of {@link #JOIN_ROUND}, 
+   * @param join  the line join style (one of {@link #JOIN_ROUND},
    *              {@link #JOIN_BEVEL}, or {@link #JOIN_MITER}).
    * @param miterlimit  the limit to trim the miter join. The miterlimit must be
    * greater than or equal to 1.0f.
@@ -145,36 +145,36 @@ public class BasicStroke implements Stroke
       throw new IllegalArgumentException("width " + width + " < 0");
     else if (cap < CAP_BUTT || cap > CAP_SQUARE)
       throw new IllegalArgumentException("cap " + cap + " out of range ["
-					 + CAP_BUTT + ".." + CAP_SQUARE + "]");
+                                         + CAP_BUTT + ".." + CAP_SQUARE + "]");
     else if (miterlimit < 1.0f && join == JOIN_MITER)
       throw new IllegalArgumentException("miterlimit " + miterlimit
-					 + " < 1.0f while join == JOIN_MITER");
+                                         + " < 1.0f while join == JOIN_MITER");
     else if (join < JOIN_MITER || join > JOIN_BEVEL)
       throw new IllegalArgumentException("join " + join + " out of range ["
-					 + JOIN_MITER + ".." + JOIN_BEVEL
-					 + "]");
+                                         + JOIN_MITER + ".." + JOIN_BEVEL
+                                         + "]");
     else if (dashPhase < 0.0f && dash != null)
       throw new IllegalArgumentException("dashPhase " + dashPhase
-					 + " < 0.0f while dash != null");
+                                         + " < 0.0f while dash != null");
     else if (dash != null)
       if (dash.length == 0)
-	throw new IllegalArgumentException("dash.length is 0");
+        throw new IllegalArgumentException("dash.length is 0");
       else
-	{
-	  boolean allZero = true;
-	  
-	  for ( int i = 0; i < dash.length; ++i)
-	    {
-	      if (dash[i] != 0.0f)
-		{
-		  allZero = false;
-		  break;
-		}
-	    }
-	  
-	  if (allZero)
-	    throw new IllegalArgumentException("all dashes are 0.0f");
-	}
+        {
+          boolean allZero = true;
+
+          for ( int i = 0; i < dash.length; ++i)
+            {
+              if (dash[i] != 0.0f)
+                {
+                  allZero = false;
+                  break;
+                }
+            }
+
+          if (allZero)
+            throw new IllegalArgumentException("all dashes are 0.0f");
+        }
 
     this.width = width;
     this.cap = cap;
@@ -188,13 +188,13 @@ public class BasicStroke implements Stroke
    * Creates a new <code>BasicStroke</code> instance with the given attributes.
    *
    * @param width  the line width (>= 0.0f).
-   * @param cap  the line cap style (one of {@link #CAP_BUTT}, 
+   * @param cap  the line cap style (one of {@link #CAP_BUTT},
    *             {@link #CAP_ROUND} or {@link #CAP_SQUARE}).
-   * @param join  the line join style (one of {@link #JOIN_ROUND}, 
+   * @param join  the line join style (one of {@link #JOIN_ROUND},
    *              {@link #JOIN_BEVEL}, or {@link #JOIN_MITER}).
    * @param miterlimit the limit to trim the miter join. The miterlimit must be
    * greater than or equal to 1.0f.
-   * 
+   *
    * @throws IllegalArgumentException If one input parameter doesn't meet
    * its needs.
    */
@@ -208,11 +208,11 @@ public class BasicStroke implements Stroke
    * The miter limit defaults to <code>10.0</code>.
    *
    * @param width  the line width (>= 0.0f).
-   * @param cap  the line cap style (one of {@link #CAP_BUTT}, 
+   * @param cap  the line cap style (one of {@link #CAP_BUTT},
    *             {@link #CAP_ROUND} or {@link #CAP_SQUARE}).
-   * @param join  the line join style (one of {@link #JOIN_ROUND}, 
+   * @param join  the line join style (one of {@link #JOIN_ROUND},
    *              {@link #JOIN_BEVEL}, or {@link #JOIN_MITER}).
-   * 
+   *
    * @throws IllegalArgumentException If one input parameter doesn't meet
    * its needs.
    */
@@ -229,9 +229,9 @@ public class BasicStroke implements Stroke
    * <li>line join style: {@link #JOIN_MITER};</li>
    * <li>miter limit: <code>10.0f</code>.
    * </ul>
-   * 
+   *
    * @param width  the line width (>= 0.0f).
-   * 
+   *
    * @throws IllegalArgumentException If <code>width</code> is negative.
    */
   public BasicStroke(float width)
@@ -252,11 +252,11 @@ public class BasicStroke implements Stroke
   {
     this(1, CAP_SQUARE, JOIN_MITER, 10, null, 0);
   }
-  
+
   /**
    * Creates a shape representing the stroked outline of the given shape.
    * THIS METHOD IS NOT YET IMPLEMENTED.
-   * 
+   *
    * @param s  the shape.
    */
   public Shape createStrokedShape(Shape s)
@@ -271,7 +271,7 @@ public class BasicStroke implements Stroke
 
   /**
    * Returns the line width.
-   * 
+   *
    * @return The line width.
    */
   public float getLineWidth()
@@ -282,7 +282,7 @@ public class BasicStroke implements Stroke
   /**
    * Returns a code indicating the line cap style (one of {@link #CAP_BUTT},
    * {@link #CAP_ROUND}, {@link #CAP_SQUARE}).
-   * 
+   *
    * @return A code indicating the line cap style.
    */
   public int getEndCap()
@@ -293,7 +293,7 @@ public class BasicStroke implements Stroke
   /**
    * Returns a code indicating the line join style (one of {@link #JOIN_BEVEL},
    * {@link #JOIN_MITER} or {@link #JOIN_ROUND}).
-   * 
+   *
    * @return A code indicating the line join style.
    */
   public int getLineJoin()
@@ -303,7 +303,7 @@ public class BasicStroke implements Stroke
 
   /**
    * Returns the miter limit.
-   * 
+   *
    * @return The miter limit.
    */
   public float getMiterLimit()
@@ -312,10 +312,10 @@ public class BasicStroke implements Stroke
   }
 
   /**
-   * Returns the dash array, which defines the length of alternate opaque and 
-   * transparent sections in lines drawn with this stroke.  If 
+   * Returns the dash array, which defines the length of alternate opaque and
+   * transparent sections in lines drawn with this stroke.  If
    * <code>null</code>, a continuous line will be drawn.
-   * 
+   *
    * @return The dash array (possibly <code>null</code>).
    */
   public float[] getDashArray()
@@ -325,9 +325,9 @@ public class BasicStroke implements Stroke
 
   /**
    * Returns the dash phase for the stroke.  This is the offset from the start
-   * of a path at which the pattern defined by {@link #getDashArray()} is 
+   * of a path at which the pattern defined by {@link #getDashArray()} is
    * rendered.
-   * 
+   *
    * @return The dash phase.
    */
   public float getDashPhase()
@@ -341,7 +341,7 @@ public class BasicStroke implements Stroke
    * (converted to <code>int</code> first with
    * <code>Float.floatToIntBits()</code> if the value is a
    * <code>float</code>).
-   * 
+   *
    * @return The hash code.
    */
   public int hashCode()
@@ -350,10 +350,10 @@ public class BasicStroke implements Stroke
     hash ^= cap;
     hash ^= join;
     hash ^= Float.floatToIntBits(limit);
-   
+
     if (dash != null)
       for (int i = 0; i < dash.length; i++)
-	hash ^=  Float.floatToIntBits(dash[i]);
+        hash ^=  Float.floatToIntBits(dash[i]);
 
     hash ^= Float.floatToIntBits(phase);
 
@@ -361,16 +361,16 @@ public class BasicStroke implements Stroke
   }
 
   /**
-   * Compares this <code>BasicStroke</code> for equality with an arbitrary 
+   * Compares this <code>BasicStroke</code> for equality with an arbitrary
    * object.  This method returns <code>true</code> if and only if:
    * <ul>
    * <li><code>o</code> is an instanceof <code>BasicStroke</code>;</li>
    * <li>this object has the same width, line cap style, line join style,
    * miter limit, dash array and dash phase as <code>o</code>.</li>
    * </ul>
-   * 
+   *
    * @param o  the object (<code>null</code> permitted).
-   * 
+   *
    * @return <code>true</code> if this stroke is equal to <code>o</code> and
    *         <code>false</code> otherwise.
    */
@@ -401,7 +401,7 @@ public class BasicStroke implements Stroke
             y0 = y = coords[1];
             if( pathOpen )
               {
-                capEnds();              
+                capEnds();
                 convertPath(output, start);
                 start = end = null;
                 pathOpen = false;
@@ -425,7 +425,7 @@ public class BasicStroke implements Stroke
             break;
 
           case PathIterator.SEG_QUADTO:
-            p = (new QuadSegment(x, y, coords[0], coords[1], coords[2], 
+            p = (new QuadSegment(x, y, coords[0], coords[1], coords[2],
                                  coords[3])).getDisplacedSegments(width/2.0);
             if( !pathOpen )
               {
@@ -549,7 +549,7 @@ public class BasicStroke implements Stroke
                   {
                     spanBoundary = false;
                   }
-                
+
                 // Otherwise, we need to split the segment in two, as this
                 // segment spans a dash boundry
                 else
@@ -671,23 +671,23 @@ public class BasicStroke implements Stroke
         else if(v instanceof QuadSegment)
           p.quadTo((float)((QuadSegment)v).cp.getX(),
                    (float)((QuadSegment)v).cp.getY(),
-                   (float)v.P2.getX(), 
+                   (float)v.P2.getX(),
                    (float)v.P2.getY());
         else if(v instanceof CubicSegment)
           p.curveTo((float)((CubicSegment)v).cp1.getX(),
                     (float)((CubicSegment)v).cp1.getY(),
                     (float)((CubicSegment)v).cp2.getX(),
                     (float)((CubicSegment)v).cp2.getY(),
-                    (float)v.P2.getX(), 
+                    (float)v.P2.getX(),
                     (float)v.P2.getY());
         v = v.next;
       } while(v != s && v != null);
 
     p.closePath();
   }
-  
+
   /**
-   * Add the segments to start and end (the inner and outer edges of the stroke) 
+   * Add the segments to start and end (the inner and outer edges of the stroke)
    */
   private void addSegments(Segment[] segments)
   {
@@ -707,26 +707,26 @@ public class BasicStroke implements Stroke
     p = lineIntersection(p0[0],p0[1],p1[0],p1[1],
                                  p2[0],p2[1],p3[0],p3[1], false);
 
-    double det = (p1[0] - p0[0])*(p3[1] - p2[1]) - 
+    double det = (p1[0] - p0[0])*(p3[1] - p2[1]) -
       (p3[0] - p2[0])*(p1[1] - p0[1]);
 
     if( det > 0 )
       {
-        // start and segment[0] form the 'inner' part of a join, 
+        // start and segment[0] form the 'inner' part of a join,
         // connect the overlapping segments
         joinInnerSegments(start, segments[0], p);
         joinOuterSegments(end, segments[1], p);
       }
     else
       {
-        // end and segment[1] form the 'inner' part 
+        // end and segment[1] form the 'inner' part
         joinInnerSegments(end, segments[1], p);
         joinOuterSegments(start, segments[0], p);
       }
   }
 
   /**
-   * Make a cap between a and b segments, 
+   * Make a cap between a and b segments,
    * where a-->b is the direction of iteration.
    */
   private void capEnd(Segment a, Segment b)
@@ -767,7 +767,7 @@ public class BasicStroke implements Stroke
             dx = (2.0/3.0)*width*dx/l;
             dy = (2.0/3.0)*width*dy/l;
           }
-        
+
         c1 = new Point2D.Double(p1[0] + dx, p1[1] + dy);
         c2 = new Point2D.Double(b.P1.getX() + dx, b.P1.getY() + dy);
         a.add(new CubicSegment(a.last.P2, c1, c2, b.P1));
@@ -782,9 +782,9 @@ public class BasicStroke implements Stroke
    * if the intersection must be within the given segments.
    * @return a Point2D or null.
    */
-  private Point2D lineIntersection(double X1, double Y1, 
-                                   double X2, double Y2, 
-                                   double X3, double Y3, 
+  private Point2D lineIntersection(double X1, double Y1,
+                                   double X2, double Y2,
+                                   double X3, double Y3,
                                    double X4, double Y4,
                                    boolean infinite)
   {
@@ -840,7 +840,7 @@ public class BasicStroke implements Stroke
           {
             a.add(new LineSegment(a.last.P2, p));
             a.add(new LineSegment(p, b.P1));
-          } 
+          }
         else
           {
             // outside miter limit, do a bevel join.

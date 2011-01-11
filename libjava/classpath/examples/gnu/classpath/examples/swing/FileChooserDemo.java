@@ -46,57 +46,57 @@ import javax.swing.filechooser.FileFilter;
  */
 public class FileChooserDemo
   extends JPanel
-  implements ActionListener 
+  implements ActionListener
 {
   /**
    * A file filter for Java source files.
    */
   static class JavaFileFilter extends FileFilter
   {
-    public String getDescription() 
+    public String getDescription()
     {
       return "Java Source Files (.java)";
     }
     public boolean accept(File f)
     {
-      if (f != null) 
+      if (f != null)
       {
         return f.getName().endsWith(".java") || f.isDirectory();
       }
-      else 
+      else
         return false;
     }
   }
 
   /** A label to display the selected file. */
   JLabel selectedFileLabel;
-    
-  /** 
-   * A list showing the selected files (where multi selections are 
-   * allowed). 
+
+  /**
+   * A list showing the selected files (where multi selections are
+   * allowed).
    */
   JList selectedFilesList;
-    
+
   /** A label to display the return code for the JFileChooser. */
   JLabel returnCodeLabel;
-    
+
   /**
-   * Creates a new demo instance. 
+   * Creates a new demo instance.
    */
-  public FileChooserDemo() 
+  public FileChooserDemo()
   {
     super();
     createContent();
   }
-  
+
   /**
    * When the demo is run independently, the frame is displayed, so we should
-   * initialise the content panel (including the demo content and a close 
+   * initialise the content panel (including the demo content and a close
    * button).  But when the demo is run as part of the Swing activity board,
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
    */
-  void initFrameContent() 
+  void initFrameContent()
   {
     JPanel closePanel = new JPanel();
     JButton closeButton = new JButton("Close");
@@ -105,7 +105,7 @@ public class FileChooserDemo
     closePanel.add(closeButton);
     add(closePanel, BorderLayout.SOUTH);
   }
-      
+
   /**
    * Returns a panel with the demo content.  The panel
    * uses a BorderLayout(), and the BorderLayout.SOUTH area
@@ -116,8 +116,8 @@ public class FileChooserDemo
   private void createContent()
   {
     setLayout(new BorderLayout());
-        
-    // create a panel of buttons to select the different styles of file 
+
+    // create a panel of buttons to select the different styles of file
     // chooser...
     JPanel buttonPanel = new JPanel(new GridLayout(5, 1));
     JButton openButton = new JButton("Open...");
@@ -141,30 +141,30 @@ public class FileChooserDemo
     openMultiButton.addActionListener(this);
     buttonPanel.add(openMultiButton);
     add(buttonPanel, BorderLayout.WEST);
-        
+
     // create a panel to display the selected file(s) and the return code
     JPanel displayPanel = new JPanel(new BorderLayout());
-        
+
     selectedFileLabel = new JLabel("-");
     selectedFileLabel.setBorder(BorderFactory.createTitledBorder("Selected File/Directory: "));
     displayPanel.add(selectedFileLabel, BorderLayout.NORTH);
-        
+
     selectedFilesList = new JList();
     JScrollPane sp = new JScrollPane(selectedFilesList);
     sp.setBorder(BorderFactory.createTitledBorder("Selected Files: "));
     displayPanel.add(sp);
-        
+
     returnCodeLabel = new JLabel("0");
     returnCodeLabel.setBorder(BorderFactory.createTitledBorder("Return Code:"));
     displayPanel.add(returnCodeLabel, BorderLayout.SOUTH);
-        
+
     add(displayPanel);
   }
-    
+
   /**
    * When the user clicks on a button, launch the appropriate file chooser
    * and report the results.
-   * 
+   *
    * @param e  the event.
    */
   public void actionPerformed(ActionEvent e)
@@ -172,7 +172,7 @@ public class FileChooserDemo
     int option = 0;
     File selectedFile = null;
     File[] selectedFiles = new File[0];
-    
+
     if (e.getActionCommand().equals("CLOSE"))
     {
       System.exit(0);
@@ -216,7 +216,7 @@ public class FileChooserDemo
         selectedFile = chooser.getSelectedFile();
         selectedFiles = chooser.getSelectedFiles();
       }
-     
+
     // display the selection and return code
     if (selectedFile != null)
       selectedFileLabel.setText(selectedFile.toString());
@@ -228,8 +228,8 @@ public class FileChooserDemo
     selectedFilesList.setModel(listModel);
     returnCodeLabel.setText(Integer.toString(option));
   }
-    
-  public static void main(String[] args) 
+
+  public static void main(String[] args)
   {
     SwingUtilities.invokeLater
     (new Runnable()

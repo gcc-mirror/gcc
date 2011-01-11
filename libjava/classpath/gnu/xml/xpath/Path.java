@@ -1,4 +1,4 @@
-/* Path.java -- 
+/* Path.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -50,5 +50,5 @@ abstract class Path
 {
 
   abstract Collection<Node> evaluate(Node context, Collection<Node> nodeSet);
-  
+
 }

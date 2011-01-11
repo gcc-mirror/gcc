@@ -52,8 +52,8 @@ import org.omg.PortableServer.Servant;
 /**
  * The binding iterator servant, used in POA-based naming service
  * implementations.
- * 
- * @since 1.4 
+ *
+ * @since 1.4
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
@@ -105,7 +105,7 @@ public abstract class BindingIteratorPOA
         out = rh.createReply();
       }
     else
-      throw new BAD_OPERATION(method, Minor.Method, 
+      throw new BAD_OPERATION(method, Minor.Method,
         CompletionStatus.COMPLETED_MAYBE);
 
     return out;

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -71,7 +71,7 @@ class Headers implements Iterable<Headers.HeaderElement>
    */
   private final ArrayList<HeaderElement> headers
     = new ArrayList<HeaderElement>();
-  
+
   /**
    * The HTTP dateformat used to parse date header fields.
    */
@@ -111,11 +111,11 @@ class Headers implements Iterable<Headers.HeaderElement>
   {
     return headers.iterator();
   }
-  
+
   /**
    * Returns the value of the specified header as a string. If
    * multiple values are present, the last one is returned.
-   * 
+   *
    * @param header the header name (case insensitive search)
    * @return The header value or <code>null</code> if not found.
    */
@@ -135,7 +135,7 @@ class Headers implements Iterable<Headers.HeaderElement>
   /**
    * Returns the value of the specified header as an integer. If
    * multiple values are present, the last one is returned.
-   * 
+   *
    * @param header the header name (case insensitive search)
    * @return The header value or <code>-1</code> if not present or
    * not an integer value.
@@ -161,7 +161,7 @@ class Headers implements Iterable<Headers.HeaderElement>
   /**
    * Returns the value of the specified header as a long. If
    * multiple values are present, the last one is returned.
-   * 
+   *
    * @param header the header name (case insensitive search)
    * @return The header value or <code>-1</code> if not present or
    * not a long value.
@@ -187,7 +187,7 @@ class Headers implements Iterable<Headers.HeaderElement>
   /**
    * Returns the value of the specified header as a date. If
    * multiple values are present, the last one is returned.
-   * 
+   *
    * @param header the header name (case insensitive search)
    * @return The header value or <code>null</code> if not present or
    * not a date value.
@@ -212,7 +212,7 @@ class Headers implements Iterable<Headers.HeaderElement>
   /**
    * Add a header to this set of headers.  If there is an existing
    * header with the same name it's value is replaced with the new value.
-   * If multiple headers of the same name exist only the last one's value 
+   * If multiple headers of the same name exist only the last one's value
    * is replaced.
    *
    * @param name the header name
@@ -221,7 +221,7 @@ class Headers implements Iterable<Headers.HeaderElement>
    * @see #addValue(String, String)
    */
   public void put(String name, String value)
-  {    
+  {
     for (int i = headers.size() - 1; i >= 0; i--)
       {
         HeaderElement e = headers.get(i);
@@ -231,14 +231,14 @@ class Headers implements Iterable<Headers.HeaderElement>
             return;
           }
       }
-    
+
     // nothing was replaced so add it as new HeaderElement
     addValue(name, value);
   }
-  
+
   /**
-   * Add all headers from a set of headers to this set. Any existing header 
-   * with the same (case insensitive) name as one of the new headers will 
+   * Add all headers from a set of headers to this set. Any existing header
+   * with the same (case insensitive) name as one of the new headers will
    * be overridden.
    *
    * @param o the headers to be added
@@ -280,7 +280,7 @@ class Headers implements Iterable<Headers.HeaderElement>
   {
     LineInputStream lin = (in instanceof LineInputStream) ?
       (LineInputStream) in : new LineInputStream(in);
-    
+
     String name = null;
     CPStringBuilder value = new CPStringBuilder();
     while (true)
@@ -307,9 +307,9 @@ class Headers implements Iterable<Headers.HeaderElement>
         if (c1 == ' ' || c1 == '\t')
           {
             // Continuation
-	    int last = len - 1;
-	    if (line.charAt(last) != '\r')
-	      ++last;
+            int last = len - 1;
+            if (line.charAt(last) != '\r')
+              ++last;
             value.append(line.substring(0, last));
           }
         else
@@ -318,7 +318,7 @@ class Headers implements Iterable<Headers.HeaderElement>
               {
                 addValue(name, value.toString());
               }
-            
+
             int di = line.indexOf(':');
             name = line.substring(0, di);
             value.setLength(0);
@@ -327,14 +327,14 @@ class Headers implements Iterable<Headers.HeaderElement>
                 di++;
               }
             while (di < len && line.charAt(di) == ' ');
-	    int last = len - 1;
-	    if (line.charAt(last) != '\r')
-	      ++last;
+            int last = len - 1;
+            if (line.charAt(last) != '\r')
+              ++last;
             value.append(line.substring(di, last));
           }
       }
   }
-  
+
 
   /**
    * Add a header to this set of headers.  If there is an existing
@@ -352,12 +352,12 @@ class Headers implements Iterable<Headers.HeaderElement>
 
   /**
    * Get a new Map containing all the headers.  The keys of the Map
-   * are Strings (the header names). The headers will be included 
+   * are Strings (the header names). The headers will be included
    * case-sensitive in the map so that querying must be done with the
    * correct case of the needed header name. The values of the Map are
    * unmodifiable Lists containing Strings (the header values).
    *
-   * <p> 
+   * <p>
    * The returned map is modifiable. Changing it will not effect this
    * collection of Headers in any way.</p>
    *
@@ -387,7 +387,7 @@ class Headers implements Iterable<Headers.HeaderElement>
       }
     return m;
   }
-  
+
   /**
    * Get the name of the Nth header.
    *
@@ -401,7 +401,7 @@ class Headers implements Iterable<Headers.HeaderElement>
   {
     if (i >= headers.size() || i < 0)
       return null;
-    
+
     return headers.get(i).name;
   }
 
@@ -418,7 +418,7 @@ class Headers implements Iterable<Headers.HeaderElement>
   {
     if (i >= headers.size() || i < 0)
       return null;
-    
+
     return headers.get(i).value;
   }
 }

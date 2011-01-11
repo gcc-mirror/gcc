@@ -325,7 +325,7 @@ public class XGraphics2D
             colorMap.put(c, col);
           }*/
         //xgc.set_foreground(col);
-        
+
         xgc.set_foreground(c.getRGB());
         foreground = c;
       }
@@ -394,19 +394,19 @@ public class XGraphics2D
                 xdrawable.put_image(xgc, zpixmap, x, y);
                 imageCache.put(image, zpixmap);
               } else {
-                
+
                 // TODO optimize reusing the rectangles
                 Rectangle source =
                   new Rectangle(0, 0, xdrawable.width, xdrawable.height);
                 Rectangle target = new Rectangle(x, y, w, h);
-                
-                Rectangle destination = source.intersection(target); 
-                
+
+                Rectangle destination = source.intersection(target);
+
                 x = destination.x;
                 y = destination.y;
                 w = destination.width;
                 h = destination.height;
-                
+
                 ZPixmap zpixmap =
                   (ZPixmap) xdrawable.image(x, y, w, h,
                                             0xffffffff,
@@ -506,4 +506,3 @@ public class XGraphics2D
   }
 
 }
-

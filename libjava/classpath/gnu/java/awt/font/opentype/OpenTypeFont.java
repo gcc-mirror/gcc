@@ -83,7 +83,7 @@ public final class OpenTypeFont
   static final int TAG_TRUE = 0x74727565; // 'true'
   static final int TAG_TTCF = 0x74746366; // 'ttcf'
   static final int TAG_ZAPF = 0x5a617066; // 'Zapf'
-  
+
 
   /**
    * A buffer containing the font data. Note that this may well be an
@@ -112,7 +112,7 @@ public final class OpenTypeFont
    */
   private int version;
 
-  
+
   /**
    * The number of font units per em. For fonts with TrueType
    * outlines, this is usually a power of two (such as 2048). For
@@ -133,7 +133,7 @@ public final class OpenTypeFont
    * The scaler to which the actual scaling work is delegated.
    */
   private Scaler scaler;
-  
+
 
   /**
    * A delegate object for mapping Unicode UCS-4 codepoints to glyph
@@ -277,8 +277,8 @@ public final class OpenTypeFont
         return i;
     return -1;
   }
-  
-  
+
+
 
   /**
    * Returns the name of the family to which this font face belongs,
@@ -352,8 +352,8 @@ public final class OpenTypeFont
 
     return name;
   }
-  
-  
+
+
 
   /**
    * Returns the full name of this font face, for example
@@ -404,7 +404,7 @@ public final class OpenTypeFont
      */
     return numGlyphs;
   }
-  
+
 
   /**
    * Returns the index of the glyph which gets displayed if the font
@@ -489,7 +489,7 @@ public final class OpenTypeFont
     result.limit(len);
     return result;
   }
-  
+
 
   /**
    * Returns the size of one of the tables in the font,
@@ -508,7 +508,7 @@ public final class OpenTypeFont
   {
     if (cmap != null)
       return cmap;
- 
+
     synchronized (this)
     {
       if (cmap == null)
@@ -545,7 +545,7 @@ public final class OpenTypeFont
     return getCharGlyphMap().getGlyph(ucs4);
   }
 
-  
+
   /**
    * Creates a GlyphVector by mapping each character in a
    * CharacterIterator to the corresponding glyph.
@@ -584,7 +584,7 @@ public final class OpenTypeFont
     // Initialize hinter if necessary.
     checkHinter(FontDelegate.FLAG_FITTED);
 
-    CharGlyphMap cmap;    
+    CharGlyphMap cmap;
     int numGlyphs;
     int[] glyphs;
     int glyph;

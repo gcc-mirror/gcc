@@ -85,18 +85,18 @@ import java.util.List;
     List<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
     for (MBeanServer server : servers)
       {
-	try
-	  {
-	    return server.getClassLoaderRepository().loadClass(name);
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	    /* Ignored; try the next server. */
-	  }
+        try
+          {
+            return server.getClassLoaderRepository().loadClass(name);
+          }
+        catch (ClassNotFoundException e)
+          {
+            /* Ignored; try the next server. */
+          }
       }
     throw new ClassNotFoundException("The class loaders of all registered " +
-				     "servers failed to load the class, " +
-				     name);
+                                     "servers failed to load the class, " +
+                                     name);
   }
 
   /**
@@ -134,19 +134,19 @@ import java.util.List;
     List<MBeanServer> servers = MBeanServerFactory.findMBeanServer(null);
     for (MBeanServer server : servers)
       {
-	try
-	  {
-	    return server.getClassLoaderRepository().loadClassWithout(exclude,
-								      name);
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	    /* Ignored; try the next server. */
-	  }
+        try
+          {
+            return server.getClassLoaderRepository().loadClassWithout(exclude,
+                                                                      name);
+          }
+        catch (ClassNotFoundException e)
+          {
+            /* Ignored; try the next server. */
+          }
       }
     throw new ClassNotFoundException("The class loaders of all registered " +
-				     "servers failed to load the class, " +
-				     name);
+                                     "servers failed to load the class, " +
+                                     name);
   }
 
 }

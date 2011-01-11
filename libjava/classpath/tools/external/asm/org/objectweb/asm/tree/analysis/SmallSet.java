@@ -36,7 +36,7 @@ import java.util.Set;
 
 /**
  * A set of at most two elements.
- * 
+ *
  * @author Eric Bruneton
  */
 class SmallSet extends AbstractSet implements Iterator {

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -89,7 +89,7 @@ class DummyHandler implements ElementHandler
         throws ClassNotFoundException
     {
         fail();
-	return null;
+        return null;
     }
 
     /* (non-Javadoc)
@@ -138,19 +138,19 @@ class DummyHandler implements ElementHandler
     public Object getObject(String objectId)
     {
         fail();
-	return null;
+        return null;
     }
 
     public ElementHandler getParent()
     {
         fail();
-	return null;
+        return null;
     }
 
     private void fail()
     {
         throw new InternalError("Invoking the DummyHandler is not expected"
-			        + " - Please file a bug report at "
-				+ " http://www.gnu.org/software/classpath/.");
+                                + " - Please file a bug report at "
+                                + " http://www.gnu.org/software/classpath/.");
     }
 }

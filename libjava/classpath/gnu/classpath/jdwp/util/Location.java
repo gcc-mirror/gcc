@@ -49,7 +49,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class to read/write JDWP locations.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class Location
@@ -59,7 +59,7 @@ public class Location
 
   /**
    * Create a location with the given parameters.
-   * 
+   *
    * @param method the method
    * @param index location in the method
    */
@@ -72,7 +72,7 @@ public class Location
   /**
    * Read a location from the given bytebuffer, consists of a TAG (byte),
    * followed by a ReferenceTypeId, a MethodId and an index (long).
-   * 
+   *
    * @param bb this holds the location
    * @throws IOException    when an error occurs reading from the buffer
    * @throws JdwpException  for invalid class or method IDs
@@ -81,7 +81,7 @@ public class Location
     throws IOException, JdwpException
   {
     byte tag = bb.get();
-    ClassReferenceTypeId classId = 
+    ClassReferenceTypeId classId =
       (ClassReferenceTypeId) VMIdManager.getDefault().readReferenceTypeId(bb);
     Class klass = classId.getType();
     method = VMMethod.readId(klass, bb);
@@ -90,19 +90,19 @@ public class Location
 
   /**
    * Write the given location to an output stream.
-   * 
+   *
    * @param os stream to write to
    * @throws IOException when an error occurs writing to the stream
    */
-  public void write(DataOutputStream os) 
+  public void write(DataOutputStream os)
     throws IOException
   {
     // check if this is an empty location
     if (method != null)
       {
         VMIdManager idm = VMIdManager.getDefault();
-        ClassReferenceTypeId crti = 
-          (ClassReferenceTypeId) 
+        ClassReferenceTypeId crti =
+          (ClassReferenceTypeId)
           idm.getReferenceTypeId(method.getDeclaringClass());
 
         crti.writeTagged(os);
@@ -117,20 +117,20 @@ public class Location
         os.writeLong((long) 0);
       }
   }
-  
+
   /**
    * Sets up an empty location
-   * 
+   *
    * @return new Location (setup as empty)
    */
   public static Location getEmptyLocation()
   {
        return new Location(null, 0);
   }
-   
+
   /**
    * Gets the method of this location
-   * 
+   *
    * @return the method
    */
   public VMMethod getMethod()
@@ -140,7 +140,7 @@ public class Location
 
   /**
    * Gets the code index of this location
-   * 
+   *
    * @return the code index
    */
   public long getIndex ()
@@ -158,9 +158,9 @@ public class Location
   {
     if (obj instanceof Location)
       {
-	Location l = (Location) obj;
-	return (getMethod().equals(l.getMethod())
-		&& getIndex() == l.getIndex());
+        Location l = (Location) obj;
+        return (getMethod().equals(l.getMethod())
+                && getIndex() == l.getIndex());
       }
 
     return false;

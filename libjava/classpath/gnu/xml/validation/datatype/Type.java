@@ -1,4 +1,4 @@
-/* Type.java -- 
+/* Type.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,6 +58,5 @@ public abstract class Type
   {
     this.name = name;
   }
-  
-}
 
+}

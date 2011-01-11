@@ -1,4 +1,4 @@
-/* NumberNode.java -- 
+/* NumberNode.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -84,5 +84,5 @@ final class NumberNode
       new Double(Expr._number(context, ret));
     return new int[] { d.intValue() };
   }
-  
+
 }

@@ -151,4 +151,3 @@ public interface CompositeData
   Collection<?> values();
 
 }
-

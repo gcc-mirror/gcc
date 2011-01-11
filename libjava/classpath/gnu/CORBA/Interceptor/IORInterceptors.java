@@ -162,7 +162,7 @@ public class IORInterceptors implements IORInterceptor_3_0Operations
 
   /**
    * Call this method for all registered CORBA 3.0 interceptors.
-   * 
+   *
    * @throws OBJ_ADAPTER minor 6 on any failure (as defined by OMG specs).
    */
   public void components_established(IORInfo info)

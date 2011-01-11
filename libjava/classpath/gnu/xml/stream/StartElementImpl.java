@@ -1,4 +1,4 @@
-/* StartElementImpl.java -- 
+/* StartElementImpl.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -115,7 +115,7 @@ public class StartElementImpl
   {
     return namespaceContext.getNamespaceURI(prefix);
   }
-  
+
   public void writeAsEncodedUnicode(Writer writer)
     throws XMLStreamException
   {
@@ -148,6 +148,5 @@ public class StartElementImpl
         throw e2;
       }
   }
-  
-}
 
+}

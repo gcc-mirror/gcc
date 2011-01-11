@@ -1,4 +1,4 @@
-/* PlainView.java -- 
+/* PlainView.java --
    Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,7 +59,7 @@ public class PlainView extends View implements TabExpander
    * The color that is used to draw disabled text fields.
    */
   Color disabledColor;
-  
+
   /**
    * While painting this is the textcomponent's current start index
    * of the selection.
@@ -73,13 +73,13 @@ public class PlainView extends View implements TabExpander
   int selectionEnd;
 
   Font font;
-  
+
   /** The length of the longest line in the Document **/
   float maxLineLength = -1;
-  
+
   /** The longest line in the Document **/
   Element longestLine = null;
-  
+
   protected FontMetrics metrics;
 
   /**
@@ -112,12 +112,12 @@ public class PlainView extends View implements TabExpander
 
     if (this.font != font)
       {
-	this.font = font;
-	metrics = component.getFontMetrics(font);
+        this.font = font;
+        metrics = component.getFontMetrics(font);
         tabSize = getTabSize() * metrics.charWidth('m');
       }
   }
-  
+
   /**
    * @since 1.4
    */
@@ -125,11 +125,11 @@ public class PlainView extends View implements TabExpander
   {
     // Ensure metrics are up-to-date.
     updateMetrics();
-    
+
     Rectangle rect = a instanceof Rectangle ? (Rectangle) a : a.getBounds();
     int fontHeight = metrics.getHeight();
     return new Rectangle(rect.x, rect.y + (line * fontHeight),
-			 rect.width, fontHeight);
+                         rect.width, fontHeight);
   }
 
   public Shape modelToView(int position, Shape a, Position.Bias b)
@@ -137,7 +137,7 @@ public class PlainView extends View implements TabExpander
   {
     // Ensure metrics are up-to-date.
     updateMetrics();
-    
+
     Document document = getDocument();
 
     // Get rectangle of the line containing position.
@@ -151,7 +151,7 @@ public class PlainView extends View implements TabExpander
     Segment segment = getLineBuffer();
     document.getText(lineStart, position - lineStart, segment);
     int xoffset = Utilities.getTabbedTextWidth(segment, metrics, tabBase,
-					       this, lineStart);
+                                               this, lineStart);
 
     // Calc the real rectangle.
     rect.x += xoffset;
@@ -160,7 +160,7 @@ public class PlainView extends View implements TabExpander
 
     return rect;
   }
-  
+
   /**
    * Draws a line of text. The X and Y coordinates specify the start of
    * the <em>baseline</em> of the line.
@@ -177,7 +177,7 @@ public class PlainView extends View implements TabExpander
         Element line = getElement().getElement(lineIndex);
         int startOffset = line.getStartOffset();
         int endOffset = line.getEndOffset() - 1;
-        
+
         if (selectionStart <= startOffset)
           // Selection starts before the line ...
           if (selectionEnd <= startOffset)
@@ -265,7 +265,7 @@ public class PlainView extends View implements TabExpander
   {
     // Ensure metrics are up-to-date.
     updateMetrics();
-    
+
     JTextComponent textComponent = (JTextComponent) getContainer();
 
     selectedColor = textComponent.getSelectedTextColor();
@@ -324,7 +324,7 @@ public class PlainView extends View implements TabExpander
    * Returns the tab size of a tab.  Checks the Document's
    * properties for PlainDocument.tabSizeAttribute and returns it if it is
    * defined, otherwise returns 8.
-   * 
+   *
    * @return the tab size.
    */
   protected int getTabSize()
@@ -339,7 +339,7 @@ public class PlainView extends View implements TabExpander
    * Returns the next tab stop position after a given reference position.
    *
    * This implementation ignores the <code>tabStop</code> argument.
-   * 
+   *
    * @param x the current x position in pixels
    * @param tabStop the position within the text stream that the tab occured at
    */
@@ -351,7 +351,7 @@ public class PlainView extends View implements TabExpander
         int numTabs = (((int) x) - tabBase) / tabSize;
         next = tabBase + (numTabs + 1) * tabSize;
       }
-    return next; 
+    return next;
   }
 
   /**
@@ -363,7 +363,7 @@ public class PlainView extends View implements TabExpander
     // if the longest line is cached, return the cached value
     if (maxLineLength != -1)
       return maxLineLength;
-    
+
     // otherwise we have to go through all the lines and find it
     Element el = getElement();
     Segment seg = getLineBuffer();
@@ -380,13 +380,13 @@ public class PlainView extends View implements TabExpander
         catch (BadLocationException ex)
           {
             AssertionError ae = new AssertionError("Unexpected bad location");
-	    ae.initCause(ex);
-	    throw ae;
+            ae.initCause(ex);
+            throw ae;
           }
-        
+
         if (seg == null || seg.array == null || seg.count == 0)
           continue;
-        
+
         int width = metrics.charsWidth(seg.array, seg.offset, seg.count);
         if (width > span)
           {
@@ -397,7 +397,7 @@ public class PlainView extends View implements TabExpander
     maxLineLength = span;
     return maxLineLength;
   }
-  
+
   public float getPreferredSpan(int axis)
   {
     if (axis != X_AXIS && axis != Y_AXIS)
@@ -419,7 +419,7 @@ public class PlainView extends View implements TabExpander
         span = metrics.getHeight() * el.getElementCount();
         break;
       }
-    
+
     return span;
   }
 
@@ -483,14 +483,14 @@ public class PlainView extends View implements TabExpander
                     pos = -1;
                   }
               }
-            
+
           }
       }
     // Bias is always forward.
     b[0] = Position.Bias.Forward;
     return pos;
-  }     
-  
+  }
+
   /**
    * Since insertUpdate and removeUpdate each deal with children
    * Elements being both added and removed, they both have to perform
@@ -592,7 +592,7 @@ public class PlainView extends View implements TabExpander
   /**
    * This method is called when something is inserted into the Document
    * that this View is displaying.
-   * 
+   *
    * @param changes the DocumentEvent for the changes.
    * @param a the allocation of the View
    * @param f the ViewFactory used to rebuild
@@ -605,7 +605,7 @@ public class PlainView extends View implements TabExpander
   /**
    * This method is called when something is removed from the Document
    * that this View is displaying.
-   * 
+   *
    * @param changes the DocumentEvent for the changes.
    * @param a the allocation of the View
    * @param f the ViewFactory used to rebuild
@@ -614,28 +614,28 @@ public class PlainView extends View implements TabExpander
   {
     updateDamage(changes, a, f);
   }
-  
+
   /**
-   * This method is called when attributes were changed in the 
+   * This method is called when attributes were changed in the
    * Document in a location that this view is responsible for.
    */
   public void changedUpdate (DocumentEvent changes, Shape a, ViewFactory f)
   {
     updateDamage(changes, a, f);
   }
-  
+
   /**
    * Repaint the given line range.  This is called from insertUpdate,
-   * changedUpdate, and removeUpdate when no new lines were added 
-   * and no lines were removed, to repaint the line that was 
+   * changedUpdate, and removeUpdate when no new lines were added
+   * and no lines were removed, to repaint the line that was
    * modified.
-   * 
+   *
    * @param line0 the start of the range
    * @param line1 the end of the range
    * @param a the rendering region of the host
    * @param host the Component that uses this View (used to call repaint
    * on that Component)
-   * 
+   *
    * @since 1.4
    */
   protected void damageLineRange (int line0, int line1, Shape a, Component host)
@@ -656,7 +656,7 @@ public class PlainView extends View implements TabExpander
                                                            rec0.height, rec1);
         host.repaint(repaintRec.x, repaintRec.y, repaintRec.width,
                      repaintRec.height);
-      }    
+      }
   }
 
   /**
@@ -722,4 +722,3 @@ public class PlainView extends View implements TabExpander
                                         lineEl.getStartOffset());
   }
 }
-

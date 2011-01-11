@@ -46,11 +46,11 @@ import java.util.EventListener;
  */
 public interface CaretListener extends EventListener {
 
-	/**
-	 * Caret position has been updated
-	 * @param event Caret Event
-	 */
-	void caretUpdate(CaretEvent event);
+        /**
+         * Caret position has been updated
+         * @param event Caret Event
+         */
+        void caretUpdate(CaretEvent event);
 
 
 } // CaretListener

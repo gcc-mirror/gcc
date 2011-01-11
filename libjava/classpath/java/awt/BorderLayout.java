@@ -299,7 +299,7 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
   }
 
   /**
-   * Adds a component to the layout in the specified constraint position, 
+   * Adds a component to the layout in the specified constraint position,
    * which must be one of the string constants defined in this class.
    *
    * @param component The component to add.
@@ -317,7 +317,7 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
   }
 
   /**
-   * Adds a component to the layout in the specified constraint position, 
+   * Adds a component to the layout in the specified constraint position,
    * which must be one of the string constants defined in this class.
    *
    * @param constraints The constraint string.
@@ -462,7 +462,7 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
   /**
    * Lays out the specified container according to the constraints in this
    * object.
-   * 
+   *
    * @param target The container to lay out.
    */
   public void layoutContainer(Container target)
@@ -538,7 +538,7 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
 
   /**
    * Returns a string representation of this layout manager.
-   * 
+   *
    * @return A string representation of this object.
    */
   public String toString()
@@ -634,11 +634,11 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
 
   /**
    * Return the component at the indicated location, or null if no component
-   * is at that location.  The constraints argument must be one of the 
-   * location constants specified by this class.   
+   * is at that location.  The constraints argument must be one of the
+   * location constants specified by this class.
    * @param constraints the location
    * @return the component at that location, or null
-   * @throws IllegalArgumentException if the constraints argument is not 
+   * @throws IllegalArgumentException if the constraints argument is not
    * recognized
    * @since 1.5
    */
@@ -662,7 +662,7 @@ public class BorderLayout implements LayoutManager2, java.io.Serializable
       return firstItem;
     if (constraints == LINE_END)
       return lastItem;
-    throw new IllegalArgumentException("constraint " + constraints 
+    throw new IllegalArgumentException("constraint " + constraints
                                        + " is not recognized");
   }
 

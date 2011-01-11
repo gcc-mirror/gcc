@@ -54,7 +54,7 @@ import javax.accessibility.AccessibleText;
 import javax.swing.text.AttributeSet;
 
 /**
- * This class provides common functionality for widgets than 
+ * This class provides common functionality for widgets than
  * contain text.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -106,12 +106,12 @@ public class TextComponent extends Component
     {
       TextComponent.this.addTextListener(this);
     }
-    
+
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.TEXT;
     }
-    
+
     public AccessibleStateSet getAccessibleStateSet()
     {
       // TODO: Docs say PropertyChangeEvent will fire if this state changes.
@@ -121,12 +121,12 @@ public class TextComponent extends Component
         ss.add(AccessibleState.EDITABLE);
       return ss;
     }
-    
+
     public AccessibleText getAccessibleText()
     {
       return this;
     }
-    
+
     /* (non-Javadoc)
      * @see javax.accessibility.AccessibleText#getIndexAtPoint(java.awt.Point)
      */
@@ -169,26 +169,26 @@ public class TextComponent extends Component
       BreakIterator it = null;
       switch (part)
       {
-      	case CHARACTER:
-      	  return text.substring(index, index + 1);
-      	case WORD:
-      	  it = BreakIterator.getWordInstance();
-      	  break;
-      	case SENTENCE:
-      	  it = BreakIterator.getSentenceInstance();
-      	  break;
-      	default:
-      	  return null;
+        case CHARACTER:
+          return text.substring(index, index + 1);
+        case WORD:
+          it = BreakIterator.getWordInstance();
+          break;
+        case SENTENCE:
+          it = BreakIterator.getSentenceInstance();
+          break;
+        default:
+          return null;
       }
-  	  it.setText(text);
-  	  int start = index;
-  	  if (!it.isBoundary(index))
-  	    start = it.preceding(index); 
-  	  int end = it.following(index);
-  	  if (end == -1)
-  	    return text.substring(index);
-  	  else
-  	    return text.substring(index, end);
+          it.setText(text);
+          int start = index;
+          if (!it.isBoundary(index))
+            start = it.preceding(index);
+          int end = it.following(index);
+          if (end == -1)
+            return text.substring(index);
+          else
+            return text.substring(index, end);
     }
 
     /* (non-Javadoc)
@@ -200,30 +200,30 @@ public class TextComponent extends Component
       BreakIterator it = null;
       switch (part)
       {
-      	case CHARACTER:
-      	  return text.substring(index, index + 1);
-      	case WORD:
-      	  it = BreakIterator.getWordInstance();
-      	  break;
-      	case SENTENCE:
-      	  it = BreakIterator.getSentenceInstance();
-      	  break;
-      	default:
-      	  return null;
+        case CHARACTER:
+          return text.substring(index, index + 1);
+        case WORD:
+          it = BreakIterator.getWordInstance();
+          break;
+        case SENTENCE:
+          it = BreakIterator.getSentenceInstance();
+          break;
+        default:
+          return null;
       }
-  	  it.setText(text);
-  	  int start = index;
-  	  if (!it.isBoundary(index))
-  	    start = it.following(index);
-  	  // Make sure there was a complete unit.  I.e. if index is in the middle
-  	  // of a word, return null if there is no word after the that one.
-  	  if (start == -1)
-  	    return null;
-  	  int end = it.following(start);
-  	  if (end == -1)
-  	    return text.substring(index);
-  	  else
-  	    return text.substring(index, end);
+          it.setText(text);
+          int start = index;
+          if (!it.isBoundary(index))
+            start = it.following(index);
+          // Make sure there was a complete unit.  I.e. if index is in the middle
+          // of a word, return null if there is no word after the that one.
+          if (start == -1)
+            return null;
+          int end = it.following(start);
+          if (end == -1)
+            return text.substring(index);
+          else
+            return text.substring(index, end);
     }
 
     /* (non-Javadoc)
@@ -236,30 +236,30 @@ public class TextComponent extends Component
       BreakIterator it = null;
       switch (part)
       {
-      	case CHARACTER:
-      	  return text.substring(index - 1, index);
-      	case WORD:
-      	  it = BreakIterator.getWordInstance();
-      	  break;
-      	case SENTENCE:
-      	  it = BreakIterator.getSentenceInstance();
-      	  break;
-      	default:
-      	  return null;
+        case CHARACTER:
+          return text.substring(index - 1, index);
+        case WORD:
+          it = BreakIterator.getWordInstance();
+          break;
+        case SENTENCE:
+          it = BreakIterator.getSentenceInstance();
+          break;
+        default:
+          return null;
       }
-  	  it.setText(text);
-  	  int end = index;
-  	  if (!it.isBoundary(index))
-  	    end = it.preceding(index); 
-  	  // Make sure there was a complete unit.  I.e. if index is in the middle
-  	  // of a word, return null if there is no word before that one.
-  	  if (end == -1)
-  	    return null;
-  	  int start = it.preceding(end);
-  	  if (start == -1)
-  	    return text.substring(0, end);
-  	  else
-  	    return text.substring(start, end);
+          it.setText(text);
+          int end = index;
+          if (!it.isBoundary(index))
+            end = it.preceding(index);
+          // Make sure there was a complete unit.  I.e. if index is in the middle
+          // of a word, return null if there is no word before that one.
+          if (end == -1)
+            return null;
+          int start = it.preceding(end);
+          if (start == -1)
+            return text.substring(0, end);
+          else
+            return text.substring(start, end);
     }
 
     /* (non-Javadoc)
@@ -304,9 +304,9 @@ public class TextComponent extends Component
     public void textValueChanged(TextEvent event)
     {
       // TODO Auto-generated method stub
-      
+
     }
-    
+
   }
 
 
@@ -316,7 +316,7 @@ public class TextComponent extends Component
       this.text = "";
     else
       this.text = text;
-    
+
     this.editable = true;
   }
 
@@ -363,13 +363,13 @@ public class TextComponent extends Component
     String alltext = getText();
     int start = getSelectionStart();
     int end = getSelectionEnd();
-  
+
     return(alltext.substring(start, end));
   }
 
   /**
    * Returns the starting position of the selected text region.
-   * If the text is not selected then caret position is returned. 
+   * If the text is not selected then caret position is returned.
    *
    * @return The starting position of the selected text region.
    */
@@ -391,14 +391,14 @@ public class TextComponent extends Component
    */
   public synchronized void setSelectionStart(int selectionStart)
   {
-    select(selectionStart, 
-           (getSelectionEnd() < selectionStart) 
+    select(selectionStart,
+           (getSelectionEnd() < selectionStart)
                               ? selectionStart : getSelectionEnd());
   }
 
   /**
    * Returns the ending position of the selected text region.
-   * If the text is not selected, then caret position is returned 
+   * If the text is not selected, then caret position is returned
    *
    * @return The ending position of the selected text region.
    */
@@ -447,7 +447,7 @@ public class TextComponent extends Component
 
     this.selectionStart = selectionStart;
     this.selectionEnd = selectionEnd;
-    
+
     TextComponentPeer tcp = (TextComponentPeer) getPeer();
     if (tcp != null)
       tcp.select(selectionStart, selectionEnd);
@@ -489,7 +489,7 @@ public class TextComponent extends Component
   {
     if (caretPosition < 0)
       throw new IllegalArgumentException();
-  
+
     TextComponentPeer tcp = (TextComponentPeer) getPeer();
     if (tcp != null)
       tcp.setCaretPosition(caretPosition);
@@ -539,7 +539,7 @@ public class TextComponent extends Component
   {
     textListener = AWTEventMulticaster.add(textListener, listener);
 
-    enableEvents(AWTEvent.TEXT_EVENT_MASK);  
+    enableEvents(AWTEvent.TEXT_EVENT_MASK);
   }
 
   /**
@@ -557,7 +557,7 @@ public class TextComponent extends Component
    * Processes the specified event for this component.  Text events are
    * processed by calling the <code>processTextEvent()</code> method.
    * All other events are passed to the superclass method.
-   * 
+   *
    * @param event The event to process.
    */
   protected void processEvent(AWTEvent event)
@@ -585,13 +585,13 @@ public class TextComponent extends Component
 
   void dispatchEventImpl(AWTEvent e)
   {
-    if (e.id <= TextEvent.TEXT_LAST 
+    if (e.id <= TextEvent.TEXT_LAST
         && e.id >= TextEvent.TEXT_FIRST
-        && (textListener != null 
-	    || (eventMask & AWTEvent.TEXT_EVENT_MASK) != 0))
+        && (textListener != null
+            || (eventMask & AWTEvent.TEXT_EVENT_MASK) != 0))
       processEvent(e);
     else
-      super.dispatchEventImpl(e); 
+      super.dispatchEventImpl(e);
   }
 
   /**
@@ -642,7 +642,7 @@ public class TextComponent extends Component
     return accessibleContext;
   }
 
-  
+
   // Provide AccessibleAWTTextComponent access to several peer functions that
   // aren't publicly exposed.  This is package-private to avoid an accessor
   // method.
@@ -653,7 +653,7 @@ public class TextComponent extends Component
       return tcp.getIndexAtPoint(p.x, p.y);
     return -1;
   }
-  
+
   synchronized Rectangle getCharacterBounds(int i)
   {
     TextComponentPeer tcp = (TextComponentPeer) getPeer();
@@ -661,11 +661,11 @@ public class TextComponent extends Component
       return tcp.getCharacterBounds(i);
     return null;
   }
-  
+
   /**
    * All old mouse events for this component should
    * be ignored.
-   * 
+   *
    * @return true to ignore all old mouse events.
    */
   static boolean ignoreOldMouseEvents()
@@ -674,4 +674,3 @@ public class TextComponent extends Component
   }
 
 } // class TextComponent
-

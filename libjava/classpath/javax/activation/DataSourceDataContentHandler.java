@@ -55,13 +55,13 @@ class DataSourceDataContentHandler
   private DataSource ds;
   private DataFlavor[] flavors;
   private DataContentHandler dch;
-  
+
   public DataSourceDataContentHandler(DataContentHandler dch, DataSource ds)
   {
     this.ds = ds;
     this.dch = dch;
   }
-  
+
   public Object getContent(DataSource ds)
     throws IOException
   {
@@ -74,7 +74,7 @@ class DataSourceDataContentHandler
         return ds.getInputStream();
       }
   }
-  
+
   public Object getTransferData(DataFlavor flavor, DataSource ds)
     throws UnsupportedFlavorException, IOException
   {
@@ -92,7 +92,7 @@ class DataSourceDataContentHandler
         throw new UnsupportedFlavorException(flavor);
       }
   }
-  
+
   public DataFlavor[] getTransferDataFlavors()
   {
     if (flavors == null)
@@ -121,6 +121,5 @@ class DataSourceDataContentHandler
       }
     dch.writeTo(obj, mimeType, out);
   }
-    
-}
 
+}

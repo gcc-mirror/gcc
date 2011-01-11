@@ -252,7 +252,7 @@ public class BasicBorders
    * <code>UIDefaults</code> of the currently active look and feel
    * using the keys <code>&#x201c;SplitPane.darkShadow&#x201d;</code> and
    * <code>&#x201c;SplitPane.highlight&#x201d;</code>.
-   *   
+   *
    * <p><img src="doc-files/BasicBorders.SplitPaneBorder-1.png" width="520"
    * height="200" alt="[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
    *
@@ -284,7 +284,7 @@ public class BasicBorders
    * other two edges is the background color of the divider.
    *
    * <p><img src="doc-files/BasicBorders.SplitPaneDividerBorder-1.png"
-   * width="520" height="200" alt= 
+   * width="520" height="200" alt=
    * "[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
    *
    * @return an instance of <code>SplitPaneDividerBorder</code>, which is
@@ -332,7 +332,7 @@ public class BasicBorders
       UIManager.getColor("TextField.light"),
       UIManager.getColor("TextField.highlight"));
   }
-  
+
 
   /**
    * Returns a two-pixel thick, green
@@ -407,8 +407,8 @@ public class BasicBorders
 
     return sharedMarginBorder;
   }
-  
-  
+
+
   /**
    * A border whose appearance depends on the state of
    * the enclosed button.
@@ -429,36 +429,36 @@ public class BasicBorders
      * of Apple/Sun JDK 1.3.1 on MacOS X 10.1.5.
      */
     static final long serialVersionUID = -157053874580739687L;
-    
-    
+
+
     /**
      * The color for drawing the shaded parts of the border.
      * @see javax.swing.plaf.basic.BasicGraphicsUtils#drawBezel
      */
     protected Color shadow;
-    
-    
+
+
     /**
      * The color for drawing the dark shaded parts of the border.
      * @see javax.swing.plaf.basic.BasicGraphicsUtils#drawBezel
      */
     protected Color darkShadow;
-    
-    
+
+
     /**
      * The color for drawing the highlighted parts of the border.
      * @see javax.swing.plaf.basic.BasicGraphicsUtils#drawBezel
      */
     protected Color highlight;
-    
-    
+
+
     /**
      * The color for drawing the bright highlighted parts of the border.
      * @see javax.swing.plaf.basic.BasicGraphicsUtils#drawBezel
      */
     protected Color lightHighlight;
-    
-    
+
+
     /**
      * Constructs a new border for drawing a button in the Basic
      * look and feel.
@@ -485,7 +485,7 @@ public class BasicBorders
         ? lightHighlight
         : Color.white;
     }
-    
+
 
     /**
      * Paints the ButtonBorder around a given component.
@@ -503,10 +503,10 @@ public class BasicBorders
                             int x, int y, int width, int height)
     {
       ButtonModel bmodel = null;
-      
+
       if (c instanceof AbstractButton)
         bmodel = ((AbstractButton) c).getModel();
-      
+
       BasicGraphicsUtils.drawBezel(
         g, x, y, width, height,
         /* pressed */ (bmodel != null)
@@ -516,8 +516,8 @@ public class BasicBorders
                         && ((JButton) c).isDefaultButton(),
         shadow, darkShadow, highlight, lightHighlight);
     }
-    
-    
+
+
     /**
      * Measures the width of this border.
      *
@@ -534,7 +534,7 @@ public class BasicBorders
      *         <code>bottom</code> fields indicate the width of the
      *         border at the respective edge.
      *
-     * @see #getBorderInsets(java.awt.Component, java.awt.Insets) 
+     * @see #getBorderInsets(java.awt.Component, java.awt.Insets)
      */
     public Insets getBorderInsets(Component c)
     {
@@ -545,7 +545,7 @@ public class BasicBorders
       return getBorderInsets(c, null);
     }
 
-    
+
     /**
      * Measures the width of this border, storing the results into a
      * pre-existing Insets object.
@@ -583,8 +583,8 @@ public class BasicBorders
       return insets;
     }
   }
-  
-  
+
+
   /**
    * A border that makes its enclosed component appear as lowered
    * into the surface. Typically used for text fields.
@@ -668,7 +668,7 @@ public class BasicBorders
         ? lightHighlight : Color.white;
     }
 
-    
+
     /**
      * Paints the FieldBorder around a given component.
      *
@@ -688,8 +688,8 @@ public class BasicBorders
                                         shadow, darkShadow,
                                         highlight, lightHighlight);
     }
-    
-    
+
+
     /**
      * Measures the width of this border.
      *
@@ -749,8 +749,8 @@ public class BasicBorders
       return insets;
     }
   }
-  
-  
+
+
   /**
    * An invisible, but spacing border whose margin is determined
    * by calling the <code>getMargin()</code> method of the enclosed
@@ -772,8 +772,8 @@ public class BasicBorders
      * of Apple/Sun JDK 1.3.1 on MacOS X 10.1.5.
      */
     static final long serialVersionUID = -3035848353448896090L;
-    
-    
+
+
     /**
      * Constructs a new MarginBorder.
      */
@@ -781,7 +781,7 @@ public class BasicBorders
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Measures the width of this border.
      *
@@ -797,8 +797,8 @@ public class BasicBorders
     {
       return getBorderInsets(c, new Insets(0, 0, 0, 0));
     }
-    
-    
+
+
     /**
      * Determines the insets of this border by calling the
      * <code>getMargin()</code> method of the enclosed component.  The
@@ -839,7 +839,7 @@ public class BasicBorders
         margin = ((JToolBar) c).getMargin();
       else if (c instanceof JTextComponent)
         margin = ((JTextComponent) c).getMargin();
-      
+
       if (margin == null)
         insets.top = insets.left = insets.bottom = insets.right = 0;
       else
@@ -853,7 +853,7 @@ public class BasicBorders
       return insets;
     }
   }
-  
+
 
   /**
    * A border for drawing a separator line below JMenuBar.
@@ -872,8 +872,8 @@ public class BasicBorders
      * of Apple/Sun JDK 1.3.1 on MacOS X 10.1.5.
      */
     static final long serialVersionUID = -6909056571935227506L;
-    
-    
+
+
     /**
      * The shadow color, which is used for the upper line of the
      * two-pixel thick bottom edge.
@@ -949,7 +949,7 @@ public class BasicBorders
 
         g.setColor(highlight);
         g.drawLine(x + 1, y + 1, x + width - 3, y + 1);
-        g.drawLine(x + width - 1, y, x + width - 1, y + 1);        
+        g.drawLine(x + width - 1, y, x + width - 1, y + 1);
       }
       finally
       {
@@ -1098,7 +1098,7 @@ public class BasicBorders
       {
         lowered = button.isSelected()
           || (/* mouse inside */ bmodel.isArmed() && bmodel.isPressed());
-        focused = button.hasFocus() && button.isFocusPainted();        
+        focused = button.hasFocus() && button.isFocusPainted();
       }
 
       if (lowered)
@@ -1112,8 +1112,8 @@ public class BasicBorders
                                      shadow, darkShadow,
                                      highlight, lightHighlight);
     }
-    
-    
+
+
     /**
      * Measures the width of this border.
      *
@@ -1124,7 +1124,7 @@ public class BasicBorders
      *         <code>bottom</code> fields indicate the width of the
      *         border at the respective edge.
      *
-     * @see #getBorderInsets(java.awt.Component, java.awt.Insets) 
+     * @see #getBorderInsets(java.awt.Component, java.awt.Insets)
      */
     public Insets getBorderInsets(Component c)
     {
@@ -1135,7 +1135,7 @@ public class BasicBorders
       return getBorderInsets(c, null);
     }
 
-    
+
     /**
      * Measures the width of this border, storing the results into a
      * pre-existing Insets object.
@@ -1439,7 +1439,7 @@ public class BasicBorders
       y += rect.y - 1;
       int right = x + rect.width + 1;
       int bottom = y + rect.height + 1;
-      
+
       Color oldColor = g.getColor();
       try
       {
@@ -1466,7 +1466,7 @@ public class BasicBorders
       }
     }
 
-    
+
     /**
      * Measures the width of this border.
      *
@@ -1616,7 +1616,7 @@ public class BasicBorders
       return true;
     }
 
-    
+
     /**
      * Determines the JSplitPane whose divider is being painted.
      *
@@ -1661,7 +1661,7 @@ public class BasicBorders
      */
     static final long serialVersionUID = -3528666548001058394L;
 
-    
+
     /**
      * Constructs a new border for drawing a JToggleButton in
      * the Basic look and feel.
@@ -1708,7 +1708,7 @@ public class BasicBorders
        * is selected or not.
        */
       BasicGraphicsUtils.drawBezel(g, x, y, width, height,
-                                   /* pressed */ false, 
+                                   /* pressed */ false,
                                    /* default */ false,
                                    shadow, darkShadow,
                                    highlight, lightHighlight);
@@ -1725,7 +1725,7 @@ public class BasicBorders
      *         <code>bottom</code> fields indicate the width of the
      *         border at the respective edge.
      *
-     * @see #getBorderInsets(java.awt.Component, java.awt.Insets) 
+     * @see #getBorderInsets(java.awt.Component, java.awt.Insets)
      */
     public Insets getBorderInsets(Component c)
     {
@@ -1736,7 +1736,7 @@ public class BasicBorders
       return getBorderInsets(c, null);
     }
 
-    
+
     /**
      * Measures the width of this border, storing the results into a
      * pre-existing Insets object.

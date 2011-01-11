@@ -79,7 +79,7 @@ public final class SystemLogger extends Logger
     // XXX Check some permission here?
     return SYSTEM;
   }
-  
+
   /**
    * Keep only one instance of the system logger.
    */
@@ -87,10 +87,10 @@ public final class SystemLogger extends Logger
   {
     super("gnu.classpath", null);
   }
-  
+
   /**
    * Variable-arguments log method.
-   * 
+   *
    * @param level The level to log to.
    * @param format The format string.
    * @param args The arguments.

@@ -47,7 +47,7 @@ import java.util.WeakHashMap;
  */
 
 /**
- * Code relocated from java.lang.String by 
+ * Code relocated from java.lang.String by
  * @author Dave Grove <groved@us.ibm.com>
  */
 final class VMString

@@ -41,7 +41,7 @@ package java.net;
 /**
  * Defines a proxy setting. This setting contains a type (https, socks,
  * direct) and a socket address.
- * 
+ *
  * @since 1.5
  */
 public class Proxy
@@ -49,8 +49,8 @@ public class Proxy
   /**
    * Represents the proxy type.
    */
-  public enum Type 
-  { 
+  public enum Type
+  {
     DIRECT, HTTP, SOCKS;
 
     /**
@@ -112,8 +112,8 @@ public class Proxy
     Proxy tmp = (Proxy) obj;
 
     return (type.equals(tmp.type)
-	    && (address == null ? tmp.address == null
-		: address.equals(tmp.address)));
+            && (address == null ? tmp.address == null
+                : address.equals(tmp.address)));
   }
 
   /**
@@ -134,6 +134,6 @@ public class Proxy
   public String toString()
   {
     return type.toString() + (address == null ? ""
-			      : (":" + address.toString()));
+                              : (":" + address.toString()));
   }
 }

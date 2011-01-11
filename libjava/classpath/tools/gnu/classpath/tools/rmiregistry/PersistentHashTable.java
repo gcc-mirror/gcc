@@ -56,11 +56,11 @@ import java.util.TimerTask;
  * SAVE_AT_MOST_AFTER time from the latest database change or at most after
  * ALWAYS_UPDATE, if the database is updated very frequently. To ensure that no
  * information is lost, the shutdown method must be called before exit.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
-public class PersistentHashTable 
-  extends Hashtable 
+public class PersistentHashTable
+  extends Hashtable
   implements Serializable, Persistent
 {
 
@@ -95,14 +95,14 @@ public class PersistentHashTable
    * The time, when the disk database was last updated.
    */
   long lastUpdated;
-  
+
   /**
    * Setting to false prevents the automated disk update.
    * The initial value is true to prevent writing while reading and is set
    * to false in createInstance.
    */
   transient boolean ready;
-  
+
   /**
    * Use static method to obtain the instance.
    */
@@ -116,7 +116,7 @@ public class PersistentHashTable
   /**
    * Create a new persistent table that stores its information into the given
    * file.
-   * 
+   *
    * @param file
    *          the file, where the table stores its information.
    * @param coldStart
@@ -161,7 +161,7 @@ public class PersistentHashTable
           k2v = new PersistentHashTable(file);
         System.out.println ("Here7");
           }
-        
+
         System.out.println ("Here8");
         k2v.ready = true;
         return k2v;
@@ -174,8 +174,8 @@ public class PersistentHashTable
         throw ierr;
       }
   }
-  
-  
+
+
   /**
    * Write the database content to the disk.
    */

@@ -1,4 +1,4 @@
-/* BinaryDataEntry.java -- 
+/* BinaryDataEntry.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -53,7 +53,7 @@ public class BinaryDataEntry
 
   /**
    * Creates a new binary data entry.
-   * 
+   *
    * @param contentType The content type of this entry. This parameter can be
    *          <code>null</code> if no content type is needed.
    * @param data The data.
@@ -86,7 +86,7 @@ public class BinaryDataEntry
   /**
    * Returns the content type of this entry, or <code>null</code> if this
    * property is not set.
-   * 
+   *
    * @return The content type.
    */
   public String getContentType()
@@ -96,7 +96,7 @@ public class BinaryDataEntry
 
   /**
    * Returns this object's data field.
-   * 
+   *
    * @return The data.
    */
   public byte[] getData()

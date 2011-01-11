@@ -43,10 +43,10 @@ import org.xml.sax.helpers.AttributesImpl;
  * events from the visited class. It can feed any kind of
  * {@link org.xml.sax.ContentHandler ContentHandler}, e.g. XML serializer, XSLT
  * or XQuery engines.
- * 
+ *
  * @see org.objectweb.asm.xml.Processor
  * @see org.objectweb.asm.xml.ASMContentHandler
- * 
+ *
  * @author Eugene Kuleshov
  */
 public final class SAXClassAdapter extends SAXAdapter implements ClassVisitor {
@@ -54,7 +54,7 @@ public final class SAXClassAdapter extends SAXAdapter implements ClassVisitor {
 
     /**
      * Constructs a new {@link SAXClassAdapter SAXClassAdapter} object.
-     * 
+     *
      * @param h content handler that will be used to send SAX 2.0 events.
      * @param singleDocument if <tt>true</tt> adapter will not produce
      *        {@link ContentHandler#startDocument() startDocument()} and

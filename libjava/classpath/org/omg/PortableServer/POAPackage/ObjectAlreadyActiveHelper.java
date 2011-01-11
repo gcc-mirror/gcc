@@ -108,7 +108,7 @@ public abstract class ObjectAlreadyActiveHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("ObjectAlreadyActive expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

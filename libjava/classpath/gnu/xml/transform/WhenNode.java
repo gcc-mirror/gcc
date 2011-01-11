@@ -1,4 +1,4 @@
-/* WhenNode.java -- 
+/* WhenNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -94,14 +94,14 @@ final class WhenNode
                      parent, nextSibling);
       }
   }
-  
+
   public boolean references(QName var)
   {
     if (test != null && test.references(var))
       return true;
     return super.references(var);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("when");
@@ -111,5 +111,5 @@ final class WhenNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -333,7 +333,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    * An array of size zero is returned if this class has no type
    * variables.
    *
-   * @return the type variables associated with this class. 
+   * @return the type variables associated with this class.
    * @throws GenericSignatureFormatError if the generic signature does
    *         not conform to the format specified in the Virtual Machine
    *         specification, version 3.
@@ -343,10 +343,10 @@ extends AccessibleObject implements Member, GenericDeclaration
   {
     if (p == null)
       {
-	String sig = m.getSignature();
-	if (sig == null)
-	  return (TypeVariable<Method>[]) new TypeVariable[0];
-	p = new MethodSignatureParser(this, sig);
+        String sig = m.getSignature();
+        if (sig == null)
+          return (TypeVariable<Method>[]) new TypeVariable[0];
+        p = new MethodSignatureParser(this, sig);
       }
     return p.getTypeParameters();
   }
@@ -357,7 +357,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    * An array of size zero is returned if this method declares no
    * exceptions.
    *
-   * @return the exception types declared by this method. 
+   * @return the exception types declared by this method.
    * @throws GenericSignatureFormatError if the generic signature does
    *         not conform to the format specified in the Virtual Machine
    *         specification, version 3.
@@ -367,10 +367,10 @@ extends AccessibleObject implements Member, GenericDeclaration
   {
     if (p == null)
       {
-	String sig = m.getSignature();
-	if (sig == null)
-	  return getExceptionTypes();
-	p = new MethodSignatureParser(this, sig);
+        String sig = m.getSignature();
+        if (sig == null)
+          return getExceptionTypes();
+        p = new MethodSignatureParser(this, sig);
       }
     return p.getGenericExceptionTypes();
   }
@@ -391,10 +391,10 @@ extends AccessibleObject implements Member, GenericDeclaration
   {
     if (p == null)
       {
-	String sig = m.getSignature();
-	if (sig == null)
-	  return getParameterTypes();
-	p = new MethodSignatureParser(this, sig);
+        String sig = m.getSignature();
+        if (sig == null)
+          return getParameterTypes();
+        p = new MethodSignatureParser(this, sig);
       }
     return p.getGenericParameterTypes();
   }
@@ -412,10 +412,10 @@ extends AccessibleObject implements Member, GenericDeclaration
   {
     if (p == null)
       {
-	String sig = m.getSignature();
-	if (sig == null)
-	  return getReturnType();
-	p = new MethodSignatureParser(this, sig);
+        String sig = m.getSignature();
+        if (sig == null)
+          return getReturnType();
+        p = new MethodSignatureParser(this, sig);
       }
     return p.getGenericReturnType();
   }
@@ -450,7 +450,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    * The returned annotations are serialized.  Changing the annotations has
    * no affect on the return value of future calls to this method.
    * </p>
-   * 
+   *
    * @return an array of arrays which represents the annotations used on the
    *         parameters of this method.  The order of the array elements
    *         matches the declaration order of the parameters.
@@ -472,7 +472,7 @@ extends AccessibleObject implements Member, GenericDeclaration
    */
   public <T extends Annotation> T getAnnotation(Class<T> annotationClass)
   {
-    // Inescapable as the VM layer is 1.4 based. T will erase to Annotation anyway. 
+    // Inescapable as the VM layer is 1.4 based. T will erase to Annotation anyway.
     @SuppressWarnings("unchecked")
       T ann = (T) m.getAnnotation(annotationClass);
     return ann;

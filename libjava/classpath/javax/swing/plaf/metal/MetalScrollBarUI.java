@@ -59,30 +59,30 @@ import javax.swing.plaf.basic.BasicScrollBarUI;
  */
 public class MetalScrollBarUI extends BasicScrollBarUI
 {
-  
+
   /**
    * A property change handler for the UI delegate that monitors for
    * changes to the "JScrollBar.isFreeStanding" property, and updates
    * the buttons and track rendering as appropriate.
    */
-  class MetalScrollBarPropertyChangeHandler 
+  class MetalScrollBarPropertyChangeHandler
     extends BasicScrollBarUI.PropertyChangeHandler
   {
     /**
      * Creates a new handler.
-     * 
+     *
      * @see #createPropertyChangeListener()
      */
     public MetalScrollBarPropertyChangeHandler()
     {
       // Nothing to do here.
     }
-    
+
     /**
      * Handles a property change event.  If the event name is
-     * <code>JSlider.isFreeStanding</code>, this method updates the 
+     * <code>JSlider.isFreeStanding</code>, this method updates the
      * delegate, otherwise the event is passed up to the super class.
-     * 
+     *
      * @param e  the property change event.
      */
     public void propertyChange(PropertyChangeEvent e)
@@ -100,7 +100,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
         super.propertyChange(e);
     }
   }
-  
+
   /** The name for the 'free standing' property. */
   public static final String FREE_STANDING_PROP = "JScrollBar.isFreeStanding";
 
@@ -108,34 +108,34 @@ public class MetalScrollBarUI extends BasicScrollBarUI
   private static final Dimension MIN_THUMB_SIZE = new Dimension(15, 15);
 
   /** The minimum thumb size for a scroll bar that is free standing. */
-  private static final Dimension MIN_THUMB_SIZE_FREE_STANDING 
+  private static final Dimension MIN_THUMB_SIZE_FREE_STANDING
     = new Dimension(17, 17);
-  
+
   /** The button that increases the value in the scroll bar. */
   protected MetalScrollButton increaseButton;
-  
+
   /** The button that decreases the value in the scroll bar. */
   protected MetalScrollButton decreaseButton;
-  
-  /** 
-   * The scroll bar width. 
+
+  /**
+   * The scroll bar width.
    */
   protected int scrollBarWidth;
-  
-  /** 
-   * A flag that indicates whether the scroll bar is "free standing", which 
-   * means it has complete borders and can be used anywhere in the UI.  A 
+
+  /**
+   * A flag that indicates whether the scroll bar is "free standing", which
+   * means it has complete borders and can be used anywhere in the UI.  A
    * scroll bar which is not free standing has borders missing from one
    * side, and relies on being part of another container with its own borders
    * to look right visually. */
   protected boolean isFreeStanding = true;
-  
-  /** 
-   * The color for the scroll bar shadow (this is read from the UIDefaults in 
+
+  /**
+   * The color for the scroll bar shadow (this is read from the UIDefaults in
    * the installDefaults() method).
    */
   Color scrollBarShadowColor;
-  
+
   /**
    * Constructs a new instance of <code>MetalScrollBarUI</code>, with no
    * specific initialisation.
@@ -161,9 +161,9 @@ public class MetalScrollBarUI extends BasicScrollBarUI
    * Installs the defaults.
    */
   protected void installDefaults()
-  {    
-    // need to initialise isFreeStanding before calling the super class, 
-    // so that the value is set when createIncreaseButton() and 
+  {
+    // need to initialise isFreeStanding before calling the super class,
+    // so that the value is set when createIncreaseButton() and
     // createDecreaseButton() are called (unless there is somewhere earlier
     // that we can do this).
     Boolean prop = (Boolean) scrollbar.getClientProperty(FREE_STANDING_PROP);
@@ -172,35 +172,35 @@ public class MetalScrollBarUI extends BasicScrollBarUI
     scrollBarWidth = UIManager.getInt("ScrollBar.width");
     super.installDefaults();
   }
-    
+
   /**
    * Creates a property change listener for the delegate to use.  This
-   * overrides the method to provide a custom listener for the 
-   * {@link MetalLookAndFeel} that can handle the 
+   * overrides the method to provide a custom listener for the
+   * {@link MetalLookAndFeel} that can handle the
    * <code>JScrollBar.isFreeStanding</code> property.
-   * 
+   *
    * @return A property change listener.
    */
   protected PropertyChangeListener createPropertyChangeListener()
   {
     return new MetalScrollBarPropertyChangeHandler();
   }
-  
+
   /**
    * Creates a new button to use as the control at the lower end of the
    * {@link JScrollBar}.  This method assigns the new button (an instance of
-   * {@link MetalScrollButton} to the {@link #decreaseButton} field, and also 
-   * returns the button.  The button width is determined by the 
+   * {@link MetalScrollButton} to the {@link #decreaseButton} field, and also
+   * returns the button.  The button width is determined by the
    * <code>ScrollBar.width</code> setting in the UI defaults.
-   * 
+   *
    * @param orientation  the orientation of the button ({@link #NORTH},
    *                     {@link #SOUTH}, {@link #EAST} or {@link #WEST}).
-   * 
+   *
    * @return The button.
    */
   protected JButton createDecreaseButton(int orientation)
   {
-    decreaseButton = new MetalScrollButton(orientation, scrollBarWidth, 
+    decreaseButton = new MetalScrollButton(orientation, scrollBarWidth,
             isFreeStanding);
     return decreaseButton;
   }
@@ -208,25 +208,25 @@ public class MetalScrollBarUI extends BasicScrollBarUI
   /**
    * Creates a new button to use as the control at the upper end of the
    * {@link JScrollBar}.  This method assigns the new button (an instance of
-   * {@link MetalScrollButton} to the {@link #increaseButton} field, and also 
-   * returns the button.  The button width is determined by the 
+   * {@link MetalScrollButton} to the {@link #increaseButton} field, and also
+   * returns the button.  The button width is determined by the
    * <code>ScrollBar.width</code> setting in the UI defaults.
-   * 
+   *
    * @param orientation  the orientation of the button ({@link #NORTH},
    *                     {@link #SOUTH}, {@link #EAST} or {@link #WEST}).
-   * 
+   *
    * @return The button.
    */
   protected JButton createIncreaseButton(int orientation)
   {
-    increaseButton = new MetalScrollButton(orientation, scrollBarWidth, 
+    increaseButton = new MetalScrollButton(orientation, scrollBarWidth,
             isFreeStanding);
     return increaseButton;
   }
-  
+
   /**
    * Paints the track for the scrollbar.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    * @param trackBounds  the track bounds.
@@ -234,20 +234,20 @@ public class MetalScrollBarUI extends BasicScrollBarUI
   protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds)
   {
     g.setColor(MetalLookAndFeel.getControl());
-    g.fillRect(trackBounds.x, trackBounds.y, trackBounds.width, 
+    g.fillRect(trackBounds.x, trackBounds.y, trackBounds.width,
             trackBounds.height);
-    if (scrollbar.getOrientation() == HORIZONTAL) 
-      paintTrackHorizontal(g, c, trackBounds.x, trackBounds.y, 
+    if (scrollbar.getOrientation() == HORIZONTAL)
+      paintTrackHorizontal(g, c, trackBounds.x, trackBounds.y,
           trackBounds.width, trackBounds.height);
-    else 
-      paintTrackVertical(g, c, trackBounds.x, trackBounds.y, 
+    else
+      paintTrackVertical(g, c, trackBounds.x, trackBounds.y,
           trackBounds.width, trackBounds.height);
-    
+
   }
-  
+
   /**
    * Paints the track for a horizontal scrollbar.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    * @param x  the x-coordinate for the track bounds.
@@ -255,7 +255,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
    * @param w  the width for the track bounds.
    * @param h  the height for the track bounds.
    */
-  private void paintTrackHorizontal(Graphics g, JComponent c, 
+  private void paintTrackHorizontal(Graphics g, JComponent c,
       int x, int y, int w, int h)
   {
     if (c.isEnabled())
@@ -264,12 +264,12 @@ public class MetalScrollBarUI extends BasicScrollBarUI
         g.drawLine(x, y, x, y + h - 1);
         g.drawLine(x, y, x + w - 1, y);
         g.drawLine(x + w - 1, y, x + w - 1, y + h - 1);
-        
+
         g.setColor(scrollBarShadowColor);
         g.drawLine(x + 1, y + 1, x + 1, y + h - 1);
         g.drawLine(x + 1, y + 1, x + w - 2, y + 1);
-        
-        if (isFreeStanding) 
+
+        if (isFreeStanding)
           {
             g.setColor(MetalLookAndFeel.getControlDarkShadow());
             g.drawLine(x, y + h - 2, x + w - 1, y + h - 2);
@@ -290,10 +290,10 @@ public class MetalScrollBarUI extends BasicScrollBarUI
           }
       }
   }
-    
+
   /**
    * Paints the track for a vertical scrollbar.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    * @param x  the x-coordinate for the track bounds.
@@ -301,7 +301,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
    * @param w  the width for the track bounds.
    * @param h  the height for the track bounds.
    */
-  private void paintTrackVertical(Graphics g, JComponent c, 
+  private void paintTrackVertical(Graphics g, JComponent c,
       int x, int y, int w, int h)
   {
     if (c.isEnabled())
@@ -310,12 +310,12 @@ public class MetalScrollBarUI extends BasicScrollBarUI
         g.drawLine(x, y, x, y + h - 1);
         g.drawLine(x, y, x + w - 1, y);
         g.drawLine(x, y + h - 1, x + w - 1, y + h - 1);
-        
+
         g.setColor(scrollBarShadowColor);
         g.drawLine(x + 1, y + 1, x + w - 1, y + 1);
         g.drawLine(x + 1, y + 1, x + 1, y + h - 2);
-        
-        if (isFreeStanding) 
+
+        if (isFreeStanding)
           {
             g.setColor(MetalLookAndFeel.getControlDarkShadow());
             g.drawLine(x + w - 2, y, x + w - 2, y + h - 1);
@@ -351,7 +351,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
       return;
     if (scrollbar.getOrientation() == HORIZONTAL)
       paintThumbHorizontal(g, c, thumbBounds);
-    else 
+    else
       paintThumbVertical(g, c, thumbBounds);
 
     // Draw the pattern when the theme is not Ocean.
@@ -367,19 +367,19 @@ public class MetalScrollBarUI extends BasicScrollBarUI
 
   /**
    * Paints the thumb for a horizontal scroll bar.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the scroll bar component.
    * @param thumbBounds  the thumb bounds.
    */
-  private void paintThumbHorizontal(Graphics g, JComponent c, 
-          Rectangle thumbBounds) 
+  private void paintThumbHorizontal(Graphics g, JComponent c,
+          Rectangle thumbBounds)
   {
     int x = thumbBounds.x;
     int y = thumbBounds.y;
     int w = thumbBounds.width;
     int h = thumbBounds.height;
-    
+
     // First we fill the background.
     MetalTheme theme = MetalLookAndFeel.getCurrentTheme();
     if (theme instanceof OceanTheme
@@ -408,7 +408,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
         g.drawLine(x, y, x, y + h - 1);
         g.drawLine(x + w - 1, y, x + w - 1, y + h - 1);
       }
-    
+
     // then the highlight
     g.setColor(thumbHighlightColor);
     if (isFreeStanding)
@@ -421,7 +421,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
         g.drawLine(x + 1, y + 1, x + w - 3, y + 1);
         g.drawLine(x + 1, y + 1, x + 1, y + h - 1);
       }
-    
+
     // draw the shadow line
     g.setColor(UIManager.getColor("ScrollBar.shadow"));
     g.drawLine(x + w, y + 1, x + w, y + h - 1);
@@ -440,22 +440,22 @@ public class MetalScrollBarUI extends BasicScrollBarUI
         g.drawLine(middle + 3, y + 5, middle + 3, y + h - 4);
       }
   }
-  
+
   /**
    * Paints the thumb for a vertical scroll bar.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the scroll bar component.
    * @param thumbBounds  the thumb bounds.
    */
-  private void paintThumbVertical(Graphics g, JComponent c, 
+  private void paintThumbVertical(Graphics g, JComponent c,
           Rectangle thumbBounds)
   {
     int x = thumbBounds.x;
     int y = thumbBounds.y;
     int w = thumbBounds.width;
     int h = thumbBounds.height;
-    
+
     // First we fill the background.
     MetalTheme theme = MetalLookAndFeel.getCurrentTheme();
     if (theme instanceof OceanTheme
@@ -484,7 +484,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
         g.drawLine(x, y, x, y + h - 1);
         g.drawLine(x, y + h - 1, x + w - 1, y + h - 1);
       }
-    
+
     // then the highlight
     g.setColor(thumbHighlightColor);
     if (isFreeStanding)
@@ -497,7 +497,7 @@ public class MetalScrollBarUI extends BasicScrollBarUI
         g.drawLine(x + 1, y + 1, x + w - 1, y + 1);
         g.drawLine(x + 1, y + 1, x + 1, y + h - 3);
       }
-    
+
     // draw the shadow line
     g.setColor(UIManager.getColor("ScrollBar.shadow"));
     g.drawLine(x + 1, y + h, x + w - 2, y + h);
@@ -516,10 +516,10 @@ public class MetalScrollBarUI extends BasicScrollBarUI
         g.drawLine(x + 5, middle + 3, x + w - 4, middle + 3);
       }
   }
-  
+
   /**
-   * Returns the minimum thumb size.  For a free standing scroll bar the 
-   * minimum size is <code>17 x 17</code> pixels, whereas for a non free 
+   * Returns the minimum thumb size.  For a free standing scroll bar the
+   * minimum size is <code>17 x 17</code> pixels, whereas for a non free
    * standing scroll bar the minimum size is <code>15 x 15</code> pixels.
    *
    * @return The minimum thumb size.
@@ -580,6 +580,5 @@ public class MetalScrollBarUI extends BasicScrollBarUI
     width += insets.left + insets.right;
 
     return new Dimension(width, height);
-  } 
+  }
 }
-

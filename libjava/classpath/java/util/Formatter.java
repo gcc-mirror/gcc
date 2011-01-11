@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -56,7 +56,7 @@ import java.text.DecimalFormatSymbols;
 
 import gnu.classpath.SystemProperties;
 
-/** 
+/**
  * <p>
  * A Java formatter for <code>printf</code>-style format strings,
  * as seen in the C programming language.   This differs from the
@@ -79,12 +79,12 @@ import gnu.classpath.SystemProperties;
  * <strong>Note</strong>: the formatter is not thread-safe.  For
  * multi-threaded access, external synchronization should be provided.
  * </p>
- *  
+ *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public final class Formatter 
+public final class Formatter
   implements Closeable, Flushable
 {
 
@@ -211,7 +211,7 @@ public final class Formatter
    * @throws SecurityException if a security manager is present
    *                           and doesn't allow writing to the file.
    */
-  public Formatter(File file) 
+  public Formatter(File file)
     throws FileNotFoundException
   {
     this(new OutputStreamWriter(new FileOutputStream(file)));
@@ -257,7 +257,7 @@ public final class Formatter
     throws FileNotFoundException, UnsupportedEncodingException
   {
     this(new OutputStreamWriter(new FileOutputStream(file), charset),
-	 loc);
+         loc);
   }
 
   /**
@@ -373,7 +373,7 @@ public final class Formatter
     throws FileNotFoundException, UnsupportedEncodingException
   {
     this(new OutputStreamWriter(new FileOutputStream(file), charset),
-	 loc);
+         loc);
   }
 
   /**
@@ -390,13 +390,13 @@ public final class Formatter
       return;
     try
       {
-	if (out instanceof Closeable)
-	  ((Closeable) out).close();
+        if (out instanceof Closeable)
+          ((Closeable) out).close();
       }
     catch (IOException _)
       {
-	// FIXME: do we ignore these or do we set ioException?
-	// The docs seem to indicate that we should ignore.
+        // FIXME: do we ignore these or do we set ioException?
+        // The docs seem to indicate that we should ignore.
       }
     closed = true;
   }
@@ -414,13 +414,13 @@ public final class Formatter
       throw new FormatterClosedException();
     try
       {
-	if (out instanceof Flushable)
-	  ((Flushable) out).flush();
+        if (out instanceof Flushable)
+          ((Flushable) out).flush();
       }
     catch (IOException _)
       {
-	// FIXME: do we ignore these or do we set ioException?
-	// The docs seem to indicate that we should ignore.
+        // FIXME: do we ignore these or do we set ioException?
+        // The docs seem to indicate that we should ignore.
       }
   }
 
@@ -450,7 +450,7 @@ public final class Formatter
     flags &= ~allowed;
     if (flags != 0)
       throw new FormatFlagsConversionMismatchException(getName(flags),
-						       conversion);
+                                                       conversion);
   }
 
   /**
@@ -473,7 +473,7 @@ public final class Formatter
    * @param isNegative true if the value is negative.
    */
   private void applyLocalization(CPStringBuilder builder, int flags, int width,
-				 boolean isNegative)
+                                 boolean isNegative)
   {
     DecimalFormatSymbols dfsyms;
     if (fmtLocale == null)
@@ -486,52 +486,52 @@ public final class Formatter
     int decimalOffset = -1;
     for (int i = builder.length() - 1; i >= 0; --i)
       {
-	char c = builder.charAt(i);
-	if (c >= '0' && c <= '9')
-	  builder.setCharAt(i, (char) (c - '0' + zeroDigit));
-	else if (c == '.')
-	  {
-	    assert decimalOffset == -1;
-	    decimalOffset = i;
-	  }
+        char c = builder.charAt(i);
+        if (c >= '0' && c <= '9')
+          builder.setCharAt(i, (char) (c - '0' + zeroDigit));
+        else if (c == '.')
+          {
+            assert decimalOffset == -1;
+            decimalOffset = i;
+          }
       }
 
     // Localize the decimal separator.
     if (decimalOffset != -1)
       {
-	builder.deleteCharAt(decimalOffset);
-	builder.insert(decimalOffset, dfsyms.getDecimalSeparator());
+        builder.deleteCharAt(decimalOffset);
+        builder.insert(decimalOffset, dfsyms.getDecimalSeparator());
       }
-	
+
     // Insert the grouping separators.
     if ((flags & FormattableFlags.COMMA) != 0)
       {
-	char groupSeparator = dfsyms.getGroupingSeparator();
-	int groupSize = 3;	// FIXME
-	int offset = (decimalOffset == -1) ? builder.length() : decimalOffset;
-	// We use '>' because we don't want to insert a separator
-	// before the first digit.
-	for (int i = offset - groupSize; i > 0; i -= groupSize)
-	  builder.insert(i, groupSeparator);
+        char groupSeparator = dfsyms.getGroupingSeparator();
+        int groupSize = 3;      // FIXME
+        int offset = (decimalOffset == -1) ? builder.length() : decimalOffset;
+        // We use '>' because we don't want to insert a separator
+        // before the first digit.
+        for (int i = offset - groupSize; i > 0; i -= groupSize)
+          builder.insert(i, groupSeparator);
       }
 
     if ((flags & FormattableFlags.ZERO) != 0)
       {
-	// Zero fill.  Note that according to the algorithm we do not
-	// insert grouping separators here.
-	for (int i = width - builder.length(); i > 0; --i)
-	  builder.insert(0, zeroDigit);
+        // Zero fill.  Note that according to the algorithm we do not
+        // insert grouping separators here.
+        for (int i = width - builder.length(); i > 0; --i)
+          builder.insert(0, zeroDigit);
       }
 
     if (isNegative)
       {
-	if ((flags & FormattableFlags.PAREN) != 0)
-	  {
-	    builder.insert(0, '(');
-	    builder.append(')');
-	  }
-	else
-	  builder.insert(0, '-');
+        if ((flags & FormattableFlags.PAREN) != 0)
+          {
+            builder.insert(0, '(');
+            builder.append(')');
+          }
+        else
+          builder.insert(0, '-');
       }
     else if ((flags & FormattableFlags.PLUS) != 0)
       builder.insert(0, '+');
@@ -554,10 +554,10 @@ public final class Formatter
   {
     if ((flags & FormattableFlags.UPPERCASE) != 0)
       {
-	if (fmtLocale == null)
-	  arg = arg.toUpperCase();
-	else
-	  arg = arg.toUpperCase(fmtLocale);
+        if (fmtLocale == null)
+          arg = arg.toUpperCase();
+        else
+          arg = arg.toUpperCase(fmtLocale);
       }
 
     if (precision >= 0 && arg.length() > precision)
@@ -568,19 +568,19 @@ public final class Formatter
       throw new MissingFormatWidthException("fixme");
     if (! leftJustify && arg.length() < width)
       {
-	for (int i = width - arg.length(); i > 0; --i)
-	  out.append(' ');
+        for (int i = width - arg.length(); i > 0; --i)
+          out.append(' ');
       }
     out.append(arg);
     if (leftJustify && arg.length() < width)
       {
-	for (int i = width - arg.length(); i > 0; --i)
-	  out.append(' ');
+        for (int i = width - arg.length(); i > 0; --i)
+          out.append(' ');
       }
   }
 
-  /** 
-   * Emit a boolean.  
+  /**
+   * Emit a boolean.
    *
    * @param arg the boolean to emit.
    * @param flags the formatting flags to use.
@@ -590,12 +590,12 @@ public final class Formatter
    * @throws IOException if the output stream throws an I/O error.
    */
   private void booleanFormat(Object arg, int flags, int width, int precision,
-			     char conversion)
+                             char conversion)
     throws IOException
   {
     checkFlags(flags,
-	       FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
-	       conversion);
+               FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
+               conversion);
     String result;
     if (arg instanceof Boolean)
       result = String.valueOf((Boolean) arg);
@@ -604,8 +604,8 @@ public final class Formatter
     genericFormat(result, flags, width, precision);
   }
 
-  /** 
-   * Emit a hash code.  
+  /**
+   * Emit a hash code.
    *
    * @param arg the hash code to emit.
    * @param flags the formatting flags to use.
@@ -615,18 +615,18 @@ public final class Formatter
    * @throws IOException if the output stream throws an I/O error.
    */
   private void hashCodeFormat(Object arg, int flags, int width, int precision,
-			      char conversion)
+                              char conversion)
     throws IOException
   {
     checkFlags(flags,
-	       FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
-	       conversion);
+               FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
+               conversion);
     genericFormat(arg == null ? "null" : Integer.toHexString(arg.hashCode()),
-		  flags, width, precision);
+                  flags, width, precision);
   }
 
-  /** 
-   * Emit a String or Formattable conversion.  
+  /**
+   * Emit a String or Formattable conversion.
    *
    * @param arg the String or Formattable to emit.
    * @param flags the formatting flags to use.
@@ -636,31 +636,31 @@ public final class Formatter
    * @throws IOException if the output stream throws an I/O error.
    */
   private void stringFormat(Object arg, int flags, int width, int precision,
-			    char conversion)
+                            char conversion)
     throws IOException
   {
     if (arg instanceof Formattable)
       {
-	checkFlags(flags,
-		   (FormattableFlags.LEFT_JUSTIFY
-		    | FormattableFlags.UPPERCASE
-		    | FormattableFlags.ALTERNATE),
-		   conversion);
-	Formattable fmt = (Formattable) arg;
-	fmt.formatTo(this, flags, width, precision);
+        checkFlags(flags,
+                   (FormattableFlags.LEFT_JUSTIFY
+                    | FormattableFlags.UPPERCASE
+                    | FormattableFlags.ALTERNATE),
+                   conversion);
+        Formattable fmt = (Formattable) arg;
+        fmt.formatTo(this, flags, width, precision);
       }
     else
       {
-	checkFlags(flags,
-		   FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
-		   conversion);
-	genericFormat(arg == null ? "null" : arg.toString(), flags, width,
-		      precision);
+        checkFlags(flags,
+                   FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
+                   conversion);
+        genericFormat(arg == null ? "null" : arg.toString(), flags, width,
+                      precision);
       }
   }
 
-  /** 
-   * Emit a character.  
+  /**
+   * Emit a character.
    *
    * @param arg the character to emit.
    * @param flags the formatting flags to use.
@@ -670,12 +670,12 @@ public final class Formatter
    * @throws IOException if the output stream throws an I/O error.
    */
   private void characterFormat(Object arg, int flags, int width, int precision,
-			       char conversion)
+                               char conversion)
     throws IOException
   {
     checkFlags(flags,
-	       FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
-	       conversion);
+               FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
+               conversion);
     noPrecision(precision);
 
     int theChar;
@@ -687,9 +687,9 @@ public final class Formatter
       theChar = (char) (((Short) arg).shortValue ());
     else if (arg instanceof Integer)
       {
-	theChar = ((Integer) arg).intValue();
-	if (! Character.isValidCodePoint(theChar))
-	  throw new IllegalFormatCodePointException(theChar);
+        theChar = ((Integer) arg).intValue();
+        if (! Character.isValidCodePoint(theChar))
+          throw new IllegalFormatCodePointException(theChar);
       }
     else
       throw new IllegalFormatConversionException(conversion, arg.getClass());
@@ -697,7 +697,7 @@ public final class Formatter
     genericFormat(result, flags, width, precision);
   }
 
-  /** 
+  /**
    * Emit a '%'.
    *
    * @param flags the formatting flags to use.
@@ -713,7 +713,7 @@ public final class Formatter
     genericFormat("%", flags, width, precision);
   }
 
-  /** 
+  /**
    * Emit a newline.
    *
    * @param flags the formatting flags to use.
@@ -744,15 +744,15 @@ public final class Formatter
    * @return the result.
    */
   private CPStringBuilder basicIntegralConversion(Object arg, int flags,
-						  int width, int precision,
-						  int radix, char conversion)
+                                                  int width, int precision,
+                                                  int radix, char conversion)
   {
     assert radix == 8 || radix == 10 || radix == 16;
     noPrecision(precision);
 
     // Some error checking.
     if ((flags & FormattableFlags.PLUS) != 0
-	&& (flags & FormattableFlags.SPACE) != 0)
+        && (flags & FormattableFlags.SPACE) != 0)
       throw new IllegalFormatFlagsException(getName(flags));
 
     if ((flags & FormattableFlags.LEFT_JUSTIFY) != 0 && width == -1)
@@ -761,41 +761,41 @@ public final class Formatter
     // Do the base translation of the value to a string.
     String result;
     int basicFlags = (FormattableFlags.LEFT_JUSTIFY
-		      // We already handled any possible error when
-		      // parsing.
-		      | FormattableFlags.UPPERCASE
-		      | FormattableFlags.ZERO);
+                      // We already handled any possible error when
+                      // parsing.
+                      | FormattableFlags.UPPERCASE
+                      | FormattableFlags.ZERO);
     if (radix == 10)
       basicFlags |= (FormattableFlags.PLUS
-		     | FormattableFlags.SPACE
-		     | FormattableFlags.COMMA
-		     | FormattableFlags.PAREN);
+                     | FormattableFlags.SPACE
+                     | FormattableFlags.COMMA
+                     | FormattableFlags.PAREN);
     else
       basicFlags |= FormattableFlags.ALTERNATE;
 
     if (arg instanceof BigInteger)
       {
-	checkFlags(flags,
-		   (basicFlags
-		    | FormattableFlags.PLUS
-		    | FormattableFlags.SPACE
-		    | FormattableFlags.PAREN),
-		   conversion);
-	BigInteger bi = (BigInteger) arg;
-	result = bi.toString(radix);
+        checkFlags(flags,
+                   (basicFlags
+                    | FormattableFlags.PLUS
+                    | FormattableFlags.SPACE
+                    | FormattableFlags.PAREN),
+                   conversion);
+        BigInteger bi = (BigInteger) arg;
+        result = bi.toString(radix);
       }
     else if (arg instanceof Number
-	     && ! (arg instanceof Float)
-	     && ! (arg instanceof Double))
+             && ! (arg instanceof Float)
+             && ! (arg instanceof Double))
       {
-	checkFlags(flags, basicFlags, conversion);
-	long value = ((Number) arg).longValue ();
-	if (radix == 8)
-	  result = Long.toOctalString(value);
-	else if (radix == 16)
-	  result = Long.toHexString(value);
-	else
-	  result = Long.toString(value);
+        checkFlags(flags, basicFlags, conversion);
+        long value = ((Number) arg).longValue ();
+        if (radix == 8)
+          result = Long.toOctalString(value);
+        else if (radix == 16)
+          result = Long.toHexString(value);
+        else
+          result = Long.toString(value);
       }
     else
       throw new IllegalFormatConversionException(conversion, arg.getClass());
@@ -803,9 +803,9 @@ public final class Formatter
     return new CPStringBuilder(result);
   }
 
-  /** 
-   * Emit a hex or octal value.  
-   * 
+  /**
+   * Emit a hex or octal value.
+   *
    * @param arg the hexadecimal or octal value.
    * @param flags the formatting flags to use.
    * @param width the width to use.
@@ -815,79 +815,79 @@ public final class Formatter
    * @throws IOException if the output stream throws an I/O error.
    */
   private void hexOrOctalConversion(Object arg, int flags, int width,
-				    int precision, int radix,
-				    char conversion)
+                                    int precision, int radix,
+                                    char conversion)
     throws IOException
   {
     assert radix == 8 || radix == 16;
 
     CPStringBuilder builder = basicIntegralConversion(arg, flags, width,
-						      precision, radix,
-						      conversion);
+                                                      precision, radix,
+                                                      conversion);
     int insertPoint = 0;
 
     // Insert the sign.
     if (builder.charAt(0) == '-')
       {
-	// Already inserted.  Note that we don't insert a sign, since
-	// the only case where it is needed it BigInteger, and it has
-	// already been inserted by toString.
-	++insertPoint;
+        // Already inserted.  Note that we don't insert a sign, since
+        // the only case where it is needed it BigInteger, and it has
+        // already been inserted by toString.
+        ++insertPoint;
       }
     else if ((flags & FormattableFlags.PLUS) != 0)
       {
-	builder.insert(insertPoint, '+');
-	++insertPoint;
+        builder.insert(insertPoint, '+');
+        ++insertPoint;
       }
     else if ((flags & FormattableFlags.SPACE) != 0)
       {
-	builder.insert(insertPoint, ' ');
-	++insertPoint;
+        builder.insert(insertPoint, ' ');
+        ++insertPoint;
       }
 
     // Insert the radix prefix.
     if ((flags & FormattableFlags.ALTERNATE) != 0)
       {
-	builder.insert(insertPoint, radix == 8 ? "0" : "0x");
-	insertPoint += radix == 8 ? 1 : 2;
+        builder.insert(insertPoint, radix == 8 ? "0" : "0x");
+        insertPoint += radix == 8 ? 1 : 2;
       }
 
     // Now justify the result.
     int resultWidth = builder.length();
     if (resultWidth < width)
       {
-	char fill = ((flags & FormattableFlags.ZERO) != 0) ? '0' : ' ';
-	if ((flags & FormattableFlags.LEFT_JUSTIFY) != 0)
-	  {
-	    // Left justify.  
-	    if (fill == ' ')
-	      insertPoint = builder.length();
-	  }
-	else
-	  {
-	    // Right justify.  Insert spaces before the radix prefix
-	    // and sign.
-	    insertPoint = 0;
-	  }
-	while (resultWidth++ < width)
-	  builder.insert(insertPoint, fill);
+        char fill = ((flags & FormattableFlags.ZERO) != 0) ? '0' : ' ';
+        if ((flags & FormattableFlags.LEFT_JUSTIFY) != 0)
+          {
+            // Left justify.
+            if (fill == ' ')
+              insertPoint = builder.length();
+          }
+        else
+          {
+            // Right justify.  Insert spaces before the radix prefix
+            // and sign.
+            insertPoint = 0;
+          }
+        while (resultWidth++ < width)
+          builder.insert(insertPoint, fill);
       }
 
     String result = builder.toString();
     if ((flags & FormattableFlags.UPPERCASE) != 0)
       {
-	if (fmtLocale == null)
-	  result = result.toUpperCase();
-	else
-	  result = result.toUpperCase(fmtLocale);
+        if (fmtLocale == null)
+          result = result.toUpperCase();
+        else
+          result = result.toUpperCase(fmtLocale);
       }
 
     out.append(result);
   }
 
-  /** 
-   * Emit a decimal value.  
-   * 
+  /**
+   * Emit a decimal value.
+   *
    * @param arg the hexadecimal or octal value.
    * @param flags the formatting flags to use.
    * @param width the width to use.
@@ -896,26 +896,26 @@ public final class Formatter
    * @throws IOException if the output stream throws an I/O error.
    */
   private void decimalConversion(Object arg, int flags, int width,
-				 int precision, char conversion)
+                                 int precision, char conversion)
     throws IOException
   {
     CPStringBuilder builder = basicIntegralConversion(arg, flags, width,
-						      precision, 10,
-						      conversion);
+                                                      precision, 10,
+                                                      conversion);
     boolean isNegative = false;
     if (builder.charAt(0) == '-')
       {
-	// Sign handling is done during localization.
-	builder.deleteCharAt(0);
-	isNegative = true;
+        // Sign handling is done during localization.
+        builder.deleteCharAt(0);
+        isNegative = true;
       }
 
     applyLocalization(builder, flags, width, isNegative);
     genericFormat(builder.toString(), flags, width, precision);
   }
 
-  /** 
-   * Emit a single date or time conversion to a StringBuilder.  
+  /**
+   * Emit a single date or time conversion to a StringBuilder.
    *
    * @param builder the builder to write to.
    * @param cal the calendar to use in the conversion.
@@ -923,185 +923,185 @@ public final class Formatter
    * @param syms the date formatting symbols.
    */
   private void singleDateTimeConversion(CPStringBuilder builder, Calendar cal,
-					char conversion,
-					DateFormatSymbols syms)
+                                        char conversion,
+                                        DateFormatSymbols syms)
   {
     int oldLen = builder.length();
     int digits = -1;
     switch (conversion)
       {
       case 'H':
-	builder.append(cal.get(Calendar.HOUR_OF_DAY));
-	digits = 2;
-	break;
+        builder.append(cal.get(Calendar.HOUR_OF_DAY));
+        digits = 2;
+        break;
       case 'I':
-	builder.append(cal.get(Calendar.HOUR));
-	digits = 2;
-	break;
+        builder.append(cal.get(Calendar.HOUR));
+        digits = 2;
+        break;
       case 'k':
-	builder.append(cal.get(Calendar.HOUR_OF_DAY));
-	break;
+        builder.append(cal.get(Calendar.HOUR_OF_DAY));
+        break;
       case 'l':
-	builder.append(cal.get(Calendar.HOUR));
-	break;
+        builder.append(cal.get(Calendar.HOUR));
+        break;
       case 'M':
-	builder.append(cal.get(Calendar.MINUTE));
-	digits = 2;
-	break;
+        builder.append(cal.get(Calendar.MINUTE));
+        digits = 2;
+        break;
       case 'S':
-	builder.append(cal.get(Calendar.SECOND));
-	digits = 2;
-	break;
+        builder.append(cal.get(Calendar.SECOND));
+        digits = 2;
+        break;
       case 'N':
-	// FIXME: nanosecond ...
-	digits = 9;
-	break;
+        // FIXME: nanosecond ...
+        digits = 9;
+        break;
       case 'p':
-	{
-	  int ampm = cal.get(Calendar.AM_PM);
-	  builder.append(syms.getAmPmStrings()[ampm]);
-	}
-	break;
+        {
+          int ampm = cal.get(Calendar.AM_PM);
+          builder.append(syms.getAmPmStrings()[ampm]);
+        }
+        break;
       case 'z':
-	{
-	  int zone = cal.get(Calendar.ZONE_OFFSET) / (1000 * 60);
-	  builder.append(zone);
-	  digits = 4;
-	  // Skip the '-' sign.
-	  if (zone < 0)
-	    ++oldLen;
-	}
-	break;
+        {
+          int zone = cal.get(Calendar.ZONE_OFFSET) / (1000 * 60);
+          builder.append(zone);
+          digits = 4;
+          // Skip the '-' sign.
+          if (zone < 0)
+            ++oldLen;
+        }
+        break;
       case 'Z':
-	{
-	  // FIXME: DST?
-	  int zone = cal.get(Calendar.ZONE_OFFSET) / (1000 * 60 * 60);
-	  String[][] zs = syms.getZoneStrings();
-	  builder.append(zs[zone + 12][1]);
-	}
-	break;
+        {
+          // FIXME: DST?
+          int zone = cal.get(Calendar.ZONE_OFFSET) / (1000 * 60 * 60);
+          String[][] zs = syms.getZoneStrings();
+          builder.append(zs[zone + 12][1]);
+        }
+        break;
       case 's':
-	{
-	  long val = cal.getTime().getTime();
-	  builder.append(val / 1000);
-	}
-	break;
+        {
+          long val = cal.getTime().getTime();
+          builder.append(val / 1000);
+        }
+        break;
       case 'Q':
-	{
-	  long val = cal.getTime().getTime();
-	  builder.append(val);
-	}
-	break;
+        {
+          long val = cal.getTime().getTime();
+          builder.append(val);
+        }
+        break;
       case 'B':
-	{
-	  int month = cal.get(Calendar.MONTH);
-	  builder.append(syms.getMonths()[month]);
-	}
-	break;
+        {
+          int month = cal.get(Calendar.MONTH);
+          builder.append(syms.getMonths()[month]);
+        }
+        break;
       case 'b':
       case 'h':
-	{
-	  int month = cal.get(Calendar.MONTH);
-	  builder.append(syms.getShortMonths()[month]);
-	}
-	break;
+        {
+          int month = cal.get(Calendar.MONTH);
+          builder.append(syms.getShortMonths()[month]);
+        }
+        break;
       case 'A':
-	{
-	  int day = cal.get(Calendar.DAY_OF_WEEK);
-	  builder.append(syms.getWeekdays()[day]);
-	}
-	break;
+        {
+          int day = cal.get(Calendar.DAY_OF_WEEK);
+          builder.append(syms.getWeekdays()[day]);
+        }
+        break;
       case 'a':
-	{
-	  int day = cal.get(Calendar.DAY_OF_WEEK);
-	  builder.append(syms.getShortWeekdays()[day]);
-	}
-	break;
+        {
+          int day = cal.get(Calendar.DAY_OF_WEEK);
+          builder.append(syms.getShortWeekdays()[day]);
+        }
+        break;
       case 'C':
-	builder.append(cal.get(Calendar.YEAR) / 100);
-	digits = 2;
-	break;
+        builder.append(cal.get(Calendar.YEAR) / 100);
+        digits = 2;
+        break;
       case 'Y':
-	builder.append(cal.get(Calendar.YEAR));
-	digits = 4;
-	break;
+        builder.append(cal.get(Calendar.YEAR));
+        digits = 4;
+        break;
       case 'y':
-	builder.append(cal.get(Calendar.YEAR) % 100);
-	digits = 2;
-	break;
+        builder.append(cal.get(Calendar.YEAR) % 100);
+        digits = 2;
+        break;
       case 'j':
-	builder.append(cal.get(Calendar.DAY_OF_YEAR));
-	digits = 3;
-	break;
+        builder.append(cal.get(Calendar.DAY_OF_YEAR));
+        digits = 3;
+        break;
       case 'm':
-	builder.append(cal.get(Calendar.MONTH) + 1);
-	digits = 2;
-	break;
+        builder.append(cal.get(Calendar.MONTH) + 1);
+        digits = 2;
+        break;
       case 'd':
-	builder.append(cal.get(Calendar.DAY_OF_MONTH));
-	digits = 2;
-	break;
+        builder.append(cal.get(Calendar.DAY_OF_MONTH));
+        digits = 2;
+        break;
       case 'e':
-	builder.append(cal.get(Calendar.DAY_OF_MONTH));
-	break;
+        builder.append(cal.get(Calendar.DAY_OF_MONTH));
+        break;
       case 'R':
-	singleDateTimeConversion(builder, cal, 'H', syms);
-	builder.append(':');
-	singleDateTimeConversion(builder, cal, 'M', syms);
-	break;
+        singleDateTimeConversion(builder, cal, 'H', syms);
+        builder.append(':');
+        singleDateTimeConversion(builder, cal, 'M', syms);
+        break;
       case 'T':
-	singleDateTimeConversion(builder, cal, 'H', syms);
-	builder.append(':');
-	singleDateTimeConversion(builder, cal, 'M', syms);
-	builder.append(':');
-	singleDateTimeConversion(builder, cal, 'S', syms);
-	break;
+        singleDateTimeConversion(builder, cal, 'H', syms);
+        builder.append(':');
+        singleDateTimeConversion(builder, cal, 'M', syms);
+        builder.append(':');
+        singleDateTimeConversion(builder, cal, 'S', syms);
+        break;
       case 'r':
-	singleDateTimeConversion(builder, cal, 'I', syms);
-	builder.append(':');
-	singleDateTimeConversion(builder, cal, 'M', syms);
-	builder.append(':');
-	singleDateTimeConversion(builder, cal, 'S', syms);
-	builder.append(' ');
-	singleDateTimeConversion(builder, cal, 'p', syms);
-	break;
+        singleDateTimeConversion(builder, cal, 'I', syms);
+        builder.append(':');
+        singleDateTimeConversion(builder, cal, 'M', syms);
+        builder.append(':');
+        singleDateTimeConversion(builder, cal, 'S', syms);
+        builder.append(' ');
+        singleDateTimeConversion(builder, cal, 'p', syms);
+        break;
       case 'D':
-	singleDateTimeConversion(builder, cal, 'm', syms);
-	builder.append('/');
-    	singleDateTimeConversion(builder, cal, 'd', syms);
-	builder.append('/');
-	singleDateTimeConversion(builder, cal, 'y', syms);
-	break;
+        singleDateTimeConversion(builder, cal, 'm', syms);
+        builder.append('/');
+        singleDateTimeConversion(builder, cal, 'd', syms);
+        builder.append('/');
+        singleDateTimeConversion(builder, cal, 'y', syms);
+        break;
       case 'F':
-	singleDateTimeConversion(builder, cal, 'Y', syms);
-	builder.append('-');
-	singleDateTimeConversion(builder, cal, 'm', syms);
-	builder.append('-');
-	singleDateTimeConversion(builder, cal, 'd', syms);
-	break;
+        singleDateTimeConversion(builder, cal, 'Y', syms);
+        builder.append('-');
+        singleDateTimeConversion(builder, cal, 'm', syms);
+        builder.append('-');
+        singleDateTimeConversion(builder, cal, 'd', syms);
+        break;
       case 'c':
-	singleDateTimeConversion(builder, cal, 'a', syms);
-	builder.append(' ');
-	singleDateTimeConversion(builder, cal, 'b', syms);
-	builder.append(' ');
-	singleDateTimeConversion(builder, cal, 'd', syms);
-	builder.append(' ');
-	singleDateTimeConversion(builder, cal, 'T', syms);
-	builder.append(' ');
-	singleDateTimeConversion(builder, cal, 'Z', syms);
-	builder.append(' ');
-	singleDateTimeConversion(builder, cal, 'Y', syms);
-	break;
+        singleDateTimeConversion(builder, cal, 'a', syms);
+        builder.append(' ');
+        singleDateTimeConversion(builder, cal, 'b', syms);
+        builder.append(' ');
+        singleDateTimeConversion(builder, cal, 'd', syms);
+        builder.append(' ');
+        singleDateTimeConversion(builder, cal, 'T', syms);
+        builder.append(' ');
+        singleDateTimeConversion(builder, cal, 'Z', syms);
+        builder.append(' ');
+        singleDateTimeConversion(builder, cal, 'Y', syms);
+        break;
       default:
-	throw new UnknownFormatConversionException(String.valueOf(conversion));
+        throw new UnknownFormatConversionException(String.valueOf(conversion));
       }
 
     if (digits > 0)
       {
-	int newLen = builder.length();
-	int delta = newLen - oldLen;
-	while (delta++ < digits)
-	  builder.insert(oldLen, '0');
+        int newLen = builder.length();
+        int delta = newLen - oldLen;
+        while (delta++ < digits)
+          builder.insert(oldLen, '0');
       }
   }
 
@@ -1117,33 +1117,33 @@ public final class Formatter
    * @throws IOException if the output stream throws an I/O error.
    */
   private void dateTimeConversion(Object arg, int flags, int width,
-				  int precision, char conversion,
-				  char subConversion)
+                                  int precision, char conversion,
+                                  char subConversion)
     throws IOException
   {
     noPrecision(precision);
     checkFlags(flags,
-	       FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
-	       conversion);
+               FormattableFlags.LEFT_JUSTIFY | FormattableFlags.UPPERCASE,
+               conversion);
 
     Calendar cal;
     if (arg instanceof Calendar)
       cal = (Calendar) arg;
     else
       {
-	Date date;
-	if (arg instanceof Date)
-	  date = (Date) arg;
-	else if (arg instanceof Long)
-	  date = new Date(((Long) arg).longValue());
-	else
-	  throw new IllegalFormatConversionException(conversion,
-						     arg.getClass());
-	if (fmtLocale == null)
-	  cal = Calendar.getInstance();
-	else
-	  cal = Calendar.getInstance(fmtLocale);
-	cal.setTime(date);
+        Date date;
+        if (arg instanceof Date)
+          date = (Date) arg;
+        else if (arg instanceof Long)
+          date = new Date(((Long) arg).longValue());
+        else
+          throw new IllegalFormatConversionException(conversion,
+                                                     arg.getClass());
+        if (fmtLocale == null)
+          cal = Calendar.getInstance();
+        else
+          cal = Calendar.getInstance(fmtLocale);
+        cal.setTime(date);
       }
 
     // We could try to be more efficient by computing this lazily.
@@ -1170,8 +1170,8 @@ public final class Formatter
     ++index;
     if (index >= length)
       {
-	// FIXME: what exception here?
-	throw new IllegalArgumentException();
+        // FIXME: what exception here?
+        throw new IllegalArgumentException();
       }
   }
 
@@ -1204,20 +1204,20 @@ public final class Formatter
     int start = index;
     if (format.charAt(index) == '<')
       {
-	result = 0;
-	advance();
+        result = 0;
+        advance();
       }
     else if (Character.isDigit(format.charAt(index)))
       {
-	result = parseInt();
-	if (format.charAt(index) == '$')
-	  advance();
-	else
-	  {
-	    // Reset.
-	    index = start;
-	    result = -1;
-	  }
+        result = parseInt();
+        if (format.charAt(index) == '$')
+          advance();
+        else
+          {
+            // Reset.
+            index = start;
+            result = -1;
+          }
       }
     return result;
   }
@@ -1235,15 +1235,15 @@ public final class Formatter
     int start = index;
     while (true)
       {
-	int x = FLAGS.indexOf(format.charAt(index));
-	if (x == -1)
-	  break;
-	int newValue = 1 << x;
-	if ((value & newValue) != 0)
-	  throw new DuplicateFormatFlagsException(format.substring(start,
-								   index + 1));
-	value |= newValue;
-	advance();
+        int x = FLAGS.indexOf(format.charAt(index));
+        if (x == -1)
+          break;
+        int newValue = 1 << x;
+        if ((value & newValue) != 0)
+          throw new DuplicateFormatFlagsException(format.substring(start,
+                                                                   index + 1));
+        value |= newValue;
+        advance();
       }
     return value;
   }
@@ -1293,7 +1293,7 @@ public final class Formatter
    *                                specification or a mismatch
    *                                between it and the arguments.
    * @throws FormatterClosedException if the formatter is closed.
-   */ 
+   */
   public Formatter format(Locale loc, String fmt, Object... args)
   {
     if (closed)
@@ -1305,122 +1305,122 @@ public final class Formatter
 
     try
       {
-	fmtLocale = loc;
-	format = fmt;
-	length = format.length();
-	for (index = 0; index < length; ++index)
-	  {
-	    char c = format.charAt(index);
-	    if (c != '%')
-	      {
-		out.append(c);
-		continue;
-	      }
+        fmtLocale = loc;
+        format = fmt;
+        length = format.length();
+        for (index = 0; index < length; ++index)
+          {
+            char c = format.charAt(index);
+            if (c != '%')
+              {
+                out.append(c);
+                continue;
+              }
 
-	    int start = index;
-	    advance();
+            int start = index;
+            advance();
 
-	    // We do the needed post-processing of this later, when we
-	    // determine whether an argument is actually needed by
-	    // this conversion.
-	    int argumentIndex = parseArgumentIndex();
+            // We do the needed post-processing of this later, when we
+            // determine whether an argument is actually needed by
+            // this conversion.
+            int argumentIndex = parseArgumentIndex();
 
-	    int flags = parseFlags();
-	    int width = parseWidth();
-	    int precision = parsePrecision();
-	    char origConversion = format.charAt(index);
-	    char conversion = origConversion;
-	    if (Character.isUpperCase(conversion))
-	      {
-		flags |= FormattableFlags.UPPERCASE;
-		conversion = Character.toLowerCase(conversion);
-	      }
+            int flags = parseFlags();
+            int width = parseWidth();
+            int precision = parsePrecision();
+            char origConversion = format.charAt(index);
+            char conversion = origConversion;
+            if (Character.isUpperCase(conversion))
+              {
+                flags |= FormattableFlags.UPPERCASE;
+                conversion = Character.toLowerCase(conversion);
+              }
 
-	    Object argument = null;
-	    if (conversion == '%' || conversion == 'n')
-	      {
-		if (argumentIndex != -1)
-		  {
-		    // FIXME: not sure about this.
-		    throw new UnknownFormatConversionException("FIXME");
-		  }
-	      }
-	    else
-	      {
-		if (argumentIndex == -1)
-		  argumentIndex = implicitArgumentIndex++;
-		else if (argumentIndex == 0)
-		  argumentIndex = previousArgumentIndex;
-		// Argument indices start at 1 but array indices at 0.
-		--argumentIndex;
-		if (argumentIndex < 0 || argumentIndex >= args.length)
-		  throw new MissingFormatArgumentException(format.substring(start, index));
-		argument = args[argumentIndex];
-	      }
+            Object argument = null;
+            if (conversion == '%' || conversion == 'n')
+              {
+                if (argumentIndex != -1)
+                  {
+                    // FIXME: not sure about this.
+                    throw new UnknownFormatConversionException("FIXME");
+                  }
+              }
+            else
+              {
+                if (argumentIndex == -1)
+                  argumentIndex = implicitArgumentIndex++;
+                else if (argumentIndex == 0)
+                  argumentIndex = previousArgumentIndex;
+                // Argument indices start at 1 but array indices at 0.
+                --argumentIndex;
+                if (argumentIndex < 0 || argumentIndex >= args.length)
+                  throw new MissingFormatArgumentException(format.substring(start, index));
+                argument = args[argumentIndex];
+              }
 
-	    switch (conversion)
-	      {
-	      case 'b':
-		booleanFormat(argument, flags, width, precision,
-			      origConversion);
-		break;
-	      case 'h':
-		hashCodeFormat(argument, flags, width, precision,
-			       origConversion);
-		break;
-	      case 's':
-		stringFormat(argument, flags, width, precision,
-			     origConversion);
-		break;
-	      case 'c':
-		characterFormat(argument, flags, width, precision,
-				origConversion);
-		break;
-	      case 'd':
-		checkFlags(flags & FormattableFlags.UPPERCASE, 0, 'd');
-		decimalConversion(argument, flags, width, precision,
-				  origConversion);
-		break;
-	      case 'o':
-		checkFlags(flags & FormattableFlags.UPPERCASE, 0, 'o');
-		hexOrOctalConversion(argument, flags, width, precision, 8,
-				     origConversion);
-		break;
-	      case 'x':
-		hexOrOctalConversion(argument, flags, width, precision, 16,
-				     origConversion);
-	      case 'e':
-		// scientificNotationConversion();
-		break;
-	      case 'f':
-		// floatingDecimalConversion();
-		break;
-	      case 'g':
-		// smartFloatingConversion();
-		break;
-	      case 'a':
-		// hexFloatingConversion();
-		break;
-	      case 't':
-		advance();
-		char subConversion = format.charAt(index);
-		dateTimeConversion(argument, flags, width, precision,
-				   origConversion, subConversion);
-		break;
-	      case '%':
-		percentFormat(flags, width, precision);
-		break;
-	      case 'n':
-		newLineFormat(flags, width, precision);
-		break;
-	      default:
-		throw new UnknownFormatConversionException(String.valueOf(origConversion));
-	      }
-	  }
+            switch (conversion)
+              {
+              case 'b':
+                booleanFormat(argument, flags, width, precision,
+                              origConversion);
+                break;
+              case 'h':
+                hashCodeFormat(argument, flags, width, precision,
+                               origConversion);
+                break;
+              case 's':
+                stringFormat(argument, flags, width, precision,
+                             origConversion);
+                break;
+              case 'c':
+                characterFormat(argument, flags, width, precision,
+                                origConversion);
+                break;
+              case 'd':
+                checkFlags(flags & FormattableFlags.UPPERCASE, 0, 'd');
+                decimalConversion(argument, flags, width, precision,
+                                  origConversion);
+                break;
+              case 'o':
+                checkFlags(flags & FormattableFlags.UPPERCASE, 0, 'o');
+                hexOrOctalConversion(argument, flags, width, precision, 8,
+                                     origConversion);
+                break;
+              case 'x':
+                hexOrOctalConversion(argument, flags, width, precision, 16,
+                                     origConversion);
+              case 'e':
+                // scientificNotationConversion();
+                break;
+              case 'f':
+                // floatingDecimalConversion();
+                break;
+              case 'g':
+                // smartFloatingConversion();
+                break;
+              case 'a':
+                // hexFloatingConversion();
+                break;
+              case 't':
+                advance();
+                char subConversion = format.charAt(index);
+                dateTimeConversion(argument, flags, width, precision,
+                                   origConversion, subConversion);
+                break;
+              case '%':
+                percentFormat(flags, width, precision);
+                break;
+              case 'n':
+                newLineFormat(flags, width, precision);
+                break;
+              default:
+                throw new UnknownFormatConversionException(String.valueOf(origConversion));
+              }
+          }
       }
     catch (IOException exc)
       {
-	ioException = exc;
+        ioException = exc;
       }
     return this;
   }

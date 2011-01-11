@@ -35,7 +35,7 @@ import org.objectweb.asm.Type;
 
 /**
  * A constant pool.
- * 
+ *
  * @author Eric Bruneton
  */
 public class ConstantPool extends HashMap {

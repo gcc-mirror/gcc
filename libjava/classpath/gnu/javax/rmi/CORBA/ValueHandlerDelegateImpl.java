@@ -56,17 +56,17 @@ import javax.rmi.CORBA.ValueHandlerMultiFormat;
 
 /**
  * Implementation of the ValueHandler.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) (implementation)
  */
 public class ValueHandlerDelegateImpl
   extends RmiUtilities
   implements ValueHandler, ValueHandlerMultiFormat
 {
-  /** 
+  /**
    * Return the maximal supported stream format version. We currently
    * support the version 1.
-   * 
+   *
    * TODO Support the version 2.
    */
   public byte getMaximumStreamFormatVersion()
@@ -81,14 +81,14 @@ public class ValueHandlerDelegateImpl
   {
     if (version!=1)
       throw new BAD_PARAM("Unsupported stream format version "+version);
-    else 
+    else
       writeValue(output, value);
   }
 
   /**
    * This implementation associates RunTime with stream rather than with the
    * value handler and this method is not used in the implementation. It is
-   * implemented just for the sake of compatibility. 
+   * implemented just for the sake of compatibility.
    */
   public RunTime getRunTimeCodeBase()
   {

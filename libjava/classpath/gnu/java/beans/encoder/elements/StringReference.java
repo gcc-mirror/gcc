@@ -54,7 +54,7 @@ public class StringReference extends Element
   {
     writer.writeNoChildren("string", string);
   }
-  
+
   public void writeEnd(Writer writer)
   {
     writer.writeEndNoChildren();

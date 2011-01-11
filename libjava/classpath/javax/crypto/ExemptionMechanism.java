@@ -90,7 +90,7 @@ public class ExemptionMechanism
   /**
    * Create an instance of <code>ExemptionMechanism</code> for a designated
    * <code>mechanism</code> from the first Security Provider offering it.
-   * 
+   *
    * @param mechanism the name of the exemption mechanism to create.
    * @return a newly created instance of <code>ExemptionMechanism</code>.
    * @throws IllegalArgumentException if the provider is null.
@@ -121,7 +121,7 @@ public class ExemptionMechanism
   /**
    * Create an instance of <code>ExemptionMechanism</code> for a designated
    * <code>mechanism</code> from a named <code>provider</code>.
-   * 
+   *
    * @param mechanism the name of the exemption mechanism to create.
    * @param provider the security provider to provide the exemption
    *          <code>mechanism</code>.
@@ -149,7 +149,7 @@ public class ExemptionMechanism
   /**
    * Create an instance of <code>ExemptionMechanism</code> for a designated
    * <code>mechanism</code> from a designated <code>provider</code>.
-   * 
+   *
    * @param mechanism the name of the exemption mechanism to create.
    * @param provider the security provider to provide the exemption
    *          <code>mechanism</code>.

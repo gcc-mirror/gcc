@@ -1,4 +1,4 @@
-/* DomHTMLImageElement.java -- 
+/* DomHTMLImageElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLImageElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public String getAlign()
   {
     return getHTMLAttribute("align");
@@ -74,7 +74,7 @@ public class DomHTMLImageElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getAlt()
   {
     return getHTMLAttribute("alt");
@@ -84,7 +84,7 @@ public class DomHTMLImageElement
   {
     setHTMLAttribute("alt", alt);
   }
-  
+
   public String getBorder()
   {
     return getHTMLAttribute("border");
@@ -94,7 +94,7 @@ public class DomHTMLImageElement
   {
     setHTMLAttribute("border", border);
   }
-  
+
   public int getHeight()
   {
     return getIntHTMLAttribute("height");
@@ -104,7 +104,7 @@ public class DomHTMLImageElement
   {
     setIntHTMLAttribute("height", height);
   }
-  
+
   public int getHspace()
   {
     return getIntHTMLAttribute("hspace");
@@ -114,7 +114,7 @@ public class DomHTMLImageElement
   {
     setIntHTMLAttribute("hspace", hspace);
   }
-  
+
   public boolean getIsMap()
   {
     return getBooleanHTMLAttribute("ismap");
@@ -124,7 +124,7 @@ public class DomHTMLImageElement
   {
     setBooleanHTMLAttribute("ismap", isMap);
   }
-  
+
   public String getLongDesc()
   {
     return getHTMLAttribute("longdesc");
@@ -134,7 +134,7 @@ public class DomHTMLImageElement
   {
     setHTMLAttribute("longdesc", longDesc);
   }
-  
+
   public String getSrc()
   {
     return getHTMLAttribute("src");
@@ -154,7 +154,7 @@ public class DomHTMLImageElement
   {
     setHTMLAttribute("usemap", useMap);
   }
-  
+
   public int getVspace()
   {
     return getIntHTMLAttribute("vspace");
@@ -164,7 +164,7 @@ public class DomHTMLImageElement
   {
     setIntHTMLAttribute("vspace", vspace);
   }
-  
+
   public int getWidth()
   {
     return getIntHTMLAttribute("width");
@@ -174,6 +174,5 @@ public class DomHTMLImageElement
   {
     setIntHTMLAttribute("width", width);
   }
-  
-}
 
+}

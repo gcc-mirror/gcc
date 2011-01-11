@@ -305,7 +305,7 @@ public interface ServerRequestInfoOperations
   /**
    * Returns the name of the adapter that is handling the current request.
    * The name is returned as a string array, representing full path from
-   * the root poa till the current poa, for instance 
+   * the root poa till the current poa, for instance
    * {"RootPOA", "childPOA","grandchildPOA"}.
    */
   public String[] adapter_name();
@@ -313,13 +313,13 @@ public interface ServerRequestInfoOperations
   /**
    * Returns the id of the ORB that is handling the current request. The ORB
    * id can be specified as the property org.omg.CORBA.ORBid when creating
-   * the ORB. 
+   * the ORB.
    */
   public String orb_id();
 
   /**
    * Returs the id of the server that is handling the current request. The server
-   * id is the same for all POAs and ORBs in the current virtual machine and 
+   * id is the same for all POAs and ORBs in the current virtual machine and
    * can be set as the property org.omg.CORBA.ServerId when creating one of the
    * ORBs.
    */

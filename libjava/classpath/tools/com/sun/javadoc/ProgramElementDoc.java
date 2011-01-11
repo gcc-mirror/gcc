@@ -167,4 +167,3 @@ public abstract boolean
 isFinal();
 
 } // interface ProgramElementDoc
-

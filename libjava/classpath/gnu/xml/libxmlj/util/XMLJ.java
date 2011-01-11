@@ -1,4 +1,4 @@
-/* XMLJ.java - 
+/* XMLJ.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -70,35 +70,35 @@ public final class XMLJ
   static class XMLJShutdownHook
     implements Runnable
   {
-    
+
     public void run ()
     {
       // Make sure finalizers are run
       System.gc ();
       Runtime.getRuntime ().runFinalization ();
-      
+
       // Perform global cleanup on the native level
       GnomeTransformerFactory.freeLibxsltGlobal ();
     }
-  
+
   }
 
   private static boolean initialised = false;
-  
+
   public static void init ()
   {
     if (!initialised)
       {
         System.loadLibrary ("xmlj");
-        
-        XMLJShutdownHook hook = new XMLJShutdownHook ();  
+
+        XMLJShutdownHook hook = new XMLJShutdownHook ();
         Runtime.getRuntime ().addShutdownHook (new Thread (hook));
       }
     initialised = true;
   }
 
   private static final int LOOKAHEAD = 50;
-  
+
   /**
    * Returns an input stream for the specified input source.
    * This returns a pushback stream that libxmlj can use to detect the
@@ -276,5 +276,5 @@ public final class XMLJ
       }
     return uri;
   }
-  
+
 }

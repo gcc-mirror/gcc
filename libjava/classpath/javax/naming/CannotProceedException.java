@@ -35,11 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
- 
+
 package javax.naming;
 
 import java.util.Hashtable;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 14, 2001

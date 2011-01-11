@@ -97,7 +97,7 @@ public final class Component extends Level
    * Trace details about the SSL key exchange.
    */
   public static final Component SSL_KEY_EXCHANGE = new Component ("SSL KEY EXCHANGE", 2);
-  
+
   /**
    * Trace running of delegated tasks.
    */
@@ -120,7 +120,7 @@ public final class Component extends Level
    * java.policy files.
    */
   public static final Component POLICY = new Component ("POLICY", 7);
-  
+
   /**
    * Trace ipp implementation.
    */
@@ -151,15 +151,15 @@ public final class Component extends Level
   {
     try
       {
-	Field f = Component.class.getField (name.toUpperCase ());
-	if (!Modifier.isStatic (f.getModifiers ())
-	    || Component.class.isAssignableFrom (f.getClass ()))
-	  return null;
-	return (Component) f.get (null);
+        Field f = Component.class.getField (name.toUpperCase ());
+        if (!Modifier.isStatic (f.getModifiers ())
+            || Component.class.isAssignableFrom (f.getClass ()))
+          return null;
+        return (Component) f.get (null);
       }
     catch (Throwable _)
       {
-	return null;
+        return null;
       }
   }
 

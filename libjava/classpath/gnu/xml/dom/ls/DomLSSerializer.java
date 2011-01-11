@@ -1,4 +1,4 @@
-/* DomLSSerializer.java -- 
+/* DomLSSerializer.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -85,7 +85,7 @@ public class DomLSSerializer
   }
 
   // -- LSSerializer --
-  
+
   public DOMConfiguration getDomConfig()
   {
     return this;
@@ -349,6 +349,5 @@ public class DomLSSerializer
   {
     return SUPPORTED_PARAMETERS.contains(str);
   }
-  
-}
 
+}

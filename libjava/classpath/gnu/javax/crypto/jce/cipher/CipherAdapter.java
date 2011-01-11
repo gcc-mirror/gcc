@@ -1,4 +1,4 @@
-/* CipherAdapter.java -- 
+/* CipherAdapter.java --
    Copyright (C) 2002, 2003, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -110,7 +110,7 @@ class CipherAdapter
    * should be the appropriate one listed in {@link Registry}. The basic cipher
    * instance is created, along with an instance of the
    * {@link gnu.javax.crypto.mode.ECB} mode and no padding.
-   * 
+   *
    * @param cipherName The cipher to instantiate.
    * @param blockLen The block length to use.
    */
@@ -125,7 +125,7 @@ class CipherAdapter
 
   /**
    * Creates a new cipher adapter with the default block size.
-   * 
+   *
    * @param cipherName The cipher to instantiate.
    */
   protected CipherAdapter(String cipherName)
@@ -236,7 +236,7 @@ class CipherAdapter
   /**
    * Executes initialization logic after all parameters have been handled by the
    * engineInit()s.
-   * 
+   *
    * @param opmode the desired mode of operation for this instance.
    * @param key the key material to use for initialization.
    * @param random a source of randmoness to use if/when needed.
@@ -288,7 +288,7 @@ class CipherAdapter
         // cipher, that is less than or equal to the length of the kb array.
         // set keyLen to kbLength.  either the cipher implementation will throw
         // an InvalidKeyException, or it is implemented in a way which can deal
-        // with an unsupported key-size. 
+        // with an unsupported key-size.
         keyLen = kbLength;
       }
     if (keyLen < kbLength)
@@ -348,7 +348,7 @@ class CipherAdapter
           {
             throw new InvalidAlgorithmParameterException();
           }
-        
+
         attributes.put(IMode.IV, ((IvParameterSpec) params).getIV());
         blockLen = cipher.defaultBlockSize();
         attributes.put(IBlockCipher.CIPHER_BLOCK_SIZE, Integer.valueOf(blockLen));

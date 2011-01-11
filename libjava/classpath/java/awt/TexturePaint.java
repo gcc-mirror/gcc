@@ -1,4 +1,4 @@
-/* TexturePaint.java -- 
+/* TexturePaint.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -53,10 +53,10 @@ public class TexturePaint implements Paint
 {
   private final BufferedImage texture;
   private final Rectangle2D anchor;
-  
+
   /**
    * Constructor.
-   * 
+   *
    * @param texture - the texture
    * @param anchor - the shape
    */
@@ -68,7 +68,7 @@ public class TexturePaint implements Paint
 
   /**
    * Gets the texture image.
-   * 
+   *
    * @return the texture
    */
   public BufferedImage getImage()
@@ -78,7 +78,7 @@ public class TexturePaint implements Paint
 
   /**
    * Gets the shape anchor.
-   * 
+   *
    * @return the shape anchor
    */
   public Rectangle2D getAnchorRect()
@@ -88,12 +88,12 @@ public class TexturePaint implements Paint
 
   /**
    * Creates the context used to paint the texture.
-   * 
+   *
    * @param cm - the ColorModel that receives the Paint data. Used only as a hint.
    * @param deviceBounds - the device space being rendered.
    * @param userBounds - the user space being rendered
    * @param xform - the AffineTransform from user space into device space
-   * @param hints - a RenderingHints object that is used to specify how the 
+   * @param hints - a RenderingHints object that is used to specify how the
    * pattern is rendered
    * @return the paint context used to paint the texture
    */
@@ -108,7 +108,7 @@ public class TexturePaint implements Paint
 
   /**
    * Returns the transparency mode.
-   * 
+   *
    * @return the transparency mode.
    */
   public int getTransparency()

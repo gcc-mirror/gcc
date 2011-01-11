@@ -1,4 +1,4 @@
-/* SAXDriver.java -- 
+/* SAXDriver.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -80,45 +80,45 @@ import org.xml.sax.helpers.NamespaceSupport;
  *
  * <table border="1" width='100%' cellpadding='3' cellspacing='0'>
  * <tr bgcolor='#ccccff'>
- *	<th><font size='+1'>Name</font></th>
- *	<th><font size='+1'>Notes</font></th></tr>
+ *      <th><font size='+1'>Name</font></th>
+ *      <th><font size='+1'>Notes</font></th></tr>
  *
  * <tr><td colspan=2><center><em>Features ... URL prefix is
  * <b>http://xml.org/sax/features/</b></em></center></td></tr>
  *
  * <tr><td>(URL)/external-general-entities</td>
- *	<td>Value defaults to <em>true</em></td></tr>
+ *      <td>Value defaults to <em>true</em></td></tr>
  * <tr><td>(URL)/external-parameter-entities</td>
- *	<td>Value defaults to <em>true</em></td></tr>
+ *      <td>Value defaults to <em>true</em></td></tr>
  * <tr><td>(URL)/is-standalone</td>
- *	<td>(PRELIMINARY) Returns true iff the document's parsing
- *	has started (some non-error event after <em>startDocument()</em>
- *	was reported) and the document's standalone flag is set.</td></tr>
+ *      <td>(PRELIMINARY) Returns true iff the document's parsing
+ *      has started (some non-error event after <em>startDocument()</em>
+ *      was reported) and the document's standalone flag is set.</td></tr>
  * <tr><td>(URL)/namespace-prefixes</td>
- *	<td>Value defaults to <em>false</em> (but XML 1.0 names are
- *		always reported)</td></tr>
+ *      <td>Value defaults to <em>false</em> (but XML 1.0 names are
+ *              always reported)</td></tr>
  * <tr><td>(URL)/lexical-handler/parameter-entities</td>
- *	<td>Value is fixed at <em>true</em></td></tr>
+ *      <td>Value is fixed at <em>true</em></td></tr>
  * <tr><td>(URL)/namespaces</td>
- *	<td>Value defaults to <em>true</em></td></tr>
+ *      <td>Value defaults to <em>true</em></td></tr>
  * <tr><td>(URL)/resolve-dtd-uris</td>
- *	<td>(PRELIMINARY) Value defaults to <em>true</em></td></tr>
+ *      <td>(PRELIMINARY) Value defaults to <em>true</em></td></tr>
  * <tr><td>(URL)/string-interning</td>
- *	<td>Value is fixed at <em>true</em></td></tr>
+ *      <td>Value is fixed at <em>true</em></td></tr>
  * <tr><td>(URL)/use-attributes2</td>
- *	<td>(PRELIMINARY) Value is fixed at <em>true</em></td></tr>
+ *      <td>(PRELIMINARY) Value is fixed at <em>true</em></td></tr>
  * <tr><td>(URL)/use-entity-resolver2</td>
- *	<td>(PRELIMINARY) Value defaults to <em>true</em></td></tr>
+ *      <td>(PRELIMINARY) Value defaults to <em>true</em></td></tr>
  * <tr><td>(URL)/validation</td>
- *	<td>Value is fixed at <em>false</em></td></tr>
+ *      <td>Value is fixed at <em>false</em></td></tr>
  *
  * <tr><td colspan=2><center><em>Handler Properties ... URL prefix is
  * <b>http://xml.org/sax/properties/</b></em></center></td></tr>
  *
  * <tr><td>(URL)/declaration-handler</td>
- *	<td>A declaration handler may be provided.  </td></tr>
+ *      <td>A declaration handler may be provided.  </td></tr>
  * <tr><td>(URL)/lexical-handler</td>
- *	<td>A lexical handler may be provided.  </td></tr>
+ *      <td>A lexical handler may be provided.  </td></tr>
  * </table>
  *
  * <p>This parser currently implements the SAX1 Parser API, but
@@ -131,10 +131,10 @@ import org.xml.sax.helpers.NamespaceSupport;
 final public class SAXDriver
   implements Locator, Attributes2, XMLReader, Parser, AttributeList
 {
-  
+
   private final DefaultHandler2 base = new DefaultHandler2();
   private XmlParser parser;
-  
+
   private EntityResolver entityResolver = base;
   private EntityResolver2 resolver2 = null;
   private ContentHandler contentHandler = base;
@@ -142,28 +142,28 @@ final public class SAXDriver
   private ErrorHandler errorHandler = base;
   private DeclHandler declHandler = base;
   private LexicalHandler lexicalHandler = base;
-  
+
   private String elementName;
   private Stack entityStack;
-  
+
   // one vector (of object/struct): faster, smaller
   private List attributesList;
-  
+
   private boolean namespaces = true;
   private boolean xmlNames = false;
   private boolean extGE = true;
   private boolean extPE = true;
   private boolean resolveAll = true;
   private boolean useResolver2 = true;
-  
+
   // package private to allow (read-only) access in XmlParser
   boolean stringInterning = true;
-  
+
   private int attributeCount;
   private boolean attributes;
   private String[] nsTemp;
   private NamespaceSupport prefixStack;
-  
+
   //
   // Constructor.
   //
@@ -355,12 +355,12 @@ final public class SAXDriver
             throw new IllegalStateException();
           }
         parser.setHandler(this);
-        
+
         try
           {
             Reader r = source.getCharacterStream();
             InputStream in = source.getByteStream();
-                        
+
             parser.doParse(source.getSystemId(),
                            source.getPublicId(),
                            r,
@@ -430,7 +430,7 @@ final public class SAXDriver
       {
         return extPE;
       }
-    
+
     // element/attribute names are as written in document; no mangling
     if ((FEATURE + "namespace-prefixes").equals(featureId))
       {
@@ -454,15 +454,15 @@ final public class SAXDriver
       {
         return stringInterning;
       }
-  
+
     // EXTENSIONS 1.1
-    
+
     // always returns isSpecified info
     if ((FEATURE + "use-attributes2").equals(featureId))
       {
         return true;
       }
-  
+
     // meaningful between startDocument/endDocument
     if ((FEATURE + "is-standalone").equals(featureId))
       {
@@ -484,7 +484,7 @@ final public class SAXDriver
       {
         return useResolver2;
       }
-  
+
     throw new SAXNotRecognizedException(featureId);
   }
 
@@ -518,7 +518,7 @@ final public class SAXDriver
       {
         return (lexicalHandler == base) ? null : lexicalHandler;
       }
-    
+
     // unknown properties
     throw new SAXNotRecognizedException(propertyId);
   }
@@ -531,10 +531,10 @@ final public class SAXDriver
     throws SAXNotRecognizedException, SAXNotSupportedException
   {
     boolean state;
-  
+
     // Features with a defined value, we just change it if we can.
     state = getFeature (featureId);
-    
+
     if (state == value)
       {
         return;
@@ -601,9 +601,9 @@ final public class SAXDriver
   {
     // see if the property is recognized
     getProperty(propertyId);
-    
+
     // Properties with a defined value, we just change it if we can.
-    
+
     if ((PROPERTY + "declaration-handler").equals(propertyId))
       {
         if (value == null)
@@ -620,7 +620,7 @@ final public class SAXDriver
           }
         return ;
       }
-    
+
     if ((PROPERTY + "lexical-handler").equals(propertyId))
       {
         if (value == null)
@@ -637,7 +637,7 @@ final public class SAXDriver
           }
         return;
       }
-    
+
     throw new SAXNotSupportedException(propertyId);
   }
 
@@ -676,7 +676,7 @@ final public class SAXDriver
     throws SAXException, IOException
   {
     InputSource  source;
-    
+
     // external entities might be skipped
     if (isPE && !extPE)
       {
@@ -724,7 +724,7 @@ final public class SAXDriver
     // FIXME normalize system IDs -- when?
     // - Convert to UTF-8
     // - Map reserved and non-ASCII characters to %HH
-    
+
     try
       {
         if (baseURI == null)
@@ -749,7 +749,7 @@ final public class SAXDriver
           {
             throw e;
           }
-        
+
         // sometimes sysids for notations or unparsed entities
         // aren't really URIs...
         warn("Can't absolutize SYSTEM id: " + e.getMessage());
@@ -800,15 +800,15 @@ final public class SAXDriver
     throws SAXException
   {
     lexicalHandler.startDTD(name, publicId, systemId);
-  
+
     // ... the "name" is a declaration and should be given
     // to the DeclHandler (but sax2 doesn't).
-    
+
     // the IDs for the external subset are lexical details,
     // as are the contents of the internal subset; but sax2
     // doesn't provide the internal subset "pre-parse"
   }
-  
+
   void notationDecl(String name, String publicId, String systemId,
                     String baseUri)
     throws SAXException
@@ -857,7 +857,7 @@ final public class SAXDriver
   {
     int index = uri.indexOf(':');
 
-    // many versions of nwalsh docbook stylesheets 
+    // many versions of nwalsh docbook stylesheets
     // have bogus URLs; so this can't be an error...
     if (index < 1 && uri.length() != 0)
       {
@@ -866,7 +866,7 @@ final public class SAXDriver
 
     // FIXME:  char [0] must be ascii alpha; chars [1..index]
     // must be ascii alphanumeric or in "+-." [RFC 2396]
-    
+
     //Namespace Constraints
     //name for xml prefix must be http://www.w3.org/XML/1998/namespace
     boolean prefixEquality = prefix.equals("xml");
@@ -876,13 +876,13 @@ final public class SAXDriver
         fatal("xml is by definition bound to the namespace name " +
               "http://www.w3.org/XML/1998/namespace");
       }
-  
+
     //xmlns prefix declaration is illegal but xml prefix declaration is llegal...
     if (prefixEquality && uriEquality)
       {
         return;
       }
-  
+
     //name for xmlns prefix must be http://www.w3.org/2000/xmlns/
     prefixEquality = prefix.equals("xmlns");
     uriEquality = uri.equals("http://www.w3.org/2000/xmlns/");
@@ -891,14 +891,14 @@ final public class SAXDriver
         fatal("http://www.w3.org/2000/xmlns/ is by definition bound" +
               " to prefix xmlns");
       }
-  
+
     //even if the uri is http://www.w3.org/2000/xmlns/
     // it is illegal to declare it
     if (prefixEquality && uriEquality)
       {
         fatal ("declaring the xmlns prefix is illegal");
       }
-  
+
     uri = uri.intern();
     prefixStack.declarePrefix(prefix, uri);
     contentHandler.startPrefixMapping(prefix, uri);
@@ -915,13 +915,13 @@ final public class SAXDriver
             prefixStack.pushContext();
           }
       }
-    
+
     // process namespace decls immediately;
     // then maybe forget this as an attribute
     if (namespaces)
       {
         int index;
-        
+
         // default NS declaration?
         if (stringInterning)
           {
@@ -938,11 +938,11 @@ final public class SAXDriver
                      && qname.startsWith("xmlns"))
               {
                 String prefix = qname.substring(6);
-              
+
                 if (prefix.equals(""))
                   {
                     fatal("missing prefix " +
-                          "in namespace declaration attribute");  
+                          "in namespace declaration attribute");
                   }
                 if (value.length() == 0)
                   {
@@ -974,7 +974,7 @@ final public class SAXDriver
                      && qname.startsWith("xmlns"))
               {
                 String prefix = qname.substring(6);
-                
+
                 if (value.length() == 0)
                   {
                     verror("missing URI in namespace decl attribute: "
@@ -993,12 +993,12 @@ final public class SAXDriver
       }
     // remember this attribute ...
     attributeCount++;
-    
+
     // attribute type comes from querying parser's DTD records
     attributesList.add(new Attribute(qname, value, isSpecified));
-    
+
   }
-  
+
   void startElement(String elname)
     throws SAXException
   {
@@ -1016,7 +1016,7 @@ final public class SAXDriver
     // String.hashCode() (1.5%) and about 1.3% each for pushing
     // the context, and two chunks of name processing.
     //
-    
+
     if (!attributes)
       {
         if (namespaces)
@@ -1026,7 +1026,7 @@ final public class SAXDriver
       }
     else if (namespaces)
       {
-      
+
         // now we can patch up namespace refs; we saw all the
         // declarations, so now we'll do the Right Thing
         Iterator itt = attributesList.iterator();
@@ -1035,7 +1035,7 @@ final public class SAXDriver
             Attribute attribute = (Attribute) itt.next();
             String qname = attribute.name;
             int index;
-            
+
             // default NS declaration?
             if (stringInterning)
               {
@@ -1059,13 +1059,13 @@ final public class SAXDriver
                       "character are invalid");
               }
             index = qname.indexOf(':');
-            
+
             // NS prefix declaration?
             if (index == 5 && qname.startsWith("xmlns"))
               {
                 continue;
               }
-            
+
             // it's not a NS decl; patch namespace info items
             if (prefixStack.processName(qname, nsTemp, true) == null)
               {
@@ -1078,7 +1078,7 @@ final public class SAXDriver
               }
           }
       }
-    
+
     // save element name so attribute callbacks work
     elementName = elname;
     if (namespaces)
@@ -1095,7 +1095,7 @@ final public class SAXDriver
         handler.startElement("", "", elname, this);
       }
     // elementName = null;
-    
+
     // elements with no attributes are pretty common!
     if (attributes)
       {
@@ -1104,7 +1104,7 @@ final public class SAXDriver
         attributes = false;
       }
   }
-  
+
   void endElement(String elname)
     throws SAXException
   {
@@ -1117,9 +1117,9 @@ final public class SAXDriver
       }
     prefixStack.processName(elname, nsTemp, false);
     handler.endElement(nsTemp[0], nsTemp[1], elname);
-    
+
     Enumeration prefixes = prefixStack.getDeclaredPrefixes();
-    
+
     while (prefixes.hasMoreElements())
       {
         handler.endPrefixMapping((String) prefixes.nextElement());
@@ -1170,7 +1170,7 @@ final public class SAXDriver
     throws SAXException
   {
     SAXParseException fatal;
-  
+
     fatal = new SAXParseException(message, this);
     errorHandler.fatalError(fatal);
 
@@ -1184,16 +1184,16 @@ final public class SAXDriver
     throws SAXException
   {
     SAXParseException err;
-    
+
     err = new SAXParseException(message, this);
     errorHandler.error(err);
   }
-  
+
   void warn(String message)
     throws SAXException
   {
     SAXParseException err;
-  
+
     err = new SAXParseException(message, this);
     errorHandler.warning(err);
   }
@@ -1307,7 +1307,7 @@ final public class SAXDriver
   public int getIndex(String uri, String local)
     {
       int length = getLength();
-      
+
       for (int i = 0; i < length; i++)
         {
           if (!getURI(i).equals(uri))
@@ -1328,7 +1328,7 @@ final public class SAXDriver
   public int getIndex(String xmlName)
   {
     int length = getLength();
-    
+
     for (int i = 0; i < length; i++)
       {
         if (getQName(i).equals(xmlName))
@@ -1345,7 +1345,7 @@ final public class SAXDriver
   public String getType(String uri, String local)
   {
     int index = getIndex(uri, local);
-    
+
     if (index < 0)
       {
         return null;
@@ -1360,7 +1360,7 @@ final public class SAXDriver
   public String getType(String xmlName)
   {
     int index = getIndex(xmlName);
-    
+
     if (index < 0)
       {
         return null;
@@ -1374,7 +1374,7 @@ final public class SAXDriver
   public String getValue(String uri, String local)
   {
     int index = getIndex(uri, local);
-    
+
     if (index < 0)
       {
         return null;
@@ -1389,7 +1389,7 @@ final public class SAXDriver
   public String getValue(String xmlName)
   {
     int index = getIndex(xmlName);
-    
+
     if (index < 0)
       {
         return null;
@@ -1404,7 +1404,7 @@ final public class SAXDriver
   /** @return false unless the attribute was declared in the DTD.
    * @throws java.lang.ArrayIndexOutOfBoundsException
    *   When the supplied index does not identify an attribute.
-   */  
+   */
   public boolean isDeclared(int index)
   {
     if (index < 0 || index >= attributeCount)
@@ -1513,7 +1513,7 @@ final public class SAXDriver
   private static class Adapter
     implements ContentHandler
   {
-    
+
     private DocumentHandler docHandler;
 
     Adapter(DocumentHandler dh)
@@ -1525,19 +1525,19 @@ final public class SAXDriver
     {
       docHandler.setDocumentLocator(l);
     }
-  
+
     public void startDocument()
       throws SAXException
     {
       docHandler.startDocument();
     }
-  
+
     public void processingInstruction(String target, String data)
       throws SAXException
     {
       docHandler.processingInstruction(target, data);
     }
-  
+
     public void startPrefixMapping(String prefix, String uri)
     {
       /* ignored */
@@ -1589,13 +1589,13 @@ final public class SAXDriver
 
   private static class Attribute
   {
-    
+
     String name;
     String value;
     String nameSpace;
     String localName;
     boolean specified;
-    
+
     Attribute(String name, String value, boolean specified)
     {
       this.name = name;
@@ -1603,7 +1603,7 @@ final public class SAXDriver
       this.nameSpace = "";
       this.specified = specified;
     }
-    
+
   }
 
 }

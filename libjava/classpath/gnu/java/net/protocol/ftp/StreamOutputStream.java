@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -54,7 +54,7 @@ class StreamOutputStream
   {
     super(dtp, out);
   }
-  
+
   public void write(int c)
     throws IOException
   {
@@ -70,7 +70,7 @@ class StreamOutputStream
   {
     write(b, 0, b.length);
   }
-  
+
   public void write(byte[] b, int off, int len)
     throws IOException
   {
@@ -80,6 +80,5 @@ class StreamOutputStream
       }
     out.write(b, off, len);
   }
-  
-}
 
+}

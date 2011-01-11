@@ -1,4 +1,4 @@
-/* DomHTMLObjectElement.java -- 
+/* DomHTMLObjectElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -71,7 +71,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("code", code);
   }
-  
+
   public String getJavaCode()
   {
     return getHTMLAttribute("java_code");
@@ -81,7 +81,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("java_code", code);
   }
-  
+
   public String getObject()
   {
     return getHTMLAttribute("object");
@@ -91,7 +91,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("object", obj);
   }
-  
+
   public String getJavaObject()
   {
     return getHTMLAttribute("java_object");
@@ -101,7 +101,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("java_object", obj);
   }
-  
+
   public String getAlign()
   {
     return getHTMLAttribute("align");
@@ -111,7 +111,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getArchive()
   {
     return getHTMLAttribute("archive");
@@ -121,7 +121,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("archive", archive);
   }
-  
+
   public String getJavaArchive()
   {
     return getHTMLAttribute("java_archive");
@@ -131,7 +131,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("java_archive", archive);
   }
-  
+
   public String getBorder()
   {
     return getHTMLAttribute("border");
@@ -141,7 +141,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("border", border);
   }
-  
+
   public String getCodeBase()
   {
     return getHTMLAttribute("codebase");
@@ -151,7 +151,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("codebase", codeBase);
   }
-  
+
   public String getJavaCodeBase()
   {
     return getHTMLAttribute("java_codebase");
@@ -161,7 +161,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("java_codebase", codeBase);
   }
-  
+
   public String getCodeType()
   {
     return getHTMLAttribute("codetype");
@@ -171,7 +171,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("codetype", codeType);
   }
-  
+
   public String getData()
   {
     return getHTMLAttribute("data");
@@ -181,7 +181,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("data", data);
   }
-  
+
   public boolean getDeclare()
   {
     return getBooleanHTMLAttribute("declare");
@@ -191,7 +191,7 @@ public class DomHTMLObjectElement
   {
     setBooleanHTMLAttribute("declare", declare);
   }
-  
+
   public String getHeight()
   {
     return getHTMLAttribute("height");
@@ -201,7 +201,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("height", height);
   }
-  
+
   public int getHspace()
   {
     return getIntHTMLAttribute("hspace");
@@ -211,7 +211,7 @@ public class DomHTMLObjectElement
   {
     setIntHTMLAttribute("hspace", hspace);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -221,7 +221,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public String getStandby()
   {
     return getHTMLAttribute("standby");
@@ -231,7 +231,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("standby", standby);
   }
-  
+
   public int getTabIndex()
   {
     return getIntHTMLAttribute("tabindex");
@@ -241,7 +241,7 @@ public class DomHTMLObjectElement
   {
     setIntHTMLAttribute("tabindex", tabIndex);
   }
-  
+
   public String getType()
   {
     return getHTMLAttribute("type");
@@ -251,7 +251,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("type", type);
   }
-  
+
   public String getJavaType()
   {
     return getHTMLAttribute("java_type");
@@ -261,7 +261,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("java_type", type);
   }
-  
+
   public String getUseMap()
   {
     return getHTMLAttribute("usemap");
@@ -271,7 +271,7 @@ public class DomHTMLObjectElement
   {
     setHTMLAttribute("usemap", useMap);
   }
-  
+
   public int getVspace()
   {
     return getIntHTMLAttribute("vspace");
@@ -281,7 +281,7 @@ public class DomHTMLObjectElement
   {
     setIntHTMLAttribute("vspace", vspace);
   }
-  
+
   public String getWidth()
   {
     return getHTMLAttribute("width");
@@ -297,25 +297,24 @@ public class DomHTMLObjectElement
     // TODO getContentDocument
     return null;
   }
-  
+
   public void setMayscript(String may)
   {
     setHTMLAttribute("mayscript", may);
   }
-  
+
   public String getMayscript()
   {
     return getHTMLAttribute("mayscript");
   }
-  
+
   public void setScriptable(String scr)
   {
     setHTMLAttribute("scriptable", scr);
   }
-  
+
   public String getScriptable()
   {
     return getHTMLAttribute("scriptable");
   }
 }
-

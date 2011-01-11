@@ -78,13 +78,13 @@ public class DefaultComboBoxModel extends AbstractListModel
   }
 
   /**
-   * Creates a new model and initializes its item list to the values in the 
-   * given array.  The selected item is set to the first item in the array, or 
+   * Creates a new model and initializes its item list to the values in the
+   * given array.  The selected item is set to the first item in the array, or
    * <code>null</code> if the array length is zero.
    *
    * @param items  an array containing items for the model (<code>null</code>
    *               not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>items</code> is <code>null</code>.
    */
   public DefaultComboBoxModel(Object[] items)
@@ -95,13 +95,13 @@ public class DefaultComboBoxModel extends AbstractListModel
   }
 
   /**
-   * Creates a new model and initializes its item list to the values in the 
-   * given vector.  The selected item is set to the first item in the vector, 
+   * Creates a new model and initializes its item list to the values in the
+   * given vector.  The selected item is set to the first item in the vector,
    * or <code>null</code> if the vector length is zero.
    *
    * @param vector  a vector containing items for the model (<code>null</code>
    *                not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>vector</code> is <code>null</code>.
    */
   public DefaultComboBoxModel(Vector<?> vector)
@@ -114,7 +114,7 @@ public class DefaultComboBoxModel extends AbstractListModel
   /**
    * Adds an element to the model's item list and sends a {@link ListDataEvent}
    * to all registered listeners.  If the new element is the first item added
-   * to the list, and the selected item is <code>null</code>, the new element 
+   * to the list, and the selected item is <code>null</code>, the new element
    * is set as the selected item.
    *
    * @param object item to add to the model's item list.
@@ -131,12 +131,12 @@ public class DefaultComboBoxModel extends AbstractListModel
   /**
    * Removes the element at the specified index from the model's item list
    * and sends a {@link ListDataEvent} to all registered listeners.  If the
-   * element removed was the selected item, then the preceding element becomes 
-   * the new selected item (or the next element, if there is no preceding 
+   * element removed was the selected item, then the preceding element becomes
+   * the new selected item (or the next element, if there is no preceding
    * element).
    *
    * @param index  the index of the item to remove.
-   * 
+   *
    * @throws ArrayIndexOutOfBoundsException if <code>index</code> is out of
    *         bounds.
    */
@@ -147,7 +147,7 @@ public class DefaultComboBoxModel extends AbstractListModel
       {
         if (selected > 0)
           setSelectedItem(getElementAt(selected - 1));
-        else 
+        else
           setSelectedItem(getElementAt(selected + 1));
       }
     list.removeElementAt(index);
@@ -161,10 +161,10 @@ public class DefaultComboBoxModel extends AbstractListModel
    * @param object element to insert
    * @param index index specifing position in the list where given element
    *        should be inserted.
-   * 
-   * @throws ArrayIndexOutOfBoundsException if <code>index</code> is out of 
+   *
+   * @throws ArrayIndexOutOfBoundsException if <code>index</code> is out of
    *         bounds.
-   * 
+   *
    * @see #addElement(Object)
    */
   public void insertElementAt(Object object, int index)
@@ -174,7 +174,7 @@ public class DefaultComboBoxModel extends AbstractListModel
   }
 
   /**
-   * Removes an element from the model's item list and sends a 
+   * Removes an element from the model's item list and sends a
    * {@link ListDataEvent} to all registered listeners.  If the item to be
    * removed is the current selected item, a new selected item will be set.
    * If the element is not found in the model's item list, this method does
@@ -191,7 +191,7 @@ public class DefaultComboBoxModel extends AbstractListModel
 
   /**
    * Removes all the items from the model's item list, resets and selected item
-   * to <code>null</code>, and sends a {@link ListDataEvent} to all registered 
+   * to <code>null</code>, and sends a {@link ListDataEvent} to all registered
    * listeners.
    */
   public void removeAllElements()
@@ -217,7 +217,7 @@ public class DefaultComboBoxModel extends AbstractListModel
 
   /**
    * Sets the selected item for the model and sends a {@link ListDataEvent} to
-   * all registered listeners.  The start and end index of the event is set to 
+   * all registered listeners.  The start and end index of the event is set to
    * -1 to indicate the model's selection has changed, and not its contents.
    *
    * @param object  the new selected item (<code>null</code> permitted).

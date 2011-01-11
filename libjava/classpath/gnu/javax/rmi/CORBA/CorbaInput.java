@@ -51,7 +51,7 @@ import java.io.Serializable;
 /**
  * Converts calls on java ObjectOutputStream to calls on CORBA OutputStream. A
  * class to substitute for objects using readObject method.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class CorbaInput

@@ -37,7 +37,7 @@ import javax.swing.SwingUtilities;
 
 public class SliderDemo
   extends JPanel
-  implements ActionListener 
+  implements ActionListener
 {
 
   JSlider hslider1;
@@ -48,7 +48,7 @@ public class SliderDemo
   JSlider hslider6;
   JSlider hslider7;
   JSlider hslider8;
-  
+
   JSlider vslider1;
   JSlider vslider2;
   JSlider vslider3;
@@ -59,15 +59,15 @@ public class SliderDemo
   JSlider vslider8;
 
   JCheckBox enabledCheckBox;
-  
-  public SliderDemo() 
+
+  public SliderDemo()
   {
     createContent();
   }
-  
+
   /**
    * When the demo is run independently, the frame is displayed, so we should
-   * initialise the content panel (including the demo content and a close 
+   * initialise the content panel (including the demo content and a close
    * button).  But when the demo is run as part of the Swing activity board,
    * only the demo content panel is used, the frame itself is never displayed,
    * so we can avoid this step.
@@ -81,15 +81,15 @@ public class SliderDemo
     closePanel.add(closeButton);
     add(closePanel, BorderLayout.SOUTH);
   }
-       
+
   /**
    * Returns a panel with the demo content.  The panel
    * uses a BorderLayout(), and the BorderLayout.SOUTH area
-   * is empty, to allow callers to add controls to the 
+   * is empty, to allow callers to add controls to the
    * bottom of the panel if they want to (a close button is
    * added if this demo is being run as a standalone demo).
-   */       
-  private void createContent() 
+   */
+  private void createContent()
   {
     setLayout(new BorderLayout());
     JPanel panel = new JPanel(new GridLayout(1, 2));
@@ -106,14 +106,14 @@ public class SliderDemo
     panel2.add(checkBoxPanel, BorderLayout.SOUTH);
     add(panel2);
   }
-    
-  private JPanel createHorizontalPanel() 
+
+  private JPanel createHorizontalPanel()
   {
     JPanel panel = new JPanel(new GridLayout(8, 1));
-  
+
     hslider1 = new JSlider(JSlider.HORIZONTAL, 0, 100, 35);
     panel.add(hslider1);
-        
+
     hslider2 = new JSlider(JSlider.HORIZONTAL, 0, 100, 35);
     hslider2.setMajorTickSpacing(20);
     hslider2.setMinorTickSpacing(5);
@@ -138,7 +138,7 @@ public class SliderDemo
     hslider5 = new JSlider(JSlider.HORIZONTAL, 0, 100, 35);
     hslider5.setInverted(true);
     panel.add(hslider5);
-        
+
     hslider6 = new JSlider(JSlider.HORIZONTAL, 0, 100, 35);
     hslider6.setInverted(true);
     hslider6.setMajorTickSpacing(20);
@@ -165,14 +165,14 @@ public class SliderDemo
 
     return panel;
   }
-    
-  private JPanel createVerticalPanel() 
+
+  private JPanel createVerticalPanel()
   {
     JPanel panel = new JPanel(new GridLayout(1, 8));
-  
+
     vslider1 = new JSlider(JSlider.VERTICAL, 0, 100, 35);
     panel.add(vslider1);
-        
+
     vslider2 = new JSlider(JSlider.VERTICAL, 0, 100, 35);
     vslider2.setMajorTickSpacing(20);
     vslider2.setMinorTickSpacing(5);
@@ -197,7 +197,7 @@ public class SliderDemo
     vslider5 = new JSlider(JSlider.VERTICAL, 0, 100, 35);
     vslider5.setInverted(true);
     panel.add(vslider5);
-        
+
     vslider6 = new JSlider(JSlider.VERTICAL, 0, 100, 35);
     vslider6.setInverted(true);
     vslider6.setMajorTickSpacing(20);
@@ -223,8 +223,8 @@ public class SliderDemo
     panel.add(vslider8);
     return panel;
   }
-    
-  public void actionPerformed(ActionEvent e) 
+
+  public void actionPerformed(ActionEvent e)
   {
     if (e.getActionCommand().equals("CLOSE"))
     {
@@ -251,7 +251,7 @@ public class SliderDemo
       vslider8.setEnabled(enabled);
     }
   }
-  public static void main(String[] args) 
+  public static void main(String[] args)
   {
     SwingUtilities.invokeLater
     (new Runnable()

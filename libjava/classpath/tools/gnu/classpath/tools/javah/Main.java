@@ -248,7 +248,7 @@ public class Main
       {
         if (cniOrJniSeen && cni)
           throw new OptionException("only one of -jni or -cni may be used");
-	cniOrJniSeen = true;
+        cniOrJniSeen = true;
         cni = false;
       }
     });
@@ -258,7 +258,7 @@ public class Main
       {
         if (cniOrJniSeen && ! cni)
           throw new OptionException("only one of -jni or -cni may be used");
-	cniOrJniSeen = true;
+        cniOrJniSeen = true;
         cni = true;
       }
     });
@@ -323,8 +323,8 @@ public class Main
     Iterator<Map.Entry<File,ClassWrapper>> i = klasses.entrySet().iterator();
     while (i.hasNext())
       {
-	Map.Entry<File,ClassWrapper> e = i.next();
-	File file = e.getKey();
+        Map.Entry<File,ClassWrapper> e = i.next();
+        File file = e.getKey();
         ClassWrapper klass = e.getValue();
         if (verbose)
           System.err.println("[writing " + klass + " as " + file + "]");
@@ -393,14 +393,14 @@ public class Main
         // file name.
         Object item = i.next();
         ClassWrapper klass;
-	File filename;
+        File filename;
         if (item instanceof File)
           {
             // Load class from file.
             if (verbose)
               System.err.println("[reading file " + item + "]");
             klass = getClass((File) item);
-	    filename = new File(klass.name);
+            filename = new File(klass.name);
           }
         else
           {
@@ -408,9 +408,9 @@ public class Main
             String className = ((String) item).replace('.', '/');
             if (verbose)
               System.err.println("[reading class " + className + "]");
-	    // Use the name the user specified, even if it is
-	    // different from the ultimate class name.
-	    filename = new File(className);
+            // Use the name the user specified, even if it is
+            // different from the ultimate class name.
+            filename = new File(className);
             klass = getClass(className);
           }
         results.put(filename, klass);
@@ -452,7 +452,7 @@ public class Main
         URL url = loader.findResource(resource);
         if (url == null)
           throw new IOException("can't find class file " + resource
-				+ " in " + loader);
+                                + " in " + loader);
         InputStream is = url.openStream();
         ClassWrapper result = readClass(is);
         classMap.put(name, result);

@@ -1,4 +1,4 @@
-/* DEREncodingException.java -- 
+/* DEREncodingException.java --
    Copyright (C) 1999, 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.

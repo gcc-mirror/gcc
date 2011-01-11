@@ -51,11 +51,11 @@ public interface MouseInfoPeer
   /**
    * Get the mouse pointer coordinates and store them in p (obviously non-null)
    * returns the index of the current screen device of the mouse.
-   */ 
+   */
   public int fillPointWithCoords(Point p);
 
   /**
    * Returns whether a given Window is under the mouse.
-   */ 
+   */
   public boolean isWindowUnderMouse(Window w);
-} 
+}

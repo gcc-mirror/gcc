@@ -43,7 +43,7 @@ import java.util.TimerTask;
 /**
  * The static fields, shared by the multiple classes, implementing the
  * persistent work.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public interface Persistent
@@ -58,7 +58,7 @@ public interface Persistent
       System.exit(0);
     }
   }
-  
+
   /**
    * The timer, sheduling all disk database update events, shared by all
    * instances.
@@ -78,10 +78,10 @@ public interface Persistent
    * be stored to the disk.
    */
   static long ALWAYS_UPDATE = 300000;
-  
+
   /**
    * Write the database content to the disk.
    */
-  void writeContent();  
-  
+  void writeContent();
+
 }

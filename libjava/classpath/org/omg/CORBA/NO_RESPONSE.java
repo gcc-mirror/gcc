@@ -50,8 +50,8 @@ public final class NO_RESPONSE
   extends SystemException
   implements Serializable
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1971973765161647047L;
 

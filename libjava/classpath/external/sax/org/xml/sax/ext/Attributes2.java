@@ -46,7 +46,7 @@ public interface Attributes2 extends Attributes
      *
      * @param index The attribute index (zero-based).
      * @return true if the attribute was declared in the DTD,
-     *		false otherwise.
+     *          false otherwise.
      * @exception java.lang.ArrayIndexOutOfBoundsException When the
      *            supplied index does not identify an attribute.
      */
@@ -60,7 +60,7 @@ public interface Attributes2 extends Attributes
      *
      * @param qName The XML qualified (prefixed) name.
      * @return true if the attribute was declared in the DTD,
-     *		false otherwise.
+     *          false otherwise.
      * @exception java.lang.IllegalArgumentException When the
      *            supplied name does not identify an attribute.
      */
@@ -81,7 +81,7 @@ public interface Attributes2 extends Attributes
      *        the name has no Namespace URI.
      * @param localName The attribute's local name.
      * @return true if the attribute was declared in the DTD,
-     *		false otherwise.
+     *          false otherwise.
      * @exception java.lang.IllegalArgumentException When the
      *            supplied names do not identify an attribute.
      */
@@ -93,7 +93,7 @@ public interface Attributes2 extends Attributes
      *
      * @param index The attribute index (zero-based).
      * @return true if the value was found in the XML text,
-     *		false if the value was provided by DTD defaulting.
+     *          false if the value was provided by DTD defaulting.
      * @exception java.lang.ArrayIndexOutOfBoundsException When the
      *            supplied index does not identify an attribute.
      */
@@ -112,7 +112,7 @@ public interface Attributes2 extends Attributes
      *        the name has no Namespace URI.
      * @param localName The attribute's local name.
      * @return true if the value was found in the XML text,
-     *		false if the value was provided by DTD defaulting.
+     *          false if the value was provided by DTD defaulting.
      * @exception java.lang.IllegalArgumentException When the
      *            supplied names do not identify an attribute.
      */
@@ -124,7 +124,7 @@ public interface Attributes2 extends Attributes
      *
      * @param qName The XML qualified (prefixed) name.
      * @return true if the value was found in the XML text,
-     *		false if the value was provided by DTD defaulting.
+     *          false if the value was provided by DTD defaulting.
      * @exception java.lang.IllegalArgumentException When the
      *            supplied name does not identify an attribute.
      */

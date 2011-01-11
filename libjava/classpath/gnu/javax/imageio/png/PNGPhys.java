@@ -40,8 +40,8 @@ package gnu.javax.imageio.png;
 /**
  * A PNG "pHYS" chunk - pixel physical dimensions
  */
-public class PNGPhys extends PNGChunk 
-{ 
+public class PNGPhys extends PNGChunk
+{
   long x, y;
   double ratio;
   boolean usesRatio;
@@ -51,14 +51,14 @@ public class PNGPhys extends PNGChunk
     super( type, data, crc );
     if( data.length < 9 )
       throw new PNGException("Unexpected size of pHYS chunk.");
-    x = ((data[0] & 0xFF) << 24) | ( (data[1] & 0xFF) << 16 ) | 
+    x = ((data[0] & 0xFF) << 24) | ( (data[1] & 0xFF) << 16 ) |
       ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
-    y = ((data[4] & 0xFF) << 24) | ( (data[5] & 0xFF) << 16 ) | 
+    y = ((data[4] & 0xFF) << 24) | ( (data[5] & 0xFF) << 16 ) |
       ((data[6] & 0xFF) << 8) | (data[7] & 0xFF);
     if(data[8] == 0)
       {
-	ratio = ((double)x)/((double)y);
-	usesRatio = true;
+        ratio = ((double)x)/((double)y);
+        usesRatio = true;
       }
   }
 
@@ -71,13 +71,13 @@ public class PNGPhys extends PNGChunk
 
     if( ratio < 1.0 )
       {
-	y = 0xFFFFFFFF;
-	x = (long)(0xFFFFFFFFL * ratio);
+        y = 0xFFFFFFFF;
+        x = (long)(0xFFFFFFFFL * ratio);
       }
     else
       {
-	x = 0xFFFFFFFF;
-	y = (long)(0xFFFFFFFFL * ratio);
+        x = 0xFFFFFFFF;
+        y = (long)(0xFFFFFFFFL * ratio);
       }
     makeData();
   }
@@ -96,8 +96,8 @@ public class PNGPhys extends PNGChunk
     data = new byte[ 9 ];
     byte[] a = getInt( (int)x );
     byte[] b = getInt( (int)y );
-    data[0] = a[0]; data[1] = a[1]; data[2] = a[2]; data[3] = a[3]; 
-    data[4] = b[0]; data[5] = b[1]; data[6] = b[2]; data[7] = b[3]; 
+    data[0] = a[0]; data[1] = a[1]; data[2] = a[2]; data[3] = a[3];
+    data[4] = b[0]; data[5] = b[1]; data[6] = b[2]; data[7] = b[3];
     data[7] = (usesRatio) ? 0 : (byte)0xFF;
   }
 

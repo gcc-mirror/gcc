@@ -97,9 +97,9 @@ public abstract class AbstractHandshake
   protected static final byte[] SERVER_FINISHED
     = new byte[] {
       115, 101, 114, 118, 101, 114,  32, 102, 105, 110, 105, 115,
-      104, 101, 100   
+      104, 101, 100
     };
-  
+
   /**
    * "client finished" -- TLS 1.0 and later
    */
@@ -108,14 +108,14 @@ public abstract class AbstractHandshake
        99, 108, 105, 101, 110, 116,  32, 102, 105, 110, 105, 115,
       104, 101, 100
     };
-  
+
   /**
    * "key expansion" -- TLS 1.0 and later
    */
   private static final byte[] KEY_EXPANSION =
     new byte[] { 107, 101, 121,  32, 101, 120, 112,
                   97, 110, 115, 105, 111, 110 };
-  
+
   /**
    * "master secret" -- TLS 1.0 and later
    */
@@ -123,7 +123,7 @@ public abstract class AbstractHandshake
     = new byte[] {
       109,  97, 115, 116, 101, 114,  32, 115, 101,  99, 114, 101, 116
     };
-  
+
   /**
    * "client write key" -- TLS 1.0 exportable whitener.
    */
@@ -132,7 +132,7 @@ public abstract class AbstractHandshake
        99, 108, 105, 101, 110, 116,  32, 119, 114, 105, 116, 101,  32, 107,
       101, 121
     };
-  
+
   /**
    * "server write key" -- TLS 1.0 exportable whitener.
    */
@@ -141,30 +141,30 @@ public abstract class AbstractHandshake
       115, 101, 114, 118, 101, 114,  32, 119, 114, 105, 116, 101,  32, 107,
       101, 121
     };
-  
+
   private static final byte[] IV_BLOCK
     = new byte[] {
        73,  86,  32,  98, 108, 111,  99, 107
     };
-  
+
   /**
    * SSL 3.0; the string "CLNT"
    */
   private static final byte[] SENDER_CLIENT
     = new byte[] { 0x43, 0x4C, 0x4E, 0x54 };
-  
+
   /**
    * SSL 3.0; the string "SRVR"
    */
   private static final byte[] SENDER_SERVER
     = new byte[] { 0x53, 0x52, 0x56, 0x52 };
-  
+
   /**
    * SSL 3.0; the value 0x36 40 (for SHA-1 hashes) or 48 (for MD5 hashes)
    * times.
    */
   protected static final byte[] PAD1 = new byte[48];
-  
+
   /**
    * SSL 3.0; the value 0x5c 40 (for SHA-1 hashes) or 48 (for MD5 hashes)
    * times.
@@ -176,7 +176,7 @@ public abstract class AbstractHandshake
     Arrays.fill(PAD1, SSLHMac.PAD1);
     Arrays.fill(PAD2, SSLHMac.PAD2);
   }
-  
+
   /**
    * The currently-read handshake messages. There may be zero, or
    * multiple, handshake messages in this buffer.
@@ -191,7 +191,7 @@ public abstract class AbstractHandshake
 
   protected MessageDigest sha;
   protected MessageDigest md5;
-  
+
   protected final SSLEngineImpl engine;
   protected KeyAgreement keyAgreement;
   protected byte[] preMasterSecret;
@@ -210,7 +210,7 @@ public abstract class AbstractHandshake
     md5 = MessageDigest.getInstance("MD5");
     tasks = new LinkedList<DelegatedTask>();
   }
-  
+
   /**
    * Handles the next input message in the handshake. This is called
    * in response to a call to {@link javax.net.ssl.SSLEngine#unwrap}
@@ -265,13 +265,13 @@ public abstract class AbstractHandshake
   /**
    * Called to process more handshake data. This method will be called
    * repeatedly while there is remaining handshake data, and while the
-   * status is 
+   * status is
    * @return
    * @throws SSLException
    */
   protected abstract HandshakeStatus implHandleInput()
     throws SSLException;
-  
+
   /**
    * Produce more handshake output. This is called in response to a
    * call to {@link javax.net.ssl.SSLEngine#wrap}, when the handshake
@@ -301,27 +301,27 @@ public abstract class AbstractHandshake
       }
     return status;
   }
-  
+
   /**
    * Called to implement the underlying output handling. The callee should
    * attempt to fill the given buffer as much as it can; this can include
    * multiple, and even partial, handshake messages.
-   * 
+   *
    * @param fragment The buffer the callee should write handshake messages to.
    * @return The new status of the handshake.
    * @throws SSLException If an error occurs processing the output message.
    */
   protected abstract SSLEngineResult.HandshakeStatus implHandleOutput (ByteBuffer fragment)
     throws SSLException;
-  
+
   /**
    * Return a new instance of input security parameters, initialized with
    * the session key. It is, of course, only valid to invoke this method
    * once the handshake is complete, and the session keys established.
-   * 
+   *
    * <p>In the presence of a well-behaving peer, this should be called once
    * the <code>ChangeCipherSpec</code> message is recieved.
-   * 
+   *
    * @return The input parameters for the newly established session.
    * @throws SSLException If the handshake is not complete.
    */
@@ -335,7 +335,7 @@ public abstract class AbstractHandshake
    * Return a new instance of output security parameters, initialized with
    * the session key. This should be called after the
    * <code>ChangeCipherSpec</code> message is sent to the peer.
-   * 
+   *
    * @return The output parameters for the newly established session.
    * @throws SSLException If the handshake is not complete.
    */
@@ -344,7 +344,7 @@ public abstract class AbstractHandshake
     checkKeyExchange();
     return outParams;
   }
-  
+
   /**
    * Fetch a delegated task waiting to run, if any.
    *
@@ -356,21 +356,21 @@ public abstract class AbstractHandshake
       return null;
     return tasks.removeFirst();
   }
-  
+
   /**
    * Used by the skeletal code to query the current status of the handshake.
    * This <em>should</em> be the same value as returned by the previous call
    * to {@link #implHandleOutput(ByteBuffer)} or {@link
    *  #implHandleInput(ByteBuffer)}.
-   * 
+   *
    * @return The current handshake status.
    */
   abstract HandshakeStatus status();
-  
+
   /**
    * Check if the key exchange completed successfully, throwing an exception
    * if not.
-   * 
+   *
    * <p>Note that we assume that the caller of our SSLEngine is correct, and
    * that they did run the delegated tasks that encapsulate the key exchange.
    * What we are primarily checking, therefore, is that no error occurred in the
@@ -379,14 +379,14 @@ public abstract class AbstractHandshake
    * @throws SSLException If the key exchange did not complete successfully.
    */
   abstract void checkKeyExchange() throws SSLException;
-  
+
   /**
    * Handle an SSLv2 client hello. This is only used by SSL servers.
-   * 
+   *
    * @param hello The hello message.
    */
   abstract void handleV2Hello(ByteBuffer hello) throws SSLException;
-  
+
   /**
    * Attempt to read the next handshake message from the given
    * record. If only a partial handshake message is available, then
@@ -418,13 +418,13 @@ public abstract class AbstractHandshake
     if (Debug.DEBUG)
       logger.logv(Component.SSL_HANDSHAKE, "inserting {0} into {1}",
                   fragment, handshakeBuffer);
-    
+
     // Put the fragment into the buffer.
     handshakeBuffer.put(fragment);
 
     return hasMessage();
   }
-  
+
   protected boolean doHash()
   {
     return true;
@@ -501,9 +501,9 @@ public abstract class AbstractHandshake
    * algorithm was used to generate this value was subtly different than
    * that used in TLSv1.0 and later. In TLSv1.0 and later, this value is
    * just the digest over the handshake messages.
-   * 
+   *
    * <p>SSLv3 uses the algorithm:
-   * 
+   *
    * <pre>
 CertificateVerify.signature.md5_hash
   MD5(master_secret + pad_2 +
@@ -511,7 +511,7 @@ CertificateVerify.signature.md5_hash
 Certificate.signature.sha_hash
   SHA(master_secret + pad_2 +
       SHA(handshake_messages + master_secret + pad_1));</pre>
-   * 
+   *
    * @param md5 The running MD5 hash of the handshake.
    * @param sha The running SHA-1 hash of the handshake.
    * @param session The current session being negotiated.
@@ -533,7 +533,7 @@ Certificate.signature.sha_hash
         md5.update(tmp);
         md5value = md5.digest();
       }
-    
+
     sha.update(session.privateData.masterSecret);
     sha.update(PAD1, 0, 40);
     byte[] tmp = sha.digest();
@@ -542,16 +542,16 @@ Certificate.signature.sha_hash
     sha.update(PAD2, 0, 40);
     sha.update(tmp);
     byte[] shavalue = sha.digest();
-    
+
     if (md5value != null)
       return Util.concat(md5value, shavalue);
-    
+
     return shavalue;
   }
-  
+
   /**
    * Generate the session keys from the computed master secret.
-   * 
+   *
    * @param clientRandom The client's nonce.
    * @param serverRandom The server's nonce.
    * @param session The session being established.
@@ -570,7 +570,7 @@ Certificate.signature.sha_hash
     if (session.suite.cipherAlgorithm() == CipherAlgorithm.AES)
       ivlen = 16;
     int keylen = session.suite.keyLength();
-    
+
     byte[][] keys = new byte[6][];
     keys[0] = new byte[maclen]; // client_write_MAC_secret
     keys[1] = new byte[maclen]; // server_write_MAC_secret
@@ -578,7 +578,7 @@ Certificate.signature.sha_hash
     keys[3] = new byte[keylen]; // server_write_key
     keys[4] = new byte[ivlen];  // client_write_iv
     keys[5] = new byte[ivlen];  // server_write_iv
-    
+
     IRandom prf = null;
     if (session.version == ProtocolVersion.SSL_3)
       {
@@ -604,14 +604,14 @@ Certificate.signature.sha_hash
         clientRandom.buffer().get(seed, (KEY_EXPANSION.length
                                          + serverRandom.length()),
                                   clientRandom.length());
-        
+
         prf = new TLSRandom();
         HashMap<String,byte[]> attr = new HashMap<String,byte[]>(2);
         attr.put(TLSRandom.SECRET, session.privateData.masterSecret);
         attr.put(TLSRandom.SEED, seed);
         prf.init(attr);
       }
-    
+
     try
       {
         prf.nextBytes(keys[0], 0, keys[0].length);
@@ -666,7 +666,7 @@ Certificate.signature.sha_hash
                 prf2.init(attr);
                 keys[2] = new byte[8];
                 prf2.nextBytes(keys[2], 0, keys[2].length);
-                
+
                 attr.put(TLSRandom.SECRET, keys[3]);
                 seed = new byte[SERVER_WRITE_KEY.length +
                                 serverRandom.length() +
@@ -682,7 +682,7 @@ Certificate.signature.sha_hash
                 prf2.init(attr);
                 keys[3] = new byte[8];
                 prf2.nextBytes(keys[3], 0, keys[3].length);
-                
+
                 attr.put(TLSRandom.SECRET, new byte[0]);
                 seed = new byte[IV_BLOCK.length +
                                 clientRandom.length() +
@@ -714,7 +714,7 @@ Certificate.signature.sha_hash
       {
         throw new Error(nsae);
       }
-    
+
     if (Debug.DEBUG_KEY_EXCHANGE)
       logger.logv(Component.SSL_KEY_EXCHANGE,
                   "keys generated;\n  [0]: {0}\n  [1]: {1}\n  [2]: {2}\n" +
@@ -727,12 +727,12 @@ Certificate.signature.sha_hash
                   Util.toHexString(keys[5], ':'));
     return keys;
   }
-  
+
   /**
    * Generate a "finished" message. The hashes passed in are modified
    * by this function, so they should be clone copies of the digest if
    * the hash function needs to be used more.
-   * 
+   *
    * @param md5 The MD5 computation.
    * @param sha The SHA-1 computation.
    * @param isClient Whether or not the client-side finished message is
@@ -797,22 +797,22 @@ Certificate.signature.sha_hash
         //
 
         finishedBuffer = ByteBuffer.allocate(36);
-        
+
         md5.update(isClient ? SENDER_CLIENT : SENDER_SERVER);
         md5.update(session.privateData.masterSecret);
         md5.update(PAD1);
-        
+
         byte[] tmp = md5.digest();
         md5.reset();
         md5.update(session.privateData.masterSecret);
         md5.update(PAD2);
         md5.update(tmp);
         finishedBuffer.put(md5.digest());
-        
+
         sha.update(isClient ? SENDER_CLIENT : SENDER_SERVER);
         sha.update(session.privateData.masterSecret);
         sha.update(PAD1, 0, 40);
-        
+
         tmp = sha.digest();
         sha.reset();
         sha.update(session.privateData.masterSecret);
@@ -822,7 +822,7 @@ Certificate.signature.sha_hash
       }
     return finishedBuffer;
   }
-  
+
   protected void initDiffieHellman(DHPrivateKey dhKey, SecureRandom random)
     throws SSLException
   {
@@ -840,7 +840,7 @@ Certificate.signature.sha_hash
         throw new SSLException(nsae);
       }
   }
-  
+
   protected void generateMasterSecret(Random clientRandom,
                                       Random serverRandom,
                                       SessionImpl session)
@@ -849,11 +849,11 @@ Certificate.signature.sha_hash
     assert(clientRandom != null);
     assert(serverRandom != null);
     assert(session != null);
-    
+
     if (Debug.DEBUG_KEY_EXCHANGE)
       logger.logv(Component.SSL_KEY_EXCHANGE, "preMasterSecret:\n{0}",
                   new ByteArray(preMasterSecret));
-    
+
     if (session.version == ProtocolVersion.SSL_3)
       {
         try
@@ -861,7 +861,7 @@ Certificate.signature.sha_hash
             MessageDigest _md5 = MessageDigest.getInstance("MD5");
             MessageDigest _sha = MessageDigest.getInstance("SHA");
             session.privateData.masterSecret = new byte[48];
-            
+
             _sha.update((byte) 'A');
             _sha.update(preMasterSecret);
             _sha.update(clientRandom.buffer());
@@ -869,7 +869,7 @@ Certificate.signature.sha_hash
             _md5.update(preMasterSecret);
             _md5.update(_sha.digest());
             _md5.digest(session.privateData.masterSecret, 0, 16);
-            
+
             _sha.update((byte) 'B');
             _sha.update((byte) 'B');
             _sha.update(preMasterSecret);
@@ -914,20 +914,20 @@ Certificate.signature.sha_hash
         attr.put(TLSRandom.SECRET, preMasterSecret);
         attr.put(TLSRandom.SEED, seed);
         prf.init(attr);
-        
+
         session.privateData.masterSecret = new byte[48];
         prf.nextBytes(session.privateData.masterSecret, 0, 48);
       }
-    
+
     if (Debug.DEBUG_KEY_EXCHANGE)
       logger.log(Component.SSL_KEY_EXCHANGE, "master_secret: {0}",
                  new ByteArray(session.privateData.masterSecret));
-    
+
     // Wipe out the preMasterSecret.
     for (int i = 0; i < preMasterSecret.length; i++)
       preMasterSecret[i] = 0;
   }
-  
+
   protected void setupSecurityParameters(byte[][] keys, boolean isClient,
                                          SSLEngineImpl engine,
                                          CompressionMethod compression)
@@ -943,7 +943,7 @@ Certificate.signature.sha_hash
         Cipher inCipher = s.cipher();
         Mac inMac = s.mac(engine.session().version);
         Inflater inflater = (compression == CompressionMethod.ZLIB
-                             ? new Inflater() : null); 
+                             ? new Inflater() : null);
         inCipher.init(Cipher.DECRYPT_MODE,
                       new SecretKeySpec(keys[isClient ? 3 : 2],
                                         s.cipherAlgorithm().toString()),
@@ -953,7 +953,7 @@ Certificate.signature.sha_hash
         inParams = new InputSecurityParameters(inCipher, inMac,
                                                inflater,
                                                engine.session(), s);
-                
+
         Cipher outCipher = s.cipher();
         Mac outMac = s.mac(engine.session().version);
         Deflater deflater = (compression == CompressionMethod.ZLIB
@@ -1025,23 +1025,23 @@ Certificate.signature.sha_hash
         preMasterSecret[6] = (byte) engine.session().random().nextInt();
         preMasterSecret[7] = (byte) engine.session().random().nextInt();
       }
-    
+
     if (Debug.DEBUG_KEY_EXCHANGE)
       logger.logv(Component.SSL_KEY_EXCHANGE, "PSK identity {0} key {1}",
                   identity, key);
-                    
+
     generateMasterSecret(clientRandom, serverRandom,
                          engine.session());
     byte[][] keys = generateKeys(clientRandom, serverRandom,
                                  engine.session());
     setupSecurityParameters(keys, isClient, engine, compression);
   }
-  
+
   protected class DHPhase extends DelegatedTask
   {
     private final DHPublicKey key;
     private final boolean full;
-    
+
     protected DHPhase(DHPublicKey key)
     {
       this(key, true);
@@ -1065,7 +1065,7 @@ Certificate.signature.sha_hash
         }
     }
   }
-  
+
   protected class CertVerifier extends DelegatedTask
   {
     private final boolean clientSide;
@@ -1077,12 +1077,12 @@ Certificate.signature.sha_hash
       this.clientSide = clientSide;
       this.chain = chain;
     }
-    
+
     boolean verified()
     {
       return verified;
     }
-    
+
     protected void implRun()
     {
       X509TrustManager tm = engine.contextImpl.trustManager;
@@ -1153,18 +1153,18 @@ Certificate.signature.sha_hash
               verified = false;
             }
         }
-      
+
       if (verified)
         engine.session().setPeerVerified(true);
     }
   }
-  
+
   protected class DHE_PSKGen extends DelegatedTask
   {
     private final DHPublicKey dhKey;
     private final SecretKey psKey;
     private final boolean isClient;
-    
+
     protected DHE_PSKGen(DHPublicKey dhKey, SecretKey psKey, boolean isClient)
     {
       this.dhKey = dhKey;
@@ -1187,7 +1187,7 @@ Certificate.signature.sha_hash
           psSecret = new byte[8];
           engine.session().random().nextBytes(psSecret);
         }
-      
+
       preMasterSecret = new byte[dhSecret.length + psSecret.length + 4];
       preMasterSecret[0] = (byte) (dhSecret.length >>> 8);
       preMasterSecret[1] = (byte)  dhSecret.length;
@@ -1196,7 +1196,7 @@ Certificate.signature.sha_hash
       preMasterSecret[dhSecret.length + 3] = (byte)  psSecret.length;
       System.arraycopy(psSecret, 0, preMasterSecret, dhSecret.length + 4,
                        psSecret.length);
-      
+
       generateMasterSecret(clientRandom, serverRandom, engine.session());
       byte[][] keys = generateKeys(clientRandom, serverRandom, engine.session());
       setupSecurityParameters(keys, isClient, engine, compression);

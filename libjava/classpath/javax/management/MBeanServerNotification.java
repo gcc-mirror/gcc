@@ -84,7 +84,7 @@ public class MBeanServerNotification
    * @param name the name of the bean concerned by this event.
    */
   public MBeanServerNotification(String type, Object source, long seqNo,
-				 ObjectName name)
+                                 ObjectName name)
   {
     super(type, source, seqNo);
     objectName = name;

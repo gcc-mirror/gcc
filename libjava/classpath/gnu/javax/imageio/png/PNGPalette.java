@@ -43,8 +43,8 @@ import java.awt.image.IndexColorModel;
 /**
  * A PNG Palette chunk.
  */
-public class PNGPalette extends PNGChunk 
-{ 
+public class PNGPalette extends PNGChunk
+{
   private int[] red,green,blue;
 
   protected PNGPalette( int type, byte[] data, int crc ) throws PNGException
@@ -62,9 +62,9 @@ public class PNGPalette extends PNGChunk
     blue = new int[ nEntries ];
     for( int i = 0; i < nEntries; i++ )
       {
-	red[i] = (data[ i * 3 ] & 0xFF);
-	green[i] = (data[ i * 3 + 1 ] & 0xFF);
-	blue[i] = (data[ i * 3 + 2] & 0xFF);
+        red[i] = (data[ i * 3 ] & 0xFF);
+        green[i] = (data[ i * 3 + 1 ] & 0xFF);
+        blue[i] = (data[ i * 3 + 2] & 0xFF);
       }
   }
 
@@ -78,9 +78,9 @@ public class PNGPalette extends PNGChunk
     blue = new int[ n ];
     for(int i = 0; i < n; i++ )
       {
-	red[i] = data[i * 3] = (byte)cm.getRed(i);
-	green[i] = data[i * 3 + 1] = (byte)cm.getGreen(i);
-	blue[i] = data[i * 3 + 2] = (byte)cm.getBlue(i);
+        red[i] = data[i * 3] = (byte)cm.getRed(i);
+        green[i] = data[i * 3 + 1] = (byte)cm.getGreen(i);
+        blue[i] = data[i * 3 + 2] = (byte)cm.getBlue(i);
       }
   }
 
@@ -93,27 +93,27 @@ public class PNGPalette extends PNGChunk
 
     if( cs == null )
       {
-	for(int i = 0; i < nc; i ++ )
-	  {
-	    r[i] = (byte)red[i];
-	    g[i] = (byte)green[i];
-	    b[i] = (byte)blue[i];
-	  }
+        for(int i = 0; i < nc; i ++ )
+          {
+            r[i] = (byte)red[i];
+            g[i] = (byte)green[i];
+            b[i] = (byte)blue[i];
+          }
       }
     else
       {
-	for(int i = 0; i < nc; i ++ )
-	  {
-	    float[] in = new float[3];
-	    in[0] = (((float)red[i]) / 255f);
-	    in[1] = (((float)green[i]) / 255f);
-	    in[2] = (((float)blue[i]) / 255f);
-	    float[] out = cs.toRGB( in );
-	    r[i] = (byte)( Math.round(out[0] * 255.0) );
-	    g[i] = (byte)( Math.round(out[1] * 255.0) );
-	    b[i] = (byte)( Math.round(out[2] * 255.0) );
-	  }
-      }	
+        for(int i = 0; i < nc; i ++ )
+          {
+            float[] in = new float[3];
+            in[0] = (((float)red[i]) / 255f);
+            in[1] = (((float)green[i]) / 255f);
+            in[2] = (((float)blue[i]) / 255f);
+            float[] out = cs.toRGB( in );
+            r[i] = (byte)( Math.round(out[0] * 255.0) );
+            g[i] = (byte)( Math.round(out[1] * 255.0) );
+            b[i] = (byte)( Math.round(out[2] * 255.0) );
+          }
+      }
     return new IndexColorModel(8, nc, r, g, b);
   }
 

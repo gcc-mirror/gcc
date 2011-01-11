@@ -1,4 +1,4 @@
-/* InterleavePattern.java -- 
+/* InterleavePattern.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,6 +48,5 @@ class InterleavePattern
 
   Pattern pattern1;
   Pattern pattern2;
-  
-}
 
+}

@@ -131,69 +131,69 @@ public abstract class URLStreamHandler
     String userInfo = url.getUserInfo();
     String authority = url.getAuthority();
     String query = null;
-    
+
     // On Windows we need to change \ to / for file URLs
     char separator = File.separatorChar;
     if (url.getProtocol().equals("file") && separator != '/')
       {
-	file = file.replace(separator, '/');
-	spec = spec.replace(separator, '/');
+        file = file.replace(separator, '/');
+        spec = spec.replace(separator, '/');
       }
 
     if (spec.regionMatches(start, "//", 0, 2))
       {
-	String genuineHost;
-	int hostEnd;
-	int colon;
-	int at_host;
+        String genuineHost;
+        int hostEnd;
+        int colon;
+        int at_host;
 
-	start += 2;
-	int slash = spec.indexOf('/', start);
-	if (slash >= 0)
-	  hostEnd = slash;
-	else
-	  hostEnd = end;
+        start += 2;
+        int slash = spec.indexOf('/', start);
+        if (slash >= 0)
+          hostEnd = slash;
+        else
+          hostEnd = end;
 
-	authority = host = spec.substring(start, hostEnd);
+        authority = host = spec.substring(start, hostEnd);
 
-	// We first need a genuine host name (with userinfo).
-	// So we check for '@': if it's present check the port in the
-	// section after '@' in the other case check it in the full string.
-	// P.S.: We don't care having '@' at the beginning of the string.
-	if ((at_host = host.indexOf('@')) >= 0)
-	  {
-	    genuineHost = host.substring(at_host);
-	    userInfo = host.substring(0, at_host);
-	  }
-	else
-	  genuineHost = host;
+        // We first need a genuine host name (with userinfo).
+        // So we check for '@': if it's present check the port in the
+        // section after '@' in the other case check it in the full string.
+        // P.S.: We don't care having '@' at the beginning of the string.
+        if ((at_host = host.indexOf('@')) >= 0)
+          {
+            genuineHost = host.substring(at_host);
+            userInfo = host.substring(0, at_host);
+          }
+        else
+          genuineHost = host;
 
-	// Look for optional port number.  It is valid for the non-port
-	// part of the host name to be null (e.g. a URL "http://:80").
-	// TBD: JDK 1.2 in this case sets host to null rather than "";
-	// this is undocumented and likely an unintended side effect in 1.2
-	// so we'll be simple here and stick with "". Note that
-	// "http://" or "http:///" produce a "" host in JDK 1.2.
-	if ((colon = genuineHost.indexOf(':')) >= 0)
-	  {
-	    try
-	      {
-		port = Integer.parseInt(genuineHost.substring(colon + 1));
-	      }
-	    catch (NumberFormatException e)
-	      {
-		// Ignore invalid port values; port is already set to u's
-		// port.
-	      }
+        // Look for optional port number.  It is valid for the non-port
+        // part of the host name to be null (e.g. a URL "http://:80").
+        // TBD: JDK 1.2 in this case sets host to null rather than "";
+        // this is undocumented and likely an unintended side effect in 1.2
+        // so we'll be simple here and stick with "". Note that
+        // "http://" or "http:///" produce a "" host in JDK 1.2.
+        if ((colon = genuineHost.indexOf(':')) >= 0)
+          {
+            try
+              {
+                port = Integer.parseInt(genuineHost.substring(colon + 1));
+              }
+            catch (NumberFormatException e)
+              {
+                // Ignore invalid port values; port is already set to u's
+                // port.
+              }
 
-	    // Now we must cut the port number in the original string.
-	    if (at_host >= 0)
-	      host = host.substring(0, at_host + colon);
-	    else
-	      host = host.substring(0, colon);
-	  }
-	file = null;
-	start = hostEnd;
+            // Now we must cut the port number in the original string.
+            if (at_host >= 0)
+              host = host.substring(0, at_host + colon);
+            else
+              host = host.substring(0, colon);
+          }
+        file = null;
+        start = hostEnd;
       }
     else if (host == null)
       host = "";
@@ -201,49 +201,49 @@ public abstract class URLStreamHandler
     if (file == null || file.length() == 0
         || (start < end && spec.charAt(start) == '/'))
       {
-	// No file context available; just spec for file.
-	// Or this is an absolute path name; ignore any file context.
-	file = spec.substring(start, end);
-	ref = null;
+        // No file context available; just spec for file.
+        // Or this is an absolute path name; ignore any file context.
+        file = spec.substring(start, end);
+        ref = null;
       }
     else if (start < end)
       {
-	// Context is available, but only override it if there is a new file.
-	int lastSlash = file.lastIndexOf('/');
-	if (lastSlash < 0)
-	  file = spec.substring(start, end);
-	else
-	  file = (file.substring(0, lastSlash)
-		  + '/' + spec.substring(start, end));
+        // Context is available, but only override it if there is a new file.
+        int lastSlash = file.lastIndexOf('/');
+        if (lastSlash < 0)
+          file = spec.substring(start, end);
+        else
+          file = (file.substring(0, lastSlash)
+                  + '/' + spec.substring(start, end));
 
-	// For URLs constructed relative to a context, we
-	// need to canonicalise the file path.
-	file = canonicalizeFilename(file);
+        // For URLs constructed relative to a context, we
+        // need to canonicalise the file path.
+        file = canonicalizeFilename(file);
 
-	ref = null;
+        ref = null;
       }
 
     if (ref == null)
       {
-	// Normally there should be no '#' in the file part,
-	// but we are nice.
-	int hash = file.indexOf('#');
-	if (hash != -1)
-	  {
-	    ref = file.substring(hash + 1, file.length());
-	    file = file.substring(0, hash);
-	  }
+        // Normally there should be no '#' in the file part,
+        // but we are nice.
+        int hash = file.indexOf('#');
+        if (hash != -1)
+          {
+            ref = file.substring(hash + 1, file.length());
+            file = file.substring(0, hash);
+          }
       }
 
     // We care about the query tag only if there is no reference at all.
     if (ref == null)
       {
-	  int queryTag = file.indexOf('?');
-	  if (queryTag != -1)
-	    {
-	      query = file.substring(queryTag + 1);
-	      file = file.substring(0, queryTag);
-	    }
+          int queryTag = file.indexOf('?');
+          if (queryTag != -1)
+            {
+              query = file.substring(queryTag + 1);
+              file = file.substring(0, queryTag);
+            }
       }
 
     // XXX - Classpath used to call PlatformHelper.toCanonicalForm() on
@@ -270,12 +270,12 @@ public abstract class URLStreamHandler
     // the general case, but it's probably not bad most of the time.
     while ((index = file.indexOf("/../")) >= 0)
       {
-	// Strip of the previous directory - if it exists.
-	int previous = file.lastIndexOf('/', index - 1);
-	if (previous >= 0)
-	  file = file.substring(0, previous) + file.substring(index + 3);
-	else
-	  break;
+        // Strip of the previous directory - if it exists.
+        int previous = file.lastIndexOf('/', index - 1);
+        if (previous >= 0)
+          file = file.substring(0, previous) + file.substring(index + 3);
+        else
+          break;
       }
     return file;
   }
@@ -451,11 +451,11 @@ public abstract class URLStreamHandler
 
     try
       {
-	return InetAddress.getByName(hostname);
+        return InetAddress.getByName(hostname);
       }
     catch (UnknownHostException e)
       {
-	return null;
+        return null;
       }
   }
 
@@ -505,7 +505,7 @@ public abstract class URLStreamHandler
     authority = url.getAuthority();
     if (authority == null)
       authority = "";
-    
+
     file = url.getFile();
     ref = url.getRef();
 
@@ -516,15 +516,15 @@ public abstract class URLStreamHandler
 
     if (protocol.length() > 0)
       {
-	sb.append(protocol);
-	sb.append(":");
+        sb.append(protocol);
+        sb.append(":");
       }
-    
+
     // If we have superfluous leading slashes (that means, at least 2)
     // we always add the authority component ("//" + host) to
     // avoid ambiguity. Otherwise we would generate an URL like
     // proto://home/foo
-    // where we meant: 
+    // where we meant:
     // host: <empty> - file: //home/foo
     // but URL spec says it is:
     // host: home - file: /foo

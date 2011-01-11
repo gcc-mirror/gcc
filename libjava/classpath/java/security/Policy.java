@@ -47,36 +47,36 @@ import java.util.Map;
  * policy for the Java application environment. It specifies which permissions
  * are available for code from various sources. The security policy is
  * represented through a subclass of <code>Policy</code>.
- * 
+ *
  * <p>Only one <code>Policy</code> is in effect at any time. A
  * {@link ProtectionDomain} initializes itself with information from this class
  * on the set of permssions to grant.</p>
- * 
+ *
  * <p>The location for the actual <code>Policy</code> could be anywhere in any
  * form because it depends on the Policy implementation. The default system is
  * in a flat ASCII file or it could be in a database.</p>
- * 
+ *
  * <p>The current installed <code>Policy</code> can be accessed with
  * {@link #getPolicy()} and changed with {@link #setPolicy(Policy)} if the code
  * has the correct permissions.</p>
- * 
+ *
  * <p>The {@link #refresh()} method causes the <code>Policy</code> instance to
  * refresh/reload its configuration. The method used to refresh depends on the
  * <code>Policy</code> implementation.</p>
- * 
+ *
  * <p>When a protection domain initializes its permissions, it uses code like
  * the following:</p>
- * 
+ *
  * <code>
  * policy = Policy.getPolicy();
  * PermissionCollection perms = policy.getPermissions(myCodeSource);
  * </code>
- * 
+ *
  * <p>The protection domain passes the <code>Policy</code> handler a
  * {@link CodeSource} instance which contains the codebase URL and a public key.
  * The <code>Policy</code> implementation then returns the proper set of
  * permissions for that {@link CodeSource}.</p>
- * 
+ *
  * <p>The default <code>Policy</code> implementation can be changed by setting
  * the "policy.provider" security provider in the "java.security" file to the
  * correct <code>Policy</code> implementation class.</p>
@@ -103,7 +103,7 @@ public abstract class Policy
    * Returns the currently installed <code>Policy</code> handler. The value
    * should not be cached as it can be changed any time by
    * {@link #setPolicy(Policy)}.
-   * 
+   *
    * @return the current <code>Policy</code>.
    * @throws SecurityException
    *           if a {@link SecurityManager} is installed which disallows this
@@ -120,7 +120,7 @@ public abstract class Policy
 
   /**
    * Sets the <code>Policy</code> handler to a new value.
-   * 
+   *
    * @param policy
    *          the new <code>Policy</code> to use.
    * @throws SecurityException
@@ -177,10 +177,10 @@ public abstract class Policy
             {
               currentPolicy = (Policy) Class.forName(pp).newInstance();
             }
-	  catch (Exception e)
-	    {
-	      // Ignored.
-	    }
+          catch (Exception e)
+            {
+              // Ignored.
+            }
 
         if (currentPolicy == null)
           currentPolicy = new gnu.java.security.provider.DefaultPolicy();
@@ -200,7 +200,7 @@ public abstract class Policy
 
   /**
    * Returns the set of Permissions allowed for a given {@link CodeSource}.
-   * 
+   *
    * @param codesource
    *          the {@link CodeSource} for which, the caller needs to find the
    *          set of granted permissions.
@@ -214,7 +214,7 @@ public abstract class Policy
 
   /**
    * Returns the set of Permissions allowed for a given {@link ProtectionDomain}.
-   * 
+   *
    * @param domain
    *          the {@link ProtectionDomain} for which, the caller needs to find
    *          the set of granted permissions.
@@ -257,7 +257,7 @@ public abstract class Policy
   /**
    * Checks if the designated {@link Permission} is granted to a designated
    * {@link ProtectionDomain}.
-   * 
+   *
    * @param domain
    *          the {@link ProtectionDomain} to test.
    * @param permission

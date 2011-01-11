@@ -55,7 +55,7 @@ public class URLDataSource
 
   private final URL url;
   private URLConnection connection;
-  
+
   /**
    * Constructor.
    * This will not open the connection to the URL.
@@ -64,7 +64,7 @@ public class URLDataSource
   {
     this.url = url;
   }
-  
+
   /**
    * Returns the Content-Type header for the URL.
    * In the case of failure or lack of such a header,
@@ -93,7 +93,7 @@ public class URLDataSource
       }
     return contentType;
   }
-  
+
   /**
    * Returns the result of <code>getFile</code> of the underlying URL.
    */
@@ -101,7 +101,7 @@ public class URLDataSource
   {
     return url.getFile();
   }
-  
+
   public InputStream getInputStream()
     throws IOException
   {
@@ -125,7 +125,7 @@ public class URLDataSource
       }
     return null;
   }
-  
+
   /**
    * Returns the underlying URL.
    */
@@ -133,6 +133,5 @@ public class URLDataSource
   {
     return url;
   }
-  
-}
 
+}

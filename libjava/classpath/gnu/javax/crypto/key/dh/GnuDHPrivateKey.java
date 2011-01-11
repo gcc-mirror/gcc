@@ -1,4 +1,4 @@
-/* GnuDHPrivateKey.java -- 
+/* GnuDHPrivateKey.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -70,7 +70,7 @@ public class GnuDHPrivateKey
   /**
    * Convenience constructor. Calls the constructor with five arguments passing
    * {@link Registry#RAW_ENCODING_ID} as the value of its first argument.
-   * 
+   *
    * @param q a prime divisor of p-1.
    * @param p the public prime.
    * @param g the generator of the group.
@@ -84,7 +84,7 @@ public class GnuDHPrivateKey
   /**
    * Constructs a new instance of <code>GnuDHPrivateKey</code> given the
    * designated parameters.
-   * 
+   *
    * @param preferredFormat the identifier of the encoding format to use by
    *          default when externalizing the key.
    * @param q a prime divisor of p-1.
@@ -106,7 +106,7 @@ public class GnuDHPrivateKey
    * method of a DH keypair codec object (an instance implementing
    * {@link IKeyPairCodec} for DH keys, and re-constructs an instance of this
    * object.
-   * 
+   *
    * @param k the contents of a previously encoded instance of this object.
    * @exception ArrayIndexOutOfBoundsException if there is not enough bytes, in
    *              <code>k</code>, to represent a valid encoding of an
@@ -137,7 +137,7 @@ public class GnuDHPrivateKey
   /**
    * Returns the encoded form of this private key according to the designated
    * format.
-   * 
+   *
    * @param format the desired format identifier of the resulting encoding.
    * @return the byte sequence encoding this key according to the designated
    *         format.
@@ -165,7 +165,7 @@ public class GnuDHPrivateKey
   /**
    * Returns <code>true</code> if the designated object is an instance of
    * {@link DHPrivateKey} and has the same parameter values as this one.
-   * 
+   *
    * @param obj the other non-null DH key to compare to.
    * @return <code>true</code> if the designated object is of the same type
    *         and value as this one.

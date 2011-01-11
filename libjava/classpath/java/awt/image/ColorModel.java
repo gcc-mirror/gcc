@@ -64,7 +64,7 @@ import java.util.Arrays;
  *
  * <li>sRGB pixel int value: a pixel in sRGB color space, encoded in
  * default 0xAARRGGBB format, assumed not alpha premultiplied.</li>
- * 
+ *
  * <li>single [0, 255] scaled int samples from default sRGB color
  * space. These are always assumed to be alpha non-premultiplied.</li>
  *
@@ -109,10 +109,10 @@ public abstract class ColorModel implements Transparency
     byte[] array = new byte[times];
     java.util.Arrays.fill(array, value);
     return array;
-  } 
+  }
 
   /**
-   * Constructs the default color model.  The default color model 
+   * Constructs the default color model.  The default color model
    * can be obtained by calling <code>getRGBdefault</code> of this
    * class.
    * @param bits the number of bits wide used for bit size of pixel values
@@ -120,12 +120,12 @@ public abstract class ColorModel implements Transparency
   public ColorModel(int bits)
   {
     this(bits * 4, // total bits, sRGB, four channels
-	 nArray(bits, 4), // bits for each channel
-	 ColorSpace.getInstance(ColorSpace.CS_sRGB), // sRGB
-	 true, // has alpha
-	 false, // not premultiplied
-	 TRANSLUCENT,
-	 Buffers.smallestAppropriateTransferType(bits * 4));
+         nArray(bits, 4), // bits for each channel
+         ColorSpace.getInstance(ColorSpace.CS_sRGB), // sRGB
+         true, // has alpha
+         false, // not premultiplied
+         TRANSLUCENT,
+         Buffers.smallestAppropriateTransferType(bits * 4));
   }
 
   /**
@@ -138,8 +138,8 @@ public abstract class ColorModel implements Transparency
    * bits is less than 1 or if any of the elements in bits is less than 0.
    */
   protected ColorModel(int pixel_bits, int[] bits, ColorSpace cspace,
-		       boolean hasAlpha, boolean isAlphaPremultiplied,
-		       int transparency, int transferType)
+                       boolean hasAlpha, boolean isAlphaPremultiplied,
+                       int transparency, int transferType)
   {
     int bits_sum = 0;
     for (int i = 0; i < bits.length; i++)
@@ -149,7 +149,7 @@ public abstract class ColorModel implements Transparency
 
         bits_sum |= bits [i];
       }
-    
+
     if ((bits.length < cspace.getNumComponents())
         || (bits_sum < 1))
       throw new IllegalArgumentException ();
@@ -162,7 +162,7 @@ public abstract class ColorModel implements Transparency
     this.transparency = transparency;
     this.transferType = transferType;
   }
-  
+
   public void finalize()
   {
     // Do nothing here.
@@ -194,12 +194,12 @@ public abstract class ColorModel implements Transparency
   {
     return pixel_bits;
   }
-    
+
   public int getComponentSize(int componentIdx)
   {
     return bits[componentIdx];
   }
-    
+
   public int[] getComponentSize()
   {
     return bits;
@@ -240,7 +240,7 @@ public abstract class ColorModel implements Transparency
    * @see #getRed(int)
    */
   public abstract int getGreen(int pixel);
-    
+
   /**
    * Converts pixel value to sRGB and extract blue int sample
    * scaled to range [0, 255].
@@ -265,7 +265,7 @@ public abstract class ColorModel implements Transparency
    *
    * This method is typically overriden in subclasses to provide a
    * more efficient implementation.
-   * 
+   *
    * @param pixel pixel value that will be interpreted according to
    * the color model.
    *
@@ -273,13 +273,13 @@ public abstract class ColorModel implements Transparency
    * 0xAARRGGBB format.  */
   public int getRGB(int pixel)
   {
-    return 
+    return
       ((getAlpha(pixel) & 0xff) << 24) |
       ((  getRed(pixel) & 0xff) << 16) |
       ((getGreen(pixel) & 0xff) <<  8) |
       (( getBlue(pixel) & 0xff) <<  0);
   }
-  
+
 
   /**
    * In this color model we know that the whole pixel value will
@@ -294,13 +294,13 @@ public abstract class ColorModel implements Transparency
     return data.getElem(0);
   }
 
-  /** 
+  /**
    * Converts pixel in the given array to sRGB and extract blue int
    * sample scaled to range [0-255].
    *
    * This method is typically overriden in subclasses to provide a
    * more efficient implementation.
-   * 
+   *
    * @param inData array of transferType containing a single pixel.  The
    * pixel should be encoded in the natural way of the color model.
    */
@@ -350,7 +350,7 @@ public abstract class ColorModel implements Transparency
    */
   public int getRGB(Object inData)
   {
-    return 
+    return
       ((getAlpha(inData) & 0xff) << 24) |
       ((  getRed(inData) & 0xff) << 16) |
       ((getGreen(inData) & 0xff) <<  8) |
@@ -360,7 +360,7 @@ public abstract class ColorModel implements Transparency
   /**
    * Converts an sRGB pixel int value to an array containing a
    * single pixel of the color space of the color model.
-   * 
+   *
    * <p>This method performs the inverse function of
    * <code>getRGB(Object inData)</code>.
    *
@@ -379,7 +379,7 @@ public abstract class ColorModel implements Transparency
    * <li>Scale the components to the correct number of bits.</li>
    *
    * <li>Arrange the components in the output array</li>
-   * 
+   *
    * </ol>
    *
    * @param rgb The color to be converted to dataElements.  A pixel
@@ -392,7 +392,7 @@ public abstract class ColorModel implements Transparency
    *
    * @return An array of transferType values representing the color,
    * in the color model format. The color model defines whether the
-   *  
+   *
    * @see #getRGB(Object)
    */
   public Object getDataElements(int rgb, Object pixel)
@@ -404,11 +404,11 @@ public abstract class ColorModel implements Transparency
   /**
    * Fills an array with the unnormalized component samples from a
    * pixel value. I.e. decompose the pixel, but not perform any
-   * color conversion. 
+   * color conversion.
    *
    * This method is typically overriden in subclasses to provide a
    * more efficient implementation.
-   * 
+   *
    * @param pixel pixel value encoded according to the color model.
    *
    * @return arrays of unnormalized component samples of single
@@ -421,7 +421,7 @@ public abstract class ColorModel implements Transparency
     // subclasses has to implement this method.
     throw new UnsupportedOperationException();
   }
-  
+
   /**
    * Fills an array with the unnormalized component samples from an
    * array of transferType containing a single pixel. I.e. decompose
@@ -438,7 +438,7 @@ public abstract class ColorModel implements Transparency
    * of the pixel.  If this is null, a new array will be allocated
    * @param offset index into the components array at which the result
    * will be stored
-   * 
+   *
    * @return arrays of unnormalized component samples of single
    * pixel.  The scale and multiplication state of the samples are
    * according to the color model. Each component sample is stored
@@ -454,16 +454,16 @@ public abstract class ColorModel implements Transparency
    * Convert normalized components to unnormalized components.
    */
   public int[] getUnnormalizedComponents(float[] normComponents,
-					 int normOffset,
-					 int[] components,
-					 int offset)
+                                         int normOffset,
+                                         int[] components,
+                                         int offset)
   {
     int numComponents = getNumComponents();
     if (components == null)
     {
       components = new int[offset + numComponents];
     }
-    
+
     for (int i=0; i<numComponents; i++)
     {
       float in = normComponents[normOffset++];
@@ -477,9 +477,9 @@ public abstract class ColorModel implements Transparency
    * Convert unnormalized components to normalized components.
    */
   public float[] getNormalizedComponents(int[] components,
-					 int offset,
-					 float[] normComponents,
-					 int normOffset)
+                                         int offset,
+                                         float[] normComponents,
+                                         int normOffset)
   {
     int numComponents = getNumComponents();
     if (normComponents == null)
@@ -513,10 +513,10 @@ public abstract class ColorModel implements Transparency
    * Converts the unnormalized component samples from an array to a
    * pixel value. I.e. composes the pixel from component samples, but
    * does not perform any color conversion or scaling of the samples.
-   * 
+   *
    * This method performs the inverse function of
    * <code>getComponents(int pixel, int[] components,
-   *			       int offset)</code>. I.e.
+   *                           int offset)</code>. I.e.
    *
    * <code>(pixel == cm.getDataElement(cm.getComponents(pixel, null,
    * 0), 0))</code>.
@@ -542,7 +542,7 @@ public abstract class ColorModel implements Transparency
    * Converts the normalized component samples from an array to a pixel
    * value. I.e. composes the pixel from component samples, but does not
    * perform any color conversion or scaling of the samples.
-   * 
+   *
    * This method is typically overriden in subclasses to provide a
    * more efficient implementation.  The method provided by this abstract
    * class converts the components to unnormalized form and returns
@@ -561,9 +561,9 @@ public abstract class ColorModel implements Transparency
   {
     return
       getDataElement(getUnnormalizedComponents(components, offset, null, 0),
-		     0);
+                     0);
   }
-  
+
   public Object getDataElements(int[] components, int offset, Object obj)
   {
     // subclasses have to implement this method.
@@ -579,7 +579,7 @@ public abstract class ColorModel implements Transparency
    * Otherwise the results are stored in obj and obj is returned.  If obj is
    * not long enough, ArrayIndexOutOfBounds is thrown.  If obj is not an array
    * of primitives, ClassCastException is thrown.
-   * 
+   *
    * This method is typically overriden in subclasses to provide a
    * more efficient implementation.  The method provided by this abstract
    * class converts the components to unnormalized form and returns
@@ -601,7 +601,7 @@ public abstract class ColorModel implements Transparency
   {
     return
       getDataElements(getUnnormalizedComponents(components, offset, null, 0),
-		      0, obj);
+                      0, obj);
   }
 
   public boolean equals(Object obj)
@@ -609,7 +609,7 @@ public abstract class ColorModel implements Transparency
     if (!(obj instanceof ColorModel)) return false;
 
     ColorModel o = (ColorModel) obj;
-    return 
+    return
       (pixel_bits == o.pixel_bits) &&
       (transferType == o.transferType) &&
       (transparency == o.transparency) &&
@@ -632,7 +632,7 @@ public abstract class ColorModel implements Transparency
   }
 
   void coerceDataWorker(WritableRaster raster,
-			boolean isAlphaPremultiplied)
+                        boolean isAlphaPremultiplied)
   {
     int w = raster.getWidth();
     int h = raster.getHeight();
@@ -659,12 +659,12 @@ public abstract class ColorModel implements Transparency
 
     raster.setPixels(0, 0, w, h, pixels);
   }
-    
+
   /**
    * Checks if the given raster has a compatible data-layout (SampleModel).
    * @param raster The Raster to test.
    * @return true if raster is compatible.
-   */ 
+   */
   public boolean isCompatibleRaster(Raster raster)
   {
     SampleModel sampleModel = raster.getSampleModel();
@@ -675,7 +675,7 @@ public abstract class ColorModel implements Transparency
   public WritableRaster createCompatibleWritableRaster(int w, int h)
   {
     return new WritableRaster(createCompatibleSampleModel(w, h),
-			      new Point(0, 0));
+                              new Point(0, 0));
   }
 
   // Typically overridden
@@ -705,19 +705,19 @@ public abstract class ColorModel implements Transparency
   public WritableRaster getAlphaRaster(WritableRaster raster)
   {
     return null;
-    
+
     /* It is a mystery to me why we couldn't use the following code...
-       
-       
+
+
        if (!hasAlpha()) return null;
-       
+
        SampleModel sm = raster.getSampleModel();
        int[] alphaBand = { sm.getNumBands() - 1 };
        SampleModel alphaModel = sm.createSubsetSampleModel(alphaBand);
        DataBuffer buffer = raster.getDataBuffer();
        Point origin = new Point(0, 0);
        return Raster.createWritableRaster(alphaModel, buffer, origin);
-       
+
 
        ...here, and avoided overriding the method in subclasses,
        but the Sun docs state that this method always will return
@@ -746,7 +746,7 @@ public abstract class ColorModel implements Transparency
   private static class SRGBColorModel
     extends DirectColorModel
   {
-    
+
     SRGBColorModel()
     {
       super(32,0x00FF0000,0x0000FF00,0x000000FF,0xFF000000);
@@ -781,13 +781,13 @@ public abstract class ColorModel implements Transparency
     {
       if(pixel == null)
         {
-          pixel = new int[]{rgb};  
+          pixel = new int[]{rgb};
         }
       else
         {
-          ((int[]) pixel)[0] = rgb;  
+          ((int[]) pixel)[0] = rgb;
         }
-      
+
       return pixel;
     }
   }

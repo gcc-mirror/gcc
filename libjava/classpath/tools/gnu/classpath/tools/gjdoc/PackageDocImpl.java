@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -50,7 +50,7 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
    private List   ordinaryClassesList = new ArrayList();
    private List   exceptionsList      = new ArrayList();
    private List   interfacesList      = new ArrayList();
-   private List   errorsList          = new ArrayList();   
+   private List   errorsList          = new ArrayList();
 
    private ClassDoc[] allClasses;
    private ClassDoc[] ordinaryClasses;
@@ -65,41 +65,41 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
 
    public void addClass(ClassDoc classDoc) {
       if (Main.getInstance().includeAccessLevel(((ClassDocImpl)classDoc).accessLevel)) {
-	 allClassesSet.add(classDoc);
+         allClassesSet.add(classDoc);
       }
    }
 
    public void resolve() {
       for (Iterator it=allClassesSet.iterator(); it.hasNext(); ) {
-	 ClassDocImpl classDoc=(ClassDocImpl)it.next();
-	 try {
-	     classDoc.resolve();
-	 } catch (ParseException e) {
-	     System.err.println("FIXME: add try-catch to force compilation"
-				+ e);
-	 }
+         ClassDocImpl classDoc=(ClassDocImpl)it.next();
+         try {
+             classDoc.resolve();
+         } catch (ParseException e) {
+             System.err.println("FIXME: add try-catch to force compilation"
+                                + e);
+         }
 
-	 if (classDoc.isInterface()) {
-	    interfacesList.add(classDoc);
-	 }
-	 else if (classDoc.isException()) {
-	    exceptionsList.add(classDoc);
-	 }
-	 else if (classDoc.isError()) {
-	    errorsList.add(classDoc);
-	 }
-	 else {
-	    ordinaryClassesList.add(classDoc);
-	 }
+         if (classDoc.isInterface()) {
+            interfacesList.add(classDoc);
+         }
+         else if (classDoc.isException()) {
+            exceptionsList.add(classDoc);
+         }
+         else if (classDoc.isError()) {
+            errorsList.add(classDoc);
+         }
+         else {
+            ordinaryClassesList.add(classDoc);
+         }
       }
    }
 
    public void resolveComments() {
       if (rawDocumentation!=null) {
-	 this.tagMap=parseCommentTags(rawDocumentation.toCharArray(),
-				      0,
-				      rawDocumentation.length(),
-				      null,
+         this.tagMap=parseCommentTags(rawDocumentation.toCharArray(),
+                                      0,
+                                      rawDocumentation.length(),
+                                      null,
                                       null,
                                       null,
                                       null);
@@ -108,20 +108,20 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
       resolveTags();
    }
 
-   public String name() { 
-      return packageName; 
+   public String name() {
+      return packageName;
    }
 
-   public ClassDoc[] allClasses() 
-   { 
+   public ClassDoc[] allClasses()
+   {
       if (null == this.allClasses) {
          this.allClasses = toClassDocArray(allClassesSet);
       }
       return this.allClasses;
    }
 
-   public ClassDoc[] ordinaryClasses() 
-   { 
+   public ClassDoc[] ordinaryClasses()
+   {
       if (null == this.ordinaryClasses) {
          this.ordinaryClasses = toClassDocArray(ordinaryClassesList);
       }
@@ -129,24 +129,24 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
    }
 
 
-   public ClassDoc[] exceptions() 
-   { 
+   public ClassDoc[] exceptions()
+   {
       if (null == this.exceptions) {
          this.exceptions = toClassDocArray(exceptionsList);
       }
       return this.exceptions;
    }
 
-   public ClassDoc[] interfaces() 
-   { 
+   public ClassDoc[] interfaces()
+   {
       if (null == this.interfaces) {
          this.interfaces = toClassDocArray(interfacesList);
       }
       return this.interfaces;
    }
 
-   public ClassDoc[] errors() 
-   { 
+   public ClassDoc[] errors()
+   {
       if (null == this.errors) {
          this.errors = toClassDocArray(errorsList);
       }
@@ -160,7 +160,7 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
       return result;
    }
 
-   public ClassDoc findClass(String name) { 
+   public ClassDoc findClass(String name) {
       return Main.getRootDoc().classNamed(packageName+"."+name);
    }
 
@@ -170,7 +170,7 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
 
       Debug.log(level, "Ordinary classes:");
       Debug.dumpArray(level, ordinaryClasses());
-      
+
    }
 
    public static final PackageDocImpl DEFAULT_PACKAGE = new PackageDocImpl("");
@@ -195,16 +195,16 @@ class PackageDocImpl extends DocImpl implements GjdocPackageDoc {
 
    public int compareTo(Object o) {
       if (o!=null && o instanceof PackageDocImpl)
-	 return name().compareTo(((PackageDocImpl)o).name());
+         return name().compareTo(((PackageDocImpl)o).name());
       else
-	 return 0;
+         return 0;
    }
 
    public boolean equals(Object o) {
       if (o!=null && o instanceof PackageDocImpl)
-	 return name().equals(((PackageDocImpl)o).name());
+         return name().equals(((PackageDocImpl)o).name());
       else
-	 return false;
+         return false;
    }
 
    /**

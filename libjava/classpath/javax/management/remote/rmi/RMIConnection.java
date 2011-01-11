@@ -154,8 +154,8 @@ public interface RMIConnection
    */
   @SuppressWarnings("unchecked")
   void addNotificationListener(ObjectName name, ObjectName listener,
-			       MarshalledObject filter, MarshalledObject passback,
-			       Subject delegationSubject)
+                               MarshalledObject filter, MarshalledObject passback,
+                               Subject delegationSubject)
     throws InstanceNotFoundException, IOException;
 
   /**
@@ -226,7 +226,7 @@ public interface RMIConnection
    */
   @SuppressWarnings("unchecked")
   Integer[] addNotificationListeners(ObjectName[] names, MarshalledObject[] filters,
-				     Subject[] delegationSubjects)
+                                     Subject[] delegationSubjects)
     throws InstanceNotFoundException, IOException;
 
   /**
@@ -254,7 +254,7 @@ public interface RMIConnection
    * using the given constructor and registers it with the server
    * under the supplied name.  The class is loaded using the
    * {@link javax.management.loading.ClassLoaderRepository default
-   * loader repository} of the server. 
+   * loader repository} of the server.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -262,7 +262,7 @@ public interface RMIConnection
    * The {@link MBeanRegistration#preRegister preRegister} method
    * of this interface will be used to obtain the name in this case.
    * </p>
-   * 
+   *
    * @param className the class of the management bean, of which
    *                  an instance should be created.
    * @param name the name to register the new bean with.  This may
@@ -297,14 +297,14 @@ public interface RMIConnection
    *                           not have permission to invoke this operation.
    * @throws IOException if an I/O error occurred in communicating with
    *                     the bean server.
-   */  
+   */
   @SuppressWarnings("unchecked")
   ObjectInstance createMBean(String className, ObjectName name,
-			     MarshalledObject params, String[] sig,
-			     Subject delegationSubject)
+                             MarshalledObject params, String[] sig,
+                             Subject delegationSubject)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, IOException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, IOException;
 
   /**
    * <p>
@@ -320,7 +320,7 @@ public interface RMIConnection
    * under the supplied name.  The class is loaded using the
    * given class loader.  If this argument is <code>null</code>,
    * then the same class loader as was used to load the server
-   * is used. 
+   * is used.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -328,7 +328,7 @@ public interface RMIConnection
    * The {@link MBeanRegistration#preRegister preRegister} method
    * of this interface will be used to obtain the name in this case.
    * </p>
-   * 
+   *
    * @param className the class of the management bean, of which
    *                  an instance should be created.
    * @param name the name to register the new bean with.  This may
@@ -369,12 +369,12 @@ public interface RMIConnection
    */
   @SuppressWarnings("unchecked")
   ObjectInstance createMBean(String className, ObjectName name,
-			     ObjectName loaderName, MarshalledObject params,
-			     String[] sig, Subject delegationSubject)
+                             ObjectName loaderName, MarshalledObject params,
+                             String[] sig, Subject delegationSubject)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, InstanceNotFoundException,
-	   IOException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, InstanceNotFoundException,
+           IOException;
 
   /**
    * <p>
@@ -394,7 +394,7 @@ public interface RMIConnection
    * of this interface will be used to obtain the name in this case.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #createMBean(String, ObjectName, ObjectName, Object[], String)
    * <code>createMBean(className, name, loaderName, (Object[]) null,
    * (String) null)</code>} with <code>null</code> parameters
@@ -434,12 +434,12 @@ public interface RMIConnection
    * @see #createMBean(String, ObjectName, ObjectName, MarshalledObject,
    *                   String[], Subject)
    */
-  ObjectInstance createMBean(String className, ObjectName name, 
-			     ObjectName loaderName, Subject delegationSubject)
+  ObjectInstance createMBean(String className, ObjectName name,
+                             ObjectName loaderName, Subject delegationSubject)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, InstanceNotFoundException,
-	   IOException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, InstanceNotFoundException,
+           IOException;
 
   /**
    * <p>
@@ -449,7 +449,7 @@ public interface RMIConnection
    * using the default constructor and registering it with the server
    * under the supplied name.  The class is loaded using the
    * {@link javax.management.loading.ClassLoaderRepository default
-   * loader repository} of the server. 
+   * loader repository} of the server.
    * </p>
    * <p>
    * If the name supplied is <code>null</code>, then the bean is
@@ -458,7 +458,7 @@ public interface RMIConnection
    * of this interface will be used to obtain the name in this case.
    * </p>
    * <p>
-   * This method is equivalent to calling {@link 
+   * This method is equivalent to calling {@link
    * #createMBean(String, ObjectName, Object[], String[])
    * <code>createMBean(className, name, (Object[]) null,
    * (String[]) null)</code>} with <code>null</code> parameters
@@ -495,10 +495,10 @@ public interface RMIConnection
    * @see #createMBean(String, ObjectName, MarshalledObject, String[], Subject)
    */
   ObjectInstance createMBean(String className, ObjectName name,
-			     Subject delegationSubject)
+                             Subject delegationSubject)
     throws ReflectionException, InstanceAlreadyExistsException,
-	   MBeanRegistrationException, MBeanException,
-	   NotCompliantMBeanException, IOException;
+           MBeanRegistrationException, MBeanException,
+           NotCompliantMBeanException, IOException;
 
   /**
    * <p>
@@ -552,8 +552,8 @@ public interface RMIConnection
    * @throws IOException if an I/O error occurs.
    */
   NotificationResult fetchNotifications(long sequenceNumber,
-					int maxNotifications,
-					long timeout)
+                                        int maxNotifications,
+                                        long timeout)
     throws IOException;
 
   /**
@@ -587,8 +587,8 @@ public interface RMIConnection
    */
   Object getAttribute(ObjectName bean, String name, Subject delegationSubject)
     throws MBeanException, AttributeNotFoundException,
-	   InstanceNotFoundException, ReflectionException,
-	   IOException;
+           InstanceNotFoundException, ReflectionException,
+           IOException;
 
   /**
    * Handles {@link
@@ -616,13 +616,13 @@ public interface RMIConnection
    * @see DynamicMBean#getAttributes(String[])
    */
   AttributeList getAttributes(ObjectName bean, String[] names,
-			      Subject delegationSubject)
+                              Subject delegationSubject)
     throws InstanceNotFoundException, ReflectionException,
-	   IOException;
+           IOException;
 
   /**
    * Returns the unique identifier for this connection to the RMI
-   * server.  
+   * server.
    *
    * @return the connection ID.
    * @throws IOException if an I/O error occurred.
@@ -707,7 +707,7 @@ public interface RMIConnection
    */
   MBeanInfo getMBeanInfo(ObjectName name, Subject delegationSubject)
     throws InstanceNotFoundException, IntrospectionException,
-	   ReflectionException, IOException;
+           ReflectionException, IOException;
 
   /**
    * Handles {@link
@@ -769,9 +769,9 @@ public interface RMIConnection
    */
   @SuppressWarnings("unchecked")
   Object invoke(ObjectName bean, String name, MarshalledObject params,
-		String[] sig, Subject delegationSubject)
+                String[] sig, Subject delegationSubject)
     throws InstanceNotFoundException, MBeanException,
-	   ReflectionException, IOException;
+           ReflectionException, IOException;
 
   /**
    * <p>
@@ -790,7 +790,7 @@ public interface RMIConnection
    * <li>Both the class of B and C were loaded by the same class loader,
    * and B is assignable to C.</li>
    * </ul>
-   * 
+   *
    * @param name the name of the management bean.
    * @param className the name of the class to test if <code>name</code> is
    *                  an instance of.
@@ -807,7 +807,7 @@ public interface RMIConnection
    *                     the bean server.
    */
   boolean isInstanceOf(ObjectName name, String className,
-		       Subject delegationSubject)
+                       Subject delegationSubject)
     throws InstanceNotFoundException, IOException;
 
   /**
@@ -852,7 +852,7 @@ public interface RMIConnection
    * <p>
    * If both the object name and the query expression are <code>null</code>,
    * or the object name has no domain and no key properties,
-   * no filtering will be performed and all beans are returned. 
+   * no filtering will be performed and all beans are returned.
    * </p>
    *
    * @param name an {@link ObjectName} to use as a filter.
@@ -873,9 +873,9 @@ public interface RMIConnection
    */
   @SuppressWarnings("unchecked")
   Set<ObjectInstance> queryMBeans(ObjectName name, MarshalledObject query,
-				  Subject delegationSubject)
+                                  Subject delegationSubject)
     throws IOException;
-  
+
   /**
    * <p>
    * Handles {@link
@@ -896,7 +896,7 @@ public interface RMIConnection
    * <p>
    * If both the object name and the query expression are <code>null</code>,
    * or the object name has no domain and no key properties,
-   * no filtering will be performed and all beans are returned. 
+   * no filtering will be performed and all beans are returned.
    * </p>
    *
    * @param name an {@link ObjectName} to use as a filter.
@@ -916,7 +916,7 @@ public interface RMIConnection
    */
   @SuppressWarnings("unchecked")
   Set<ObjectName> queryNames(ObjectName name, MarshalledObject query,
-			     Subject delegationSubject)
+                             Subject delegationSubject)
     throws IOException;
 
   /**
@@ -962,12 +962,12 @@ public interface RMIConnection
    */
   @SuppressWarnings("unchecked")
   void removeNotificationListener(ObjectName name,
-				  ObjectName listener,
-				  MarshalledObject filter,
-				  MarshalledObject passback,
-				  Subject delegationSubject)
+                                  ObjectName listener,
+                                  MarshalledObject filter,
+                                  MarshalledObject passback,
+                                  Subject delegationSubject)
     throws InstanceNotFoundException, ListenerNotFoundException,
-	   IOException;
+           IOException;
 
   /**
    * Handles {@link
@@ -998,9 +998,9 @@ public interface RMIConnection
    * @see NotificationBroadcaster#removeNotificationListener(NotificationListener)
    */
   void removeNotificationListener(ObjectName name, ObjectName listener,
-				  Subject delegationSubject)
+                                  Subject delegationSubject)
     throws InstanceNotFoundException, ListenerNotFoundException,
-	   IOException;
+           IOException;
 
   /**
    * Removes one or more {@link NotificationListener}s from the specified
@@ -1014,7 +1014,7 @@ public interface RMIConnection
    * identifiers provided by the
    * {@link #addNotificationListeners(ObjectName[], MarshalledObject[],
    * Subject)} method to select the listeners to remove.
-   * 
+   *
    * @param name the name of the management bean from which the
    *             listeners should be removed.
    * @param listenerIds the identifiers of the listeners to remove.
@@ -1036,9 +1036,9 @@ public interface RMIConnection
    * @see #addNotificationListeners(ObjectName[], MarshalledObject[], Subject)
    */
   void removeNotificationListeners(ObjectName name, Integer[] listenerIds,
-				   Subject delegationSubject)
+                                   Subject delegationSubject)
     throws InstanceNotFoundException, ListenerNotFoundException,
-	   IOException;
+           IOException;
 
   /**
    * Handles {@link
@@ -1082,10 +1082,10 @@ public interface RMIConnection
    */
   @SuppressWarnings("unchecked")
   void setAttribute(ObjectName name, MarshalledObject attribute,
-		    Subject delegationSubject)
+                    Subject delegationSubject)
     throws InstanceNotFoundException, AttributeNotFoundException,
-	   InvalidAttributeValueException, MBeanException,
-	   ReflectionException, IOException;
+           InvalidAttributeValueException, MBeanException,
+           ReflectionException, IOException;
 
   /**
    * Handles {@link
@@ -1123,9 +1123,9 @@ public interface RMIConnection
    */
   @SuppressWarnings("unchecked")
   AttributeList setAttributes(ObjectName name, MarshalledObject attributes,
-			      Subject delegationSubject)
+                              Subject delegationSubject)
     throws InstanceNotFoundException, ReflectionException,
-	   IOException;
+           IOException;
 
   /**
    * Handles {@link
@@ -1153,9 +1153,9 @@ public interface RMIConnection
    *                           not have permission to invoke this operation.
    * @throws IOException if an I/O error occurred in communicating with
    *                     the bean server.
-   */ 
+   */
   void unregisterMBean(ObjectName name, Subject delegationSubject)
     throws InstanceNotFoundException, MBeanRegistrationException,
-	   IOException;
+           IOException;
 
 }

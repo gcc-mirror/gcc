@@ -52,7 +52,7 @@ import javax.print.attribute.EnumSyntax;
  * <p>
  * <b>IPP Compatibility:</b> Compression is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public class Compression extends EnumSyntax
@@ -62,24 +62,24 @@ public class Compression extends EnumSyntax
 
   /** The print data is not compressed. */
   public static final Compression NONE = new Compression(0);
-  
+
   /** The print data is ZIP compressed. */
   public static final Compression DEFLATE = new Compression(1);
-  
+
   /** The print data is GNU Zip compressed. */
   public static final Compression GZIP = new Compression(2);
-  
+
   /** The print data is UNIX compressed. */
   public static final Compression COMPRESS = new Compression(3);
-  
-  private static final String[] stringTable = { "none", "deflate", 
+
+  private static final String[] stringTable = { "none", "deflate",
                                                 "gzip", "compress" };
-  private static final Compression[] enumValueTable = { NONE, DEFLATE, 
+  private static final Compression[] enumValueTable = { NONE, DEFLATE,
                                                         GZIP, COMPRESS };
 
   /**
    * Constructs a <code>Compression</code> object.
-   * 
+   *
    * @param value the enum value
    */
   protected Compression(int value)
@@ -106,7 +106,7 @@ public class Compression extends EnumSyntax
   {
     return "compression";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

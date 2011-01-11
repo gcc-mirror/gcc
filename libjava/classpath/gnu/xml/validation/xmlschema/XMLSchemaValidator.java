@@ -1,4 +1,4 @@
-/* XMLSchemaValidator.java -- 
+/* XMLSchemaValidator.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -58,7 +58,7 @@ final class XMLSchemaValidator
 
   ErrorHandler errorHandler;
   LSResourceResolver resourceResolver;
-  
+
   XMLSchemaValidator(XMLSchema schema)
   {
     this.schema = schema;
@@ -93,6 +93,5 @@ final class XMLSchemaValidator
   {
     this.resourceResolver = resourceResolver;
   }
-  
-}
 
+}

@@ -1,4 +1,4 @@
-/* DocumentFunction.java -- 
+/* DocumentFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -86,7 +86,7 @@ final class DocumentFunction
   {
     this.args = args;
   }
-  
+
   public Object evaluate(Node context, int pos, int len)
   {
     int arity = args.size();
@@ -165,7 +165,7 @@ final class DocumentFunction
   {
     if ("".equals(uri) || uri == null)
       uri = this.base.getBaseURI();
-    
+
     // Get fragment
     Expr fragment = null;
     int hi = uri.indexOf('#');
@@ -240,5 +240,5 @@ final class DocumentFunction
       }
     return false;
   }
-  
+
 }

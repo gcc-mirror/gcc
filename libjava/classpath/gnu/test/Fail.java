@@ -1,4 +1,4 @@
-/* Fail.java -- Result code returned when test failed but was expected to 
+/* Fail.java -- Result code returned when test failed but was expected to
    Copyright (c) 1998 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.

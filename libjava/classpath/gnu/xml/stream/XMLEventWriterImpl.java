@@ -1,4 +1,4 @@
-/* XMLEventWriterImpl.java -- 
+/* XMLEventWriterImpl.java --
    Copyright (C) 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -62,7 +62,7 @@ import javax.xml.stream.events.XMLEvent;
 public class XMLEventWriterImpl
   implements XMLEventWriter
 {
-  
+
   protected final XMLStreamWriter writer;
 
   protected XMLEventWriterImpl(XMLStreamWriter writer)
@@ -181,11 +181,10 @@ public class XMLEventWriterImpl
   {
     writer.setNamespaceContext(context);
   }
-  
+
   public NamespaceContext getNamespaceContext()
   {
     return writer.getNamespaceContext();
   }
-  
-}
 
+}

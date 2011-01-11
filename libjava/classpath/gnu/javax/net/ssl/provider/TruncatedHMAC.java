@@ -45,7 +45,7 @@ import java.nio.ByteBuffer;
 /**
  * The value type for the {@link Extension.Type#TRUNCATED_HMAC} extension.
  * This extension has an empty value; this class is thusly empty.
- * 
+ *
  * @author csm
  */
 public class TruncatedHMAC extends Value
@@ -55,12 +55,12 @@ public class TruncatedHMAC extends Value
   {
     return 0;
   }
-  
+
   public ByteBuffer buffer()
   {
     return ByteBuffer.wrap(new byte[0]);
   }
-  
+
   public String toString()
   {
     return toString(null);

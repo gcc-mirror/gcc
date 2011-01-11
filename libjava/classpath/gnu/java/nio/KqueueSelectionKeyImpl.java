@@ -57,12 +57,12 @@ public class KqueueSelectionKeyImpl extends AbstractSelectionKey
 
   /** The selector we were created for. */
   private final KqueueSelectorImpl selector;
-  
+
   /** The channel we are attached to. */
   private final SelectableChannel channel;
-  
+
   private final VMChannelOwner natChannel;
-  
+
   public KqueueSelectionKeyImpl(KqueueSelectorImpl selector,
                                 SelectableChannel channel)
   {
@@ -101,7 +101,7 @@ public class KqueueSelectionKeyImpl extends AbstractSelectionKey
       throw new IllegalStateException("key is invalid");
     if ((ops & ~channel.validOps()) != 0)
       throw new IllegalArgumentException("channel does not support all operations");
-    
+
     selector.setInterestOps(this, ops);
     return this;
   }
@@ -123,7 +123,7 @@ public class KqueueSelectionKeyImpl extends AbstractSelectionKey
   {
     return selector;
   }
-  
+
   public String toString()
   {
     if (!isValid())
@@ -140,12 +140,12 @@ public class KqueueSelectionKeyImpl extends AbstractSelectionKey
       + ((readyOps & OP_WRITE) != 0 ? " OP_WRITE" : "")
       + " } ]";
   }
-  
+
   public int hashCode()
   {
     return fd;
   }
-  
+
   public boolean equals(Object o)
   {
     if (!(o instanceof KqueueSelectionKeyImpl))
@@ -153,8 +153,8 @@ public class KqueueSelectionKeyImpl extends AbstractSelectionKey
     KqueueSelectionKeyImpl that = (KqueueSelectionKeyImpl) o;
     return that.fd == this.fd && that.channel.equals(this.channel);
   }
-  
-  
+
+
   boolean isReadActive()
   {
     return (activeOps & (OP_READ | OP_ACCEPT)) != 0;
@@ -164,17 +164,17 @@ public class KqueueSelectionKeyImpl extends AbstractSelectionKey
   {
     return (interestOps & (OP_READ | OP_ACCEPT)) != 0;
   }
-  
+
   boolean isWriteActive()
   {
     return (activeOps & (OP_WRITE | OP_CONNECT)) != 0;
   }
-  
+
   boolean isWriteInterested()
   {
     return (interestOps & (OP_WRITE | OP_CONNECT)) != 0;
   }
-  
+
   boolean needCommitRead()
   {
     return isReadActive() == (!isReadInterested());

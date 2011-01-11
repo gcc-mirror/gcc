@@ -59,12 +59,12 @@ import org.omg.CORBA.TypeCodePackage.BadKind;
 public class GeneralTypeCode
   extends PrimitiveTypeCode
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
-  
+
+
   /**
    * Indicates that the field value has not been previously set.
    */

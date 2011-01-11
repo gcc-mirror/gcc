@@ -143,10 +143,10 @@ public abstract class MacSpi
    * @param length The number of bytes to update.
    */
   protected abstract void engineUpdate(byte[] input, int offset, int length);
-  
+
   /**
    * Update this MAC with the remaining bytes of a buffer.
-   * 
+   *
    * @param buffer The input buffer.
    * @since 1.5
    */

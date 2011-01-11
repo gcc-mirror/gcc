@@ -41,7 +41,7 @@ package gnu.test;
  * Interface which all GNU Classpath tests must implement.
  * The method <code>test</code> is invoked once for each test.
  */
-public interface Test 
+public interface Test
 {
   /**
    * Returns the name of the test.

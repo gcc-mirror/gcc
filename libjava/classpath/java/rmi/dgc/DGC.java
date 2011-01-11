@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -56,7 +56,7 @@ public interface DGC
 {
   /**
    * Mark the given objects referecnes as used on the client side.
-   * 
+   *
    * @param ids the ids of the used objects.
    * @param sequenceNum the number of the call (used to detect and discard late
    *          calls).
@@ -68,7 +68,7 @@ public interface DGC
 
   /**
    * Mark the given objects as no longer used on the client side.
-   * 
+   *
    * @param ids the ids of the objects that are no longer used.
    * @param sequenceNum the number of the call (used to detect and discard late
    * @param vmid the VMID of the client.

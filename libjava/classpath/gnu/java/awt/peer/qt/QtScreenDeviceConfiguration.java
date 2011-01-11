@@ -47,7 +47,7 @@ import java.awt.image.VolatileImage;
 import java.awt.geom.AffineTransform;
 
 public class QtScreenDeviceConfiguration extends GraphicsConfiguration {
-  
+
   private QtScreenDevice owner;
   private Rectangle bounds;
   private double dpiX, dpiY;
@@ -67,21 +67,21 @@ public class QtScreenDeviceConfiguration extends GraphicsConfiguration {
     switch( depth )
       {
       case 24:
-	return new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        return new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
       case 16:
-	return new BufferedImage(width, height, 
-				 BufferedImage.TYPE_USHORT_565_RGB);
+        return new BufferedImage(width, height,
+                                 BufferedImage.TYPE_USHORT_565_RGB);
       case 8:
-	return new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
+        return new BufferedImage(width, height, BufferedImage.TYPE_BYTE_INDEXED);
       default:
       case 32:
-	return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
       }
   }
 
   public BufferedImage createCompatibleImage(int width, int height, int transparency)
   {
-    // FIXME: Take the transpareny flag into account? 
+    // FIXME: Take the transpareny flag into account?
     // For now, ignore it and just use an alpha channel.
     if(depth == 32)
       return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -92,9 +92,9 @@ public class QtScreenDeviceConfiguration extends GraphicsConfiguration {
   {
     return new QtVolatileImage( width, height );
   }
-  
-  public VolatileImage createCompatibleVolatileImage(int width, int height, 
-						     ImageCapabilities caps)
+
+  public VolatileImage createCompatibleVolatileImage(int width, int height,
+                                                     ImageCapabilities caps)
   {
     return createCompatibleVolatileImage( width, height );
   }
@@ -121,7 +121,7 @@ public class QtScreenDeviceConfiguration extends GraphicsConfiguration {
     return new AffineTransform();
   }
 
-  public GraphicsDevice	getDevice()
+  public GraphicsDevice getDevice()
   {
     return owner;
   }
@@ -137,8 +137,8 @@ public class QtScreenDeviceConfiguration extends GraphicsConfiguration {
     return nTrans;
   }
 
-  public VolatileImage createCompatibleVolatileImage(int width, int height, 
-						     int transparency)
+  public VolatileImage createCompatibleVolatileImage(int width, int height,
+                                                     int transparency)
   {
     return createCompatibleVolatileImage(width, height);
   }

@@ -1,4 +1,4 @@
-/* Expr.java -- 
+/* Expr.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -112,7 +112,7 @@ public abstract class Expr
           return null;
         }
     }
-    
+
   }
 
   public Object evaluate(Object item, QName returnType)
@@ -143,10 +143,10 @@ public abstract class Expr
           {
             if (ret instanceof Collection)
               {
-		/* Suppression is safe, as we know context
-		   produces Collection<Node> */
-		@SuppressWarnings("unchecked") 
-		  Collection<Node> ns = (Collection<Node>) ret;
+                /* Suppression is safe, as we know context
+                   produces Collection<Node> */
+                @SuppressWarnings("unchecked")
+                  Collection<Node> ns = (Collection<Node>) ret;
                 switch (ns.size())
                   {
                   case 0:
@@ -171,12 +171,12 @@ public abstract class Expr
                 throw new XPathExpressionException("return value is not a node-set");
               }
             if (ret != null)
-	      {
-		/* Suppression is safe, as we know context produces Collection<Node> */
-		@SuppressWarnings("unchecked")
-		  Collection<Node> nodes = (Collection<Node>) ret;
-		ret = new ExprNodeSet(nodes);
-	      }
+              {
+                /* Suppression is safe, as we know context produces Collection<Node> */
+                @SuppressWarnings("unchecked")
+                  Collection<Node> nodes = (Collection<Node>) ret;
+                ret = new ExprNodeSet(nodes);
+              }
           }
       }
     return ret;
@@ -185,7 +185,7 @@ public abstract class Expr
   public String evaluate(Object item)
     throws XPathExpressionException
   {
-    return (String) evaluate(item, XPathConstants.STRING); 
+    return (String) evaluate(item, XPathConstants.STRING);
   }
 
   public Object evaluate(InputSource source, QName returnType)
@@ -201,15 +201,15 @@ public abstract class Expr
       }
     catch (ParserConfigurationException e)
       {
-        throw new XPathExpressionException(e); 
+        throw new XPathExpressionException(e);
       }
     catch (SAXException e)
       {
-        throw new XPathExpressionException(e); 
+        throw new XPathExpressionException(e);
       }
     catch (IOException e)
       {
-        throw new XPathExpressionException(e); 
+        throw new XPathExpressionException(e);
       }
   }
 
@@ -224,7 +224,7 @@ public abstract class Expr
   public abstract Expr clone(Object context);
 
   public abstract boolean references(QName var);
-  
+
   /* -- 4.1 Node Set Functions -- */
 
   /**
@@ -244,9 +244,9 @@ public abstract class Expr
     Set<Node> ret = new HashSet<Node>();
     if (object instanceof Collection)
       {
-	/* Suppression is safe, as the iteration will check each value is a Node */
-	@SuppressWarnings("unchecked")
-	  Collection<Node> nodeSet = (Collection<Node>) object;
+        /* Suppression is safe, as the iteration will check each value is a Node */
+        @SuppressWarnings("unchecked")
+          Collection<Node> nodeSet = (Collection<Node>) object;
         for (Iterator<Node> i = nodeSet.iterator(); i.hasNext(); )
           {
             String string = stringValue(i.next());
@@ -303,7 +303,7 @@ public abstract class Expr
     String ret = node.getNamespaceURI();
     return (ret == null) ? "" : ret;
   }
-  
+
   /**
    * The name function returns a string containing a QName representing the
    * expanded-name of the node in the argument node-set that is first in
@@ -391,7 +391,7 @@ public abstract class Expr
           {
             String ret = decimalFormat.format(d);
             if (ret.endsWith (".0"))
-              { 
+              {
                 ret = ret.substring(0, ret.length() - 2);
               }
             return ret;
@@ -399,10 +399,10 @@ public abstract class Expr
       }
     if (object instanceof Collection)
       {
-	/* Suppression is safe, as we fail immediately if the
-	 * first element is not a Node and don't use the rest */
-	@SuppressWarnings("unchecked") 
-	  Collection<Node> nodeSet = (Collection<Node>) object;
+        /* Suppression is safe, as we fail immediately if the
+         * first element is not a Node and don't use the rest */
+        @SuppressWarnings("unchecked")
+          Collection<Node> nodeSet = (Collection<Node>) object;
         if (nodeSet.isEmpty())
           {
             return "";
@@ -414,7 +414,7 @@ public abstract class Expr
   }
 
   /* -- 4.3 Boolean Functions -- */
-  
+
   /**
    * Implementation of the XPath <code>boolean</code> function.
    */
@@ -463,10 +463,10 @@ public abstract class Expr
       }
     if (object instanceof Collection)
       {
-	/* Suppression is safe, as we fail immediately if one
-	 * of the elements is not a Node */
-	@SuppressWarnings("unchecked") 
-	  Collection<Node> nodeSet = (Collection<Node>) object;
+        /* Suppression is safe, as we fail immediately if one
+         * of the elements is not a Node */
+        @SuppressWarnings("unchecked")
+          Collection<Node> nodeSet = (Collection<Node>) object;
         // Convert node-set to string
         object = stringValue(nodeSet);
       }
@@ -505,7 +505,7 @@ public abstract class Expr
   {
     return stringValue(node, false);
   }
-  
+
   static String stringValue(Node node, boolean elementMode)
   {
     switch (node.getNodeType())

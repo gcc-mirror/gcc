@@ -79,7 +79,7 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
  * to the existing naming service. When listing bindings, it uses the
  * {@link Context#BATCHSIZE} property to determine, how many bindings should
  * be returned at once (the process is transparend)
- * 
+ *
  * @author Audrius Meskauskas (audriusa@Bioinformatics.org)
  */
 public class ContextContinuation implements Context
@@ -90,28 +90,28 @@ public class ContextContinuation implements Context
    * one. Use {@link Context#BATCHSIZE} to override the value of this constant.
    */
   public int DEFAULT_BATCH_SIZE = 20;
-  
+
   /**
    * The actual CORBA naming service.
    */
   NamingContextExt service;
-  
+
   /**
    * The object request broker, used to access the naming service. This field
-   * is only initialised when the context is constructed from the URL. 
+   * is only initialised when the context is constructed from the URL.
    */
   ORB orb;
-  
+
   /**
    * The properties.
    */
   Hashtable properties;
-  
+
   /**
    * The parent factory.
    */
   GiopNamingServiceFactory factory;
-  
+
   /**
    * The name transformer to obtain the name from its string representation. The
    * to_name method of the naming service is avoided as it may be remote and
@@ -119,16 +119,16 @@ public class ContextContinuation implements Context
    * specific.
    */
   static NameTransformer transformer = new NameTransformer();
-  
+
   /**
    * The batch size for list operations - how many to return at once.
    */
   public final int howMany;
-  
+
   /**
    * Creates a new naming context that uses naming service, represented by the
    * given CORBA object.
-   * 
+   *
    * @param nsObject
    *          the naming service object. It must be possible to narrow it into
    *          the NamingContextExt.
@@ -177,7 +177,7 @@ public class ContextContinuation implements Context
    * Give the specified name for the specified object. The passed name must not
    * be already bound to some other object. The components of the name are
    * mapped into the components of the CORBA name.
-   * 
+   *
    * @param name
    *          the name that will be given to the object (in the scope of this
    *          context).
@@ -218,7 +218,7 @@ public class ContextContinuation implements Context
   /**
    * Give the specified name for the specified object. The passed name must not
    * be already bound to some other object.
-   * 
+   *
    * @param name
    *          the name that will be given to the object (in the scope of this
    *          context).
@@ -261,7 +261,7 @@ public class ContextContinuation implements Context
    * can be called several times, but after it has been once invoked, it is not
    * allowed to call any other method of this context. This method destroys
    * the ORB, if we have one.
-   * 
+   *
    * @throws NamingException
    */
   public void close() throws NamingException
@@ -292,7 +292,7 @@ public class ContextContinuation implements Context
    * Creates the new naming subcontext and binds it to the current (this)
    * context. The returned object will wrap around the newly created CORBA
    * subcontext
-   * 
+   *
    * @param subContext
    *          the name of the new context being created
    * @return the newly created context, bound to the instance of the context on
@@ -312,7 +312,7 @@ public class ContextContinuation implements Context
           toGiop(subContext));
         Hashtable clonedProps = new Hashtable();
         clonedProps.putAll(properties);
-        
+
         // Nulls are passed both for orb and factory, as the child contexts
         // need not to do any cleanup.
         return new ContextContinuation(subcontext, clonedProps, null, null);
@@ -335,7 +335,7 @@ public class ContextContinuation implements Context
    * Creates the new naming subcontext and binds it to the current (this)
    * context. The returned object will wrap around the newly created CORBA
    * subcontext
-   * 
+   *
    * @param subContext
    *          the name of the new context being created
    * @return the newly created context, bound to the instance of the context on
@@ -351,7 +351,7 @@ public class ContextContinuation implements Context
   {
     try
       {
-        org.omg.CORBA.Object subcontext = 
+        org.omg.CORBA.Object subcontext =
           service.bind_new_context(transformer.toName(subContext));
         Hashtable clonedProps = new Hashtable();
         clonedProps.putAll(properties);
@@ -379,7 +379,7 @@ public class ContextContinuation implements Context
    * Removes the naming subcontext from this naming context. Returns without
    * action if such subcontext does not exist. The context being destroyed must
    * be empty.
-   * 
+   *
    * @param subContext
    *          the name of the subcontext beig removed.
    * @throws ContextNotEmptyException
@@ -395,7 +395,7 @@ public class ContextContinuation implements Context
    * Removes the naming subcontext from this naming context. Returns without
    * action if such subcontext does not exist. The context being destroyed must
    * be empty.
-   * 
+   *
    * @param subContext
    *          the name of the subcontext beig removed.
    * @throws ContextNotEmptyException
@@ -411,7 +411,7 @@ public class ContextContinuation implements Context
    * Returs the full name of this naming context. The returned string is not a
    * JNDI composite name and should not be passed directly to the methods of the
    * naming context. This implementation returns the IOR.
-   * 
+   *
    * @return the full name of this naming context, in its own namespace.
    * @throws OperationNotSupportedException
    *           if the naming system, represented by this context, does not
@@ -459,7 +459,7 @@ public class ContextContinuation implements Context
    * bound object. The behaviour in the case if the bindings are added or
    * removed later is not defined. The contents of the subcontexts are not
    * included.
-   * 
+   *
    * @param name
    *          the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
@@ -499,7 +499,7 @@ public class ContextContinuation implements Context
    * bound object. The behaviour in the case if the bindings are added or
    * removed later is not defined. The contents of the subcontexts are not
    * included.
-   * 
+   *
    * @param name
    *          the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
@@ -538,7 +538,7 @@ public class ContextContinuation implements Context
    * {@link Binding}, providing also information about the class of the bound
    * object. The behaviour in the case if the bindings are added or removed
    * later is not defined. The contents of the subcontexts are not included.
-   * 
+   *
    * @param name
    *          the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
@@ -576,7 +576,7 @@ public class ContextContinuation implements Context
    * {@link Binding}, providing also information about the class of the bound
    * object. The behaviour in the case if the bindings are added or removed
    * later is not defined. The contents of the subcontexts are not included.
-   * 
+   *
    * @param name
    *          the name of the subcontext
    * @return the enumeration over the names, known for the given subcontext.
@@ -612,7 +612,7 @@ public class ContextContinuation implements Context
   /**
    * Gets the previously named object by name. If the passed name is empty, the
    * method should return a cloned instance of this naming context.
-   * 
+   *
    * @param name
    *          the name of the object being searched in this context
    * @return the named object
@@ -642,7 +642,7 @@ public class ContextContinuation implements Context
   /**
    * Gets the previously named object by name. If the passed name is empty, the
    * method should return a cloned instance of this naming context.
-   * 
+   *
    * @param name
    *          the name of the object being searched in this context
    * @return the named object
@@ -688,7 +688,7 @@ public class ContextContinuation implements Context
   /**
    * Give the specified name for the specified object. Unlike bind, this method
    * silently replaces the existing binding for this name, if one exists.
-   * 
+   *
    * @param name
    *          the name that will be given to the object (in the scope of this
    *          context).
@@ -723,7 +723,7 @@ public class ContextContinuation implements Context
   /**
    * Give the specified name for the specified object. Unlike bind, this method
    * silently replaces the existing binding for this name, if one exists.
-   * 
+   *
    * @param name
    *          the name that will be given to the object (in the scope of this
    *          context).
@@ -758,7 +758,7 @@ public class ContextContinuation implements Context
   /**
    * Renames the existing binding, removing the existing and giving the new name
    * for the same object.
-   * 
+   *
    * @param oldName
    *          the existing name of the known object
    * @param newName
@@ -778,7 +778,7 @@ public class ContextContinuation implements Context
   /**
    * Renames the existing binding, removing the existing and giving the new name
    * for the same object.
-   * 
+   *
    * @param oldName
    *          the existing name of the known object
    * @param newName
@@ -800,7 +800,7 @@ public class ContextContinuation implements Context
    * returns without action if the name is not bound to an object in the
    * terminal context, but throws {@link NameNotFoundException} if one of the
    * intermadiate contexts does not exist.
-   * 
+   *
    * @param name
    *          the name to be removed
    * @throws NameNotFoundException
@@ -834,7 +834,7 @@ public class ContextContinuation implements Context
    * returns without action if the name is not bound to an object in the
    * terminal context, but throws {@link NameNotFoundException} if one of the
    * intermadiate contexts does not exist.
-   * 
+   *
    * @param name
    *          the name to be removed
    * @throws NameNotFoundException
@@ -862,12 +862,12 @@ public class ContextContinuation implements Context
         throw new InvalidNameException(name);
       }
   }
-  
+
  /**
    * Add new environment property to the environment of this context. Both name
    * and value of the new property must not be null. If the property is already
    * defined, is current value is replaced by the propVal.
-   * 
+   *
    * @param key
    *          the name of the new property
    * @param value
@@ -888,7 +888,7 @@ public class ContextContinuation implements Context
    * Returns the environment, associated with this naming context. The returned
    * table should never be modified by the caller. Use {@link #addToEnvironment}
    * and {@link #removeFromEnvironment} to modify the environement, if needed.
-   * 
+   *
    * @return the table, representing the environment of this context
    * @throws NamingException
    */
@@ -900,7 +900,7 @@ public class ContextContinuation implements Context
   /**
    * Removes the property with the given name from the environment. Returns
    * without action if this property is not defined.
-   * 
+   *
    * @param propName
    *          the name of the property being removed.
    * @return the value of the property that has been removed or null if the
@@ -911,12 +911,12 @@ public class ContextContinuation implements Context
   {
     return properties.remove(propName);
   }
-  
+
   /**
    * Convert the {@link Name} into array of the name components, required to the
    * CORBA naming service. First the string representation is obtained, then
    * it is converted using parsing rules of the CORBA name.
-   * 
+   *
    * @param name
    *          then name to convert
    * @return the converted array of components.
@@ -925,11 +925,11 @@ public class ContextContinuation implements Context
   {
     return transformer.toName(name.toString());
   }
-  
+
   /**
    * Get the batch size from the environment properties. The batch size is used
    * for listing operations.
-   * 
+   *
    * @return the batch size, or some default value if not specified.
    */
   public int getBatchSize()
@@ -951,6 +951,6 @@ public class ContextContinuation implements Context
       }
     return batchSize;
   }
-  
-  
+
+
 }

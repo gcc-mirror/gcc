@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -52,46 +52,46 @@ public class BeanContextServiceAvailableEvent extends BeanContextEvent {
        private static final long serialVersionUID = -5333985775656400778L;
 
        /**
-	 * The <code>Class</code> representing the service which is now
-	 * available.
-	 */
-	protected Class serviceClass;
+         * The <code>Class</code> representing the service which is now
+         * available.
+         */
+        protected Class serviceClass;
 
-	/**
-	 * Create a new service available event.
-	 * @param services the <code>BeanContextServices</code> through
-	 *        which the service is available.  This is also the source
-	 *        of the event.
-	 * @param serviceClass the service class that is now available.
-	 */
-	public BeanContextServiceAvailableEvent(BeanContextServices services, Class serviceClass) {
-		super(services);
-		this.serviceClass = serviceClass;
-	}
+        /**
+         * Create a new service available event.
+         * @param services the <code>BeanContextServices</code> through
+         *        which the service is available.  This is also the source
+         *        of the event.
+         * @param serviceClass the service class that is now available.
+         */
+        public BeanContextServiceAvailableEvent(BeanContextServices services, Class serviceClass) {
+                super(services);
+                this.serviceClass = serviceClass;
+        }
 
-	/**
-	 * Get the current service selectors of the service class.
-	 * This is identical to <code>getSourceAsBeanContextServices().getCurrentServiceSelectors(getServiceClass())</code>
-	 * @return the current service selectors of the service class.
-	 */
-	public Iterator getCurrentServiceSelectors() {
-		return getSourceAsBeanContextServices().getCurrentServiceSelectors(serviceClass);
-	}
+        /**
+         * Get the current service selectors of the service class.
+         * This is identical to <code>getSourceAsBeanContextServices().getCurrentServiceSelectors(getServiceClass())</code>
+         * @return the current service selectors of the service class.
+         */
+        public Iterator getCurrentServiceSelectors() {
+                return getSourceAsBeanContextServices().getCurrentServiceSelectors(serviceClass);
+        }
 
-	/**
-	 * Get the newly available service class.
-	 * @return the service class.
-	 */
-	public Class getServiceClass() {
-		return serviceClass;
-	}
+        /**
+         * Get the newly available service class.
+         * @return the service class.
+         */
+        public Class getServiceClass() {
+                return serviceClass;
+        }
 
-	/**
-	 * Get the <code>BeanContextServices</code> through which the new service is available.
-	 * @return the <code>BeanContextServices</code> through which the
-	 *         new service is available.
-	 */
-	public BeanContextServices getSourceAsBeanContextServices() {
-		return (BeanContextServices)getSource();
-	}
+        /**
+         * Get the <code>BeanContextServices</code> through which the new service is available.
+         * @return the <code>BeanContextServices</code> through which the
+         *         new service is available.
+         */
+        public BeanContextServices getSourceAsBeanContextServices() {
+                return (BeanContextServices)getSource();
+        }
 }

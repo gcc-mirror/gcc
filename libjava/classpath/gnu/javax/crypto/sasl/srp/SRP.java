@@ -1,4 +1,4 @@
-/* SRP.java -- 
+/* SRP.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -70,7 +70,7 @@ public final class SRP
   /**
    * Returns an instance of this object that uses the designated message digest
    * algorithm as its digest function.
-   * 
+   *
    * @return an instance of this object for the designated digest name.
    */
   public static synchronized SRP instance(String mdName)
@@ -108,7 +108,7 @@ public final class SRP
    * Returns a new instance of the SRP message digest algorithm --which is
    * SHA-160 by default, but could be anything else provided the proper
    * conditions as specified in the SRP specifications.
-   * 
+   *
    * @return a new instance of the underlying SRP message digest algorithm.
    * @throws RuntimeException if the implementation of the message digest
    *           algorithm does not support cloning.
@@ -121,7 +121,7 @@ public final class SRP
   /**
    * Convenience method to return the result of digesting the designated input
    * with a new instance of the SRP message digest algorithm.
-   * 
+   *
    * @param src some bytes to digest.
    * @return the bytes constituting the result of digesting the designated input
    *         with a new instance of the SRP message digest algorithm.
@@ -136,7 +136,7 @@ public final class SRP
   /**
    * Convenience method to return the result of digesting the designated input
    * with a new instance of the SRP message digest algorithm.
-   * 
+   *
    * @param src a String whose bytes (using US-ASCII encoding) are to be
    *          digested.
    * @return the bytes constituting the result of digesting the designated input
@@ -151,7 +151,7 @@ public final class SRP
   /**
    * Convenience method to XOR N bytes from two arrays; N being the output size
    * of the SRP message digest algorithm.
-   * 
+   *
    * @param a the first byte array.
    * @param b the second one.
    * @return N bytes which are the result of the XOR operations on the first N

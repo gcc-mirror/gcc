@@ -1,4 +1,4 @@
-/* MaskFormatter.java -- 
+/* MaskFormatter.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,53 +59,53 @@ public class MaskFormatter extends DefaultFormatter
   private static final char LETTER_CHAR = '?';
   private static final char ANYTHING_CHAR = '*';
   private static final char HEX_CHAR = 'H';
-  
+
   /** The mask for this MaskFormatter **/
   private String mask;
-  
-  /** 
-   * A String made up of the characters that are not valid for input for 
-   * this MaskFormatter. 
+
+  /**
+   * A String made up of the characters that are not valid for input for
+   * this MaskFormatter.
    */
   private String invalidChars;
-  
-  /** 
-   * A String made up of the characters that are valid for input for 
-   * this MaskFormatter. 
+
+  /**
+   * A String made up of the characters that are valid for input for
+   * this MaskFormatter.
    */
   private String validChars;
-  
-  /** A String used in place of missing chracters if the value does not 
+
+  /** A String used in place of missing chracters if the value does not
    * completely fill in the spaces in the mask.
    */
   private String placeHolder;
-  
-  /** A character used in place of missing characters if the value does 
+
+  /** A character used in place of missing characters if the value does
    * not completely fill in the spaces in the mask.
    */
   private char placeHolderChar = ' ';
-  
+
   /**
    * Whether or not stringToValue should return literal characters in the mask.
    */
   private boolean valueContainsLiteralCharacters = true;
-  
+
   /** A String used for easy access to valid HEX characters **/
   private static String hexString = "0123456789abcdefABCDEF";
-  
+
   /** An int to hold the length of the mask, accounting for escaped characters **/
   int maskLength = 0;
-  
+
   public MaskFormatter ()
   {
     // Override super's default behaviour, in MaskFormatter the default
     // is not to allow invalid values
     setAllowsInvalid(false);
   }
-  
+
   /**
    * Creates a MaskFormatter with the specified mask.
-   * @specnote doesn't actually throw a ParseException although it 
+   * @specnote doesn't actually throw a ParseException although it
    * is declared to do so
    * @param mask
    * @throws java.text.ParseException
@@ -115,7 +115,7 @@ public class MaskFormatter extends DefaultFormatter
     this();
     setMask (mask);
   }
-  
+
   /**
    * Returns the mask used in this MaskFormatter.
    * @return the mask used in this MaskFormatter.
@@ -124,7 +124,7 @@ public class MaskFormatter extends DefaultFormatter
   {
     return mask;
   }
-  
+
   /**
    * Returns a String containing the characters that are not valid for input
    * for this MaskFormatter.
@@ -134,19 +134,19 @@ public class MaskFormatter extends DefaultFormatter
   {
     return invalidChars;
   }
-  
+
   /**
    * Sets characters that are not valid for input. If
    * <code>invalidCharacters</code> is non-null then no characters contained
    * in it will be allowed to be input.
-   * 
+   *
    * @param invalidCharacters the String specifying invalid characters.
    */
   public void setInvalidCharacters (String invalidCharacters)
   {
     this.invalidChars = invalidCharacters;
   }
-  
+
   /**
    * Returns a String containing the characters that are valid for input
    * for this MaskFormatter.
@@ -156,12 +156,12 @@ public class MaskFormatter extends DefaultFormatter
   {
     return validChars;
   }
-  
+
   /**
    * Sets characters that are valid for input. If
    * <code>validCharacters</code> is non-null then no characters that are
    * not contained in it will be allowed to be input.
-   * 
+   *
    * @param validCharacters the String specifying valid characters.
    */
   public void setValidCharacters (String validCharacters)
@@ -170,7 +170,7 @@ public class MaskFormatter extends DefaultFormatter
   }
 
   /**
-   * Returns the place holder String that is used in place of missing 
+   * Returns the place holder String that is used in place of missing
    * characters when the value doesn't completely fill in the spaces
    * in the mask.
    * @return the place holder String.
@@ -179,18 +179,18 @@ public class MaskFormatter extends DefaultFormatter
   {
     return placeHolder;
   }
-  
+
   /**
    * Sets the string to use if the value does not completely fill in the mask.
    * If this is null, the place holder character will be used instead.
-   * @param placeholder the String to use if the value doesn't completely 
+   * @param placeholder the String to use if the value doesn't completely
    * fill in the mask.
    */
   public void setPlaceholder (String placeholder)
   {
     this.placeHolder = placeholder;
   }
-  
+
   /**
    * Returns the character used in place of missing characters when the
    * value doesn't completely fill the mask.
@@ -200,42 +200,42 @@ public class MaskFormatter extends DefaultFormatter
   {
     return placeHolderChar;
   }
-  
+
   /**
    * Sets the char  to use if the value does not completely fill in the mask.
-   * This is only used if the place holder String has not been set or does 
+   * This is only used if the place holder String has not been set or does
    * not completely fill in the mask.
-   * @param placeholder the char to use if the value doesn't completely 
+   * @param placeholder the char to use if the value doesn't completely
    * fill in the mask.
    */
   public void setPlaceholderCharacter (char placeholder)
   {
     this.placeHolderChar = placeholder;
   }
-  
+
   /**
-   * Returns true if stringToValue should return the literal 
+   * Returns true if stringToValue should return the literal
    * characters in the mask.
-   * @return true if stringToValue should return the literal 
+   * @return true if stringToValue should return the literal
    * characters in the mask
    */
   public boolean getValueContainsLiteralCharacters()
   {
     return valueContainsLiteralCharacters;
   }
-  
+
   /**
    * Determines whether stringToValue will return literal characters or not.
-   * @param containsLiteralChars if true, stringToValue will return the 
+   * @param containsLiteralChars if true, stringToValue will return the
    * literal characters in the mask, otherwise it will not.
    */
   public void setValueContainsLiteralCharacters (boolean containsLiteralChars)
   {
     this.valueContainsLiteralCharacters = containsLiteralChars;
   }
-  
+
   /**
-   * Sets the mask for this MaskFormatter.  
+   * Sets the mask for this MaskFormatter.
    * @specnote doesn't actually throw a ParseException even though it is
    * declared to do so
    * @param mask the new mask for this MaskFormatter
@@ -247,14 +247,14 @@ public class MaskFormatter extends DefaultFormatter
 
     // Update the cached maskLength.
     int end = mask.length() - 1;
-    maskLength = 0;    
+    maskLength = 0;
     for (int i = 0; i <= end; i++)
       {
         // Handle escape characters properly - they don't add to the maskLength
         // but 2 escape characters in a row is really one escape character and
         // one literal single quote, so that does add 1 to the maskLength.
         if (mask.charAt(i) == '\'')
-          {            
+          {
             // Escape characters at the end of the mask don't do anything.
             if (i != end)
               maskLength++;
@@ -264,14 +264,14 @@ public class MaskFormatter extends DefaultFormatter
           maskLength++;
       }
   }
-  
+
   /**
    * Installs this MaskFormatter on the JFormattedTextField.
-   * Invokes valueToString to convert the current value from the 
+   * Invokes valueToString to convert the current value from the
    * JFormattedTextField to a String, then installs the Actions from
-   * getActions, the DocumentFilter from getDocumentFilter, and the 
+   * getActions, the DocumentFilter from getDocumentFilter, and the
    * NavigationFilter from getNavigationFilter.
-   * 
+   *
    * If valueToString throws a ParseException, this method sets the text
    * to an empty String and marks the JFormattedTextField as invalid.
    */
@@ -293,14 +293,14 @@ public class MaskFormatter extends DefaultFormatter
         }
       }
   }
-  
+
   /**
    * Parses the text using the mask, valid characters, and invalid characters
    * to determine the appropriate Object to return.  This strips the literal
    * characters if necessary and invokes super.stringToValue.  If the paramter
-   * is invalid for the current mask and valid/invalid character sets this 
+   * is invalid for the current mask and valid/invalid character sets this
    * method will throw a ParseException.
-   * 
+   *
    * @param value the String to parse
    * @throws ParseException if value doesn't match the mask and valid/invalid
    * character sets
@@ -309,7 +309,7 @@ public class MaskFormatter extends DefaultFormatter
   {
     return super.stringToValue(convertStringToValue(value));
   }
-  
+
   private String convertStringToValue(String value)
     throws ParseException
   {
@@ -347,7 +347,7 @@ public class MaskFormatter extends DefaultFormatter
             valueChar = placeHolderChar;
           }
 
-        // This switch block on the mask character checks that the character 
+        // This switch block on the mask character checks that the character
         // within <code>value</code> at that point is valid according to the
         // mask and also converts to upper/lowercase as needed.
         switch (maskChar)
@@ -393,7 +393,7 @@ public class MaskFormatter extends DefaultFormatter
             i++;
             break;
           case ESCAPE_CHAR:
-            // Escape character, check the next character to make sure that 
+            // Escape character, check the next character to make sure that
             // the literals match
             j++;
             if (j < length)
@@ -427,7 +427,7 @@ public class MaskFormatter extends DefaultFormatter
 
   /**
    * Returns a String representation of the Object value based on the mask.
-   * 
+   *
    * @param value the value to convert
    * @throws ParseException if value is invalid for this mask and valid/invalid
    * character sets
@@ -437,7 +437,7 @@ public class MaskFormatter extends DefaultFormatter
     String string = value != null ? value.toString() : "";
     return convertValueToString(string);
   }
-  
+
   /**
    * This method takes in a String and runs it through the mask to make
    * sure that it is valid.  If <code>convert</code> is true, it also
@@ -483,7 +483,7 @@ public class MaskFormatter extends DefaultFormatter
             valueChar = placeHolderChar;
           }
 
-        // This switch block on the mask character checks that the character 
+        // This switch block on the mask character checks that the character
         // within <code>value</code> at that point is valid according to the
         // mask and also converts to upper/lowercase as needed.
         switch (maskChar)
@@ -529,7 +529,7 @@ public class MaskFormatter extends DefaultFormatter
             i++;
             break;
           case ESCAPE_CHAR:
-            // Escape character, check the next character to make sure that 
+            // Escape character, check the next character to make sure that
             // the literals match
             j++;
             if (j < length)

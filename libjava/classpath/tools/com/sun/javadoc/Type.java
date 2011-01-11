@@ -117,4 +117,3 @@ TypeVariable
 asTypeVariable();
 
 } // interface Type
-

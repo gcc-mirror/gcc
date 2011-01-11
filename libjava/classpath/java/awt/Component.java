@@ -158,7 +158,7 @@ public abstract class Component
 {
   // Word to the wise - this file is huge. Search for '\f' (^L) for logical
   // sectioning by fields, public API, private API, and nested classes.
-
+
 
   /**
    * Compatible with JDK 1.0+.
@@ -223,7 +223,7 @@ public abstract class Component
   /**
    * The default maximum size.
    */
-  private static final Dimension DEFAULT_MAX_SIZE 
+  private static final Dimension DEFAULT_MAX_SIZE
                              = new Dimension(Short.MAX_VALUE, Short.MAX_VALUE);
 
   // Serialized fields from the serialization spec.
@@ -444,19 +444,19 @@ public abstract class Component
    * by a call to {@link #setMinimumSize(Dimension)} with a non-null value.
    */
   boolean minSizeSet;
-  
+
   /**
    * The maximum size for the component.
    * @see #setMaximumSize(Dimension)
    */
   Dimension maxSize;
-  
+
   /**
    * A flag indicating whether the maximum size for the component has been set
    * by a call to {@link #setMaximumSize(Dimension)} with a non-null value.
    */
   boolean maxSizeSet;
-  
+
   /**
    * Cached information on the preferred size. Should have been transient.
    *
@@ -527,7 +527,7 @@ public abstract class Component
    */
   AccessibleContext accessibleContext;
 
-
+
   // Guess what - listeners are special cased in serialization. See
   // readObject and writeObject.
 
@@ -627,7 +627,7 @@ public abstract class Component
     incrementalDraw = Boolean.getBoolean ("awt.image.incrementalDraw");
     redrawRate = Long.getLong ("awt.image.redrawrate");
   }
-
+
   // Public and protected API.
 
   /**
@@ -704,7 +704,7 @@ public abstract class Component
   public void setDropTarget(DropTarget dt)
   {
     this.dropTarget = dt;
-    
+
     if (peer != null)
       dropTarget.addNotify(peer);
   }
@@ -802,8 +802,8 @@ public abstract class Component
 
   /**
    * Tests if the component is displayable. It must be connected to a native
-   * screen resource.  This reduces to checking that peer is not null.  A 
-   * containment  hierarchy is made displayable when a window is packed or 
+   * screen resource.  This reduces to checking that peer is not null.  A
+   * containment  hierarchy is made displayable when a window is packed or
    * made visible.
    *
    * @return true if the component is displayable
@@ -863,10 +863,10 @@ public abstract class Component
    * events).
    *
    * @param enabled true to enable this component
-   * 
+   *
    * @see #isEnabled()
    * @see #isLightweight()
-   * 
+   *
    * @since 1.1
    */
   public void setEnabled(boolean enabled)
@@ -898,7 +898,7 @@ public abstract class Component
    * Enables or disables this component.
    *
    * @param enabled true to enable this component
-   * 
+   *
    * @deprecated use {@link #setEnabled(boolean)} instead
    */
   public void enable(boolean enabled)
@@ -964,9 +964,9 @@ public abstract class Component
    * not show the component, if a parent is invisible.
    *
    * @param visible true to make this component visible
-   * 
+   *
    * @see #isVisible()
-   * 
+   *
    * @since 1.1
    */
   public void setVisible(boolean visible)
@@ -1037,7 +1037,7 @@ public abstract class Component
    * Makes this component visible or invisible.
    *
    * @param visible true to make this component visible
-   * 
+   *
    * @deprecated use {@link #setVisible(boolean)} instead
    */
   public void show(boolean visible)
@@ -1124,7 +1124,7 @@ public abstract class Component
   {
     if (peer != null)
       peer.setForeground(c);
-    
+
     Color previous = foreground;
     foreground = c;
     firePropertyChange("foreground", previous, c);
@@ -1231,7 +1231,7 @@ public abstract class Component
    * property.
    *
    * @param f the new font for this component
-   * 
+   *
    * @see #getFont()
    */
   public void setFont(Font f)
@@ -1254,7 +1254,7 @@ public abstract class Component
         ComponentPeer p = peer;
         if (p != null)
           {
-            // The peer receives the real font setting, which can depend on 
+            // The peer receives the real font setting, which can depend on
             // the parent font when this component's font has been set to null.
             f = getFont();
             if (f != null)
@@ -1591,7 +1591,7 @@ public abstract class Component
         int oldy = this.y;
         int oldwidth = this.width;
         int oldheight = this.height;
-    
+
         boolean resized = oldwidth != width || oldheight != height;
         boolean moved = oldx != x || oldy != y;
 
@@ -1820,15 +1820,15 @@ public abstract class Component
   }
 
   /**
-   * Sets the preferred size that will be returned by 
-   * {@link #getPreferredSize()} always, and sends a 
-   * {@link PropertyChangeEvent} (with the property name 'preferredSize') to 
+   * Sets the preferred size that will be returned by
+   * {@link #getPreferredSize()} always, and sends a
+   * {@link PropertyChangeEvent} (with the property name 'preferredSize') to
    * all registered listeners.
-   * 
+   *
    * @param size  the preferred size (<code>null</code> permitted).
-   * 
+   *
    * @since 1.5
-   * 
+   *
    * @see #getPreferredSize()
    */
   public void setPreferredSize(Dimension size)
@@ -1838,21 +1838,21 @@ public abstract class Component
     prefSizeSet = (size != null);
     firePropertyChange("preferredSize", old, size);
   }
-  
+
   /**
-   * Returns <code>true</code> if the current preferred size is not 
-   * <code>null</code> and was set by a call to 
+   * Returns <code>true</code> if the current preferred size is not
+   * <code>null</code> and was set by a call to
    * {@link #setPreferredSize(Dimension)}, otherwise returns <code>false</code>.
-   * 
+   *
    * @return A boolean.
-   * 
+   *
    * @since 1.5
    */
   public boolean isPreferredSizeSet()
   {
     return prefSizeSet;
   }
-  
+
   /**
    * Returns the component's preferred size.
    *
@@ -1870,7 +1870,7 @@ public abstract class Component
    * The actual calculation is pulled out of preferredSize() so that
    * we can call it from Container.preferredSize() and avoid creating a
    * new intermediate Dimension object.
-   * 
+   *
    * @return the preferredSize of the component
    */
   Dimension preferredSizeImpl()
@@ -1895,7 +1895,7 @@ public abstract class Component
 
   /**
    * Returns the component's minimum size.
-   * 
+   *
    * @return the component's minimum size
    * @see #getPreferredSize()
    * @see #setMinimumSize(Dimension)
@@ -1910,11 +1910,11 @@ public abstract class Component
    * Sets the minimum size that will be returned by {@link #getMinimumSize()}
    * always, and sends a {@link PropertyChangeEvent} (with the property name
    * 'minimumSize') to all registered listeners.
-   * 
+   *
    * @param size  the minimum size (<code>null</code> permitted).
-   * 
+   *
    * @since 1.5
-   * 
+   *
    * @see #getMinimumSize()
    */
   public void setMinimumSize(Dimension size)
@@ -1924,21 +1924,21 @@ public abstract class Component
     minSizeSet = (size != null);
     firePropertyChange("minimumSize", old, size);
   }
-  
+
   /**
-   * Returns <code>true</code> if the current minimum size is not 
-   * <code>null</code> and was set by a call to 
+   * Returns <code>true</code> if the current minimum size is not
+   * <code>null</code> and was set by a call to
    * {@link #setMinimumSize(Dimension)}, otherwise returns <code>false</code>.
-   * 
+   *
    * @return A boolean.
-   * 
+   *
    * @since 1.5
    */
   public boolean isMinimumSizeSet()
   {
     return minSizeSet;
   }
-  
+
   /**
    * Returns the component's minimum size.
    *
@@ -1957,7 +1957,7 @@ public abstract class Component
    * we can call it from Container.preferredSize() and
    * Component.preferredSizeImpl and avoid creating a
    * new intermediate Dimension object.
-   * 
+   *
    * @return the minimum size of the component
    */
   Dimension minimumSizeImpl()
@@ -2014,11 +2014,11 @@ public abstract class Component
    * Sets the maximum size that will be returned by {@link #getMaximumSize()}
    * always, and sends a {@link PropertyChangeEvent} (with the property name
    * 'maximumSize') to all registered listeners.
-   * 
+   *
    * @param size  the maximum size (<code>null</code> permitted).
-   * 
+   *
    * @since 1.5
-   * 
+   *
    * @see #getMaximumSize()
    */
   public void setMaximumSize(Dimension size)
@@ -2030,19 +2030,19 @@ public abstract class Component
   }
 
   /**
-   * Returns <code>true</code> if the current maximum size is not 
-   * <code>null</code> and was set by a call to 
+   * Returns <code>true</code> if the current maximum size is not
+   * <code>null</code> and was set by a call to
    * {@link #setMaximumSize(Dimension)}, otherwise returns <code>false</code>.
-   * 
+   *
    * @return A boolean.
-   * 
+   *
    * @since 1.5
    */
   public boolean isMaximumSizeSet()
   {
     return maxSizeSet;
   }
-  
+
   /**
    * Returns the preferred horizontal alignment of this component. The value
    * returned will be between {@link #LEFT_ALIGNMENT} and
@@ -2313,7 +2313,7 @@ public abstract class Component
    * Paints this entire component, including any sub-components.
    *
    * @param g the graphics context for this paint job
-   * 
+   *
    * @see #paint(Graphics)
    */
   public void paintAll(Graphics g)
@@ -2336,7 +2336,7 @@ public abstract class Component
    * @see #repaint(long, int, int, int, int)
    */
   public void repaint()
-  {   
+  {
     repaint(0, 0, 0, width, height);
   }
 
@@ -2406,7 +2406,7 @@ public abstract class Component
         // region to this component.
         if (parent != null)
           {
-            int px = this.x + Math.max(0, x); 
+            int px = this.x + Math.max(0, x);
             int py = this.y + Math.max(0, y);
             int pw = Math.min(this.width, width);
             int ph = Math.min(this.height, height);
@@ -2431,7 +2431,7 @@ public abstract class Component
    * in this class simply calls the <code>paint()</code> method.
    *
    * @param g the graphics context of the print device
-   * 
+   *
    * @see #paint(Graphics)
    */
   public void print(Graphics g)
@@ -2440,10 +2440,10 @@ public abstract class Component
   }
 
   /**
-   * Prints this component, including all sub-components. 
+   * Prints this component, including all sub-components.
    *
    * @param g the graphics context of the print device
-   * 
+   *
    * @see #paintAll(Graphics)
    */
   public void printAll(Graphics g)
@@ -2485,18 +2485,18 @@ public abstract class Component
       repaint();
     else if ((flags & SOMEBITS) != 0)
       {
-	if (incrementalDraw)
-	  {
-	    if (redrawRate != null)
-	      {
-		long tm = redrawRate.longValue();
-		if (tm < 0)
-		  tm = 0;
+        if (incrementalDraw)
+          {
+            if (redrawRate != null)
+              {
+                long tm = redrawRate.longValue();
+                if (tm < 0)
+                  tm = 0;
                 repaint(tm);
-	      }
-	    else
+              }
+            else
               repaint(100);
-	  }
+          }
       }
     return (flags & (ALLBITS | ABORT | ERROR)) == 0;
   }
@@ -2650,9 +2650,9 @@ public abstract class Component
 
     boolean retval;
     if (p != null)
-	retval = p.prepareImage(image, width, height, observer);
+        retval = p.prepareImage(image, width, height, observer);
     else
-	retval = getToolkit().prepareImage(image, width, height, observer);
+        retval = getToolkit().prepareImage(image, width, height, observer);
     return retval;
   }
 
@@ -2855,14 +2855,14 @@ public abstract class Component
   /**
    * By default, no old mouse events should be ignored.
    * This can be overridden by subclasses.
-   * 
+   *
    * @return false, no mouse events are ignored.
    */
   static boolean ignoreOldMouseEvents()
   {
     return false;
   }
-  
+
   /**
    * AWT 1.0 event handler.
    *
@@ -3414,19 +3414,19 @@ public abstract class Component
   }
 
   /**
-   * Returns all registered {@link EventListener}s of the given 
+   * Returns all registered {@link EventListener}s of the given
    * <code>listenerType</code>.
    *
-   * @param listenerType the class of listeners to filter (<code>null</code> 
+   * @param listenerType the class of listeners to filter (<code>null</code>
    *                     not permitted).
-   *                     
+   *
    * @return An array of registered listeners.
-   * 
+   *
    * @throws ClassCastException if <code>listenerType</code> does not implement
    *                            the {@link EventListener} interface.
-   * @throws NullPointerException if <code>listenerType</code> is 
+   * @throws NullPointerException if <code>listenerType</code> is
    *                              <code>null</code>.
-   *                            
+   *
    * @see #getComponentListeners()
    * @see #getFocusListeners()
    * @see #getHierarchyListeners()
@@ -3819,8 +3819,8 @@ public abstract class Component
           mouseListener.mouseClicked(e);
         break;
         case MouseEvent.MOUSE_ENTERED:
- 	  if( isLightweight() )
- 	    setCursor( getCursor() );
+          if( isLightweight() )
+            setCursor( getCursor() );
           mouseListener.mouseEntered(e);
         break;
         case MouseEvent.MOUSE_EXITED:
@@ -3882,7 +3882,7 @@ public abstract class Component
     {
       mouseWheelListener.mouseWheelMoved(e);
       e.consume();
-    }	
+    }
   }
 
   /**
@@ -3977,37 +3977,37 @@ public abstract class Component
   {
     switch (evt.id)
       {
-	// Handle key events.
+        // Handle key events.
       case Event.KEY_ACTION:
       case Event.KEY_PRESS:
-	return keyDown (evt, evt.key);
+        return keyDown (evt, evt.key);
       case Event.KEY_ACTION_RELEASE:
       case Event.KEY_RELEASE:
-	return keyUp (evt, evt.key);
+        return keyUp (evt, evt.key);
 
-	// Handle mouse events.
+        // Handle mouse events.
       case Event.MOUSE_DOWN:
-	return mouseDown (evt, evt.x, evt.y);
+        return mouseDown (evt, evt.x, evt.y);
       case Event.MOUSE_UP:
-	return mouseUp (evt, evt.x, evt.y);
+        return mouseUp (evt, evt.x, evt.y);
       case Event.MOUSE_MOVE:
-	return mouseMove (evt, evt.x, evt.y);
+        return mouseMove (evt, evt.x, evt.y);
       case Event.MOUSE_DRAG:
-	return mouseDrag (evt, evt.x, evt.y);
+        return mouseDrag (evt, evt.x, evt.y);
       case Event.MOUSE_ENTER:
-	return mouseEnter (evt, evt.x, evt.y);
+        return mouseEnter (evt, evt.x, evt.y);
       case Event.MOUSE_EXIT:
-	return mouseExit (evt, evt.x, evt.y);
+        return mouseExit (evt, evt.x, evt.y);
 
-	// Handle focus events.
+        // Handle focus events.
       case Event.GOT_FOCUS:
-	return gotFocus (evt, evt.arg);
+        return gotFocus (evt, evt.arg);
       case Event.LOST_FOCUS:
-	return lostFocus (evt, evt.arg);
+        return lostFocus (evt, evt.arg);
 
-	// Handle action event.
+        // Handle action event.
       case Event.ACTION_EVENT:
-	return action (evt, evt.arg);
+        return action (evt, evt.arg);
       }
     // Unknown event.
     return false;
@@ -4186,7 +4186,7 @@ public abstract class Component
         // much.
         invalidate();
 
-        if (dropTarget != null) 
+        if (dropTarget != null)
           dropTarget.addNotify(peer);
 
         // Fetch the peerFont for later installation in validate().
@@ -4354,7 +4354,7 @@ public abstract class Component
    * @since 1.4
    */
   public void setFocusTraversalKeys(int id,
-				    Set<? extends AWTKeyStroke> keystrokes)
+                                    Set<? extends AWTKeyStroke> keystrokes)
   {
     if (keystrokes == null)
       {
@@ -4438,12 +4438,12 @@ public abstract class Component
    * @return set of traversal keys
    *
    * @throws IllegalArgumentException if id is invalid
-   * 
+   *
    * @see #setFocusTraversalKeys (int, Set)
    * @see KeyboardFocusManager#FORWARD_TRAVERSAL_KEYS
    * @see KeyboardFocusManager#BACKWARD_TRAVERSAL_KEYS
    * @see KeyboardFocusManager#UP_CYCLE_TRAVERSAL_KEYS
-   * 
+   *
    * @since 1.4
    */
   public Set<AWTKeyStroke> getFocusTraversalKeys (int id)
@@ -4506,8 +4506,8 @@ public abstract class Component
   public void setFocusTraversalKeysEnabled (boolean focusTraversalKeysEnabled)
   {
     firePropertyChange ("focusTraversalKeysEnabled",
-			this.focusTraversalKeysEnabled,
-			focusTraversalKeysEnabled);
+                        this.focusTraversalKeysEnabled,
+                        focusTraversalKeysEnabled);
     this.focusTraversalKeysEnabled = focusTraversalKeysEnabled;
   }
 
@@ -4670,7 +4670,7 @@ public abstract class Component
   private boolean requestFocusImpl(boolean temporary, boolean focusWindow)
   {
     boolean retval = false;
- 
+
     // Don't try to focus non-focusable and non-visible components.
     if (isFocusable() && isVisible())
       {
@@ -4954,9 +4954,9 @@ public abstract class Component
    * Adds the specified popup menu to this component.
    *
    * @param popup the popup menu to be added
-   * 
+   *
    * @see #remove(MenuComponent)
-   * 
+   *
    * @since 1.1
    */
   public synchronized void add(PopupMenu popup)
@@ -5233,7 +5233,7 @@ p   * <li>the set of backward traversal keys
                                     Object newValue)
   {
     if (changeSupport != null)
-      changeSupport.firePropertyChange(propertyName, oldValue, newValue);  
+      changeSupport.firePropertyChange(propertyName, oldValue, newValue);
   }
 
   /**
@@ -5379,7 +5379,7 @@ p   * <li>the set of backward traversal keys
    */
   public void setComponentOrientation(ComponentOrientation o)
   {
- 
+
     ComponentOrientation oldOrientation = componentOrientation;
     componentOrientation = o;
     firePropertyChange("componentOrientation", oldOrientation, o);
@@ -5426,7 +5426,7 @@ p   * <li>the set of backward traversal keys
     return null;
   }
 
-
+
   // Helper methods; some are package visible for use by subclasses.
 
   /**
@@ -5463,13 +5463,13 @@ p   * <li>the set of backward traversal keys
   {
     Object target = e.getSource ();
     Event translated = null;
-    
+
     if (e instanceof WindowEvent)
       {
         WindowEvent we = (WindowEvent) e;
         int id = we.id;
         int newId = 0;
-        
+
         switch (id)
           {
           case WindowEvent.WINDOW_DEICONIFIED:
@@ -5666,22 +5666,22 @@ p   * <li>the set of backward traversal keys
       }
     else if (e instanceof AdjustmentEvent)
       {
-	AdjustmentEvent ae = (AdjustmentEvent) e;
-	int type = ae.getAdjustmentType();
-	int oldType;
-	if (type == AdjustmentEvent.BLOCK_DECREMENT)
-	  oldType = Event.SCROLL_PAGE_UP;
-	else if (type == AdjustmentEvent.BLOCK_INCREMENT)
-	  oldType = Event.SCROLL_PAGE_DOWN;
-	else if (type == AdjustmentEvent.TRACK)
-	  oldType = Event.SCROLL_ABSOLUTE;
-	else if (type == AdjustmentEvent.UNIT_DECREMENT)
-	  oldType = Event.SCROLL_LINE_UP;
-	else if (type == AdjustmentEvent.UNIT_INCREMENT)
-	  oldType = Event.SCROLL_LINE_DOWN;
-	else
-	  oldType = type;
-	translated = new Event(target, oldType, new Integer(ae.getValue()));
+        AdjustmentEvent ae = (AdjustmentEvent) e;
+        int type = ae.getAdjustmentType();
+        int oldType;
+        if (type == AdjustmentEvent.BLOCK_DECREMENT)
+          oldType = Event.SCROLL_PAGE_UP;
+        else if (type == AdjustmentEvent.BLOCK_INCREMENT)
+          oldType = Event.SCROLL_PAGE_DOWN;
+        else if (type == AdjustmentEvent.TRACK)
+          oldType = Event.SCROLL_ABSOLUTE;
+        else if (type == AdjustmentEvent.UNIT_DECREMENT)
+          oldType = Event.SCROLL_LINE_UP;
+        else if (type == AdjustmentEvent.UNIT_INCREMENT)
+          oldType = Event.SCROLL_LINE_DOWN;
+        else
+          oldType = type;
+        translated = new Event(target, oldType, new Integer(ae.getValue()));
       }
     else if (e instanceof ActionEvent)
       translated = new Event (target, Event.ACTION_EVENT,
@@ -5760,14 +5760,14 @@ p   * <li>the set of backward traversal keys
     switch (type)
       {
       case HierarchyEvent.HIERARCHY_CHANGED:
-        return (hierarchyListener != null 
+        return (hierarchyListener != null
             || (eventMask & AWTEvent.HIERARCHY_EVENT_MASK) != 0);
-        
+
       case HierarchyEvent.ANCESTOR_MOVED:
       case HierarchyEvent.ANCESTOR_RESIZED:
-        return (hierarchyBoundsListener != null 
+        return (hierarchyBoundsListener != null
             || (eventMask & AWTEvent.HIERARCHY_BOUNDS_EVENT_MASK) != 0);
-        
+
       case ComponentEvent.COMPONENT_HIDDEN:
       case ComponentEvent.COMPONENT_MOVED:
       case ComponentEvent.COMPONENT_RESIZED:
@@ -5795,7 +5795,7 @@ p   * <li>the set of backward traversal keys
       case MouseEvent.MOUSE_WHEEL:
         return (mouseWheelListener != null
                 || (eventMask & AWTEvent.MOUSE_WHEEL_EVENT_MASK) != 0);
-        
+
       case FocusEvent.FOCUS_GAINED:
       case FocusEvent.FOCUS_LOST:
         return (focusListener != null
@@ -5805,11 +5805,11 @@ p   * <li>the set of backward traversal keys
       case InputMethodEvent.CARET_POSITION_CHANGED:
         return (inputMethodListener != null
                 || (eventMask & AWTEvent.INPUT_METHOD_EVENT_MASK) != 0);
-        
+
       case PaintEvent.PAINT:
       case PaintEvent.UPDATE:
         return (eventMask & AWTEvent.PAINT_EVENT_MASK) != 0;
-        
+
       default:
         return false;
       }
@@ -5966,14 +5966,14 @@ p   * <li>the set of backward traversal keys
     s.writeObject(null);
   }
 
-  
+
   // Nested classes.
-  
+
   /**
    * This class fixes the bounds for a Heavyweight component that
    * is placed inside a Lightweight container. When the lightweight is
    * moved or resized, setBounds for the lightweight peer does nothing.
-   * Therefore, it was never moved on the screen. This class is 
+   * Therefore, it was never moved on the screen. This class is
    * attached to the lightweight, and it adjusts the position and size
    * of the peer when notified.
    * This is the same for show and hide.
@@ -5981,20 +5981,20 @@ p   * <li>the set of backward traversal keys
   class HeavyweightInLightweightListener
       implements ComponentListener
   {
-    
+
     /**
      * Constructor. Adds component listener to lightweight parent.
-     * 
+     *
      * @param parent - the lightweight container.
      */
     public HeavyweightInLightweightListener(Container parent)
     {
       parent.addComponentListener(this);
     }
-    
+
     /**
      * This method is called when the component is resized.
-     * 
+     *
      * @param event the <code>ComponentEvent</code> indicating the resize
      */
     public void componentResized(ComponentEvent event)
@@ -6004,7 +6004,7 @@ p   * <li>the set of backward traversal keys
 
     /**
      * This method is called when the component is moved.
-     * 
+     *
      * @param event the <code>ComponentEvent</code> indicating the move
      */
     public void componentMoved(ComponentEvent event)
@@ -6015,7 +6015,7 @@ p   * <li>the set of backward traversal keys
 
     /**
      * This method is called when the component is made visible.
-     * 
+     *
      * @param event the <code>ComponentEvent</code> indicating the visibility
      */
     public void componentShown(ComponentEvent event)
@@ -6026,7 +6026,7 @@ p   * <li>the set of backward traversal keys
 
     /**
      * This method is called when the component is hidden.
-     * 
+     *
      * @param event the <code>ComponentEvent</code> indicating the visibility
      */
     public void componentHidden(ComponentEvent event)
@@ -6035,7 +6035,7 @@ p   * <li>the set of backward traversal keys
         peer.hide();
     }
   }
-  
+
   /**
    * This class provides accessibility support for subclasses of container.
    *
@@ -6732,13 +6732,13 @@ p   * <li>the set of backward traversal keys
     protected void createBackBuffers(int numBuffers)
     {
       GraphicsConfiguration c =
-	GraphicsEnvironment.getLocalGraphicsEnvironment()
-	.getDefaultScreenDevice().getDefaultConfiguration();
+        GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
 
       backBuffers = new VolatileImage[numBuffers];
 
       for (int i = 0; i < numBuffers; i++)
-	backBuffers[i] = c.createCompatibleVolatileImage(width, height);
+        backBuffers[i] = c.createCompatibleVolatileImage(width, height);
     }
 
     /**
@@ -6769,30 +6769,30 @@ p   * <li>the set of backward traversal keys
     public void show()
     {
       GraphicsConfiguration c =
-	GraphicsEnvironment.getLocalGraphicsEnvironment()
-	.getDefaultScreenDevice().getDefaultConfiguration();
+        GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
 
       // draw the front buffer.
       getGraphics().drawImage(backBuffers[backBuffers.length - 1],
-			      width, height, null);
+                              width, height, null);
 
       BufferCapabilities.FlipContents f = getCapabilities().getFlipContents();
 
       // blit the back buffers.
       for (int i = backBuffers.length - 1; i > 0 ; i--)
-	backBuffers[i] = backBuffers[i - 1];
+        backBuffers[i] = backBuffers[i - 1];
 
       // create new backmost buffer.
       if (f == BufferCapabilities.FlipContents.UNDEFINED)
-	backBuffers[0] = c.createCompatibleVolatileImage(width, height);
+        backBuffers[0] = c.createCompatibleVolatileImage(width, height);
 
       // create new backmost buffer and clear it to the background
       // color.
       if (f == BufferCapabilities.FlipContents.BACKGROUND)
-	{
-	  backBuffers[0] = c.createCompatibleVolatileImage(width, height);
-	  backBuffers[0].getGraphics().clearRect(0, 0, width, height);
-	}
+        {
+          backBuffers[0] = c.createCompatibleVolatileImage(width, height);
+          backBuffers[0].getGraphics().clearRect(0, 0, width, height);
+        }
 
       // FIXME: set the backmost buffer to the prior contents of the
       // front buffer.  How do we retrieve the contents of the front
@@ -6802,7 +6802,7 @@ p   * <li>the set of backward traversal keys
 
       // set the backmost buffer to a copy of the new front buffer.
       if (f == BufferCapabilities.FlipContents.COPIED)
-	backBuffers[0] = backBuffers[backBuffers.length - 1];
+        backBuffers[0] = backBuffers[backBuffers.length - 1];
     }
 
     /**
@@ -6811,15 +6811,15 @@ p   * <li>the set of backward traversal keys
     protected void revalidate()
     {
       GraphicsConfiguration c =
-	GraphicsEnvironment.getLocalGraphicsEnvironment()
-	.getDefaultScreenDevice().getDefaultConfiguration();
+        GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
 
       for (int i = 0; i < backBuffers.length; i++)
-	{
-	  int result = backBuffers[i].validate(c);
-	  if (result == VolatileImage.IMAGE_INCOMPATIBLE)
-	    backBuffers[i] = c.createCompatibleVolatileImage(width, height);
-	}
+        {
+          int result = backBuffers[i].validate(c);
+          if (result == VolatileImage.IMAGE_INCOMPATIBLE)
+            backBuffers[i] = c.createCompatibleVolatileImage(width, height);
+        }
       validatedContents = true;
     }
 
@@ -6832,13 +6832,13 @@ p   * <li>the set of backward traversal keys
     public boolean contentsLost()
     {
       for (int i = 0; i < backBuffers.length; i++)
-	{
-	  if (backBuffers[i].contentsLost())
-	    {
-	      validatedContents = false;
-	      return true;
-	    }
-	}
+        {
+          if (backBuffers[i].contentsLost())
+            {
+              validatedContents = false;
+              return true;
+            }
+        }
       // we know that the buffer resources are valid now because we
       // just checked them
       validatedContents = true;
@@ -6855,19 +6855,19 @@ p   * <li>the set of backward traversal keys
     public boolean contentsRestored()
     {
       GraphicsConfiguration c =
-	GraphicsEnvironment.getLocalGraphicsEnvironment()
-	.getDefaultScreenDevice().getDefaultConfiguration();
+        GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
 
       boolean imageRestored = false;
 
       for (int i = 0; i < backBuffers.length; i++)
-	{
-	  int result = backBuffers[i].validate(c);
-	  if (result == VolatileImage.IMAGE_RESTORED)
-	    imageRestored = true;
-	  else if (result == VolatileImage.IMAGE_INCOMPATIBLE)
-	    return false;
-	}
+        {
+          int result = backBuffers[i].validate(c);
+          if (result == VolatileImage.IMAGE_RESTORED)
+            imageRestored = true;
+          else if (result == VolatileImage.IMAGE_INCOMPATIBLE)
+            return false;
+        }
       // we know that the buffer resources are valid now because we
       // just checked them
       validatedContents = true;
@@ -6939,12 +6939,12 @@ p   * <li>the set of backward traversal keys
       height = getHeight();
 
       if (numBuffers > 1)
-	createBuffers(numBuffers, caps);
+        createBuffers(numBuffers, caps);
       else
-	{
-	  drawVBuffer = peer.createVolatileImage(width, height);
-	  drawBuffer = drawVBuffer;
-	}
+        {
+          drawVBuffer = peer.createVolatileImage(width, height);
+          drawBuffer = drawVBuffer;
+        }
     }
 
     /**
@@ -6967,14 +6967,14 @@ p   * <li>the set of backward traversal keys
       throws AWTException
     {
       if (numBuffers <= 1)
-	throw new IllegalArgumentException("FlipBufferStrategy.createBuffers:"
-					   + " numBuffers must be greater than"
-					   + " one.");
+        throw new IllegalArgumentException("FlipBufferStrategy.createBuffers:"
+                                           + " numBuffers must be greater than"
+                                           + " one.");
 
       if (!caps.isPageFlipping())
-	throw new IllegalArgumentException("FlipBufferStrategy.createBuffers:"
-					   + " flipping must be a specified"
-					   + " capability.");
+        throw new IllegalArgumentException("FlipBufferStrategy.createBuffers:"
+                                           + " flipping must be a specified"
+                                           + " capability.");
 
       peer.createBuffers(numBuffers, caps);
     }
@@ -7033,11 +7033,11 @@ p   * <li>the set of backward traversal keys
     protected void revalidate()
     {
       GraphicsConfiguration c =
-	GraphicsEnvironment.getLocalGraphicsEnvironment()
-	.getDefaultScreenDevice().getDefaultConfiguration();
+        GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
 
       if (drawVBuffer.validate(c) == VolatileImage.IMAGE_INCOMPATIBLE)
-	drawVBuffer = peer.createVolatileImage(width, height);
+        drawVBuffer = peer.createVolatileImage(width, height);
       validatedContents = true;
     }
 
@@ -7050,10 +7050,10 @@ p   * <li>the set of backward traversal keys
     public boolean contentsLost()
     {
       if (drawVBuffer.contentsLost())
-	{
-	  validatedContents = false;
-	  return true;
-	}
+        {
+          validatedContents = false;
+          return true;
+        }
       // we know that the buffer resources are valid now because we
       // just checked them
       validatedContents = true;
@@ -7070,17 +7070,17 @@ p   * <li>the set of backward traversal keys
     public boolean contentsRestored()
     {
       GraphicsConfiguration c =
-	GraphicsEnvironment.getLocalGraphicsEnvironment()
-	.getDefaultScreenDevice().getDefaultConfiguration();
+        GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
 
       int result = drawVBuffer.validate(c);
 
       boolean imageRestored = false;
 
       if (result == VolatileImage.IMAGE_RESTORED)
-	imageRestored = true;
+        imageRestored = true;
       else if (result == VolatileImage.IMAGE_INCOMPATIBLE)
-	return false;
+        return false;
 
       // we know that the buffer resources are valid now because we
       // just checked them

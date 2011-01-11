@@ -34,7 +34,7 @@ import org.objectweb.asm.MethodVisitor;
 
 /**
  * A node that represents a MULTIANEWARRAY instruction.
- * 
+ *
  * @author Eric Bruneton
  */
 public class MultiANewArrayInsnNode extends AbstractInsnNode {
@@ -51,7 +51,7 @@ public class MultiANewArrayInsnNode extends AbstractInsnNode {
 
     /**
      * Constructs a new {@link MultiANewArrayInsnNode}.
-     * 
+     *
      * @param desc an array type descriptor (see {@link org.objectweb.asm.Type}).
      * @param dims number of dimensions of the array to allocate.
      */

@@ -472,5 +472,5 @@ public class gnuServerRequestInfo extends LocalObject
   {
     return OrbFunctional.server_id;
   }
-  
+
 }

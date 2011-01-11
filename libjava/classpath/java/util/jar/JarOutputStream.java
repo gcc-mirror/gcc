@@ -100,7 +100,7 @@ public class JarOutputStream extends ZipOutputStream
   }
 
   /**
-   * Prepares the JarOutputStream for writing the next entry. 
+   * Prepares the JarOutputStream for writing the next entry.
    * This implementation just calls <code>super.putNextEntry()</code>.
    *
    * @param entry The information for the next entry
@@ -108,6 +108,6 @@ public class JarOutputStream extends ZipOutputStream
    */
   public void putNextEntry(ZipEntry entry) throws IOException
   {
-    super.putNextEntry(entry);	// XXX
+    super.putNextEntry(entry);  // XXX
   }
 }

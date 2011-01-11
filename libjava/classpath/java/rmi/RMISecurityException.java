@@ -1,5 +1,5 @@
 /* RMISecurityException.java -- deprecated version of SecurityException
-   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006 
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,7 +39,7 @@ exception statement from your version. */
 package java.rmi;
 
 /**
- * Never thrown, but originally intended to wrap a 
+ * Never thrown, but originally intended to wrap a
  * {@link java.lang.SecurityException} in the case of RMI.
  *
  * @author unknown

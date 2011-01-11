@@ -1,4 +1,4 @@
-/* SSLEngineResult.java -- 
+/* SSLEngineResult.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class SSLEngineResult
    * <code>null</code>, or if either integer is negative.
    */
   public SSLEngineResult (Status status, HandshakeStatus handshakeStatus,
-			  int bytesConsumed, int bytesProduced)
+                          int bytesConsumed, int bytesProduced)
   {
     if (status == null)
       throw new IllegalArgumentException ("'status' may not be null");
@@ -80,7 +80,7 @@ public class SSLEngineResult
     this.bytesProduced = bytesProduced;
   }
 
-
+
 
   /**
    * An enumeration of possible general states.
@@ -143,7 +143,7 @@ public class SSLEngineResult
     NEED_UNWRAP
   }
 
-
+
 
   /**
    * Returns the number of bytes consumed by the previous operation.
@@ -188,7 +188,7 @@ public class SSLEngineResult
   public String toString ()
   {
     return (super.toString () + " [ status: " + status + "; handshakeStatus: "
-	    + handshakeStatus + "; bytesConsumed: " + bytesConsumed
-	    + "; bytesProduced: " + bytesProduced + " ]");
+            + handshakeStatus + "; bytesConsumed: " + bytesConsumed
+            + "; bytesProduced: " + bytesProduced + " ]");
   }
 }

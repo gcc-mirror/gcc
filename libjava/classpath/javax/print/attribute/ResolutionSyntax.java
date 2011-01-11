@@ -1,4 +1,4 @@
-/* ResolutionSyntax.java -- 
+/* ResolutionSyntax.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,11 +40,11 @@ package javax.print.attribute;
 import java.io.Serializable;
 
 /**
- * <code>ResolutionSyntax</code> is the abstract base class of all attribute 
+ * <code>ResolutionSyntax</code> is the abstract base class of all attribute
  * classes which provide a resolution as value (e.g. printer resolution).
  * <p>
  * A <code>ResolutionSyntax</code> instance consists of two integer values
- * describing the resolution in feed and cross feed direction. The units of 
+ * describing the resolution in feed and cross feed direction. The units of
  * the given values is determined by two defined constants:
  * <ul>
  * <li>DPCM - dots per centimeter</li>
@@ -56,25 +56,25 @@ import java.io.Serializable;
  * one of the two constants defining the actual units of the given values.
  * </p>
  * <p>
- * There are different methods provided to return the resolution values in 
+ * There are different methods provided to return the resolution values in
  * either of the both units and to compare if a resolution is less than or
  * equal to a given other resolution attribute.
  * </p>
  * <p>
  * <b>Internal storage:</b><br>
- * The resolutions are stored internally as dots per 100 inches (dphi). The 
+ * The resolutions are stored internally as dots per 100 inches (dphi). The
  * values of the provided constants for dots per inch (value 100) and dots
  * per centimeter (value 254) are used as conversion factors to the internal
  * storage units. To get the internal dphi values a multiplication of a given
- * resolution value with its units constant value is needed. Retrieving the 
- * resolution for specific units is done by dividing the internal stored 
- * value through the units constant value. Clients are therefore able to 
+ * resolution value with its units constant value is needed. Retrieving the
+ * resolution for specific units is done by dividing the internal stored
+ * value through the units constant value. Clients are therefore able to
  * provide their own resolution units by supplying other conversion factors.
  * Subclasses of <code>ResolutionSyntax</code> have access to the internal
- * resolution values through the protected methods 
+ * resolution values through the protected methods
  * {@link #getCrossFeedResolutionDphi()} and {@link #getFeedResolutionDphi()}.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public abstract class ResolutionSyntax
@@ -94,7 +94,7 @@ public abstract class ResolutionSyntax
 
   private int crossFeedResolution;
   private int feedResolution;
-  
+
   /**
    * Creates a <code>ResolutionSyntax</code> object with the given arguments.
    *
@@ -121,7 +121,7 @@ public abstract class ResolutionSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
@@ -130,7 +130,7 @@ public abstract class ResolutionSyntax
       return false;
 
     ResolutionSyntax tmp = (ResolutionSyntax) obj;
-    
+
     return (crossFeedResolution == tmp.getCrossFeedResolutionDphi()
             && feedResolution == tmp.getFeedResolutionDphi());
   }
@@ -186,7 +186,7 @@ public abstract class ResolutionSyntax
   {
     return feedResolution;
   }
-  
+
   /**
    * Returns the resolution as two field array. Index 0 is the cross feed
    * resolution, index 1 the feed resolution.
@@ -214,7 +214,7 @@ public abstract class ResolutionSyntax
   }
 
   /**
-   * Checks if the given resolution attribute is a lower or equal 
+   * Checks if the given resolution attribute is a lower or equal
    * to this resolution object.
    *
    * @param other the resolution to check against
@@ -252,7 +252,7 @@ public abstract class ResolutionSyntax
    * for the cross feed and F for the feed direction resolution.
    * U denotes the units name if one is supplied.
    * </p>
-   * 
+   *
    * @param units the units to use
    * @param unitsName the name of the units. If <code>null</code>
    * it is ommitted from the string representation.
@@ -263,7 +263,7 @@ public abstract class ResolutionSyntax
   {
     if (unitsName == null)
       return getCrossFeedResolution(units) + "x" + getFeedResolution(units);
-    
+
     return ("" + getCrossFeedResolution(units)
             + "x" + getFeedResolution(units)
             + " " + unitsName);

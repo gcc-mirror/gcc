@@ -1,4 +1,4 @@
-/* LengthFacet.java -- 
+/* LengthFacet.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,7 +45,7 @@ package gnu.xml.validation.datatype;
 public final class LengthFacet
   extends Facet
 {
-  
+
   public final int value;
 
   public final boolean fixed;
@@ -56,7 +56,7 @@ public final class LengthFacet
     this.value = value;
     this.fixed = fixed;
   }
-  
+
   public int hashCode()
   {
     return value;
@@ -67,6 +67,5 @@ public final class LengthFacet
     return (other instanceof LengthFacet &&
             ((LengthFacet) other).value == value);
   }
-  
-}
 
+}

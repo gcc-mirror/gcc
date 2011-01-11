@@ -70,7 +70,7 @@ public abstract class InvalidTypeForEncodingHelper
 
   /**
    * Insert the InvalidTypeForEncoding into the given Any.
-   * 
+   *
    * @param any the Any to insert into.
    * @param that the InvalidTypeForEncoding to insert.
    */
@@ -97,7 +97,7 @@ public abstract class InvalidTypeForEncodingHelper
       {
         BAD_OPERATION bad =
           new BAD_OPERATION("InvalidTypeForEncoding expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

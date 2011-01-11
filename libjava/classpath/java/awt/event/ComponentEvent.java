@@ -117,12 +117,12 @@ public class ComponentEvent extends AWTEvent
   public String paramString()
   {
     CPStringBuilder s = new CPStringBuilder();
-    
+
     // Unlike Sun, we don't throw NullPointerException or ClassCastException
     // when source was illegally changed.
     if (id == COMPONENT_MOVED)
       s.append("COMPONENT_MOVED ");
-    else if (id == COMPONENT_RESIZED) 
+    else if (id == COMPONENT_RESIZED)
       s.append("COMPONENT_RESIZED ");
     else if (id == COMPONENT_SHOWN)
       s.append("COMPONENT_SHOWN ");
@@ -138,5 +138,5 @@ public class ComponentEvent extends AWTEvent
 
     return s.toString();
   }
-  
+
 } // class ComponentEvent

@@ -149,7 +149,7 @@ public class ClientHello implements Handshake.Body
                           .limit (buffer.capacity ())).slice ();
     return new CompressionMethodList (listBuf);
   }
-  
+
   public boolean hasExtensions()
   {
     int offset = getExtensionsOffset();
@@ -168,7 +168,7 @@ public class ClientHello implements Handshake.Body
                        .limit(offset + len + 2)).slice ();
     return new ExtensionList(ebuf);
   }
-  
+
   public int extensionsLength()
   {
     if (hasExtensions())

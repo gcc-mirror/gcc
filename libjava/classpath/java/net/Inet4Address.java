@@ -70,7 +70,7 @@ public final class Inet4Address extends InetAddress
   {
     return new InetAddress(addr, hostName, AF_INET);
   }
-  
+
   /**
    * Initializes this object's addr instance variable from the passed in
    * byte array.  Note that this constructor is protected and is called
@@ -175,8 +175,8 @@ public final class Inet4Address extends InetAddress
       return false;
 
     return ((addr[0] & 0xff) == 0xe0
-	    && (addr[1] & 0xff)  == 0x00
-	    && (addr[2] & 0xff)  == 0x00);
+            && (addr[1] & 0xff)  == 0x00
+            && (addr[2] & 0xff)  == 0x00);
   }
 
   /**
@@ -218,15 +218,15 @@ public final class Inet4Address extends InetAddress
 
     int len = addr.length;
     int i = 0;
-    
+
     for ( ; ; )
       {
         sb.append(addr[i] & 0xff);
         i++;
-	
+
         if (i == len)
           break;
-	
+
         sb.append('.');
       }
 
@@ -266,7 +266,7 @@ public final class Inet4Address extends InetAddress
 
     for (int i = addr1.length; --i >= 0;)
       if (addr1[i] != addr2[i])
-	return false;
+        return false;
 
     return true;
   }

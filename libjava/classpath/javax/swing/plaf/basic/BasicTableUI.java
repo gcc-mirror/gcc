@@ -82,15 +82,15 @@ import javax.swing.table.TableModel;
 
 public class BasicTableUI extends TableUI
 {
-  public static ComponentUI createUI(JComponent comp) 
+  public static ComponentUI createUI(JComponent comp)
   {
     return new BasicTableUI();
   }
 
-  protected FocusListener focusListener;  
-  protected KeyListener keyListener;   
-  protected MouseInputListener  mouseInputListener;   
-  protected CellRendererPane rendererPane;   
+  protected FocusListener focusListener;
+  protected KeyListener keyListener;
+  protected MouseInputListener  mouseInputListener;
+  protected CellRendererPane rendererPane;
   protected JTable table;
 
   /** The normal cell border. */
@@ -108,7 +108,7 @@ public class BasicTableUI extends TableUI
    * Handles key events for the JTable. Key events should be handled through
    * the InputMap/ActionMap mechanism since JDK1.3. This class is only there
    * for backwards compatibility.
-   * 
+   *
    * @author Roman Kennke (kennke@aicas.com)
    */
   public class KeyHandler implements KeyListener
@@ -125,7 +125,7 @@ public class BasicTableUI extends TableUI
     {
       // Key events should be handled through the InputMap/ActionMap mechanism
       // since JDK1.3. This class is only there for backwards compatibility.
-      
+
       // Editor activation is a specific kind of response to ''any''
       // character key. Hence it is handled here.
       if (!table.isEditing() && table.isEnabled())
@@ -208,13 +208,13 @@ public class BasicTableUI extends TableUI
       ListSelectionModel rowModel = table.getSelectionModel();
       if (lo_row != -1 && hi_row != -1)
         {
-          if (controlPressed && rowModel.getSelectionMode() 
+          if (controlPressed && rowModel.getSelectionMode()
               != ListSelectionModel.SINGLE_SELECTION)
             rowModel.addSelectionInterval(lo_row, hi_row);
           else
             rowModel.setSelectionInterval(lo_row, hi_row);
         }
-      
+
       // Update the columns
       int lo_col = table.columnAtPoint(begin);
       int hi_col = table.columnAtPoint(curr);
@@ -222,14 +222,14 @@ public class BasicTableUI extends TableUI
         getSelectionModel();
       if (lo_col != -1 && hi_col != -1)
         {
-          if (controlPressed && colModel.getSelectionMode() != 
+          if (controlPressed && colModel.getSelectionMode() !=
               ListSelectionModel.SINGLE_SELECTION)
             colModel.addSelectionInterval(lo_col, hi_col);
           else
             colModel.setSelectionInterval(lo_col, hi_col);
         }
     }
-    
+
     /**
      * For the double click, start the cell editor.
      */
@@ -254,7 +254,7 @@ public class BasicTableUI extends TableUI
         }
     }
 
-    public void mouseDragged(MouseEvent e) 
+    public void mouseDragged(MouseEvent e)
     {
       if (table.isEnabled())
         {
@@ -278,7 +278,7 @@ public class BasicTableUI extends TableUI
       // Nothing to do here.
     }
 
-    public void mousePressed(MouseEvent e) 
+    public void mousePressed(MouseEvent e)
     {
       if (table.isEnabled())
         {
@@ -292,12 +292,12 @@ public class BasicTableUI extends TableUI
           //if control is pressed and the cell is already selected, deselect it
           if (e.isControlDown() && table.isCellSelected(
               table.rowAtPoint(begin), table.columnAtPoint(begin)))
-            {                                       
+            {
               table.getSelectionModel().
-              removeSelectionInterval(table.rowAtPoint(begin), 
+              removeSelectionInterval(table.rowAtPoint(begin),
                                       table.rowAtPoint(begin));
               table.getColumnModel().getSelectionModel().
-              removeSelectionInterval(table.columnAtPoint(begin), 
+              removeSelectionInterval(table.columnAtPoint(begin),
                                       table.columnAtPoint(begin));
             }
           else
@@ -314,7 +314,7 @@ public class BasicTableUI extends TableUI
         }
     }
 
-    public void mouseReleased(MouseEvent e) 
+    public void mouseReleased(MouseEvent e)
     {
       if (table.isEnabled())
         {
@@ -374,12 +374,12 @@ public class BasicTableUI extends TableUI
     }
   }
 
-  protected FocusListener createFocusListener() 
+  protected FocusListener createFocusListener()
   {
     return new FocusHandler();
   }
 
-  protected MouseInputListener createMouseInputListener() 
+  protected MouseInputListener createMouseInputListener()
   {
     return new MouseInputHandler();
   }
@@ -396,16 +396,16 @@ public class BasicTableUI extends TableUI
   }
 
   /**
-   * Return the maximum size of the table. The maximum height is the row 
-    * height times the number of rows. The maximum width is the sum of 
+   * Return the maximum size of the table. The maximum height is the row
+    * height times the number of rows. The maximum width is the sum of
     * the maximum widths of each column.
-    * 
+    *
     *  @param comp the component whose maximum size is being queried,
     *  this is ignored.
     *  @return a Dimension object representing the maximum size of the table,
     *  or null if the table has no elements.
    */
-  public Dimension getMaximumSize(JComponent comp) 
+  public Dimension getMaximumSize(JComponent comp)
   {
     int maxTotalColumnWidth = 0;
     for (int i = 0; i < table.getColumnCount(); i++)
@@ -415,16 +415,16 @@ public class BasicTableUI extends TableUI
   }
 
   /**
-   * Return the minimum size of the table. The minimum height is the row 
-    * height times the number of rows. The minimum width is the sum of 
+   * Return the minimum size of the table. The minimum height is the row
+    * height times the number of rows. The minimum width is the sum of
     * the minimum widths of each column.
-    * 
+    *
     *  @param comp the component whose minimum size is being queried,
     *  this is ignored.
     *  @return a Dimension object representing the minimum size of the table,
     *  or null if the table has no elements.
    */
-  public Dimension getMinimumSize(JComponent comp) 
+  public Dimension getMinimumSize(JComponent comp)
   {
     int minTotalColumnWidth = 0;
     for (int i = 0; i < table.getColumnCount(); i++)
@@ -440,7 +440,7 @@ public class BasicTableUI extends TableUI
    *
    * @return the preferred size for the table of that UI
    */
-  public Dimension getPreferredSize(JComponent comp) 
+  public Dimension getPreferredSize(JComponent comp)
   {
     int prefTotalColumnWidth = 0;
     TableColumnModel tcm = table.getColumnModel();
@@ -458,13 +458,13 @@ public class BasicTableUI extends TableUI
    * Returns the table height. This helper method is used by
    * {@link #getMinimumSize(JComponent)}, {@link #getPreferredSize(JComponent)}
    * and {@link #getMaximumSize(JComponent)} to determine the table height.
-   * 
+   *
    * @return the table height
    */
   private int getHeight()
   {
     int height = 0;
-    int rowCount = table.getRowCount(); 
+    int rowCount = table.getRowCount();
     if (rowCount > 0 && table.getColumnCount() > 0)
       {
         Rectangle r = table.getCellRect(rowCount - 1, 0, true);
@@ -473,7 +473,7 @@ public class BasicTableUI extends TableUI
     return height;
   }
 
-  protected void installDefaults() 
+  protected void installDefaults()
   {
     LookAndFeel.installColorsAndFont(table, "Table.background",
                                      "Table.foreground", "Table.font");
@@ -486,7 +486,7 @@ public class BasicTableUI extends TableUI
   /**
    * Installs keyboard actions on the table.
    */
-  protected void installKeyboardActions() 
+  protected void installKeyboardActions()
   {
     // Install the input map.
     InputMap inputMap =
@@ -597,14 +597,14 @@ public class BasicTableUI extends TableUI
     {
       JTable table = (JTable) e.getSource();
 
-      DefaultListSelectionModel rowModel 
+      DefaultListSelectionModel rowModel
           = (DefaultListSelectionModel) table.getSelectionModel();
-      DefaultListSelectionModel colModel 
+      DefaultListSelectionModel colModel
           = (DefaultListSelectionModel) table.getColumnModel().getSelectionModel();
 
       int rowLead = rowModel.getLeadSelectionIndex();
       int rowMax = table.getModel().getRowCount() - 1;
-      
+
       int colLead = colModel.getLeadSelectionIndex();
       int colMax = table.getModel().getColumnCount() - 1;
 
@@ -626,7 +626,7 @@ public class BasicTableUI extends TableUI
             table.editCellAt(rowLead, colLead);
         }
       else if (command.equals("selectFirstRowExtendSelection"))
-        {              
+        {
           rowModel.setLeadSelectionIndex(0);
         }
       else if (command.equals("selectFirstColumn"))
@@ -636,7 +636,7 @@ public class BasicTableUI extends TableUI
       else if (command.equals("selectFirstColumnExtendSelection"))
         {
           colModel.setLeadSelectionIndex(0);
-        }      
+        }
       else if (command.equals("selectLastRow"))
         {
           rowModel.setSelectionInterval(rowMax, rowMax);
@@ -670,11 +670,11 @@ public class BasicTableUI extends TableUI
         {
           int target;
           if (rowLead == getFirstVisibleRowIndex(table))
-            target = Math.max(0, rowLead - (getLastVisibleRowIndex(table) 
+            target = Math.max(0, rowLead - (getLastVisibleRowIndex(table)
                 - getFirstVisibleRowIndex(table) + 1));
           else
             target = getFirstVisibleRowIndex(table);
-          
+
           rowModel.setLeadSelectionIndex(target);
           colModel.setLeadSelectionIndex(colLead);
         }
@@ -692,7 +692,7 @@ public class BasicTableUI extends TableUI
                               - getFirstVisibleColumnIndex(table) + 1));
           else
             target = getLastVisibleColumnIndex(table);
-          
+
           colModel.setSelectionInterval(target, target);
           rowModel.setSelectionInterval(rowLead, rowLead);
         }
@@ -705,11 +705,11 @@ public class BasicTableUI extends TableUI
         {
           int target;
           if (colLead == getFirstVisibleColumnIndex(table))
-            target = Math.max(0, colLead - (getLastVisibleColumnIndex(table) 
+            target = Math.max(0, colLead - (getLastVisibleColumnIndex(table)
                                  - getFirstVisibleColumnIndex(table) + 1));
           else
             target = getFirstVisibleColumnIndex(table);
-          
+
           colModel.setSelectionInterval(target, target);
           rowModel.setSelectionInterval(rowLead, rowLead);
         }
@@ -731,71 +731,71 @@ public class BasicTableUI extends TableUI
                || command.equals("selectPreviousColumnCell"))
         {
           // If nothing is selected, select the first cell in the table
-          if (table.getSelectedRowCount() == 0 && 
+          if (table.getSelectedRowCount() == 0 &&
               table.getSelectedColumnCount() == 0)
             {
               rowModel.setSelectionInterval(0, 0);
               colModel.setSelectionInterval(0, 0);
               return;
             }
-          
+
           // If the lead selection index isn't selected (ie a remove operation
           // happened, then set the lead to the first selected cell in the
           // table
           if (!table.isCellSelected(rowLead, colLead))
             {
-              rowModel.addSelectionInterval(rowModel.getMinSelectionIndex(), 
+              rowModel.addSelectionInterval(rowModel.getMinSelectionIndex(),
                                             rowModel.getMinSelectionIndex());
-              colModel.addSelectionInterval(colModel.getMinSelectionIndex(), 
+              colModel.addSelectionInterval(colModel.getMinSelectionIndex(),
                                             colModel.getMinSelectionIndex());
               return;
             }
-          
+
           // multRowsSelected and multColsSelected tell us if multiple rows or
           // columns are selected, respectively
           boolean multRowsSelected, multColsSelected;
           multRowsSelected = table.getSelectedRowCount() > 1 &&
             table.getRowSelectionAllowed();
-          
+
           multColsSelected = table.getSelectedColumnCount() > 1 &&
             table.getColumnSelectionAllowed();
-          
+
           // If there is just one selection, select the next cell, and wrap
           // when you get to the edges of the table.
           if (!multColsSelected && !multRowsSelected)
             {
-              if (command.indexOf("Column") != -1) 
-                advanceSingleSelection(colModel, colMax, rowModel, rowMax, 
+              if (command.indexOf("Column") != -1)
+                advanceSingleSelection(colModel, colMax, rowModel, rowMax,
                     command.equals("selectPreviousColumnCell"));
               else
-                advanceSingleSelection(rowModel, rowMax, colModel, colMax, 
+                advanceSingleSelection(rowModel, rowMax, colModel, colMax,
                     command.equals("selectPreviousRowCell"));
               return;
             }
-          
-          
+
+
           // rowMinSelected and rowMaxSelected are the minimum and maximum
           // values respectively of selected cells in the row selection model
           // Similarly for colMinSelected and colMaxSelected.
-          int rowMaxSelected = table.getRowSelectionAllowed() ? 
+          int rowMaxSelected = table.getRowSelectionAllowed() ?
             rowModel.getMaxSelectionIndex() : table.getModel().getRowCount() - 1;
-          int rowMinSelected = table.getRowSelectionAllowed() ? 
-            rowModel.getMinSelectionIndex() : 0; 
-          int colMaxSelected = table.getColumnSelectionAllowed() ? 
-            colModel.getMaxSelectionIndex() : 
+          int rowMinSelected = table.getRowSelectionAllowed() ?
+            rowModel.getMinSelectionIndex() : 0;
+          int colMaxSelected = table.getColumnSelectionAllowed() ?
+            colModel.getMaxSelectionIndex() :
             table.getModel().getColumnCount() - 1;
-          int colMinSelected = table.getColumnSelectionAllowed() ? 
+          int colMinSelected = table.getColumnSelectionAllowed() ?
             colModel.getMinSelectionIndex() : 0;
-          
+
           // If there are multiple rows and columns selected, select the next
-          // cell and wrap at the edges of the selection.  
-          if (command.indexOf("Column") != -1) 
+          // cell and wrap at the edges of the selection.
+          if (command.indexOf("Column") != -1)
             advanceMultipleSelection(table, colModel, colMinSelected,
                                      colMaxSelected, rowModel, rowMinSelected,
                                      rowMaxSelected,
                                     command.equals("selectPreviousColumnCell"),
                                     true);
-          
+
           else
             advanceMultipleSelection(table, rowModel, rowMinSelected,
                                      rowMaxSelected, colModel, colMinSelected,
@@ -812,11 +812,11 @@ public class BasicTableUI extends TableUI
         {
           int target;
           if (colLead == getFirstVisibleColumnIndex(table))
-            target = Math.max(0, colLead - (getLastVisibleColumnIndex(table) 
+            target = Math.max(0, colLead - (getLastVisibleColumnIndex(table)
                                  - getFirstVisibleColumnIndex(table) + 1));
           else
             target = getFirstVisibleColumnIndex(table);
-          
+
           colModel.setLeadSelectionIndex(target);
           rowModel.setLeadSelectionIndex(rowLead);
         }
@@ -828,7 +828,7 @@ public class BasicTableUI extends TableUI
                                       - getFirstVisibleRowIndex(table) + 1));
           else
             target = getLastVisibleRowIndex(table);
-          
+
           rowModel.setSelectionInterval(target, target);
           colModel.setSelectionInterval(colLead, colLead);
         }
@@ -836,11 +836,11 @@ public class BasicTableUI extends TableUI
         {
           int target;
           if (colLead == getLastVisibleColumnIndex(table))
-            target = Math.min(colMax, colLead + (getLastVisibleColumnIndex(table) 
+            target = Math.min(colMax, colLead + (getLastVisibleColumnIndex(table)
                 - getFirstVisibleColumnIndex(table) + 1));
           else
             target = getLastVisibleColumnIndex(table);
-          
+
           colModel.setLeadSelectionIndex(target);
           rowModel.setLeadSelectionIndex(rowLead);
         }
@@ -857,29 +857,29 @@ public class BasicTableUI extends TableUI
         {
           int target;
           if (rowLead == getLastVisibleRowIndex(table))
-            target = Math.min(rowMax, rowLead + (getLastVisibleRowIndex(table) 
+            target = Math.min(rowMax, rowLead + (getLastVisibleRowIndex(table)
                 - getFirstVisibleRowIndex(table) + 1));
           else
             target = getLastVisibleRowIndex(table);
-          
+
           rowModel.setLeadSelectionIndex(target);
           colModel.setLeadSelectionIndex(colLead);
-        }      
+        }
       else if (command.equals("scrollUpChangeSelection"))
         {
           int target;
           if (rowLead == getFirstVisibleRowIndex(table))
-            target = Math.max(0, rowLead - (getLastVisibleRowIndex(table) 
+            target = Math.max(0, rowLead - (getLastVisibleRowIndex(table)
                 - getFirstVisibleRowIndex(table) + 1));
           else
             target = getFirstVisibleRowIndex(table);
-          
+
           rowModel.setSelectionInterval(target, target);
           colModel.setSelectionInterval(colLead, colLead);
         }
       else if (command.equals("selectNextRowChangeLead"))
           {
-            if (rowModel.getSelectionMode() 
+            if (rowModel.getSelectionMode()
                 != ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
               {
                 // just "selectNextRow"
@@ -892,7 +892,7 @@ public class BasicTableUI extends TableUI
           }
       else if (command.equals("selectPreviousRowChangeLead"))
         {
-          if (rowModel.getSelectionMode() 
+          if (rowModel.getSelectionMode()
               != ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
             {
               // just selectPreviousRow
@@ -905,8 +905,8 @@ public class BasicTableUI extends TableUI
         }
       else if (command.equals("selectNextColumnChangeLead"))
         {
-          if (colModel.getSelectionMode() 
-              != ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)            
+          if (colModel.getSelectionMode()
+              != ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
             {
               // just selectNextColumn
               rowModel.setSelectionInterval(rowLead, rowLead);
@@ -918,14 +918,14 @@ public class BasicTableUI extends TableUI
         }
       else if (command.equals("selectPreviousColumnChangeLead"))
         {
-          if (colModel.getSelectionMode() 
-              != ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)            
+          if (colModel.getSelectionMode()
+              != ListSelectionModel.MULTIPLE_INTERVAL_SELECTION)
             {
               // just selectPreviousColumn
               rowModel.setSelectionInterval(rowLead, rowLead);
               colModel.setSelectionInterval(Math.max(colLead - 1, 0),
                                             Math.max(colLead - 1, 0));
-              
+
             }
           else
             colModel.moveLeadSelectionIndex(Math.max(colLead - 1, 0));
@@ -955,12 +955,12 @@ public class BasicTableUI extends TableUI
             rowModel.removeSelectionInterval(rowLead, rowLead);
           else
             rowModel.addSelectionInterval(rowLead, rowLead);
-          
+
           if (colModel.isSelectedIndex(colLead))
             colModel.removeSelectionInterval(colLead, colLead);
           else
             colModel.addSelectionInterval(colLead, colLead);
-          
+
           rowModel.setAnchorSelectionIndex(rowLead);
           colModel.setAnchorSelectionIndex(colLead);
         }
@@ -968,31 +968,31 @@ public class BasicTableUI extends TableUI
         {
           table.editingStopped(new ChangeEvent(command));
         }
-      else 
+      else
         {
           // If we're here that means we bound this TableAction class
           // to a keyboard input but we either want to ignore that input
           // or we just haven't implemented its action yet.
-          
+
           // Uncomment the following line to print the names of unused bindings
           // when their keys are pressed
-          
+
           // System.out.println ("not implemented: "+e.getActionCommand());
         }
 
       // Any commands whose keyStrokes should be used by the Editor should not
-      // cause editing to be stopped: ie, the SPACE sends "addToSelection" but 
+      // cause editing to be stopped: ie, the SPACE sends "addToSelection" but
       // if the table is in editing mode, the space should not cause us to stop
       // editing because it should be used by the Editor.
       if (table.isEditing() && command != "startEditing"
           && command != "addToSelection")
         table.editingStopped(new ChangeEvent("update"));
-            
+
       table.scrollRectToVisible(table.getCellRect(
-          rowModel.getLeadSelectionIndex(), colModel.getLeadSelectionIndex(), 
+          rowModel.getLeadSelectionIndex(), colModel.getLeadSelectionIndex(),
           false));
     }
-    
+
     /**
      * Returns the column index of the first visible column.
      * @return the column index of the first visible column.
@@ -1005,7 +1005,7 @@ public class BasicTableUI extends TableUI
         r.translate((int) r.getWidth() - 1, 0);
       return table.columnAtPoint(r.getLocation());
     }
-    
+
     /**
      * Returns the column index of the last visible column.
      *
@@ -1016,9 +1016,9 @@ public class BasicTableUI extends TableUI
       Rectangle r = table.getVisibleRect();
       if (or.isLeftToRight())
         r.translate((int) r.getWidth() - 1, 0);
-      return table.columnAtPoint(r.getLocation());      
+      return table.columnAtPoint(r.getLocation());
     }
-    
+
     /**
      * Returns the row index of the first visible row.
      *
@@ -1031,7 +1031,7 @@ public class BasicTableUI extends TableUI
         r.translate((int) r.getWidth() - 1, 0);
       return table.rowAtPoint(r.getLocation());
     }
-    
+
     /**
      * Returns the row index of the last visible row.
      *
@@ -1067,7 +1067,7 @@ public class BasicTableUI extends TableUI
      * rows (ENTER)
      * @param firstMin the first selected index in firstModel
      * @param firstMax the last selected index in firstModel
-     * @param secondModel the ListSelectionModel for rows (TAB) or 
+     * @param secondModel the ListSelectionModel for rows (TAB) or
      * columns (ENTER)
      * @param secondMin the first selected index in secondModel
      * @param secondMax the last selected index in secondModel
@@ -1076,41 +1076,41 @@ public class BasicTableUI extends TableUI
      */
     void advanceMultipleSelection(JTable table, ListSelectionModel firstModel,
                                   int firstMin,
-                                  int firstMax, ListSelectionModel secondModel, 
+                                  int firstMax, ListSelectionModel secondModel,
                                   int secondMin, int secondMax, boolean reverse,
                                   boolean eventIsTab)
     {
-      // If eventIsTab, all the "firsts" correspond to columns, otherwise, to 
+      // If eventIsTab, all the "firsts" correspond to columns, otherwise, to
       // rows "seconds" correspond to the opposite
       int firstLead = firstModel.getLeadSelectionIndex();
       int secondLead = secondModel.getLeadSelectionIndex();
-      int numFirsts = eventIsTab ? 
+      int numFirsts = eventIsTab ?
         table.getModel().getColumnCount() : table.getModel().getRowCount();
-      int numSeconds = eventIsTab ? 
+      int numSeconds = eventIsTab ?
         table.getModel().getRowCount() : table.getModel().getColumnCount();
 
       // check if we have to wrap the "firsts" around, going to the other side
-      if ((firstLead == firstMax && !reverse) || 
+      if ((firstLead == firstMax && !reverse) ||
           (reverse && firstLead == firstMin))
         {
-          firstModel.addSelectionInterval(reverse ? firstMax : firstMin, 
+          firstModel.addSelectionInterval(reverse ? firstMax : firstMin,
                                           reverse ? firstMax : firstMin);
-          
+
           // check if we have to wrap the "seconds"
-          if ((secondLead == secondMax && !reverse) || 
+          if ((secondLead == secondMax && !reverse) ||
               (reverse && secondLead == secondMin))
-            secondModel.addSelectionInterval(reverse ? secondMax : secondMin, 
+            secondModel.addSelectionInterval(reverse ? secondMax : secondMin,
                                              reverse ? secondMax : secondMin);
 
           // if we're not wrapping the seconds, we have to find out where we
-          // are within the secondModel and advance to the next cell (or 
+          // are within the secondModel and advance to the next cell (or
           // go back to the previous cell if reverse == true)
           else
             {
               int[] secondsSelected;
-              if (eventIsTab && table.getRowSelectionAllowed() || 
+              if (eventIsTab && table.getRowSelectionAllowed() ||
                   !eventIsTab && table.getColumnSelectionAllowed())
-                secondsSelected = eventIsTab ? 
+                secondsSelected = eventIsTab ?
                   table.getSelectedRows() : table.getSelectedColumns();
               else
                 {
@@ -1129,9 +1129,9 @@ public class BasicTableUI extends TableUI
               else
                 while (secondsSelected[secondIndex] >= secondLead)
                   secondIndex--;
-              
+
               // and select it - updating the lead selection index
-              secondModel.addSelectionInterval(secondsSelected[secondIndex], 
+              secondModel.addSelectionInterval(secondsSelected[secondIndex],
                                                secondsSelected[secondIndex]);
             }
         }
@@ -1140,9 +1140,9 @@ public class BasicTableUI extends TableUI
       else
         {
           int[] firstsSelected;
-          if (eventIsTab && table.getColumnSelectionAllowed() || 
+          if (eventIsTab && table.getColumnSelectionAllowed() ||
               !eventIsTab && table.getRowSelectionAllowed())
-            firstsSelected = eventIsTab ? 
+            firstsSelected = eventIsTab ?
               table.getSelectedColumns() : table.getSelectedRows();
           else
             {
@@ -1155,16 +1155,16 @@ public class BasicTableUI extends TableUI
           if (!reverse)
             while (firstsSelected[firstIndex] <= firstLead)
               firstIndex++;
-          else 
+          else
             while (firstsSelected[firstIndex] >= firstLead)
               firstIndex--;
-          firstModel.addSelectionInterval(firstsSelected[firstIndex], 
+          firstModel.addSelectionInterval(firstsSelected[firstIndex],
                                           firstsSelected[firstIndex]);
           secondModel.addSelectionInterval(secondLead, secondLead);
         }
     }
-    
-    /** 
+
+    /**
      * A helper method for the key  bindings. Used because the actions
      * for TAB, SHIFT-TAB, ENTER, and SHIFT-ENTER are very similar.
      *
@@ -1180,15 +1180,15 @@ public class BasicTableUI extends TableUI
      * @param reverse true if SHIFT was pressed for the event
      */
 
-    void advanceSingleSelection(ListSelectionModel firstModel, int firstMax, 
-                                ListSelectionModel secondModel, int secondMax, 
+    void advanceSingleSelection(ListSelectionModel firstModel, int firstMax,
+                                ListSelectionModel secondModel, int secondMax,
                                 boolean reverse)
     {
       // for TABs, "first" corresponds to columns and "seconds" to rows.
       // the opposite is true for ENTERs
       int firstLead = firstModel.getLeadSelectionIndex();
       int secondLead = secondModel.getLeadSelectionIndex();
-      
+
       // if we are going backwards subtract 2 because we later add 1
       // for a net change of -1
       if (reverse && (firstLead == 0))
@@ -1198,15 +1198,15 @@ public class BasicTableUI extends TableUI
             secondLead += secondMax + 1;
           secondLead -= 2;
         }
-      
+
       // do we have to wrap the "seconds"?
       if (reverse && (firstLead == 0) || !reverse && (firstLead == firstMax))
-        secondModel.setSelectionInterval((secondLead + 1) % (secondMax + 1), 
+        secondModel.setSelectionInterval((secondLead + 1) % (secondMax + 1),
                                          (secondLead + 1) % (secondMax + 1));
       // if not, just reselect the current lead
       else
         secondModel.setSelectionInterval(secondLead, secondLead);
-      
+
       // if we are going backwards, subtract 2  because we add 1 later
       // for net change of -1
       if (reverse)
@@ -1217,12 +1217,12 @@ public class BasicTableUI extends TableUI
           firstLead -= 2;
         }
       // select the next "first"
-      firstModel.setSelectionInterval((firstLead + 1) % (firstMax + 1), 
+      firstModel.setSelectionInterval((firstLead + 1) % (firstMax + 1),
                                       (firstLead + 1) % (firstMax + 1));
     }
   }
 
-  protected void installListeners() 
+  protected void installListeners()
   {
     if (focusListener == null)
       focusListener = createFocusListener();
@@ -1232,7 +1232,7 @@ public class BasicTableUI extends TableUI
     table.addKeyListener(keyListener);
     if (mouseInputListener == null)
       mouseInputListener = createMouseInputListener();
-    table.addMouseListener(mouseInputListener);    
+    table.addMouseListener(mouseInputListener);
     table.addMouseMotionListener(mouseInputListener);
     if (propertyChangeListener == null)
       propertyChangeListener = new PropertyChangeHandler();
@@ -1259,17 +1259,17 @@ public class BasicTableUI extends TableUI
     SwingUtilities.replaceUIActionMap(table, null);
   }
 
-  protected void uninstallListeners() 
+  protected void uninstallListeners()
   {
-    table.removeFocusListener(focusListener);  
+    table.removeFocusListener(focusListener);
     table.removeKeyListener(keyListener);
-    table.removeMouseListener(mouseInputListener);    
+    table.removeMouseListener(mouseInputListener);
     table.removeMouseMotionListener(mouseInputListener);
     table.removePropertyChangeListener(propertyChangeListener);
     propertyChangeListener = null;
   }
 
-  public void installUI(JComponent comp) 
+  public void installUI(JComponent comp)
   {
     table = (JTable) comp;
     rendererPane = new CellRendererPane();
@@ -1280,11 +1280,11 @@ public class BasicTableUI extends TableUI
     installListeners();
   }
 
-  public void uninstallUI(JComponent c) 
+  public void uninstallUI(JComponent c)
   {
     uninstallListeners();
     uninstallKeyboardActions();
-    uninstallDefaults(); 
+    uninstallDefaults();
 
     table.remove(rendererPane);
     rendererPane = null;
@@ -1308,11 +1308,11 @@ public class BasicTableUI extends TableUI
     Component comp = table.prepareRenderer(rend, row, col);
     rendererPane.paintComponent(g, comp, table, bounds);
   }
-  
+
   /**
    * Paint the associated table.
    */
-  public void paint(Graphics gfx, JComponent ignored) 
+  public void paint(Graphics gfx, JComponent ignored)
   {
     int ncols = table.getColumnCount();
     int nrows = table.getRowCount();
@@ -1346,19 +1346,19 @@ public class BasicTableUI extends TableUI
       {
         widths[i] = cmodel.getColumn(i).getWidth() - columnMargin;
       }
-    
+
     Rectangle bounds = table.getCellRect(r0, c0, false);
     // The left boundary of the area being repainted.
     int left = bounds.x;
-    
+
     // The top boundary of the area being repainted.
     int top = bounds.y;
-    
+
     // The bottom boundary of the area being repainted.
     int bottom;
-    
+
     // paint the cell contents
-    Color grid = table.getGridColor();    
+    Color grid = table.getGridColor();
     for (int r = r0; r <= rn; ++r)
       {
         for (int c = c0; c <= cn; ++c)
@@ -1372,18 +1372,18 @@ public class BasicTableUI extends TableUI
         // Update row height for tables with custom heights.
         bounds.height = table.getRowHeight(r + 1) - rowMargin;
       }
-    
+
     bottom = bounds.y - rowMargin;
 
     // paint vertical grid lines
     if (grid != null && table.getShowVerticalLines())
-      {    
+      {
         Color save = gfx.getColor();
         gfx.setColor(grid);
         int x = left - columnMargin;
         for (int c = c0; c <= cn; ++c)
           {
-            // The vertical grid is draw right from the cells, so we 
+            // The vertical grid is draw right from the cells, so we
             // add before drawing.
             x += widths[c] + columnMargin;
             gfx.drawLine(x, top, x, bottom);
@@ -1391,15 +1391,15 @@ public class BasicTableUI extends TableUI
         gfx.setColor(save);
       }
 
-    // paint horizontal grid lines    
+    // paint horizontal grid lines
     if (grid != null && table.getShowHorizontalLines())
-      {    
+      {
         Color save = gfx.getColor();
         gfx.setColor(grid);
         int y = top - rowMargin;
         for (int r = r0; r <= rn; ++r)
           {
-            // The horizontal grid is draw below the cells, so we 
+            // The horizontal grid is draw below the cells, so we
             // add before drawing.
             y += table.getRowHeight(r);
             gfx.drawLine(left, y, p2.x, y);

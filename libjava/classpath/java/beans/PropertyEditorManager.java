@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -64,7 +64,7 @@ import java.awt.Font;
  * package and then in the property editor search path.
  *
  * <p>Default property editors are provided for:</p>
- * 
+ *
  * <ol>
  * <li>boolean, byte, short, int, long, float, and double</li>
  * <li>java.lang.String</li>
@@ -143,13 +143,13 @@ public class PropertyEditorManager
             return (PropertyEditor)found.newInstance();
           }
 
-	ClassLoader contextClassLoader
-		= Thread.currentThread().getContextClassLoader();
+        ClassLoader contextClassLoader
+                = Thread.currentThread().getContextClassLoader();
 
         try
           {
             found = Class.forName(editedClass.getName()+"Editor", true,
-				  contextClassLoader);
+                                  contextClassLoader);
             registerEditor(editedClass,found);
             return (PropertyEditor)found.newInstance();
           }
@@ -158,9 +158,9 @@ public class PropertyEditorManager
           }
 
         String appendName
-		= "."
-		+ ClassHelper.getTruncatedClassName(editedClass)
-		+ "Editor";
+                = "."
+                + ClassHelper.getTruncatedClassName(editedClass)
+                + "Editor";
         synchronized(editorSearchPath)
           {
             for(int i=0;i<editorSearchPath.length;i++)
@@ -168,7 +168,7 @@ public class PropertyEditorManager
                 try
                   {
                     found = Class.forName(editorSearchPath[i] + appendName,
-					  true, contextClassLoader);
+                                          true, contextClassLoader);
                     registerEditor(editedClass,found);
                     return (PropertyEditor)found.newInstance();
                   }
@@ -184,7 +184,7 @@ public class PropertyEditorManager
     catch(IllegalAccessException E)
       {
       }
-    
+
     return null;
   }
 

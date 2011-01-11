@@ -1,4 +1,4 @@
-/* StreamPrintServiceFactory.java -- 
+/* StreamPrintServiceFactory.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,83 +46,83 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 /**
- * <code>StreamPrintServiceFactory</code> provides a static method to lookup 
+ * <code>StreamPrintServiceFactory</code> provides a static method to lookup
  * registered factories to construct <code>StreamPrintService</code> instances.
  * <p>
- * <code>StreamPrintService</code> are used to print into a provided output 
- * stream in the document format provided by the stream print service 
+ * <code>StreamPrintService</code> are used to print into a provided output
+ * stream in the document format provided by the stream print service
  * implementation.
  * </p><p>
- * Implementations are located and loaded automatically through the SPI JAR 
- * file specification. Therefore implementation classes must provide a default 
+ * Implementations are located and loaded automatically through the SPI JAR
+ * file specification. Therefore implementation classes must provide a default
  * constructor for instantiation.
  * </p>
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public abstract class StreamPrintServiceFactory
-{   
+{
   /**
    * Default public constructor.
-   * Used for automatic loading and instantiation through 
+   * Used for automatic loading and instantiation through
    * the SPI jar file specification.
    */
   public StreamPrintServiceFactory()
   {
     // nothing to do
   }
-  
+
   /**
-   * Searches for matching factories providing stream print services that  
-   * support the printing of documents with the given document flavor into 
+   * Searches for matching factories providing stream print services that
+   * support the printing of documents with the given document flavor into
    * the given output mime type.
-   * 
-   * @param flavor the document flavor needed, <code>null</code> doesn't 
+   *
+   * @param flavor the document flavor needed, <code>null</code> doesn't
    * constrain the lookup result.
-   * @param outputMimeType the mime type needed, <code>null</code> doesn't 
+   * @param outputMimeType the mime type needed, <code>null</code> doesn't
    * constrain the lookup result.
-   * 
+   *
    * @return The matching <code>StreamPrintServiceFactory</code> instances.
    */
   public static StreamPrintServiceFactory[] lookupStreamPrintServiceFactories(
     DocFlavor flavor, String outputMimeType)
   {
     HashSet set = new HashSet();
-    
-    Iterator it = 
+
+    Iterator it =
       ServiceFactory.lookupProviders(StreamPrintServiceFactory.class);
-    
+
     while (it.hasNext())
       {
         StreamPrintServiceFactory tmp = (StreamPrintServiceFactory) it.next();
         if (tmp.getOutputFormat().equals(outputMimeType)
             && Arrays.asList(tmp.getSupportedDocFlavors()).contains(flavor))
-          set.add(tmp);          
+          set.add(tmp);
       }
-    
+
     StreamPrintServiceFactory[] tmp = new StreamPrintServiceFactory[set.size()];
-    return (StreamPrintServiceFactory[]) set.toArray(tmp);  
-  } 
-  
+    return (StreamPrintServiceFactory[]) set.toArray(tmp);
+  }
+
   /**
    * Returns the output format supported by this factory.
-   * 
+   *
    * @return The mime type of the output format as string representation.
    */
   public abstract String getOutputFormat();
-  
+
   /**
    * Returns the document flavors this factory supports as flavors
    * for the input documents.
-   * 
+   *
    * @return The array of supported document flavors.
    */
   public abstract DocFlavor[] getSupportedDocFlavors();
-  
+
   /**
    * Constructs a <code>StreamPrintService</code> which directs its output
    * the given output stream.
-   * 
+   *
    * @param out the output stream for the produced document.
    * @return The constructed stream print service.
    */

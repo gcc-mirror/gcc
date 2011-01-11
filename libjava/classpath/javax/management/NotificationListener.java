@@ -49,7 +49,7 @@ import java.util.EventListener;
 public interface NotificationListener
   extends EventListener
 {
-  
+
   /**
    * Invoked by the notifying bean when a notification is to
    * be delivered to the recipient.  As the transmission of
@@ -67,4 +67,3 @@ public interface NotificationListener
   void handleNotification(Notification notification, Object passback);
 
 }
-

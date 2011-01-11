@@ -60,7 +60,7 @@ public class InvalidParameterSpecException extends GeneralSecurityException
   /**
    * Constructs an InvalidParameterSpecException without a message string.
    */
-  public InvalidParameterSpecException() 
+  public InvalidParameterSpecException()
   {
   }
 

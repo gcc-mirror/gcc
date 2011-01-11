@@ -124,7 +124,7 @@ public class TripleDESKeyWrap
       }
     else
       System.arraycopy(in, inOffset, CEK, 0, 24);
-    
+
     // TODO: check for the following:
     // However, a Two-key Triple-DES key MUST NOT be used to wrap a Three-
     // key Triple-DES key that is comprised of three unique DES keys.
@@ -276,10 +276,10 @@ public class TripleDESKeyWrap
     // 9. Use CEK as a Triple-DES key.
     return CEK;
   }
-  
+
   /**
    * Fills the designated byte array with random data.
-   * 
+   *
    * @param buffer the byte array to fill with random data.
    */
   private void nextRandomBytes(byte[] buffer)

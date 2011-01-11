@@ -63,7 +63,7 @@ public interface TabularData
    * this instance's tabular type.  The returned indices are the
    * values of the fields in the supplied {@link CompositeData}
    * instance that match the names given in the {@link TabularType}.
-   * 
+   *
    * @param val the {@link CompositeData} value whose index should
    *            be calculated.
    * @return the index the value would take on, if it were to be added.
@@ -154,14 +154,14 @@ public interface TabularData
   /**
    * Returns true if this {@link TabularData} instance
    * contains no {@link CompositeData} values.
-   * 
+   *
    * @return true if the instance is devoid of rows.
    */
   boolean isEmpty();
 
   /**
    * Returns a {@link java.util.Set} view of the keys or
-   * indices of this {@link TabularData} instance. 
+   * indices of this {@link TabularData} instance.
    *
    * @return a set containing the keys of this instance.
    */
@@ -174,7 +174,7 @@ public interface TabularData
    * the same index as an existing value.  The index is
    * calculated using the index names of the
    * {@link TabularType} for this instance.
-   * 
+   *
    * @param val the {@link CompositeData} value to add.
    * @throws NullPointerException if <code>val</code> is
    *                              <code>null</code>.
@@ -198,7 +198,7 @@ public interface TabularData
    * value can not be added, then none of the values should
    * be.  If the array is <code>null</code> or empty, the
    * method simply returns.
-   * 
+   *
    * @param vals the {@link CompositeData} values to add.
    * @throws NullPointerException if a value from the array is
    *                              <code>null</code>.
@@ -247,7 +247,7 @@ public interface TabularData
    *         object.
    */
   String toString();
- 
+
   /**
    * Returns the values associated with this instance.
    *
@@ -256,4 +256,3 @@ public interface TabularData
   Collection<?> values();
 
 }
-

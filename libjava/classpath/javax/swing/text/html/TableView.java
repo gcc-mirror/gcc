@@ -477,7 +477,7 @@ class TableView
    * Overridden to perform the table layout before calling the super
    * implementation.
    */
-  protected void layoutMinorAxis(int targetSpan, int axis, int[] offsets, 
+  protected void layoutMinorAxis(int targetSpan, int axis, int[] offsets,
                                  int[] spans)
   {
     updateGrid();

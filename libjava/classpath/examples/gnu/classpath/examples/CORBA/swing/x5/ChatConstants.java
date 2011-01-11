@@ -44,8 +44,8 @@ import java.awt.Color;
  * The chat color code constants, used to indicate who is talking.
  * Additionally, the red color is reseved for the most important messages,
  * related to the start and end of the game.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class ChatConstants
 {
@@ -68,7 +68,7 @@ public class ChatConstants
    * Messages from the game server/
    */
   public static byte GAME_SERVER = 3;
-  
+
   /**
    * The array of the used colors.
    */

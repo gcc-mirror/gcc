@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -50,7 +50,7 @@ import java.util.Formatter;
  * This class prints Java primitive values and objects to a stream as
  * text.  None of the methods in this class throw an exception.  However,
  * errors can be detected by calling the <code>checkError()</code> method.
- * Additionally, this stream can be designated as "autoflush" when 
+ * Additionally, this stream can be designated as "autoflush" when
  * created so that any writes are automatically flushed to the underlying
  * output sink whenever one of the <code>println</code> methods is
  * called.  (Note that this differs from the <code>PrintStream</code>
@@ -59,7 +59,7 @@ import java.util.Formatter;
  *
  * @author Per Bothner (bothner@cygnus.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @date April 17, 1998.  
+ * @date April 17, 1998.
  */
 public class PrintWriter extends Writer
 {
@@ -73,7 +73,7 @@ public class PrintWriter extends Writer
    * on this stream.
    */
   private boolean error;
-  
+
   /**
    * Indicates whether or not the stream has been closed.
    */
@@ -105,7 +105,7 @@ public class PrintWriter extends Writer
    * every line is terminated or newline character is written.
    *
    * @param wr The <code>Writer</code> to write to.
-   * @param autoflush <code>true</code> to flush the stream after every 
+   * @param autoflush <code>true</code> to flush the stream after every
    * line, <code>false</code> otherwise
    */
   public PrintWriter(Writer wr, boolean autoflush)
@@ -133,11 +133,11 @@ public class PrintWriter extends Writer
   /**
    * This method initializes a new <code>PrintWriter</code> object to write
    * to the specified <code>OutputStream</code>.  Characters will be converted
-   * to chars using the system default encoding.  This form of the 
+   * to chars using the system default encoding.  This form of the
    * constructor allows auto-flush functionality to be enabled if desired
    *
    * @param out The <code>OutputStream</code> to write to
-   * @param autoflush <code>true</code> to flush the stream after every 
+   * @param autoflush <code>true</code> to flush the stream after every
    * <code>println</code> call, <code>false</code> otherwise.
    */
   public PrintWriter(OutputStream out, boolean autoflush)
@@ -152,7 +152,7 @@ public class PrintWriter extends Writer
    * OutputStreamWriter using the default encoding.
    * @param file name of the file to write to
    * @throws FileNotFoundException if the file cannot be written or created
-   * 
+   *
    * @since 1.5
    */
   public PrintWriter(String file) throws FileNotFoundException
@@ -168,10 +168,10 @@ public class PrintWriter extends Writer
    * @param enc the encoding to use
    * @throws FileNotFoundException if the file cannot be written or created
    * @throws UnsupportedEncodingException if the encoding is not supported
-   * 
+   *
    * @since 1.5
    */
-  public PrintWriter(String file, String enc) 
+  public PrintWriter(String file, String enc)
     throws FileNotFoundException, UnsupportedEncodingException
   {
     this(new OutputStreamWriter(new FileOutputStream(file), enc));
@@ -183,7 +183,7 @@ public class PrintWriter extends Writer
    * OutputStreamWriter using the default encoding.
    * @param file the file to write to
    * @throws FileNotFoundException if the file cannot be written or created
-   * 
+   *
    * @since 1.5
    */
   public PrintWriter(File file) throws FileNotFoundException
@@ -199,10 +199,10 @@ public class PrintWriter extends Writer
    * @param enc the encoding to use
    * @throws FileNotFoundException if the file cannot be written or created
    * @throws UnsupportedEncodingException if the encoding is not supported
-   * 
+   *
    * @since 1.5
    */
-  public PrintWriter(File file, String enc) 
+  public PrintWriter(File file, String enc)
     throws FileNotFoundException, UnsupportedEncodingException
   {
     this(new OutputStreamWriter(new FileOutputStream(file), enc));
@@ -223,7 +223,7 @@ public class PrintWriter extends Writer
    * <code>true</code> forever for this stream.  Before checking for an
    * error condition, this method flushes the stream.
    *
-   * @return <code>true</code> if an error has occurred, 
+   * @return <code>true</code> if an error has occurred,
    * <code>false</code> otherwise
    */
   public boolean checkError()
@@ -241,11 +241,11 @@ public class PrintWriter extends Writer
   {
     try
       {
-	out.flush();
+        out.flush();
       }
     catch (IOException ex)
       {
-	error = true;
+        error = true;
       }
   }
 
@@ -261,7 +261,7 @@ public class PrintWriter extends Writer
       }
     catch (IOException ex)
       {
-	error = true;
+        error = true;
       }
   }
 
@@ -382,7 +382,7 @@ public class PrintWriter extends Writer
    * This is the system dependent line separator
    */
   private static final char[] line_separator
-    = System.getProperty("line.separator", "\n").toCharArray(); 
+    = System.getProperty("line.separator", "\n").toCharArray();
 
   /**
    * This method prints a line separator sequence to the stream.  The value
@@ -393,16 +393,16 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	try
-	  {
-	    write(line_separator, 0, line_separator.length);
-	    if (autoflush)
-	      out.flush();
-	  }
-	catch (IOException ex)
-	  {
-	    error = true;
-	  }
+        try
+          {
+            write(line_separator, 0, line_separator.length);
+            if (autoflush)
+              out.flush();
+          }
+        catch (IOException ex)
+          {
+            error = true;
+          }
       }
   }
 
@@ -419,8 +419,8 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	print(bool);
-	println();
+        print(bool);
+        println();
       }
   }
 
@@ -436,8 +436,8 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	print(inum);
-	println();
+        print(inum);
+        println();
       }
   }
 
@@ -453,8 +453,8 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	print(lnum);
-	println();
+        print(lnum);
+        println();
       }
   }
 
@@ -470,8 +470,8 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	print(fnum);
-	println();
+        print(fnum);
+        println();
       }
   }
 
@@ -487,8 +487,8 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	print(dnum);
-	println();
+        print(dnum);
+        println();
       }
   }
 
@@ -505,8 +505,8 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	print(obj);
-	println();
+        print(obj);
+        println();
       }
   }
 
@@ -522,8 +522,8 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	print(str);
-	println();
+        print(str);
+        println();
       }
   }
 
@@ -539,8 +539,8 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	print(ch);
-	println();
+        print(ch);
+        println();
       }
   }
 
@@ -556,30 +556,30 @@ public class PrintWriter extends Writer
   {
     synchronized (lock)
       {
-	print(charArray);
-	println();
+        print(charArray);
+        println();
       }
   }
 
   /**
-   * This method writes a single char to the stream. 
-   * 
+   * This method writes a single char to the stream.
+   *
    * @param ch The char to be written, passed as a int
    */
   public void write(int ch)
   {
     try
       {
-	out.write(ch);
+        out.write(ch);
       }
     catch (IOException ex)
       {
-	error = true;
+        error = true;
       }
   }
 
   /**
-   * This method writes <code>count</code> chars from the specified array 
+   * This method writes <code>count</code> chars from the specified array
    * starting at index <code>offset</code> into the array.
    *
    * @param charArray The array of chars to write
@@ -590,11 +590,11 @@ public class PrintWriter extends Writer
   {
     try
       {
-	out.write(charArray, offset, count);
+        out.write(charArray, offset, count);
       }
     catch (IOException ex)
       {
-	error = true;
+        error = true;
       }
   }
 
@@ -611,11 +611,11 @@ public class PrintWriter extends Writer
   {
     try
       {
-	out.write(str, offset, count);
+        out.write(str, offset, count);
       }
     catch (IOException ex)
       {
-	error = true;
+        error = true;
       }
   }
 
@@ -627,7 +627,7 @@ public class PrintWriter extends Writer
   public void write(char[] charArray)
   {
     write(charArray, 0, charArray.length);
-  }  
+  }
 
   /**
    * This method writes the contents of the specified <code>String</code>
@@ -638,7 +638,7 @@ public class PrintWriter extends Writer
   public void write(String str)
   {
     write(str, 0, str.length());
-  }  
+  }
 
   /** @since 1.5 */
   public PrintWriter append(char c)
@@ -687,4 +687,3 @@ public class PrintWriter extends Writer
     return this;
   }
 }
-

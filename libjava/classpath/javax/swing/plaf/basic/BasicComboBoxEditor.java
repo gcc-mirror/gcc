@@ -69,7 +69,7 @@ public class BasicComboBoxEditor extends Object implements ComboBoxEditor,
   }
 
   /**
-   * Returns the component that will be used by the combo box to display and 
+   * Returns the component that will be used by the combo box to display and
    * edit the currently selected item in the combo box.
    *
    * @return The editor component, which is a {@link JTextField} in this case.
@@ -138,7 +138,7 @@ public class BasicComboBoxEditor extends Object implements ComboBoxEditor,
   }
 
   /**
-   * Adds an {@link ActionListener} to the editor component.  If the user will 
+   * Adds an {@link ActionListener} to the editor component.  If the user will
    * edit currently selected item in the textfield and pressEnter, then action
    * will be performed. The actionPerformed of this ActionListener should
    * change the selected item of the comboBox to the newly editted  selected
@@ -163,7 +163,7 @@ public class BasicComboBoxEditor extends Object implements ComboBoxEditor,
   }
 
   /**
-   * A subclass of {@link BasicComboBoxEditor} that implements the 
+   * A subclass of {@link BasicComboBoxEditor} that implements the
    * {@link UIResource} interface.
    */
   public static class UIResource extends BasicComboBoxEditor

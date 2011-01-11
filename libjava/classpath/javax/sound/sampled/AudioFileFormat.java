@@ -143,7 +143,7 @@ public class AudioFileFormat
 
   /**
    * Create a new AudioFileFormat given the type, the format, the
-   * frame length, and some properties.  The new object will have an 
+   * frame length, and some properties.  The new object will have an
    * unspecified byte length.  A copy of the properties argument will
    * be made, so changes to the map passed in will not affect the
    * new AudioFileFormat.
@@ -153,7 +153,7 @@ public class AudioFileFormat
    * @param properties the properties
    */
   public AudioFileFormat(Type type, AudioFormat fmt, int frameLen,
-			 Map<String, Object> properties)
+                         Map<String, Object> properties)
   {
     this.byteLength = AudioSystem.NOT_SPECIFIED;
     this.format = fmt;
@@ -171,7 +171,7 @@ public class AudioFileFormat
    * @param frameLen the frame length
    */
   protected AudioFileFormat(Type type, int byteLen, AudioFormat fmt,
-			    int frameLen)
+                            int frameLen)
   {
     this.byteLength = byteLen;
     this.format = fmt;
@@ -237,6 +237,6 @@ public class AudioFileFormat
   public String toString()
   {
     return ("byteLength=" + byteLength + "; format=" + format
-	    + "; type=" + type + "; frameLength=" + frameLength);
+            + "; type=" + type + "; frameLength=" + frameLength);
   }
 }

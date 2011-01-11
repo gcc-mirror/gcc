@@ -1,4 +1,4 @@
-/* CeilingFunction.java -- 
+/* CeilingFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -53,17 +53,17 @@ final class CeilingFunction
 {
 
   final Expr arg;
-  
+
   CeilingFunction(List<Expr> args)
   {
     this(args.get(0));
   }
-  
+
   CeilingFunction(Expr arg)
   {
     this.arg = arg;
   }
-  
+
   public Object evaluate(Node context, int pos, int len)
   {
     Object val = arg.evaluate(context, pos, len);
@@ -80,10 +80,10 @@ final class CeilingFunction
   {
     return arg.references(var);
   }
-  
+
   public String toString()
   {
     return "ceiling(" + arg + ")";
   }
-  
+
 }

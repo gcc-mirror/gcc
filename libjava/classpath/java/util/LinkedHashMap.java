@@ -76,9 +76,9 @@ package java.util;
  * things like keep the map at a fixed size.
  * <p>
  *
- * Under ideal circumstances (no collisions), LinkedHashMap offers O(1) 
+ * Under ideal circumstances (no collisions), LinkedHashMap offers O(1)
  * performance on most operations (<code>containsValue()</code> is,
- * of course, O(n)).  In the worst case (all keys map to the same 
+ * of course, O(n)).  In the worst case (all keys map to the same
  * hash code -- very unlikely), most operations are O(n).  Traversal is
  * faster than in HashMap (proportional to the map size, and not the space
  * allocated for the map), but other operations may be slower because of the
@@ -188,7 +188,7 @@ public class LinkedHashMap<K,V> extends HashMap<K,V>
               succ = null;
               pred = root.pred;
               pred.succ = this;
-	      root.pred = this;
+              root.pred = this;
             }
         }
     }
@@ -477,7 +477,7 @@ public class LinkedHashMap<K,V> extends HashMap<K,V>
         current = current.succ;
         return type == VALUES ? last.value : type == KEYS ? last.key : last;
       }
-      
+
       /**
        * Removes from the backing HashMap the last element which was fetched
        * with the <code>next()</code> method.

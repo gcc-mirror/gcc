@@ -101,7 +101,7 @@ public abstract class Ellipse2D extends RectangularShape
    * Note: An ellipse cannot be represented exactly in PathIterator
    * segments, the outline is thefore approximated with cubic
    * Bezier segments.
-   * 
+   *
    * @param at an optional transform.
    * @return A path iterator.
    */
@@ -242,7 +242,7 @@ public abstract class Ellipse2D extends RectangularShape
     /**
      * Returns <code>true</code> if the ellipse encloses no area, and
      * <code>false</code> otherwise.
-     * 
+     *
      * @return A boolean.
      */
     public boolean isEmpty()
@@ -368,7 +368,7 @@ public abstract class Ellipse2D extends RectangularShape
     /**
      * Returns <code>true</code> if the ellipse encloses no area, and
      * <code>false</code> otherwise.
-     * 
+     *
      * @return A boolean.
      */
     public boolean isEmpty()

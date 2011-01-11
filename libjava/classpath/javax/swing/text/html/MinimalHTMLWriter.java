@@ -1,4 +1,4 @@
-/* MinimalHTMLWriter.java -- 
+/* MinimalHTMLWriter.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,7 +59,7 @@ import java.awt.Color;
  *
  * @author Sven de Marothy
  */
-public class MinimalHTMLWriter extends AbstractWriter 
+public class MinimalHTMLWriter extends AbstractWriter
 {
   private StyledDocument doc;
   private Deque<String> tagStack;
@@ -114,7 +114,7 @@ public class MinimalHTMLWriter extends AbstractWriter
    * Ends a span tag.
    */
   protected void endFontTag() throws IOException
-  {    
+  {
     writeEndTag("</span>");
     inFontTag = false;
   }
@@ -153,7 +153,7 @@ public class MinimalHTMLWriter extends AbstractWriter
   /**
    * Write the HTML header.
    */
-  protected void writeHeader() throws IOException 
+  protected void writeHeader() throws IOException
   {
     writeStartTag("<head>");
     writeStartTag("<style>");
@@ -168,7 +168,7 @@ public class MinimalHTMLWriter extends AbstractWriter
    * Write a paragraph start tag.
    */
   protected void writeStartParagraph(Element elem) throws IOException
-  {      
+  {
     indent();
     write("<p class=default>"+NEWLINE); // FIXME: Class value = ?
     incrIndent();
@@ -185,7 +185,7 @@ public class MinimalHTMLWriter extends AbstractWriter
 
   /**
    * Writes the body of the HTML document.
-   */ 
+   */
   protected void writeBody() throws IOException, BadLocationException
   {
     writeStartTag("<body>");
@@ -195,27 +195,27 @@ public class MinimalHTMLWriter extends AbstractWriter
     boolean inParagraph = false;
     do
       {
-	if( e.isLeaf() )
-	  {
-	    boolean hasNL = (getText(e).indexOf(NEWLINE) != -1);
-	    if( !inParagraph && hasText( e ) )
-	      {
-		writeStartParagraph(e);
-		inParagraph = true;
-	      }
+        if( e.isLeaf() )
+          {
+            boolean hasNL = (getText(e).indexOf(NEWLINE) != -1);
+            if( !inParagraph && hasText( e ) )
+              {
+                writeStartParagraph(e);
+                inParagraph = true;
+              }
 
-	    if( hasText( e ) )
-	      writeContent(e, true);
+            if( hasText( e ) )
+              writeContent(e, true);
 
-	    if( hasNL && inParagraph )
-	      {
-		writeEndParagraph();
-		inParagraph = false;
-	      }
-	    else
-	      endOpenTags();
-	  }
-      } 
+            if( hasNL && inParagraph )
+              {
+                writeEndParagraph();
+                inParagraph = false;
+              }
+            else
+              endOpenTags();
+          }
+      }
     while((e = ei.next()) != null);
 
     writeEndTag("</body>");
@@ -233,28 +233,28 @@ public class MinimalHTMLWriter extends AbstractWriter
   {
     if(attr.getAttribute(StyleConstants.Bold) != null)
       if(((Boolean)attr.getAttribute(StyleConstants.Bold)).booleanValue())
-	{
-	  write("<b>");
-	  tagStack.push("</b>");
-	}
+        {
+          write("<b>");
+          tagStack.push("</b>");
+        }
     if(attr.getAttribute(StyleConstants.Italic) != null)
       if(((Boolean)attr.getAttribute(StyleConstants.Italic)).booleanValue())
-	{
-	  write("<i>");
-	  tagStack.push("</i>");
-	}
+        {
+          write("<i>");
+          tagStack.push("</i>");
+        }
     if(attr.getAttribute(StyleConstants.Underline) != null)
       if(((Boolean)attr.getAttribute(StyleConstants.Underline)).booleanValue())
-	{
-	  write("<u>");
-	  tagStack.push("</u>");
-	}
+        {
+          write("<u>");
+          tagStack.push("</u>");
+        }
   }
 
   /**
    * Returns whether the element contains text or not.
    */
-  protected boolean isText(Element elem) 
+  protected boolean isText(Element elem)
   {
     return (elem.getEndOffset() != elem.getStartOffset());
   }
@@ -271,7 +271,7 @@ public class MinimalHTMLWriter extends AbstractWriter
     writeHTMLTags(elem.getAttributes());
     if( isText(elem) )
       text(elem);
-    else 
+    else
       writeLeaf(elem);
 
     endOpenTags();
@@ -285,12 +285,12 @@ public class MinimalHTMLWriter extends AbstractWriter
     // NOTE: Haven't tested if this is correct.
     if(e.getName().equals(StyleConstants.IconElementName))
       writeImage(e);
-    else 
+    else
       writeComponent(e);
   }
 
   /**
-   * Write the HTML attributes which do not have tag equivalents, 
+   * Write the HTML attributes which do not have tag equivalents,
    * e.g. attributes other than bold/italic/underlined.
    */
   protected void writeNonHTMLAttributes(AttributeSet attr) throws IOException
@@ -300,8 +300,8 @@ public class MinimalHTMLWriter extends AbstractWriter
     // Alignment? Background?
 
     if( StyleConstants.getForeground(attr) != null )
-      style = style + "color: " + 
-	getColor(StyleConstants.getForeground(attr)) + "; ";
+      style = style + "color: " +
+        getColor(StyleConstants.getForeground(attr)) + "; ";
 
     style = style + "font-size: "+StyleConstants.getFontSize(attr)+"pt; ";
     style = style + "font-family: "+StyleConstants.getFontFamily(attr);
@@ -316,15 +316,15 @@ public class MinimalHTMLWriter extends AbstractWriter
   {
     if(doc instanceof DefaultStyledDocument)
       {
-	Enumeration<?> styles = ((DefaultStyledDocument)doc).getStyleNames();
-	while(styles.hasMoreElements())
-	  writeStyle(doc.getStyle((String)styles.nextElement()));
+        Enumeration<?> styles = ((DefaultStyledDocument)doc).getStyleNames();
+        while(styles.hasMoreElements())
+          writeStyle(doc.getStyle((String)styles.nextElement()));
       }
     else
       { // What else to do here?
-	Style s = doc.getStyle("default");
-	if(s != null)
-	  writeStyle( s );
+        Style s = doc.getStyle("default");
+        if(s != null)
+          writeStyle( s );
       }
   }
 
@@ -336,28 +336,28 @@ public class MinimalHTMLWriter extends AbstractWriter
     Enumeration<?> attribs = attr.getAttributeNames();
     while(attribs.hasMoreElements())
       {
-	Object attribName = attribs.nextElement();
-	String name = attribName.toString();
-	String output = getAttribute(name, attr.getAttribute(attribName));
-	if( output != null )
-	  {
-	    indent();
-	    write( output + NEWLINE );
-	  }
+        Object attribName = attribs.nextElement();
+        String name = attribName.toString();
+        String output = getAttribute(name, attr.getAttribute(attribName));
+        if( output != null )
+          {
+            indent();
+            write( output + NEWLINE );
+          }
       }
   }
 
   /**
    * Deliberately unimplemented, handles component elements.
-   */ 
+   */
   protected void writeComponent(Element elem) throws IOException
   {
   }
 
   /**
-   * Deliberately unimplemented. 
+   * Deliberately unimplemented.
    * Writes StyleConstants.IconElementName elements.
-   */ 
+   */
   protected void writeImage(Element elem) throws IOException
   {
   }
@@ -381,24 +381,24 @@ public class MinimalHTMLWriter extends AbstractWriter
       return "family:" + a + ";";
     if(name.equals("size"))
       {
-	int size = ((Integer)a).intValue();
-	int htmlSize;
-	if( size > 24 )
-	  htmlSize = 7;
-	else if( size > 18 )
-	  htmlSize = 6;
-	else if( size > 14 )
-	  htmlSize = 5;
-	else if( size > 12 )
-	  htmlSize = 4;
-	else if( size > 10 )
-	  htmlSize = 3;
-	else if( size > 8 )
-	  htmlSize = 2;
-	else
-	  htmlSize = 1;
+        int size = ((Integer)a).intValue();
+        int htmlSize;
+        if( size > 24 )
+          htmlSize = 7;
+        else if( size > 18 )
+          htmlSize = 6;
+        else if( size > 14 )
+          htmlSize = 5;
+        else if( size > 12 )
+          htmlSize = 4;
+        else if( size > 10 )
+          htmlSize = 3;
+        else if( size > 8 )
+          htmlSize = 2;
+        else
+          htmlSize = 1;
 
-	return "size:" + htmlSize + ";";
+        return "size:" + htmlSize + ";";
       }
 
     return null;
@@ -428,8 +428,8 @@ public class MinimalHTMLWriter extends AbstractWriter
 
     if( inFontTag() )
       {
-	write(""+NEWLINE);
-	endFontTag();
+        write(""+NEWLINE);
+        endFontTag();
       }
   }
 

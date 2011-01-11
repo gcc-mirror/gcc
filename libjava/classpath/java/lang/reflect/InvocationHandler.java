@@ -55,7 +55,7 @@ package java.lang.reflect;
  * work on any object in general.</p>
  *
  * <p>Hints for implementing this class:</p>
- * 
+ *
  * <ul>
  * <li>Don't forget that Object.equals, Object.hashCode, and
  *     Object.toString will call this handler.  In particular,

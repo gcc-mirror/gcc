@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -89,7 +89,7 @@ public class Connection extends URLConnection
       SystemProperties.getProperty("line.separator");
   }
 
-  
+
   /**
    * This is a File object for this connection
    */
@@ -109,7 +109,7 @@ public class Connection extends URLConnection
    * OutputStream if we are writing to the file
    */
   private OutputStream outputStream;
-  
+
   /**
    * FilePermission to read the file
    */
@@ -124,7 +124,7 @@ public class Connection extends URLConnection
 
     permission = new FilePermission(getURL().getFile(), DEFAULT_PERMISSION);
   }
-  
+
   /**
    * Unquote "%" + hex quotes characters
    *
@@ -146,38 +146,38 @@ public class Connection extends URLConnection
     int pos = 0;
     for (int i = 0; i < str.length(); i++)
       {
-	char c = str.charAt(i);
-	if (c == '%')
-	  {
-	    if (i + 2 >= str.length())
-	      throw new MalformedURLException(str + " : Invalid quoted character");
-	    int hi = Character.digit(str.charAt(++i), 16);
-	    int lo = Character.digit(str.charAt(++i), 16);
-	    if (lo < 0 || hi < 0)
-	      throw new MalformedURLException(str + " : Invalid quoted character");
-	    buf[pos++] = (byte) (hi * 16 + lo);
-	  }
- 	else if (c > 127) {
-	    try {
-		byte [] c_as_bytes = Character.toString(c).getBytes("utf-8");
-		final int c_length = c_as_bytes.length;
-		System.arraycopy(c_as_bytes, 0, buf, pos, c_length);
-		pos += c_length;
-	    }
-	    catch (java.io.UnsupportedEncodingException x2) {
-		throw (Error) new InternalError().initCause(x2);
-	    }
-	}    
-	else
-	  buf[pos++] = (byte) c;
+        char c = str.charAt(i);
+        if (c == '%')
+          {
+            if (i + 2 >= str.length())
+              throw new MalformedURLException(str + " : Invalid quoted character");
+            int hi = Character.digit(str.charAt(++i), 16);
+            int lo = Character.digit(str.charAt(++i), 16);
+            if (lo < 0 || hi < 0)
+              throw new MalformedURLException(str + " : Invalid quoted character");
+            buf[pos++] = (byte) (hi * 16 + lo);
+          }
+        else if (c > 127) {
+            try {
+                byte [] c_as_bytes = Character.toString(c).getBytes("utf-8");
+                final int c_length = c_as_bytes.length;
+                System.arraycopy(c_as_bytes, 0, buf, pos, c_length);
+                pos += c_length;
+            }
+            catch (java.io.UnsupportedEncodingException x2) {
+                throw (Error) new InternalError().initCause(x2);
+            }
+        }
+        else
+          buf[pos++] = (byte) c;
       }
     try
       {
-	return new String(buf, 0, pos, "utf-8");
+        return new String(buf, 0, pos, "utf-8");
       }
     catch (java.io.UnsupportedEncodingException x2)
       {
-	throw (Error) new InternalError().initCause(x2);
+        throw (Error) new InternalError().initCause(x2);
       }
   }
 
@@ -189,30 +189,30 @@ public class Connection extends URLConnection
     // Call is ignored if already connected.
     if (connected)
       return;
-    
+
     // If not connected, then file needs to be openned.
     file = new File (unquote(getURL().getFile()));
 
     if (! file.isDirectory())
       {
-	if (doInput)
-	  inputStream = new BufferedInputStream(new FileInputStream(file));
-    
-	if (doOutput)
-	  outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        if (doInput)
+          inputStream = new BufferedInputStream(new FileInputStream(file));
+
+        if (doOutput)
+          outputStream = new BufferedOutputStream(new FileOutputStream(file));
       }
     else
       {
-	if (doInput)
-	  {
+        if (doInput)
+          {
             inputStream = new ByteArrayInputStream(getDirectoryListing());
-	  }
+          }
 
-	if (doOutput)
-	  throw new ProtocolException
-	    ("file: protocol does not support output on directories");
+        if (doOutput)
+          throw new ProtocolException
+            ("file: protocol does not support output on directories");
       }
-    
+
     connected = true;
   }
 
@@ -228,9 +228,9 @@ public class Connection extends URLConnection
         ByteArrayOutputStream sink = new ByteArrayOutputStream();
         // NB uses default character encoding for this system
         Writer writer = new OutputStreamWriter(sink);
-    
+
         String[] files = file.list();
-    
+
         for (int i = 0; i < files.length; i++)
           {
             writer.write(files[i]);
@@ -239,9 +239,9 @@ public class Connection extends URLConnection
 
         directoryListing = sink.toByteArray();
       }
-    return directoryListing;  
+    return directoryListing;
   }
-  
+
   /**
    * Opens the file for reading and returns a stream for it.
    *
@@ -254,10 +254,10 @@ public class Connection extends URLConnection
   {
     if (!doInput)
       throw new ProtocolException("Can't open InputStream if doInput is false");
-    
+
     if (!connected)
       connect();
-    
+
     return inputStream;
   }
 
@@ -273,11 +273,11 @@ public class Connection extends URLConnection
   {
     if (!doOutput)
       throw new
-	ProtocolException("Can't open OutputStream if doOutput is false");
+        ProtocolException("Can't open OutputStream if doOutput is false");
 
     if (!connected)
       connect();
-    
+
     return outputStream;
   }
 
@@ -290,30 +290,30 @@ public class Connection extends URLConnection
   {
     try
       {
-	if (!connected)
-	  connect();
+        if (!connected)
+          connect();
 
-	return file.lastModified();
+        return file.lastModified();
       }
     catch (IOException e)
       {
-	return -1;
+        return -1;
       }
   }
-  
+
   /**
-   *  Get an http-style header field. Just handle a few common ones. 
+   *  Get an http-style header field. Just handle a few common ones.
    */
   public String getHeaderField(String field)
   {
     try
       {
-	if (!connected)
-	  connect();
+        if (!connected)
+          connect();
 
-	if (field.equals("content-type"))
+        if (field.equals("content-type"))
           return guessContentTypeFromName(file.getName());
-	else if (field.equals("content-length"))
+        else if (field.equals("content-length"))
           {
             if (file.isDirectory())
               {
@@ -321,14 +321,14 @@ public class Connection extends URLConnection
               }
             return Long.toString(file.length());
           }
-	else if (field.equals("last-modified"))
-	  {
-	    synchronized (StaticData.dateFormat)
-	      {
-        	return StaticData.dateFormat.format(
+        else if (field.equals("last-modified"))
+          {
+            synchronized (StaticData.dateFormat)
+              {
+                return StaticData.dateFormat.format(
                         new Date(file.lastModified()));
-	      }
-	  }
+              }
+          }
       }
     catch (IOException e)
       {
@@ -346,21 +346,21 @@ public class Connection extends URLConnection
   {
     try
       {
-	if (!connected)
-	  connect();
-        
+        if (!connected)
+          connect();
+
         if (file.isDirectory())
           {
             return getDirectoryListing().length;
           }
-	return (int) file.length();
+        return (int) file.length();
       }
     catch (IOException e)
       {
-	return -1;
+        return -1;
       }
   }
-  
+
   /**
    * This method returns a <code>Permission</code> object representing the
    * permissions required to access this URL.  This method returns a

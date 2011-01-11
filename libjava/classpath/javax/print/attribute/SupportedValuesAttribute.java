@@ -1,4 +1,4 @@
-/* SupportedValuesAttribute.java -- 
+/* SupportedValuesAttribute.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,7 +38,7 @@ exception statement from your version. */
 package javax.print.attribute;
 
 /**
- * Marker interface for all attribute classes specifying the 
+ * Marker interface for all attribute classes specifying the
  * supported/allowed values for another printing attribute class.
  * <p>
  * A {@link javax.print.PrintService} instance for example provides
@@ -46,11 +46,11 @@ package javax.print.attribute;
  * that a specific attribute type is supported and if the supported values.
  * </p><p>
  * E.g. a {@link javax.print.attribute.standard.JobPrioritySupported}
- * instance indicates that the attribute class 
+ * instance indicates that the attribute class
  * {@link javax.print.attribute.standard.JobPriority} is supported and
  * provides the number of the possible priority levels.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public interface SupportedValuesAttribute extends Attribute

@@ -46,7 +46,7 @@ import javax.swing.text.html.HTML;
 
 /**
  * A set, adapted to store HTML attributes.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class htmlAttributeSet
@@ -54,13 +54,13 @@ public class htmlAttributeSet
 {
   public static final htmlAttributeSet EMPTY_HTML_ATTRIBUTE_SET =
     new htmlAttributeSet();
-  
+
   AttributeSet parent;
 
   /**
    * Looks in this set and, if not found, later looks in the parent set. Calls
    * toString(), allowing to pass as HTML.Attribute, as String to this method.
-   * 
+   *
    * @param _key A key to search for a value.
    * @return The value, if one is defined.
    */
@@ -119,7 +119,7 @@ public class htmlAttributeSet
 
   /**
    * Set the parent set, containing the default values.
-   * 
+   *
    * @param a_parent
    */
   public void setResolveParent(AttributeSet a_parent)
@@ -129,7 +129,7 @@ public class htmlAttributeSet
 
   /**
    * Get the parent set, containing the default values.
-   * 
+   *
    * @return the parent, used to resolve the attributes.
    */
   public AttributeSet getResolveParent()
@@ -139,7 +139,7 @@ public class htmlAttributeSet
 
   /**
    * Add the attribute to this attribute set.
-   * 
+   *
    * @param key Attribute key (if string, it will be case insensitive)
    * @param value Attribute value
    */
@@ -164,11 +164,11 @@ public class htmlAttributeSet
       return new SmallHtmlAttributeSet(this);
     else
       return (AttributeSet) clone();
-  }   
-  
+  }
+
   /**
    * Returns a clone of the attribute set.
-   * 
+   *
    * @return A clone of the attribute set.
    */
   public Object clone()
@@ -179,5 +179,5 @@ public class htmlAttributeSet
     if (parent != null)
       set.setResolveParent(parent);
     return set;
-  }  
+  }
 }

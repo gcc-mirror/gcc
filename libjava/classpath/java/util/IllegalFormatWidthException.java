@@ -38,16 +38,16 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * Thrown when the specified width for a {@link Formatter}
  * argument is illegal.  This may be because the number is
  * a negative number (other than -1) or for some other reason.
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
-public class IllegalFormatWidthException 
+public class IllegalFormatWidthException
   extends IllegalFormatException
 {
   private static final long serialVersionUID = 16660902L;

@@ -503,8 +503,8 @@ public class ArrayList<E> extends AbstractList<E>
     // do so).
     throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
   }
-  
-  
+
+
   /**
    * Remove from this list all elements contained in the given collection.
    * This is not public, due to Sun's API, but this performs in linear

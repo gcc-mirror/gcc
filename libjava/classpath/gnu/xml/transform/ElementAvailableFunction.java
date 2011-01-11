@@ -1,4 +1,4 @@
-/* ElementAvailableFunction.java -- 
+/* ElementAvailableFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -148,7 +148,7 @@ class ElementAvailableFunction
     // TODO extension elements
     return Boolean.FALSE;
   }
-  
+
   public Expr clone(Object context)
   {
     NamespaceContext n = nsctx;
@@ -179,4 +179,3 @@ class ElementAvailableFunction
   }
 
 }
-

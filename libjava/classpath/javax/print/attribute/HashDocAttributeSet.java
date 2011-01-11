@@ -1,4 +1,4 @@
-/* HashDocAttributeSet.java -- 
+/* HashDocAttributeSet.java --
    Copyright (C) 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -47,7 +47,7 @@ public class HashDocAttributeSet extends HashAttributeSet
   implements DocAttributeSet, Serializable
 {
   private static final long serialVersionUID = -1128534486061432528L;
-  
+
   /**
    * Creates an empty <code>HashDocAttributeSet</code> object.
    */
@@ -88,7 +88,7 @@ public class HashDocAttributeSet extends HashAttributeSet
    * Creates a <code>HashDocAttributeSet</code> object with the attributes
    * of the given attributes set in it.
    *
-   * @param attributes the attributes set to put into the set. If 
+   * @param attributes the attributes set to put into the set. If
    * <code>null</code> an empty set is created.
    * @exception ClassCastException if any element of attributes is not
    * an instance of <code>DocAttribute</code>

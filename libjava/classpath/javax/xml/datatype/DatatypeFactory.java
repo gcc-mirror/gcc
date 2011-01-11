@@ -1,4 +1,4 @@
-/* DatatypeFactory.java -- 
+/* DatatypeFactory.java --
    Copyright (C) 2004, 2005, 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -303,7 +303,7 @@ public abstract class DatatypeFactory
    * XML Schema 1.0 Part 2, section 3.2.[7-14].1.
    */
   public abstract XMLGregorianCalendar newXMLGregorianCalendar(String lexicalRepresentation);
-  
+
   /**
    * Returns a new XMLGregorianCalendar based on the specified Gregorian
    * calendar.
@@ -417,5 +417,5 @@ public abstract class DatatypeFactory
                                    new BigDecimal(((double) milliseconds) / 1000.0),
                                    timezone);
   }
-    
+
 }

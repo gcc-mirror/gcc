@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * The open type descriptor for instances of the
  * {@link TabularData} class.
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
@@ -92,7 +92,7 @@ public class TabularType
    * The result of <code>TabularData.class.getName()</code> is adopted
    * as the class name (see {@link OpenType}).  The ordering of the array
    * elements is relevant in determining the indicies of the values in the
-   * table, and thus in the use of the 
+   * table, and thus in the use of the
    * {@link TabularData#get(java.lang.Object[])} and
    * {@link TabularData#remove(java.lang.Object[])} methods of the
    * {@link TabularData} class.
@@ -108,7 +108,7 @@ public class TabularType
    *                           name in the given row type.
    */
   public TabularType(String name, String desc, CompositeType rowType,
-		     String[] indexNames)
+                     String[] indexNames)
     throws OpenDataException
   {
     super(TabularData.class.getName(), name, desc);
@@ -116,16 +116,16 @@ public class TabularType
       throw new IllegalArgumentException("A null row type was given.");
     for (int a = 0; a < indexNames.length; ++a)
       {
-	if (indexNames[a] == null)
-	  throw new IllegalArgumentException("Name " + a +
-					     " is null.");
-	if (indexNames[a].length() == 0)
-	  throw new IllegalArgumentException("Name " + a + 
-					     " is the empty string.");
-	if (!(rowType.containsKey(indexNames[a])))
-	  throw new OpenDataException("No matching key for " +
-				      indexNames[a] + " was found in " +
-				      "the supplied row type.");
+        if (indexNames[a] == null)
+          throw new IllegalArgumentException("Name " + a +
+                                             " is null.");
+        if (indexNames[a].length() == 0)
+          throw new IllegalArgumentException("Name " + a +
+                                             " is the empty string.");
+        if (!(rowType.containsKey(indexNames[a])))
+          throw new OpenDataException("No matching key for " +
+                                      indexNames[a] + " was found in " +
+                                      "the supplied row type.");
       }
     this.rowType = rowType;
     this.indexNames = Collections.unmodifiableList(Arrays.asList(indexNames));
@@ -144,7 +144,7 @@ public class TabularType
    * <li>The row types are equal.</li>
    * <li>The index names are equal and in the same order.</li>
    * </ul>
-   * 
+   *
    * @param obj the object to compare with.
    * @return true if the conditions above hold.
    */
@@ -154,8 +154,8 @@ public class TabularType
       return false;
     TabularType ttype = (TabularType) obj;
     return  (ttype.getTypeName().equals(getTypeName())
-	     && (ttype.getRowType().equals(getRowType()))
-	     && (ttype.getIndexNames().equals(getIndexNames())));
+             && (ttype.getRowType().equals(getRowType()))
+             && (ttype.getIndexNames().equals(getIndexNames())));
   }
 
   /**
@@ -205,16 +205,16 @@ public class TabularType
   {
     if (hashCode == null)
       {
-	int elementTotal = 0;
-	for (String s : indexNames)
-	  elementTotal += s.hashCode();
-	hashCode = Integer.valueOf(elementTotal 
-				   + getTypeName().hashCode()
-				   + rowType.hashCode());
+        int elementTotal = 0;
+        for (String s : indexNames)
+          elementTotal += s.hashCode();
+        hashCode = Integer.valueOf(elementTotal
+                                   + getTypeName().hashCode()
+                                   + rowType.hashCode());
       }
     return hashCode.intValue();
   }
-			       
+
   /**
    * Returns true if the specified object is a member of this
    * tabular type.  The object is judged to be so if it is
@@ -229,8 +229,8 @@ public class TabularType
   {
     if (obj instanceof TabularData)
       {
-	TabularData data = (TabularData) obj;
-	return equals(data.getTabularType());
+        TabularData data = (TabularData) obj;
+        return equals(data.getTabularType());
       }
     return false;
   }
@@ -258,10 +258,10 @@ public class TabularType
   {
     if (string == null)
       string = getClass().getName()
-	+ "[name=" + getTypeName()
-	+ ", rowType=" + rowType
-	+ ", indexNames=" + indexNames
-	+ "]";
+        + "[name=" + getTypeName()
+        + ", rowType=" + rowType
+        + ", indexNames=" + indexNames
+        + "]";
     return string;
   }
 

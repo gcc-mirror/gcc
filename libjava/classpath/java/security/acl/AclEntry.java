@@ -42,10 +42,10 @@ import java.util.Enumeration;
 
 /**
  * This interface models an entry in an access control list (ACL).  Java
- * ACL's consist of a list of entries, where each consists of a 
+ * ACL's consist of a list of entries, where each consists of a
  * <code>Principal</code> and a list of <code>Permission</code>'s which
  * have been granted to that <code>Principal</code>.  An ACL can also
- * be <em>negative</em>, which indicates that the list of 
+ * be <em>negative</em>, which indicates that the list of
  * <code>Permission</code>'s is a list of permissions that are <em>not</em>
  * granted to the <code>Principal</code>.  A <code>Principal</code> can
  * have at most one regular (or positive) ACL entry and one negative

@@ -1,4 +1,4 @@
-/* StringFunction.java -- 
+/* StringFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -88,7 +88,7 @@ final class StringFunction
   {
     this(args.size() > 0 ? args.get(0) : null);
   }
-  
+
   StringFunction(Expr arg)
   {
     this.arg = arg;
@@ -115,5 +115,5 @@ final class StringFunction
   {
     return (arg == null) ? "string()" : "string(" + arg + ")";
   }
-  
+
 }

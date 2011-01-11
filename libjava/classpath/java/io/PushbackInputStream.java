@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,10 +38,10 @@ exception statement from your version. */
 package java.io;
 
 /**
-  * This subclass of <code>FilterInputStream</code> provides the ability to 
+  * This subclass of <code>FilterInputStream</code> provides the ability to
   * unread data from a stream.  It maintains an internal buffer of unread
   * data that is supplied to the next read operation.  This is conceptually
-  * similar to mark/reset functionality, except that in this case the 
+  * similar to mark/reset functionality, except that in this case the
   * position to reset the stream to does not need to be known in advance.
   * <p>
   * The default pushback buffer size one byte, but this can be overridden
@@ -66,8 +66,8 @@ public class PushbackInputStream extends FilterInputStream
   /**
    * This is the position in the buffer from which the next byte will be
    * read.  Bytes are stored in reverse order in the buffer, starting from
-   * <code>buf[buf.length - 1]</code> to <code>buf[0]</code>.  Thus when 
-   * <code>pos</code> is 0 the buffer is full and <code>buf.length</code> when 
+   * <code>buf[buf.length - 1]</code> to <code>buf[0]</code>.  Thus when
+   * <code>pos</code> is 0 the buffer is full and <code>buf.length</code> when
    * it is empty
    */
   protected int pos;
@@ -107,7 +107,7 @@ public class PushbackInputStream extends FilterInputStream
    * might (or might not) occur on the very next read attempt.
    * <p>
    * This method will return the number of bytes available from the
-   * pushback buffer plus the number of bytes available from the 
+   * pushback buffer plus the number of bytes available from the
    * underlying stream.
    *
    * @return The number of bytes that can be read before blocking could occur
@@ -116,19 +116,19 @@ public class PushbackInputStream extends FilterInputStream
    */
   public int available() throws IOException
   {
-    try 
+    try
       {
-	return (buf.length - pos) + super.available();
-      } 
-    catch (NullPointerException npe) 
+        return (buf.length - pos) + super.available();
+      }
+    catch (NullPointerException npe)
       {
-	throw new IOException ("Stream closed");
+        throw new IOException ("Stream closed");
       }
   }
 
   /**
    * This method closes the stream and releases any associated resources.
-   * 
+   *
    * @exception IOException If an error occurs.
    */
   public synchronized void close() throws IOException
@@ -192,9 +192,9 @@ public class PushbackInputStream extends FilterInputStream
    *  <p>
    * This method will block until some data can be read.
    * <p>
-   * This method first reads bytes from the pushback buffer in order to 
+   * This method first reads bytes from the pushback buffer in order to
    * satisfy the read request.  If the pushback buffer cannot provide all
-   * of the bytes requested, the remaining bytes are read from the 
+   * of the bytes requested, the remaining bytes are read from the
    * underlying stream.
    *
    * @param b The array into which the bytes read should be stored
@@ -211,18 +211,18 @@ public class PushbackInputStream extends FilterInputStream
 
     if (numBytes > 0)
       {
-	System.arraycopy (buf, pos, b, off, numBytes);
-	pos += numBytes;
-	len -= numBytes;
-	off += numBytes;
+        System.arraycopy (buf, pos, b, off, numBytes);
+        pos += numBytes;
+        len -= numBytes;
+        off += numBytes;
       }
 
-    if (len > 0) 
+    if (len > 0)
       {
         len = super.read(b, off, len);
         if (len == -1) //EOF
-	  return numBytes > 0 ? numBytes : -1;
-	numBytes += len;
+          return numBytes > 0 ? numBytes : -1;
+        numBytes += len;
       }
     return numBytes;
   }
@@ -250,7 +250,7 @@ public class PushbackInputStream extends FilterInputStream
   }
 
   /**
-   * This method pushes all of the bytes in the passed byte array into 
+   * This method pushes all of the bytes in the passed byte array into
    * the pushback bfer.  These bytes are pushed in reverse order so that
    * the next byte read from the stream after this operation will be
    * <code>b[0]</code> followed by <code>b[1]</code>, etc.
@@ -306,7 +306,7 @@ public class PushbackInputStream extends FilterInputStream
    * requested amount.
    * <p>
    * This method first discards bytes from the buffer, then calls the
-   * <code>skip</code> method on the underlying <code>InputStream</code> to 
+   * <code>skip</code> method on the underlying <code>InputStream</code> to
    * skip additional bytes if necessary.
    *
    * @param n The requested number of bytes to skip
@@ -323,11 +323,11 @@ public class PushbackInputStream extends FilterInputStream
 
     if (n > 0L)
       {
-	int numread = (int) Math.min((long) (buf.length - pos), n);
-	pos += numread;
-	n -= numread;
-	if (n > 0)
-	  n -= super.skip(n);
+        int numread = (int) Math.min((long) (buf.length - pos), n);
+        pos += numread;
+        n -= numread;
+        if (n > 0)
+          n -= super.skip(n);
       }
 
     return origN - n;

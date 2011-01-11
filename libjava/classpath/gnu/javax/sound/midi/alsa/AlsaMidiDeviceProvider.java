@@ -46,7 +46,7 @@ import javax.sound.midi.spi.MidiDeviceProvider;
 
 /**
  * Provide ALSA MIDI devices.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  *
  */
@@ -54,7 +54,7 @@ public class AlsaMidiDeviceProvider extends MidiDeviceProvider
 {
   /**
    * Abstract base for ALSA specific MIDI device info.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -62,7 +62,7 @@ public class AlsaMidiDeviceProvider extends MidiDeviceProvider
   {
     /**
      * Create an ALSA specific MIDI device info object.
-     * 
+     *
      * @param name the device name
      * @param description the device description
      */
@@ -70,13 +70,13 @@ public class AlsaMidiDeviceProvider extends MidiDeviceProvider
     {
       super(name, "Alsa", description, "0.0");
     }
-    
+
     abstract MidiDevice getDevice ();
-  } 
+  }
 
   /**
    * ALSA MIDI Port.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -84,10 +84,10 @@ public class AlsaMidiDeviceProvider extends MidiDeviceProvider
   {
     long client;
     long port;
-    
+
     /**
      * Create ALSA MIDI In Port.
-     * 
+     *
      * @param name the device name
      * @param description the device description
      * @param client the client ID
@@ -99,11 +99,11 @@ public class AlsaMidiDeviceProvider extends MidiDeviceProvider
       this.client = client;
       this.port = port;
     }
-  } 
-  
+  }
+
   /**
    * ALSA Sequencer specific info.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -113,16 +113,16 @@ public class AlsaMidiDeviceProvider extends MidiDeviceProvider
     {
       super(name, description);
     }
-    
+
     MidiDevice getDevice()
     {
       return AlsaMidiSequencerDevice.getInstance();
     }
   }
-  
+
   /**
    * ALSA MIDI In Port.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -132,7 +132,7 @@ public class AlsaMidiDeviceProvider extends MidiDeviceProvider
     {
       super(name, description, client, port);
     }
-    
+
     MidiDevice getDevice()
     {
       return new AlsaInputPortDevice(this);
@@ -141,7 +141,7 @@ public class AlsaMidiDeviceProvider extends MidiDeviceProvider
 
   /**
    * ALSA MIDI Out Port.
-   * 
+   *
    * @author Anthony Green (green@redhat.com)
    *
    */
@@ -151,46 +151,46 @@ public class AlsaMidiDeviceProvider extends MidiDeviceProvider
     {
       super(name, description, client, port);
     }
-    
+
     MidiDevice getDevice()
     {
       return new AlsaOutputPortDevice(this);
     }
   }
-  
+
   private static AlsaInfo[] infos;
-  
+
   private static native AlsaInfo[] getInputDeviceInfo_();
   private static native AlsaInfo[] getOutputDeviceInfo_();
-  
+
   /**
    * Initialize the ALSA system
    */
   private static native void init_();
-  
+
   static
-  {    
+  {
     if (Configuration.INIT_LOAD_LIBRARY)
       {
         System.loadLibrary("gjsmalsa");
-      }  
-       
+      }
+
     init_();
-    
+
     AlsaInfo inputs[] = getInputDeviceInfo_();
     AlsaInfo outputs[] = getOutputDeviceInfo_();
-    
+
     infos = new AlsaInfo[inputs.length + outputs.length + 1];
     infos[0] = new AlsaSequencerInfo ("/dev/snd/seq", "ALSA Sequencer");
     System.arraycopy(inputs, 0, infos, 1, inputs.length);
     System.arraycopy(outputs, 0, infos, 1 + inputs.length, outputs.length);
   }
-  
+
   public AlsaMidiDeviceProvider()
   {
     // Nothing.
   }
-  
+
   /* (non-Javadoc)
    * @see javax.sound.midi.spi.MidiDeviceProvider#getDeviceInfo()
    */

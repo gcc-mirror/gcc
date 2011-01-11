@@ -230,9 +230,9 @@ public class LoginContext
     Exception cause = null;
     try
       {
-	ClassLoader cl = Thread.currentThread().getContextClassLoader();
-	Class c = Class.forName(entry.getLoginModuleName(), true, cl);
-	module = (LoginModule) c.newInstance();
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Class c = Class.forName(entry.getLoginModuleName(), true, cl);
+        module = (LoginModule) c.newInstance();
       }
     catch (ClassNotFoundException cnfe)
       {

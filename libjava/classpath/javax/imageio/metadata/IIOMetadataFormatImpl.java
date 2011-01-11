@@ -88,18 +88,18 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
     protected String defaultValue;
 
     public IIOMetadataNodeAttr (Element owner,
-				String name,
-				String defaultValue)
+                                String name,
+                                String defaultValue)
     {
       this (owner, name, IIOMetadataFormat.DATATYPE_STRING,
             true, defaultValue);
     }
 
     public IIOMetadataNodeAttr (Element owner,
-				String name,
-				int dataType,
-				boolean required,
-				String defaultValue)
+                                String name,
+                                int dataType,
+                                boolean required,
+                                String defaultValue)
     {
       this.owner = owner;
       this.name = name;
@@ -160,11 +160,11 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
     protected List enumeratedValues;
 
     public IIOMetadataNodeAttrEnumerated (Element owner,
-					  String name,
-					  int dataType,
-					  boolean required,
-					  String defaultValue,
-					  List enumeratedValues)
+                                          String name,
+                                          int dataType,
+                                          boolean required,
+                                          String defaultValue,
+                                          List enumeratedValues)
     {
       super (owner, name, dataType, required, defaultValue);
       this.enumeratedValues = new ArrayList (enumeratedValues);
@@ -184,14 +184,14 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
     protected boolean maxInclusive;
 
     public IIOMetadataNodeAttrBounded (Element owner,
-				       String name,
-				       int dataType,
-				       boolean required,
-				       String defaultValue,
-				       String minValue,
-				       String maxValue,
-				       boolean minInclusive,
-				       boolean maxInclusive)
+                                       String name,
+                                       int dataType,
+                                       boolean required,
+                                       String defaultValue,
+                                       String minValue,
+                                       String maxValue,
+                                       boolean minInclusive,
+                                       boolean maxInclusive)
     {
       super (owner, name, dataType, required, defaultValue);
       this.minValue = minValue;
@@ -217,11 +217,11 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
     protected int listMaxLength;
 
     public IIOMetadataNodeAttrList (Element owner,
-				    String name,
-				    int dataType,
-				    boolean required,
-				    int listMinLength,
-				    int listMaxLength)
+                                    String name,
+                                    int dataType,
+                                    boolean required,
+                                    int listMinLength,
+                                    int listMaxLength)
     {
       super (owner, name, dataType, required, null);
       this.listMinLength = listMinLength;
@@ -398,8 +398,8 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
       throw new IllegalArgumentException ("null argument");
 
     if (childPolicy < IIOMetadataFormat.CHILD_POLICY_ALL
-	|| childPolicy > IIOMetadataFormat.CHILD_POLICY_SOME
-	|| childPolicy == IIOMetadataFormat.CHILD_POLICY_REPEAT)
+        || childPolicy > IIOMetadataFormat.CHILD_POLICY_SOME
+        || childPolicy == IIOMetadataFormat.CHILD_POLICY_REPEAT)
       throw new IllegalArgumentException ("wrong child policy");
 
     nodes.put (rootName, new IIOMetadataNode (rootName));
@@ -423,8 +423,8 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
    * zero or greater than maxChildren
    */
   public IIOMetadataFormatImpl (String rootName,
-				int minChildren,
-				int maxChildren)
+                                int minChildren,
+                                int maxChildren)
   {
     if (rootName == null)
       throw new IllegalArgumentException ("null argument");
@@ -446,10 +446,10 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
   {
     IIOMetadataNode node = (IIOMetadataNode) nodes.get (elementName);
     node.setAttributeNode (new IIOMetadataNodeAttr (node,
-						    attrName,
-						    dataType,
-						    required,
-						    defaultValue));
+                                                    attrName,
+                                                    dataType,
+                                                    required,
+                                                    defaultValue));
   }
 
   protected void addAttribute (String elementName,
@@ -461,11 +461,11 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
   {
     IIOMetadataNode node = (IIOMetadataNode) nodes.get (elementName);
     node.setAttributeNode (new IIOMetadataNodeAttrEnumerated (node,
-							      attrName,
-							      dataType,
-							      required,
-							      defaultValue,
-							      enumeratedValues));
+                                                              attrName,
+                                                              dataType,
+                                                              required,
+                                                              defaultValue,
+                                                              enumeratedValues));
   }
 
   protected void addAttribute (String elementName,
@@ -480,14 +480,14 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
   {
     IIOMetadataNode node = (IIOMetadataNode) nodes.get (elementName);
     node.setAttributeNode (new IIOMetadataNodeAttrBounded (node,
-							   attrName,
-							   dataType,
-							   required,
-							   defaultValue,
-							   minValue,
-							   maxValue,
-							   minInclusive,
-							   maxInclusive));
+                                                           attrName,
+                                                           dataType,
+                                                           required,
+                                                           defaultValue,
+                                                           minValue,
+                                                           maxValue,
+                                                           minInclusive,
+                                                           maxInclusive));
   }
 
   protected void addAttribute (String elementName,
@@ -499,11 +499,11 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
   {
     IIOMetadataNode node = (IIOMetadataNode) nodes.get (elementName);
     node.setAttributeNode (new IIOMetadataNodeAttrList (node,
-							attrName,
-							dataType,
-							required,
-							listMinLength,
-							listMaxLength));
+                                                        attrName,
+                                                        dataType,
+                                                        required,
+                                                        listMinLength,
+                                                        listMaxLength));
   }
 
   protected void addBooleanAttribute (String elementName,
@@ -518,11 +518,11 @@ public abstract class IIOMetadataFormatImpl implements IIOMetadataFormat
     enumeratedValues.add ("FALSE");
 
     node.setAttributeNode (new IIOMetadataNodeAttrEnumerated (node,
-							      attrName,
-							      IIOMetadataFormat.DATATYPE_BOOLEAN,
-							      hasDefaultValue,
-							      defaultValue ? "TRUE" : "FALSE",
-							      enumeratedValues));
+                                                              attrName,
+                                                              IIOMetadataFormat.DATATYPE_BOOLEAN,
+                                                              hasDefaultValue,
+                                                              defaultValue ? "TRUE" : "FALSE",
+                                                              enumeratedValues));
   }
 
   protected void addChildElement (String elementName, String parentName)

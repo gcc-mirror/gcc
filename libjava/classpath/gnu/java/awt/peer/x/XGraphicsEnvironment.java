@@ -130,7 +130,7 @@ public class XGraphicsEnvironment
         defaultDevice = initDefaultDevice();
         devices = new XGraphicsDevice[]{ defaultDevice };
       }
-    
+
   }
 
   /**

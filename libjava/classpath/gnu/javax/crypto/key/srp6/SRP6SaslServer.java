@@ -1,4 +1,4 @@
-/* SRP6SaslServer.java -- 
+/* SRP6SaslServer.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -52,13 +52,13 @@ import java.math.BigInteger;
  * Host (server side).
  * <p>
  * In this alternative, the exchange goes as follows:
- * 
+ *
  * <pre>
  *     C -&gt; S:  I                      (identifies self)
  *     S -&gt; C:  N, g, s, B = 3v + g&circ;b  (sends salt, b = random number)
  *     C -&gt; S:  A = g&circ;a                (a = random number)
  * </pre>
- * 
+ *
  * <p>
  * All elements are computed the same way as in the standard version.
  * <p>

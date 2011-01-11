@@ -63,7 +63,7 @@ public abstract class MessageDigest extends MessageDigestSpi
   /**
    * Constructs a new instance of <code>MessageDigest</code> representing the
    * specified algorithm.
-   * 
+   *
    * @param algorithm
    *          the name of the digest algorithm to use.
    */
@@ -76,7 +76,7 @@ public abstract class MessageDigest extends MessageDigestSpi
   /**
    * Returns a new instance of <code>MessageDigest</code> representing the
    * specified algorithm.
-   * 
+   *
    * @param algorithm the name of the digest algorithm to use.
    * @return a new instance representing the desired algorithm.
    * @throws NoSuchAlgorithmException if the algorithm is not implemented by any
@@ -106,7 +106,7 @@ public abstract class MessageDigest extends MessageDigestSpi
   /**
    * Returns a new instance of <code>MessageDigest</code> representing the
    * specified algorithm from a named provider.
-   * 
+   *
    * @param algorithm the name of the digest algorithm to use.
    * @param provider the name of the provider to use.
    * @return a new instance representing the desired algorithm.
@@ -133,7 +133,7 @@ public abstract class MessageDigest extends MessageDigestSpi
   /**
    * Returns a new instance of <code>MessageDigest</code> representing the
    * specified algorithm from a designated {@link Provider}.
-   * 
+   *
    * @param algorithm the name of the digest algorithm to use.
    * @param provider the {@link Provider} to use.
    * @return a new instance representing the desired algorithm.
@@ -187,7 +187,7 @@ public abstract class MessageDigest extends MessageDigestSpi
 
   /**
    * Returns the {@link Provider} of this instance.
-   * 
+   *
    * @return the {@link Provider} of this instance.
    */
   public final Provider getProvider()
@@ -197,7 +197,7 @@ public abstract class MessageDigest extends MessageDigestSpi
 
   /**
    * Updates the digest with the byte.
-   * 
+   *
    * @param input byte to update the digest with.
    */
   public void update(byte input)
@@ -208,7 +208,7 @@ public abstract class MessageDigest extends MessageDigestSpi
   /**
    * Updates the digest with the bytes from the array starting from the
    * specified offset and using the specified length of bytes.
-   * 
+   *
    * @param input
    *          bytes to update the digest with.
    * @param offset
@@ -223,7 +223,7 @@ public abstract class MessageDigest extends MessageDigestSpi
 
   /**
    * Updates the digest with the bytes of an array.
-   * 
+   *
    * @param input bytes to update the digest with.
    */
   public void update(byte[] input)
@@ -233,7 +233,7 @@ public abstract class MessageDigest extends MessageDigestSpi
 
   /**
    * Updates the digest with the remaining bytes of a buffer.
-   * 
+   *
    * @param input The input byte buffer.
    * @since 1.5
    */
@@ -241,10 +241,10 @@ public abstract class MessageDigest extends MessageDigestSpi
   {
     engineUpdate (input);
   }
-  
+
   /**
    * Computes the final digest of the stored data.
-   * 
+   *
    * @return a byte array representing the message digest.
    */
   public byte[] digest()
@@ -254,7 +254,7 @@ public abstract class MessageDigest extends MessageDigestSpi
 
   /**
    * Computes the final digest of the stored bytes and returns the result.
-   * 
+   *
    * @param buf
    *          an array of bytes to store the result in.
    * @param offset
@@ -272,7 +272,7 @@ public abstract class MessageDigest extends MessageDigestSpi
    * Computes a final update using the input array of bytes, then computes a
    * final digest and returns it. It calls {@link #update(byte[])} and then
    * {@link #digest(byte[])}.
-   * 
+   *
    * @param input
    *          an array of bytes to perform final update with.
    * @return a byte array representing the message digest.
@@ -285,7 +285,7 @@ public abstract class MessageDigest extends MessageDigestSpi
 
   /**
    * Returns a string representation of this instance.
-   * 
+   *
    * @return a string representation of this instance.
    */
   public String toString()
@@ -295,7 +295,7 @@ public abstract class MessageDigest extends MessageDigestSpi
 
   /**
    * Does a simple byte comparison of the two digests.
-   * 
+   *
    * @param digesta
    *          first digest to compare.
    * @param digestb
@@ -323,7 +323,7 @@ public abstract class MessageDigest extends MessageDigestSpi
 
   /**
    * Returns the name of message digest algorithm.
-   * 
+   *
    * @return the name of message digest algorithm.
    */
   public final String getAlgorithm()
@@ -334,7 +334,7 @@ public abstract class MessageDigest extends MessageDigestSpi
   /**
    * Returns the length of the message digest. The default is zero which means
    * that the concrete implementation does not implement this method.
-   * 
+   *
    * @return length of the message digest.
    * @since 1.2
    */
@@ -348,7 +348,7 @@ public abstract class MessageDigest extends MessageDigestSpi
    * then a {@link CloneNotSupportedException} is thrown. Cloning depends on
    * whether the subclass {@link MessageDigestSpi} implements {@link Cloneable}
    * which contains the actual implementation of the appropriate algorithm.
-   * 
+   *
    * @return a clone of this instance.
    * @throws CloneNotSupportedException
    *           the implementation does not support cloning.

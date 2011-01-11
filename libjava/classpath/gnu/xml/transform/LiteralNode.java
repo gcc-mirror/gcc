@@ -1,4 +1,4 @@
-/* LiteralNode.java -- 
+/* LiteralNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -198,5 +198,5 @@ final class LiteralNode
   {
     return source.toString();
   }
-  
+
 }

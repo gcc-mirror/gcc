@@ -1,4 +1,4 @@
-/* GnomeXPathNSResolver.java - 
+/* GnomeXPathNSResolver.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -60,6 +60,5 @@ class GnomeXPathNSResolver
   {
     return node.lookupNamespaceURI(prefix);
   }
-  
-}
 
+}

@@ -51,7 +51,7 @@ import org.omg.PortableServer.Servant;
 
 /**
  * Starts the ORBs, involved into this application.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class OrbStarter
@@ -61,12 +61,12 @@ public class OrbStarter
    * manager by host (IP) and port rather than by the rather long IOR string.
    */
   static int MANAGER_NAMER_PORT = 1500;
-	  
+
   /**
    * The used port range (understood and used by GNU Classpath only).
    */
   static String USED_PORT_RANGE = "1501-1503";
-	  
+
   /**
    * Specify the file where under start the game manager writes its IOR.
    * You may specify the path if the game manager and player clients have
@@ -74,8 +74,8 @@ public class OrbStarter
    * floppy and then read from the floppy on the client side. Both clients
    * and server will use this constant. Set to null not to write the IOR.
    */
-  static String WRITE_URL_TO_FILE = "game_manager_ior.txt";	
-	
+  static String WRITE_URL_TO_FILE = "game_manager_ior.txt";
+
   /**
    * Start the manager ORB.
    * @return the manager URL if it starts.
@@ -148,7 +148,7 @@ public class OrbStarter
         return "Exception: " + e;
       }
   }
-  
+
   /**
    * Start the client ORB.
    */
@@ -156,10 +156,10 @@ public class OrbStarter
   {
     desk.ior = null;
     desk.ok = false;
-    
+
     final Properties p = new Properties();
     p.put("gnu.CORBA.ListenerPort", USED_PORT_RANGE);
-    
+
     try
       {
         new Thread()
@@ -232,5 +232,5 @@ public class OrbStarter
       }
     });
     return desk.ior;
-  }  
+  }
 }

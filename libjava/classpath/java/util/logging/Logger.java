@@ -65,7 +65,7 @@ import java.security.PrivilegedAction;
  * to perform any modifications to the logger.
  * <p>
  * FIXME: Write more documentation.
- * 
+ *
  * @author Sascha Brawer (brawer@acm.org)
  */
 public class Logger
@@ -85,7 +85,7 @@ public class Logger
    * to avoid deadlocks. Yeah, no kidding, we got them :)
    */
   private static final Object[] lock = new Object[0];
-  
+
   static
     {
       // Our class might be initialized from an unprivileged context
@@ -159,7 +159,7 @@ public class Logger
    * (with ResourceBundle for localization) or
    * {@link #getLogger(java.lang.String) getLogger} (without ResourceBundle),
    * respectively.
-   * 
+   *
    * @param name the name for the logger, for example "java.awt" or
    *            "com.foo.bar". The name should be based on the name of the
    *            package issuing log records and consist of dot-separated Java
@@ -196,7 +196,7 @@ public class Logger
   /**
    * Finds a registered logger for a subsystem, or creates one in case no logger
    * has been registered yet.
-   * 
+   *
    * @param name the name for the logger, for example "java.awt" or
    *            "com.foo.bar". The name should be based on the name of the
    *            package issuing log records and consist of dot-separated Java
@@ -232,7 +232,7 @@ public class Logger
    * a different one than specified by <code>resourceBundleName</code>, an
    * <code>IllegalArgumentException</code> is thrown.</li>
    * </ul>
-   * 
+   *
    * @param name the name for the logger, for example "java.awt" or
    *            "org.gnu.foo". The name should be based on the name of the
    *            package issuing log records and consist of dot-separated Java
@@ -351,7 +351,7 @@ public class Logger
    * <p>
    * The parent of the newly created logger will the the root logger, from which
    * the level threshold and the handlers are inherited.
-   * 
+   *
    * @param resourceBundleName the name of a resource bundle for localizing
    *            messages, or <code>null</code> to indicate that messages do
    *            not need to be localized.
@@ -372,7 +372,7 @@ public class Logger
   /**
    * Returns the name of the resource bundle that is being used for localizing
    * messages.
-   * 
+   *
    * @return the name of the resource bundle used for localizing messages, or
    *         <code>null</code> if the parent's resource bundle is used for
    *         this purpose.
@@ -387,7 +387,7 @@ public class Logger
 
   /**
    * Returns the resource bundle that is being used for localizing messages.
-   * 
+   *
    * @return the resource bundle used for localizing messages, or
    *         <code>null</code> if the parent's resource bundle is used for
    *         this purpose.
@@ -405,7 +405,7 @@ public class Logger
    * log records with a lower severity level will be discarded; a log record of
    * the same or a higher level will be published unless an installed
    * <code>Filter</code> decides to discard it.
-   * 
+   *
    * @return the severity level below which all log messages will be discarded,
    *         or <code>null</code> if the logger inherits the threshold from
    *         its parent.
@@ -421,7 +421,7 @@ public class Logger
   /**
    * Returns whether or not a message of the specified level would be logged by
    * this logger.
-   * 
+   *
    * @throws NullPointerException if <code>level</code> is <code>null</code>.
    */
   public boolean isLoggable(Level level)
@@ -443,7 +443,7 @@ public class Logger
    * records with a lower severity level will be discarded immediately. A log
    * record of the same or a higher level will be published unless an installed
    * <code>Filter</code> decides to discard it.
-   * 
+   *
    * @param level the severity level below which all log messages will be
    *            discarded, or <code>null</code> to indicate that the logger
    *            should inherit the threshold from its parent.
@@ -502,7 +502,7 @@ public class Logger
 
   /**
    * Returns the name of this logger.
-   * 
+   *
    * @return the name of this logger, or <code>null</code> if the logger is
    *         anonymous.
    */
@@ -528,7 +528,7 @@ public class Logger
    * create a new LogRecord and pass it to this method. Therefore, subclasses
    * usually just need to override this single method for customizing the
    * logging behavior.
-   * 
+   *
    * @param record the log record to be inspected and possibly forwarded.
    */
   public void log(LogRecord record)
@@ -825,7 +825,7 @@ public class Logger
    * understandable to an inexperienced, non-technical end user. Ideally, they
    * explain in simple words what actions the user can take in order to resolve
    * the problem.
-   * 
+   *
    * @see Level#SEVERE
    * @param message the message text, also used as look-up key if the logger is
    *            localizing messages with a resource bundle. While it is possible
@@ -847,7 +847,7 @@ public class Logger
    * should be understandable to an inexperienced, non-technical end user.
    * Ideally, they explain in simple words what actions the user can take in
    * order to resolve the problem.
-   * 
+   *
    * @see Level#WARNING
    * @param message the message text, also used as look-up key if the logger is
    *            localizing messages with a resource bundle. While it is possible
@@ -871,7 +871,7 @@ public class Logger
    * used only for messages that are important to end users and system
    * administrators. Messages at this level should be understandable to an
    * inexperienced, non-technical user.
-   * 
+   *
    * @param message the message text, also used as look-up key if the logger is
    *            localizing messages with a resource bundle. While it is possible
    *            to pass <code>null</code>, this is not recommended, since a
@@ -890,7 +890,7 @@ public class Logger
    * Logs a message with severity level CONFIG. {@link Level#CONFIG} is intended
    * for static configuration messages, for example about the windowing
    * environment, the operating system version, etc.
-   * 
+   *
    * @param message the message text, also used as look-up key if the logger is
    *            localizing messages with a resource bundle. While it is possible
    *            to pass <code>null</code>, this is not recommended, since a
@@ -910,7 +910,7 @@ public class Logger
    * messages that are relevant for developers using the component generating
    * log messages. Examples include minor, recoverable failures, or possible
    * inefficiencies.
-   * 
+   *
    * @param message the message text, also used as look-up key if the logger is
    *            localizing messages with a resource bundle. While it is possible
    *            to pass <code>null</code>, this is not recommended, since a
@@ -929,7 +929,7 @@ public class Logger
    * Logs a message with severity level FINER. {@link Level#FINER} is intended
    * for rather detailed tracing, for example entering a method, returning from
    * a method, or throwing an exception.
-   * 
+   *
    * @param message the message text, also used as look-up key if the logger is
    *            localizing messages with a resource bundle. While it is possible
    *            to pass <code>null</code>, this is not recommended, since a
@@ -948,7 +948,7 @@ public class Logger
    * Logs a message with severity level FINEST. {@link Level#FINEST} is intended
    * for highly detailed tracing, for example reaching a certain point inside
    * the body of a method.
-   * 
+   *
    * @param message the message text, also used as look-up key if the logger is
    *            localizing messages with a resource bundle. While it is possible
    *            to pass <code>null</code>, this is not recommended, since a
@@ -966,7 +966,7 @@ public class Logger
   /**
    * Adds a handler to the set of handlers that get notified when a log record
    * is to be published.
-   * 
+   *
    * @param handler the handler to be added.
    * @throws NullPointerException if <code>handler</code> is <code>null</code>.
    * @throws SecurityException if this logger is not anonymous, a security
@@ -1001,7 +1001,7 @@ public class Logger
   /**
    * Removes a handler from the set of handlers that get notified when a log
    * record is to be published.
-   * 
+   *
    * @param handler the handler to be removed.
    * @throws SecurityException if this logger is not anonymous, a security
    *             manager exists, and the caller is not granted the permission to
@@ -1053,7 +1053,7 @@ public class Logger
   /**
    * Returns whether or not this Logger forwards log records to handlers
    * registered for its parent loggers.
-   * 
+   *
    * @return <code>false</code> if this Logger sends log records merely to
    *         Handlers registered with itself; <code>true</code> if this Logger
    *         sends log records not only to Handlers registered with itself, but
@@ -1070,7 +1070,7 @@ public class Logger
   /**
    * Sets whether or not this Logger forwards log records to handlers registered
    * for its parent loggers.
-   * 
+   *
    * @param useParentHandlers <code>false</code> to let this Logger send log
    *            records merely to Handlers registered with itself;
    *            <code>true</code> to let this Logger send log records not only
@@ -1101,7 +1101,7 @@ public class Logger
   /**
    * Returns the parent of this logger. By default, the parent is assigned by
    * the LogManager by inspecting the logger's name.
-   * 
+   *
    * @return the parent of this logger (as detemined by the LogManager by
    *         inspecting logger names), the root logger if no other logger has a
    *         name which is a prefix of this logger's name, or <code>null</code>
@@ -1121,7 +1121,7 @@ public class Logger
    * loggers reflects the hierarchical logger namespace. Basically, this method
    * should not be public at all, but the GNU implementation follows the API
    * specification.
-   * 
+   *
    * @throws NullPointerException if <code>parent</code> is <code>null</code>.
    * @throws SecurityException if this logger is not anonymous, a security
    *             manager exists, and the caller is not granted the permission to
@@ -1155,7 +1155,7 @@ public class Logger
   /**
    * Gets the StackTraceElement of the first class that is not this class. That
    * should be the initial caller of a logging method.
-   * 
+   *
    * @return caller of the initial logging method or null if unknown.
    */
   private StackTraceElement getCallerStackFrame()

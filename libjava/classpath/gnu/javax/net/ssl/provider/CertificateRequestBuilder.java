@@ -1,4 +1,4 @@
-/* CertificateRequestBuilder.java -- 
+/* CertificateRequestBuilder.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -47,7 +47,7 @@ import javax.security.auth.x500.X500Principal;
 
 /**
  * Builder for {@link CertificateRequest} objects.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public class CertificateRequestBuilder extends CertificateRequest
@@ -74,7 +74,7 @@ public class CertificateRequestBuilder extends CertificateRequest
     for (ClientCertificateType type : types)
       b.put((byte) type.getValue());
   }
-  
+
   public void setAuthorities(List<X500Principal> authorities)
   {
     ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
@@ -99,7 +99,7 @@ public class CertificateRequestBuilder extends CertificateRequest
     buffer.putShort(typesLen, (short) auths.length);
     ((ByteBuffer) buffer.duplicate().position(typesLen + 2)).put(auths);
   }
-  
+
   public void ensureCapacity(final int capacity)
   {
     if (buffer.capacity() >= capacity)

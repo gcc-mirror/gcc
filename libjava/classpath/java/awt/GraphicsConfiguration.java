@@ -63,13 +63,13 @@ import java.awt.image.VolatileImage;
  */
 public abstract class GraphicsConfiguration
 {
-  
+
   /** The cached image capabilities. */
   private ImageCapabilities imageCapabilities;
-  
+
   /** The cached buffer capabilities. */
   private BufferCapabilities bufferCapabilities;
-  
+
   /**
    * The default constructor.
    *
@@ -253,7 +253,7 @@ public abstract class GraphicsConfiguration
   {
     if (imageCapabilities == null)
       getImageCapabilities();
-    
+
     if (bufferCapabilities == null)
       bufferCapabilities = new BufferCapabilities(imageCapabilities,
                                                   imageCapabilities, null);

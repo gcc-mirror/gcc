@@ -1,4 +1,4 @@
-/* Key.java -- 
+/* Key.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -66,6 +66,5 @@ class Key
                    (Pattern) match.clone(stylesheet),
                    use.clone(stylesheet));
   }
-  
-}
 
+}

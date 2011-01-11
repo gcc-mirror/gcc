@@ -35,14 +35,14 @@ package org.objectweb.asm;
  * <tt>visitOuterClass</tt> ] ( <tt>visitAnnotation</tt> |
  * <tt>visitAttribute</tt> )* (<tt>visitInnerClass</tt> |
  * <tt>visitField</tt> | <tt>visitMethod</tt> )* <tt>visitEnd</tt>.
- * 
+ *
  * @author Eric Bruneton
  */
 public interface ClassVisitor {
 
     /**
      * Visits the header of the class.
-     * 
+     *
      * @param version the class version.
      * @param access the class's access flags (see {@link Opcodes}). This
      *        parameter also indicates if the class is deprecated.
@@ -69,7 +69,7 @@ public interface ClassVisitor {
 
     /**
      * Visits the source of the class.
-     * 
+     *
      * @param source the name of the source file from which the class was
      *        compiled. May be <tt>null</tt>.
      * @param debug additional debug information to compute the correspondance
@@ -81,7 +81,7 @@ public interface ClassVisitor {
     /**
      * Visits the enclosing class of the class. This method must be called only
      * if the class has an enclosing class.
-     * 
+     *
      * @param owner internal name of the enclosing class of the class.
      * @param name the name of the method that contains the class, or
      *        <tt>null</tt> if the class is not enclosed in a method of its
@@ -94,7 +94,7 @@ public interface ClassVisitor {
 
     /**
      * Visits an annotation of the class.
-     * 
+     *
      * @param desc the class descriptor of the annotation class.
      * @param visible <tt>true</tt> if the annotation is visible at runtime.
      * @return a non null visitor to visit the annotation values.
@@ -103,7 +103,7 @@ public interface ClassVisitor {
 
     /**
      * Visits a non standard attribute of the class.
-     * 
+     *
      * @param attr an attribute.
      */
     void visitAttribute(Attribute attr);
@@ -111,7 +111,7 @@ public interface ClassVisitor {
     /**
      * Visits information about an inner class. This inner class is not
      * necessarily a member of the class being visited.
-     * 
+     *
      * @param name the internal name of an inner class (see
      *        {@link Type#getInternalName() getInternalName}).
      * @param outerName the internal name of the class to which the inner class
@@ -131,7 +131,7 @@ public interface ClassVisitor {
 
     /**
      * Visits a field of the class.
-     * 
+     *
      * @param access the field's access flags (see {@link Opcodes}). This
      *        parameter also indicates if the field is synthetic and/or
      *        deprecated.
@@ -163,7 +163,7 @@ public interface ClassVisitor {
      * Visits a method of the class. This method <i>must</i> return a new
      * {@link MethodVisitor} instance (or <tt>null</tt>) each time it is
      * called, i.e., it should not return a previously returned visitor.
-     * 
+     *
      * @param access the method's access flags (see {@link Opcodes}). This
      *        parameter also indicates if the method is synthetic and/or
      *        deprecated.

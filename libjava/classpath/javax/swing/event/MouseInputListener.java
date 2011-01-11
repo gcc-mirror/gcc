@@ -46,7 +46,7 @@ import java.awt.event.MouseMotionListener;
  * @author Andrew Selkirk
  */
 public interface MouseInputListener extends MouseListener,
-											MouseMotionListener
+                                                                                        MouseMotionListener
 {
   // This interface only pulls together MouseListener and MouseMotionListener
   // without adding any methods on its own.

@@ -39,7 +39,7 @@ exception statement from your version. */
 package java.io;
 
 /**
- * This exception is thrown when the requested character encoding is 
+ * This exception is thrown when the requested character encoding is
  * not supported.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)

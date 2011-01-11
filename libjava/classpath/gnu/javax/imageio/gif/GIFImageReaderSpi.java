@@ -46,7 +46,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.stream.ImageInputStream;
 
-public class GIFImageReaderSpi extends ImageReaderSpi 
+public class GIFImageReaderSpi extends ImageReaderSpi
 {
   static final String vendorName = "GNU";
   static final String version = "0.1";
@@ -68,39 +68,39 @@ public class GIFImageReaderSpi extends ImageReaderSpi
   static final String nativeImageMetadataFormatClassName = null;
   static final String[] extraImageMetadataFormatNames = null;
   static final String[] extraImageMetadataFormatClassNames = null;
-    
-  public GIFImageReaderSpi() 
+
+  public GIFImageReaderSpi()
   {
     super(vendorName, version,
-	  names, suffixes, MIMETypes,
-	  readerClassName,
-	  new Class[]{ ImageInputStream.class, InputStream.class },
-	  writerSpiNames,
-	  supportsStandardStreamMetadataFormat,
-	  nativeStreamMetadataFormatName,
-	  nativeStreamMetadataFormatClassName,
-	  extraStreamMetadataFormatNames,
-	  extraStreamMetadataFormatClassNames,
-	  supportsStandardImageMetadataFormat,
-	  nativeImageMetadataFormatName,
-	  nativeImageMetadataFormatClassName,
-	  extraImageMetadataFormatNames,
-	  extraImageMetadataFormatClassNames);
+          names, suffixes, MIMETypes,
+          readerClassName,
+          new Class[]{ ImageInputStream.class, InputStream.class },
+          writerSpiNames,
+          supportsStandardStreamMetadataFormat,
+          nativeStreamMetadataFormatName,
+          nativeStreamMetadataFormatClassName,
+          extraStreamMetadataFormatNames,
+          extraStreamMetadataFormatClassNames,
+          supportsStandardImageMetadataFormat,
+          nativeImageMetadataFormatName,
+          nativeImageMetadataFormatClassName,
+          extraImageMetadataFormatNames,
+          extraImageMetadataFormatClassNames);
   }
-    
-  public String getDescription(Locale locale) 
+
+  public String getDescription(Locale locale)
   {
     return "Compuserve GIF";
   }
-    
+
   public boolean canDecodeInput(Object input)
-    throws IOException 
+    throws IOException
   {
     if( input == null )
       throw new IllegalArgumentException("Input object cannot be null.");
 
-    if( !(input instanceof ImageInputStream) && 
-	!(input instanceof InputStream)) 
+    if( !(input instanceof ImageInputStream) &&
+        !(input instanceof InputStream))
       return false;
 
     boolean retval;
@@ -116,8 +116,8 @@ public class GIFImageReaderSpi extends ImageReaderSpi
 
     return retval;
   }
-    
-  public ImageReader createReaderInstance(Object extension) 
+
+  public ImageReader createReaderInstance(Object extension)
   {
     return new GIFImageReader(this);
   }

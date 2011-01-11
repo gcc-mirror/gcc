@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,11 +43,11 @@ package java.security.cert;
    have different formats but the same general use. They
    all serve as lists of revoked certificates and can
    be queried for a given certificate.
-   
+
    Specialized CRLs extend this class.
-   
+
    @author Mark Benvenuto
-   
+
    @since JDK 1.2
 */
 public abstract class CRL
@@ -59,7 +59,7 @@ public abstract class CRL
      Creates a new CRL for the specified type. An example
      is "X.509".
 
-     @param type the standard name for the CRL type. 
+     @param type the standard name for the CRL type.
   */
   protected CRL(String type)
   {
@@ -90,7 +90,7 @@ public abstract class CRL
      @param cert A certificate to check if it is revoked
 
      @return true if the certificate is revoked,
-     false otherwise.	
+     false otherwise.
   */
   public abstract boolean isRevoked(Certificate cert);
 

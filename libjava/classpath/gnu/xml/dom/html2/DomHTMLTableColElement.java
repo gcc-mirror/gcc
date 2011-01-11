@@ -1,4 +1,4 @@
-/* DomHTMLTableColElement.java -- 
+/* DomHTMLTableColElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,7 +65,7 @@ public class DomHTMLTableColElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getCh()
   {
     return getHTMLAttribute("char");
@@ -75,7 +75,7 @@ public class DomHTMLTableColElement
   {
     setHTMLAttribute("char", ch);
   }
-  
+
   public String getChOff()
   {
     return getHTMLAttribute("charoff");
@@ -85,7 +85,7 @@ public class DomHTMLTableColElement
   {
     setHTMLAttribute("charoff", chOff);
   }
-  
+
   public int getSpan()
   {
     return getIntHTMLAttribute("span");
@@ -95,7 +95,7 @@ public class DomHTMLTableColElement
   {
     setIntHTMLAttribute("span", span);
   }
-  
+
   public String getVAlign()
   {
     return getHTMLAttribute("valign");
@@ -105,7 +105,7 @@ public class DomHTMLTableColElement
   {
     setHTMLAttribute("valign", vAlign);
   }
-  
+
   public String getWidth()
   {
     return getHTMLAttribute("width");
@@ -115,6 +115,5 @@ public class DomHTMLTableColElement
   {
     setHTMLAttribute("width", width);
   }
-  
-}
 
+}

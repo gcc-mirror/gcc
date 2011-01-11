@@ -47,10 +47,10 @@ import java.nio.charset.CoderResult;
 /**
  * A generic encoding framework for single-byte encodings, utilizing a look-up
  * table.
- * 
+ *
  * This replaces the gnu.java.io.EncoderEightBitLookup class, created by Aron
  * Renn.
- * 
+ *
  * @author Sven de Marothy
  * @modified Ian Rogers
  */
@@ -96,7 +96,7 @@ abstract class ByteCharset extends Charset
   {
     /** Lookup of byte to char mappings */
     private final char[] lookup;
-    
+
     /** Helper to decode loops */
     private final ByteDecodeLoopHelper helper = new ByteDecodeLoopHelper()
     {
@@ -109,7 +109,7 @@ abstract class ByteCharset extends Charset
         return lookup[(int) (b & 0xFF)];
       }
     };
-    
+
     // Package-private to avoid a trampoline constructor.
     Decoder(ByteCharset cs)
     {
@@ -127,7 +127,7 @@ abstract class ByteCharset extends Charset
   {
     /** Lookup of char to byte mappings */
     private final byte[] lookup;
-    
+
     /** Helper to encode loops */
     private final ByteEncodeLoopHelper helper = new ByteEncodeLoopHelper()
     {
@@ -140,7 +140,7 @@ abstract class ByteCharset extends Charset
         return lookup[c];
       }
     };
-    
+
     // Package-private to avoid a trampoline constructor.
     Encoder(ByteCharset cs)
     {

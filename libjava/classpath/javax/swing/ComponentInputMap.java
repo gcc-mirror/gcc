@@ -64,7 +64,7 @@ public class ComponentInputMap extends InputMap
   {
     if (comp == null)
       throw new IllegalArgumentException();
-    
+
     this.component = comp;
   }
 
@@ -117,13 +117,13 @@ public class ComponentInputMap extends InputMap
     if (parentMap != null && !(parentMap instanceof ComponentInputMap))
       throw new IllegalArgumentException("ComponentInputMaps can only have " +
                                          "ComponentInputMaps for parents");
-    
-    if (parentMap != null && 
+
+    if (parentMap != null &&
         ((ComponentInputMap) parentMap).getComponent() != component)
-      throw new 
+      throw new
         IllegalArgumentException("ComponentInputMaps' parents must " +
                                  "be associated with the same JComponents");
-   
+
     super.setParent(parentMap);
     if (component != null)
       component.updateComponentInputMap(this);

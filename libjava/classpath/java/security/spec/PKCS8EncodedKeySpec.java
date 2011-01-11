@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,12 +39,12 @@ exception statement from your version. */
 package java.security.spec;
 
 /**
-	PKCS8 Encoded Key Specification class which is used to store 
-	"PKCS#8" byte encoded keys.
+        PKCS8 Encoded Key Specification class which is used to store
+        "PKCS#8" byte encoded keys.
 
-	@since JDK 1.2
+        @since JDK 1.2
 
-	@author Mark Benvenuto
+        @author Mark Benvenuto
 */
 public class PKCS8EncodedKeySpec extends EncodedKeySpec
 {
@@ -59,9 +59,9 @@ public class PKCS8EncodedKeySpec extends EncodedKeySpec
   }
 
   /**
-	Gets the encoded key in byte format.
+        Gets the encoded key in byte format.
 
-	@returns the encoded key
+        @returns the encoded key
 */
   public byte[] getEncoded()
   {
@@ -69,9 +69,9 @@ public class PKCS8EncodedKeySpec extends EncodedKeySpec
   }
 
   /**
-	Returns the name of the key format used which is "PKCS#8"
+        Returns the name of the key format used which is "PKCS#8"
 
-	@return a string representing the name
+        @return a string representing the name
 */
   public final String getFormat()
   {

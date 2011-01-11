@@ -145,7 +145,7 @@ public class BasicHTML
     {
       if (view != null)
         view.setParent(null);
-      
+
       if (v != null)
         v.setParent(this);
 

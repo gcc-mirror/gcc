@@ -57,4 +57,3 @@ public abstract boolean
 isSynthetic();
 
 } // interface MemberDoc
-

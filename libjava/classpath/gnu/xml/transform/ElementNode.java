@@ -1,4 +1,4 @@
-/* ElementNode.java -- 
+/* ElementNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -68,7 +68,7 @@ final class ElementNode
   final String uas;
   final Node source;
   final Collection elementExcludeResultPrefixes;
-  
+
   ElementNode(TemplateNode name,
               TemplateNode namespace, String uas, Node source)
   {
@@ -134,7 +134,7 @@ final class ElementNode
           namespaceValue = null;
       }
     else
-      {    
+      {
         String prefix = getPrefix(nameValue);
         if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix))
           {
@@ -169,7 +169,7 @@ final class ElementNode
               }
           }
       }
-    
+
     // Create element
     Element element = (namespaceValue != null) ?
       doc.createElementNS(namespaceValue, nameValue) :
@@ -237,7 +237,7 @@ final class ElementNode
       return true;
     return super.references(var);
   }
-  
+
   public String toString()
   {
     CPStringBuilder buf = new CPStringBuilder("element");
@@ -257,5 +257,5 @@ final class ElementNode
     buf.append(']');
     return buf.toString();
   }
-  
+
 }

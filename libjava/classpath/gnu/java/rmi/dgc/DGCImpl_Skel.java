@@ -44,16 +44,16 @@ public final class DGCImpl_Skel
     implements java.rmi.server.Skeleton
 {
     private static final long interfaceHash = -669196253586618813L;
-    
+
     private static final java.rmi.server.Operation[] operations = {
         new java.rmi.server.Operation("void clean(java.rmi.server.ObjID[], long, java.rmi.dgc.VMID, boolean"),
         new java.rmi.server.Operation("java.rmi.dgc.Lease dirty(java.rmi.server.ObjID[], long, java.rmi.dgc.Lease")
     };
-    
+
     public java.rmi.server.Operation[] getOperations() {
         return ((java.rmi.server.Operation[]) operations.clone());
     }
-    
+
     public void dispatch(java.rmi.Remote obj, java.rmi.server.RemoteCall call, int opnum, long hash) throws java.lang.Exception {
         if (opnum < 0) {
             if (hash == -5803803475088455571L) {
@@ -69,7 +69,7 @@ public final class DGCImpl_Skel
         else if (hash != interfaceHash) {
             throw new java.rmi.server.SkeletonMismatchException("interface hash mismatch");
         }
-        
+
         gnu.java.rmi.dgc.DGCImpl server = (gnu.java.rmi.dgc.DGCImpl)obj;
         switch (opnum) {
         case 0:
@@ -84,7 +84,7 @@ public final class DGCImpl_Skel
                 $param_1 = (long)in.readLong();
                 $param_2 = (java.rmi.dgc.VMID)in.readObject();
                 $param_3 = (boolean)in.readBoolean();
-                
+
             }
             catch (java.io.IOException e) {
                 throw new java.rmi.UnmarshalException("error unmarshalling arguments", e);
@@ -104,7 +104,7 @@ public final class DGCImpl_Skel
             }
             break;
         }
-        
+
         case 1:
         {
             java.rmi.server.ObjID[] $param_0;
@@ -115,7 +115,7 @@ public final class DGCImpl_Skel
                 $param_0 = (java.rmi.server.ObjID[])in.readObject();
                 $param_1 = (long)in.readLong();
                 $param_2 = (java.rmi.dgc.Lease)in.readObject();
-                
+
             }
             catch (java.io.IOException e) {
                 throw new java.rmi.UnmarshalException("error unmarshalling arguments", e);
@@ -136,7 +136,7 @@ public final class DGCImpl_Skel
             }
             break;
         }
-        
+
         default:
             throw new java.rmi.UnmarshalException("invalid method number");
         }

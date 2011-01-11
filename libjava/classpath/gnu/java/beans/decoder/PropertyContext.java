@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -74,7 +74,7 @@ class PropertyContext extends AbstractObjectContext
       throw new AssemblyException(new IllegalArgumentException("Property attribut allows zero or one argument only."));
 
     argument = o;
-	setStatement(true);
+        setStatement(true);
     prefix = "set";
   }
 
@@ -91,8 +91,8 @@ class PropertyContext extends AbstractObjectContext
 
     if (outerObject == null)
       throw new AssemblyException(new NullPointerException("No object to access property "
-	  + propertyName));
-    
+          + propertyName));
+
 
     // converts property name into a method name
     String methodName = prefix + propertyName.substring(0, 1).toUpperCase()
@@ -103,23 +103,23 @@ class PropertyContext extends AbstractObjectContext
 
     try
       {
-	Method method = MethodFinder.getMethod(outerObject.getClass(),
-	                                       methodName, args);
+        Method method = MethodFinder.getMethod(outerObject.getClass(),
+                                               methodName, args);
 
-	// stores the result whether it is available or not
-	setObject(method.invoke(outerObject, args));
+        // stores the result whether it is available or not
+        setObject(method.invoke(outerObject, args));
       }
     catch (NoSuchMethodException nsme)
       {
-	throw new AssemblyException(nsme);
+        throw new AssemblyException(nsme);
       }
     catch (InvocationTargetException ite)
       {
-	throw new AssemblyException(ite.getCause());
+        throw new AssemblyException(ite.getCause());
       }
     catch (IllegalAccessException iae)
       {
-	throw new AssemblyException(iae);
+        throw new AssemblyException(iae);
       }
   }
 

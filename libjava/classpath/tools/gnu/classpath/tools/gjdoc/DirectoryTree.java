@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -16,7 +16,7 @@ General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
 Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA. 
+02111-1307 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -46,14 +46,14 @@ public class DirectoryTree {
       FileNode[] subNodes;
 
       FileNode(File file) {
-	 this.file=file;
-	 if (file.isDirectory()) {
-	    File[] subFiles=file.listFiles();
-	    subNodes=new FileNode[subFiles.length];
-	    for (int i=0; i<subFiles.length; ++i) {
-	       subNodes[i]=new FileNode(subFiles[i]);
-	    }
-	 }
+         this.file=file;
+         if (file.isDirectory()) {
+            File[] subFiles=file.listFiles();
+            subNodes=new FileNode[subFiles.length];
+            for (int i=0; i<subFiles.length; ++i) {
+               subNodes[i]=new FileNode(subFiles[i]);
+            }
+         }
       }
    }
 

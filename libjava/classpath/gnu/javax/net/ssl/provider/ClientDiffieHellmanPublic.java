@@ -54,7 +54,7 @@ struct {
     case implicit: struct { };
     case explicit: opaque dh_Yc&lt;1..2^16-1&gt;;
   } dh_public;
-} ClientDiffieHellmanPublic;</pre> 
+} ClientDiffieHellmanPublic;</pre>
  */
 public class ClientDiffieHellmanPublic extends ExchangeKeys implements Builder
 {
@@ -62,12 +62,12 @@ public class ClientDiffieHellmanPublic extends ExchangeKeys implements Builder
   {
     super(buffer);
   }
-  
+
   public ClientDiffieHellmanPublic(final BigInteger Yc)
   {
     super(wrap(Yc));
   }
-  
+
   private static ByteBuffer wrap(BigInteger Yc)
   {
     byte[] b = Util.trim(Yc);
@@ -81,7 +81,7 @@ public class ClientDiffieHellmanPublic extends ExchangeKeys implements Builder
   {
     return (ByteBuffer) buffer.duplicate().rewind().limit(length());
   }
-  
+
   public BigInteger publicValue()
   {
     int len = length() - 2;

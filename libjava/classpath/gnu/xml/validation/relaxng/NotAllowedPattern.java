@@ -1,4 +1,4 @@
-/* NotAllowedPattern.java -- 
+/* NotAllowedPattern.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,5 +49,3 @@ class NotAllowedPattern
   static final NotAllowedPattern INSTANCE = new NotAllowedPattern();
 
 }
-
-

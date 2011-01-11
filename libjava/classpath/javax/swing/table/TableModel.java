@@ -40,48 +40,48 @@ package javax.swing.table;
 import javax.swing.event.TableModelListener;
 
 /**
- * A <code>TableModel</code> is a two dimensional data structure that 
+ * A <code>TableModel</code> is a two dimensional data structure that
  * can store arbitrary <code>Object</code> instances, usually for the
- * purpose of display in a {@link javax.swing.JTable} component.  Individual 
- * objects can be accessed by specifying the row index and column index for 
+ * purpose of display in a {@link javax.swing.JTable} component.  Individual
+ * objects can be accessed by specifying the row index and column index for
  * the object.  Each column in the model has a name associated with it.
  * <p>
  * The {@link DefaultTableModel} class provides one implementation of
  * this interface.
- * 
+ *
  * @author Andrew Selkirk
  */
 public interface TableModel
 {
   /**
    * Returns the number of rows in the model.
-   * 
+   *
    * @return The row count.
    */
   int getRowCount();
 
   /**
    * Returns the number of columns in the model.
-   * 
+   *
    * @return The column count
    */
   int getColumnCount();
 
   /**
    * Returns the name of a column in the model.
-   * 
+   *
    * @param columnIndex the column index.
-   * 
+   *
    * @return The column name.
    */
   String getColumnName(int columnIndex);
 
   /**
    * Returns the <code>Class</code> for all <code>Object</code> instances
-   * in the specified column.  
-   * 
+   * in the specified column.
+   *
    * @param columnIndex the column index.
-   * 
+   *
    * @return The class.
    */
   Class<?> getColumnClass(int columnIndex);
@@ -89,10 +89,10 @@ public interface TableModel
   /**
    * Returns <code>true</code> if the cell is editable, and <code>false</code>
    * otherwise.
-   * 
+   *
    * @param rowIndex the row index.
    * @param columnIndex the column index.
-   * 
+   *
    * @return <code>true</code> if editable, <code>false</code> otherwise.
    */
   boolean isCellEditable(int rowIndex, int columnIndex);
@@ -100,17 +100,17 @@ public interface TableModel
   /**
    * Returns the value (<code>Object</code>) at a particular cell in the
    * table.
-   * 
+   *
    * @param rowIndex the row index.
    * @param columnIndex the column index.
-   * 
+   *
    * @return The value at the specified cell.
    */
   Object getValueAt(int rowIndex, int columnIndex);
 
   /**
-   * Sets the value at a particular cell in the table.  
-   * 
+   * Sets the value at a particular cell in the table.
+   *
    * @param aValue the value (<code>null</code> permitted).
    * @param rowIndex the row index.
    * @param columnIndex the column index.
@@ -120,14 +120,14 @@ public interface TableModel
   /**
    * Adds a listener to the model.  The listener will receive notification
    * of updates to the model.
-   * 
+   *
    * @param listener the listener.
    */
   void addTableModelListener(TableModelListener listener);
 
   /**
    * Removes a listener from the model.
-   * 
+   *
    * @param listener the listener.
    */
   void removeTableModelListener(TableModelListener listener);

@@ -74,7 +74,7 @@ public class DragSource implements Serializable
   private transient FlavorMap flavorMap = SystemFlavorMap.getDefaultFlavorMap ();
   private transient DragSourceListener dragSourceListener;
   private transient DragSourceMotionListener dragSourceMotionListener;
-  
+
   private static DragSource ds;
   private DragSourceContextPeer peer;
   private DragSourceContext context;
@@ -95,7 +95,7 @@ public class DragSource implements Serializable
 
   /**
    * Gets the default drag source.
-   * 
+   *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
    */
   public static DragSource getDefaultDragSource()
@@ -139,14 +139,14 @@ public class DragSource implements Serializable
     // This function sends the same message to the context, which then forwards
     // it to the peer, passing itself as a parameter. Now, the native system has
     // access to the Transferable through the context.
-    
+
     try
       {
         flavorMap = map;
-        
+
         if (peer == null)
           peer = Toolkit.getDefaultToolkit().createDragSourceContextPeer(trigger);
-        
+
         if (context == null)
           context = createDragSourceContext(peer, trigger,
                                                             dragCursor,
@@ -210,7 +210,7 @@ public class DragSource implements Serializable
   /**
    * Creates the DragSourceContext to handle this drag.
    *
-   * @exception IllegalArgumentException 
+   * @exception IllegalArgumentException
    * @exception NullPointerException If dscp, dgl, dragImage or t is null.
    */
   protected DragSourceContext
@@ -225,16 +225,16 @@ public class DragSource implements Serializable
   {
     return flavorMap;
   }
-  
+
   public <T extends DragGestureRecognizer> T
-		    createDragGestureRecognizer(Class<T> recognizer,
-						Component c,
-						int actions,
-						DragGestureListener dgl)
+                    createDragGestureRecognizer(Class<T> recognizer,
+                                                Component c,
+                                                int actions,
+                                                DragGestureListener dgl)
   {
     return (T) Toolkit.getDefaultToolkit().createDragGestureRecognizer(recognizer,
-								       this, c,
-								       actions, dgl);
+                                                                       this, c,
+                                                                       actions, dgl);
   }
 
   public DragGestureRecognizer createDefaultDragGestureRecognizer(Component c,
@@ -301,20 +301,20 @@ public class DragSource implements Serializable
   {
     if (listenerType == DragSourceListener.class)
       return DnDEventMulticaster.getListeners (dragSourceListener,
-					       listenerType);
+                                               listenerType);
 
     if (listenerType == DragSourceMotionListener.class)
       return DnDEventMulticaster.getListeners (dragSourceMotionListener,
-					       listenerType);
+                                               listenerType);
 
     // Return an empty EventListener array.
     return (T[]) new EventListener [0];
   }
-  
+
   /**
    * TODO
    * @return TODO
-   * 
+   *
    * @since 1.5
    */
   public static int getDragThreshold()

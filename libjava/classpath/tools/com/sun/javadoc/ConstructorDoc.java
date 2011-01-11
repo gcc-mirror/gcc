@@ -54,4 +54,3 @@ public abstract String
 qualifiedName();
 
 } // interface ConstructorDoc
-

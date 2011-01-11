@@ -1,4 +1,4 @@
-/* EqualityExpr.java -- 
+/* EqualityExpr.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -91,20 +91,20 @@ final class EqualityExpr
     boolean frns = right instanceof Collection;
     if (flns && frns)
       {
-	/* Suppression is safe, as we know context produces Collection<Node> */
-	@SuppressWarnings("unchecked") 
-	  Collection<Node> lns = (Collection<Node>) left;
-	@SuppressWarnings("unchecked")
-	  Collection<Node> rns = (Collection<Node>) right;
+        /* Suppression is safe, as we know context produces Collection<Node> */
+        @SuppressWarnings("unchecked")
+          Collection<Node> lns = (Collection<Node>) left;
+        @SuppressWarnings("unchecked")
+          Collection<Node> rns = (Collection<Node>) right;
         if (lns.isEmpty())
           {
             return false;
           }
         boolean all = true;
-	for (Node ltest : lns)
-	  {
-	    for (Node rtest : rns)
-	      {
+        for (Node ltest : lns)
+          {
+            for (Node rtest : rns)
+              {
                 if (ltest == rtest || ltest.equals(rtest))
                   {
                     // much shorter
@@ -128,7 +128,7 @@ final class EqualityExpr
           }
         return all;
       }
-    /* 
+    /*
      * If one object to be compared is a node-set and the other is a number,
      * then the comparison will be true if and only if there is a node in
      * the node-set such that the result of performing the comparison on the
@@ -140,13 +140,13 @@ final class EqualityExpr
     boolean frn = right instanceof Double;
     if ((flns && frn) || (frns && fln))
       {
-	/* Suppression is safe, as we know context produces Collection<Node> */
-	@SuppressWarnings("unchecked") 
-	  Collection<Node> ns = flns ? (Collection<Node>) left : (Collection<Node>) right;
+        /* Suppression is safe, as we know context produces Collection<Node> */
+        @SuppressWarnings("unchecked")
+          Collection<Node> ns = flns ? (Collection<Node>) left : (Collection<Node>) right;
         double n = fln ? ((Double) left).doubleValue() :
           ((Double) right).doubleValue();
         boolean all = true;
-	for (Node test : ns)
+        for (Node test : ns)
           {
             double nn = _number(context, stringValue(test));
             if (nn == n)
@@ -174,12 +174,12 @@ final class EqualityExpr
     boolean frs = right instanceof String;
     if ((flns && frs) || (frns && fls))
       {
-	/* Suppression is safe, as we know context produces Collection<Node> */
-	@SuppressWarnings("unchecked") 
-	  Collection<Node> ns = flns ? (Collection<Node>) left : (Collection<Node>) right;
+        /* Suppression is safe, as we know context produces Collection<Node> */
+        @SuppressWarnings("unchecked")
+          Collection<Node> ns = flns ? (Collection<Node>) left : (Collection<Node>) right;
         String s = fls ? (String) left : (String) right;
         boolean all = true;
-	for (Node test : ns)
+        for (Node test : ns)
           {
             if (stringValue(test).equals(s))
               {
@@ -206,9 +206,9 @@ final class EqualityExpr
     boolean frb = right instanceof Boolean;
     if ((flns && frb) || (frns && flb))
       {
-	/* Suppression is safe, as we know context produces Collection<Node> */
-	@SuppressWarnings("unchecked") 
-	  Collection<Node> ns = flns ? (Collection<Node>) left : (Collection<Node>) right;
+        /* Suppression is safe, as we know context produces Collection<Node> */
+        @SuppressWarnings("unchecked")
+          Collection<Node> ns = flns ? (Collection<Node>) left : (Collection<Node>) right;
         boolean b = flb ? ((Boolean) left).booleanValue() :
           ((Boolean) right).booleanValue();
         return _boolean(context, ns) == b;
@@ -270,5 +270,5 @@ final class EqualityExpr
         return lhs + " = " + rhs;
       }
   }
-  
+
 }

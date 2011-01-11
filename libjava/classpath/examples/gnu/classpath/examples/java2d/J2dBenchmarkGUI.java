@@ -406,7 +406,7 @@ public class J2dBenchmarkGUI
   }
 
   /**
-   * Parses GUI input and sets options in the benchmarker 
+   * Parses GUI input and sets options in the benchmarker
    */
   private class Harness
       implements ActionListener
@@ -417,7 +417,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Creates a new Harness object
-     * 
+     *
      * @param elements Hashtable containing the swing elements from the GUI
      * @param errorLabel JLabel on which to display any error messages
      */
@@ -432,7 +432,7 @@ public class J2dBenchmarkGUI
     /**
      * Handles user button-clicks, parsing the form, setting options, and
      * starting the J2dBenchmark
-     * 
+     *
      * @param ae event that triggered this action
      */
     public void actionPerformed(ActionEvent ae)
@@ -484,7 +484,7 @@ public class J2dBenchmarkGUI
           if (((JCheckBox) elements.get("test_ellipseDraw")).isSelected())
             testSuite |= J2dBenchmarkWrapper.J2DTEST_ELLIPSE;
           //if (((JCheckBox)elements.get("test_pathDraw")).isSelected())
-          //  testSuite |= J2dBenchmarkWrapper.J2DTEST_GENERALPATH; 
+          //  testSuite |= J2dBenchmarkWrapper.J2DTEST_GENERALPATH;
           if (((JCheckBox) elements.get("test_lineDraw")).isSelected())
             testSuite |= J2dBenchmarkWrapper.J2DTEST_LINE;
           if (((JCheckBox) elements.get("test_qcurveDraw")).isSelected())
@@ -546,7 +546,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Create new J2dBenchmarkWrapper object
-     * 
+     *
      * @param frame parent frame
      */
     public J2dBenchmarkWrapper(JFrame frame)
@@ -562,7 +562,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set dimensions of benchmarking canvas
-     * 
+     *
      * @param width width of canvas
      * @param height height of canvas
      */
@@ -575,7 +575,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set number of iterations
-     * 
+     *
      * @param it number of iterations
      */
     public void setIterations(int it)
@@ -585,7 +585,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set size of each test
-     * 
+     *
      * @param size size of test
      */
     public void setTestSize(int size)
@@ -595,7 +595,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set clipping options
-     * 
+     *
      * @param no run test with no clipping
      * @param with run test with clipping
      * @param zero run test with clipping to zero
@@ -609,7 +609,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set buffering options
-     * 
+     *
      * @param single run test without double-buffering
      * @param doubleb run test with double-buffering
      */
@@ -621,7 +621,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set fill options
-     * 
+     *
      * @param type fill type: "solid", "gradient", or "texture"
      * @param file filename to use if texturing
      */
@@ -637,7 +637,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set stroke options
-     * 
+     *
      * @param stroke boolean flag to use random stroking or not
      */
     public void setStroke(boolean stroke)
@@ -647,7 +647,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set anti-aliasing options
-     * 
+     *
      * @param alias boolean flag to use anti-aliasing or not
      */
     public void setAlias(boolean alias)
@@ -657,7 +657,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set alpha composite
-     * 
+     *
      * @param alpha alpha composite
      */
     public void setComposite(float alpha)
@@ -667,7 +667,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set translation values
-     * 
+     *
      * @param x x-axis translation
      * @param y y-axis translation
      */
@@ -679,7 +679,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set rotation
-     * 
+     *
      * @param theta angle to rotate by (radians)
      */
     public void setRotation(double theta)
@@ -689,7 +689,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set shear values
-     * 
+     *
      * @param x x-axis shear value
      * @param y-axis shear value
      */
@@ -701,7 +701,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Set tests to run
-     * 
+     *
      * @param tests bit-shifted list of tests (see J2dBenchmark constants)
      */
     public void setTests(int tests)
@@ -828,7 +828,7 @@ public class J2dBenchmarkGUI
     /**
      * This overrides the logger publish method, which accepts log messages and
      * saves them for later display
-     * 
+     *
      * @param record information about the log event
      */
     public void publish(LogRecord record)
@@ -838,7 +838,7 @@ public class J2dBenchmarkGUI
 
     /**
      * Accepts a test summary report, generated after each iteration of a test
-     * 
+     *
      * @param results test results
      */
     public void report(ArrayList results)

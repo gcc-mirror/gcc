@@ -38,7 +38,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * SAXFieldAdapter
- * 
+ *
  * @author Eugene Kuleshov
  */
 public class SAXFieldAdapter implements FieldVisitor {

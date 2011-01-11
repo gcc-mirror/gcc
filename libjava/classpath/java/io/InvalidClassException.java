@@ -108,4 +108,3 @@ public class InvalidClassException extends ObjectStreamException
     return (classname == null ? "" : classname + "; ") + msg;
   }
 }
-

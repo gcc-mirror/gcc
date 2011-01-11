@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,12 +38,12 @@ exception statement from your version. */
 package java.sql;
 
 /**
-  * This exception is thrown when a piece of data is unexpectedly 
+  * This exception is thrown when a piece of data is unexpectedly
   * truncated in JDBC.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class DataTruncation extends SQLWarning 
+public class DataTruncation extends SQLWarning
 {
   static final long serialVersionUID = 6464298989504059473L;
 
@@ -74,7 +74,7 @@ public class DataTruncation extends SQLWarning
 
   /**
    * This method initializes a new instance of <code>DataTruncation</code>
-   * with the specified values.  The descriptive error message for this 
+   * with the specified values.  The descriptive error message for this
    * exception will be "Data truncation", the SQL state will be "01004"
    * and the vendor specific error code will be set to 0.
    *

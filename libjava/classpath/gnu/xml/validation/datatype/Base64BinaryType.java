@@ -1,4 +1,4 @@
-/* Base64BinaryType.java -- 
+/* Base64BinaryType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -98,7 +98,7 @@ final class Base64BinaryType
             char c1 = value.charAt(i--);
             if (c1 == ' ')
               c1 = value.charAt(i--);
-            
+
             if (c4 == '=')
               {
                 if (c3 == '=')
@@ -124,6 +124,5 @@ final class Base64BinaryType
         throw new DatatypeException("illegal BASE64");
       }
   }
-  
-}
 
+}

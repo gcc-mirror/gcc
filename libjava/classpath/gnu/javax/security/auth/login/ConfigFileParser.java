@@ -81,7 +81,7 @@ import javax.security.auth.login.AppConfigurationEntry;
  *
  * <p>In the above context, a JAVA_IDENTIFIER is a sequence of tokens,
  * separated by the character '.'. Each of these tokens obeys the following:</p>
- * 
+ *
  * <ol>
  *   <li>its first character yields <code>true</code> when used as an input to
  *   the {@link java.lang.Character#isJavaIdentifierStart(char)}, and</li>
@@ -183,7 +183,7 @@ public final class ConfigFileParser
 
   /**
    * @return <code>true</code> if a LOGIN_MODULE_ENTRY was correctly parsed.
-   * Returns <code>false</code> otherwise. 
+   * Returns <code>false</code> otherwise.
    * @throws IOException if an exception occurs while parsing the input.
    */
   private boolean parseACE(List listOfACEs) throws IOException
@@ -278,7 +278,7 @@ public final class ConfigFileParser
         // we dont check the rest of the characters for isJavaIdentifierPart()
         // because that's what the tokenizer does.
       }
-    
+
     return cn;
   }
 

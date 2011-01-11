@@ -1,4 +1,4 @@
-/* DomEvent.java -- 
+/* DomEvent.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,7 +46,7 @@ import org.w3c.dom.events.EventTarget;
 import org.w3c.dom.events.MutationEvent;
 import org.w3c.dom.events.UIEvent;
 
-import org.w3c.dom.views.AbstractView;		// used by UIEvent
+import org.w3c.dom.views.AbstractView;          // used by UIEvent
 
 /**
  * "Event" implementation.  Events are
@@ -62,7 +62,7 @@ import org.w3c.dom.views.AbstractView;		// used by UIEvent
 public class DomEvent
   implements Event
 {
-  
+
   String  type;  // init
   EventTarget  target;
   EventTarget  currentNode;
@@ -130,10 +130,10 @@ public class DomEvent
   {
     return timeStamp;
   }
-  
+
   boolean stop;
   boolean doDefault;
-  
+
   /**
    * Requests the event no longer be captured or bubbled; only
    * listeners on the event target will see the event, if they
@@ -174,7 +174,7 @@ public class DomEvent
     cancelable = cancelableArg;
     timeStamp = System.currentTimeMillis();
   }
-  
+
   /** Constructs, but does not initialize, an event. */
   public DomEvent(String type)
   {
@@ -216,7 +216,7 @@ public class DomEvent
     buf.append("]");
     return buf.toString();
   }
-  
+
   /**
    * "MutationEvent" implementation.
    */
@@ -224,46 +224,46 @@ public class DomEvent
     extends DomEvent
     implements MutationEvent
   {
-    
+
     // package private
     Node   relatedNode; // init
-    
+
     private String  prevValue; // init
     private String  newValue; // init
-    
+
     private String  attrName; // init
     private short  attrChange; // init
-    
+
     /** Returns any "related" node provided by this type of event */
     public final Node getRelatedNode()
     {
       return relatedNode;
     }
-    
+
     /** Returns any "previous value" provided by this type of event */
     public final String getPrevValue()
     {
       return prevValue;
     }
-    
+
     /** Returns any "new value" provided by this type of event */
     public final String getNewValue()
     {
       return newValue;
     }
-    
+
     /** For attribute change events, returns the attribute's name */
     public final String getAttrName()
     {
       return attrName;
     }
-    
+
     /** For attribute change events, returns how the attribuet changed */
     public final short getAttrChange()
     {
       return attrChange;
     }
-    
+
     /** Initializes a mutation event */
     public final void initMutationEvent(String typeArg,
                                         boolean canBubbleArg,
@@ -281,7 +281,7 @@ public class DomEvent
       bubbles = canBubbleArg;
       cancelable = cancelableArg;
       timeStamp = System.currentTimeMillis();
-      
+
       relatedNode = relatedNodeArg;
       prevValue = prevValueArg;
       newValue = newValueArg;
@@ -304,7 +304,7 @@ public class DomEvent
     {
       super(type);
     }
-  
+
   }
 
   /**
@@ -314,16 +314,16 @@ public class DomEvent
     extends DomEvent
     implements UIEvent
   {
-    
+
     private AbstractView view;  // init
     private int  detail;  // init
-    
+
     /** Constructs an uninitialized User Interface (UI) event */
     public DomUIEvent (String type) { super (type); }
-    
+
     public final AbstractView getView () { return view; }
     public final int getDetail () { return detail; }
-    
+
     /** Initializes a UI event */
     public final void initUIEvent(String typeArg,
                                   boolean canBubbleArg,
@@ -335,7 +335,7 @@ public class DomEvent
       view = viewArg;
       detail = detailArg;
     }
-  
+
   }
 
     /*
@@ -349,4 +349,3 @@ public class DomEvent
     */
 
 }
-

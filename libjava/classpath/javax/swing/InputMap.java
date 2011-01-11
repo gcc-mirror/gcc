@@ -87,7 +87,7 @@ public class InputMap
    *
    * @param keystroke the key of the entry (<code>null</code> is ignored).
    *
-   * @return The binding associated with the specified keystroke (or 
+   * @return The binding associated with the specified keystroke (or
    *     <code>null</code>).
    */
   public Object get(KeyStroke keystroke)
@@ -102,11 +102,11 @@ public class InputMap
   }
 
   /**
-   * Puts a new entry into the <code>InputMap</code>.  If 
-   * <code>actionMapKey</code> is <code>null</code> any existing entry will be 
+   * Puts a new entry into the <code>InputMap</code>.  If
+   * <code>actionMapKey</code> is <code>null</code> any existing entry will be
    * removed.
    *
-   * @param keystroke the keystroke for the entry (<code>null</code> is 
+   * @param keystroke the keystroke for the entry (<code>null</code> is
    *     ignored).
    * @param actionMapKey the action (<code>null</code> permitted).
    */
@@ -126,7 +126,7 @@ public class InputMap
    * Removes an entry from this <code>InputMap</code>.  Note that this will
    * not remove any entry from the parent map, if there is one.
    *
-   * @param keystroke the key of the entry to remove (<code>null</code> is 
+   * @param keystroke the key of the entry to remove (<code>null</code> is
    *     ignored).
    */
   public void remove(KeyStroke keystroke)
@@ -140,7 +140,7 @@ public class InputMap
    * is <code>null</code>.
    *
    * @return The parent map (possibly <code>null</code>).
-   * 
+   *
    * @see #setParent(InputMap)
    */
   public InputMap getParent()
@@ -154,7 +154,7 @@ public class InputMap
    * find an entry in this map.
    *
    * @param parentMap the new parent (<code>null</code> permitted).
-   * 
+   *
    * @see #getParent()
    */
   public void setParent(InputMap parentMap)
@@ -163,7 +163,7 @@ public class InputMap
   }
 
   /**
-   * Returns the number of entries in this <code>InputMap</code>.  This count 
+   * Returns the number of entries in this <code>InputMap</code>.  This count
    * does not include any entries from the parent map, if there is one.
    *
    * @return The number of entries.
@@ -188,12 +188,12 @@ public class InputMap
 
   /**
    * Returns all keys of entries in this <code>InputMap</code>.  This does not
-   * include keys defined in the parent, if there is one (use the 
+   * include keys defined in the parent, if there is one (use the
    * {@link #allKeys()} method for that case).
    * <br><br>
    * Following the behaviour of the reference implementation, this method will
-   * return <code>null</code> when no entries have been added to the map, 
-   * and a zero length array if entries have been added but subsequently 
+   * return <code>null</code> when no entries have been added to the map,
+   * and a zero length array if entries have been added but subsequently
    * removed (or cleared) from the map.
    *
    * @return An array of keys (may be <code>null</code> or have zero length).
@@ -209,7 +209,7 @@ public class InputMap
   }
 
   /**
-   * Returns all keys of entries in this <code>InputMap</code> and all its 
+   * Returns all keys of entries in this <code>InputMap</code> and all its
    * parents.
    *
    * @return An array of keys (may be <code>null</code> or have zero length).
@@ -227,7 +227,7 @@ public class InputMap
     if (inputMap != null)
       set.addAll(inputMap.keySet());
     if (set.size() == 0)
-      return null;    
+      return null;
     KeyStroke[] array = new KeyStroke[set.size()];
     return (KeyStroke[]) set.toArray(array);
   }

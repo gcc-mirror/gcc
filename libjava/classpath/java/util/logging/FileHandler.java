@@ -120,7 +120,7 @@ import java.util.ListIterator;
  *     system property <code>user.home</code>.</li>
  *
  * <li><code>%g</code> - replaced by a generation number for
- *     distinguisthing the individual items in the rotating set 
+ *     distinguisthing the individual items in the rotating set
  *     of log files.  The generation number cycles through the
  *     sequence 0, 1, ..., <code>count</code> - 1.</li>
  *
@@ -160,7 +160,7 @@ import java.util.ListIterator;
  * step is performed after any generation number has been
  * appended.
  *
- * <p><em>Examples for the GNU platform:</em> 
+ * <p><em>Examples for the GNU platform:</em>
  *
  * <p><ul>
  *
@@ -269,7 +269,7 @@ public class FileHandler
 
   /**
    * A linked list of files we are, or have written to. The entries
-   * are file path strings, kept in the order 
+   * are file path strings, kept in the order
    */
   private LinkedList logFiles;
 
@@ -291,9 +291,9 @@ public class FileHandler
     throws IOException, SecurityException
   {
     this(LogManager.getLogManager().getProperty(PATTERN_KEY),
-	 LogManager.getIntProperty(LIMIT_KEY, DEFAULT_LIMIT),
-	 LogManager.getIntProperty(COUNT_KEY, DEFAULT_COUNT),
-	 LogManager.getBooleanProperty(APPEND_KEY, DEFAULT_APPEND));
+         LogManager.getIntProperty(LIMIT_KEY, DEFAULT_LIMIT),
+         LogManager.getIntProperty(COUNT_KEY, DEFAULT_COUNT),
+         LogManager.getBooleanProperty(APPEND_KEY, DEFAULT_APPEND));
   }
 
 
@@ -317,8 +317,8 @@ public class FileHandler
   public FileHandler(String pattern, int limit, int count)
     throws IOException, SecurityException
   {
-    this(pattern, limit, count, 
-	 LogManager.getBooleanProperty(APPEND_KEY, DEFAULT_APPEND));
+    this(pattern, limit, count,
+         LogManager.getBooleanProperty(APPEND_KEY, DEFAULT_APPEND));
   }
 
 
@@ -368,16 +368,16 @@ public class FileHandler
    *         the Sun reference implementation.
    */
   public FileHandler(String pattern,
-		     int limit,
-		     int count,
-		     boolean append)
+                     int limit,
+                     int count,
+                     boolean append)
     throws IOException, SecurityException
   {
     super(/* output stream, created below */ null,
-	  PROPERTY_PREFIX,
-	  /* default level */ Level.ALL,
-	  /* formatter */ null,
-	  /* default formatter */ XMLFormatter.class);
+          PROPERTY_PREFIX,
+          /* default level */ Level.ALL,
+          /* formatter */ null,
+          /* default formatter */ XMLFormatter.class);
 
     if ((limit <0) || (count < 1))
       throw new IllegalArgumentException();
@@ -426,7 +426,7 @@ public class FileHandler
 
       try
       {
-	File file = new File(path);
+        File file = new File(path);
         if (!file.exists () || append)
           {
             FileOutputStream fout = new FileOutputStream (file, append);
@@ -476,9 +476,9 @@ public class FileHandler
    *         <code>pattern</code>.
    */
   private static String replaceFileNameEscapes(String pattern,
-					       int generation,
-					       int uniqueNumber,
-					       int count)
+                                               int generation,
+                                               int uniqueNumber,
+                                               int count)
   {
     CPStringBuilder buf = new CPStringBuilder(pattern);
     String       replaceWith;
@@ -489,49 +489,49 @@ public class FileHandler
     {
       // Uncomment the next line for finding bugs.
       // System.out.println(buf.substring(0,pos) + '|' + buf.substring(pos));
-      
+
       if (buf.charAt(pos) == '/')
       {
-	/* The same value is also provided by java.io.File.separator. */
-	replaceWith = System.getProperty("file.separator");
-	buf.replace(pos, pos + 1, replaceWith);
-	pos = pos + replaceWith.length() - 1;
-	continue;
+        /* The same value is also provided by java.io.File.separator. */
+        replaceWith = System.getProperty("file.separator");
+        buf.replace(pos, pos + 1, replaceWith);
+        pos = pos + replaceWith.length() - 1;
+        continue;
       }
 
       if (buf.charAt(pos) == '%')
       {
         switch (buf.charAt(pos + 1))
-	{
-	case 't':
-	  replaceWith = System.getProperty("java.io.tmpdir");
-	  break;
+        {
+        case 't':
+          replaceWith = System.getProperty("java.io.tmpdir");
+          break;
 
-	case 'h':
-	  replaceWith = System.getProperty("user.home");
-	  break;
+        case 'h':
+          replaceWith = System.getProperty("user.home");
+          break;
 
-	case 'g':
-	  replaceWith = Integer.toString(generation);
-	  foundGeneration = true;
-	  break;
+        case 'g':
+          replaceWith = Integer.toString(generation);
+          foundGeneration = true;
+          break;
 
-	case 'u':
-	  replaceWith = Integer.toString(uniqueNumber);
-	  break;
+        case 'u':
+          replaceWith = Integer.toString(uniqueNumber);
+          break;
 
-	case '%':
-	  replaceWith = "%";
-	  break;
+        case '%':
+          replaceWith = "%";
+          break;
 
-	default:
-	  replaceWith = "??";
-	  break; // FIXME: Throw exception?
-	}
+        default:
+          replaceWith = "??";
+          break; // FIXME: Throw exception?
+        }
 
-	buf.replace(pos, pos + 2, replaceWith);
-	pos = pos + replaceWith.length() - 1;
-	continue;
+        buf.replace(pos, pos + 2, replaceWith);
+        pos = pos + replaceWith.length() - 1;
+        continue;
       }
     }
     while (++pos < buf.length() - 1);

@@ -42,12 +42,12 @@ import java.util.HashMap;
 
 /** <p>Provides the infrastructure for the state machine and the transition
  * mechanism.</p>
- * 
+ *
  * <p>Each states knows a set of successor. There can be one successor for
  * every transition variant. Furthermore a state knows about a default
  * successor which is taken when there is no special setup for a
  * transition.</p>
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
@@ -105,42 +105,42 @@ public abstract class ScannerState
    * transition->successor's state name.
    */
   HashMap transitions = new HashMap();
-  
+
   int calls;
-  
+
   Context context;
-  
+
   String name;
-  
+
   final void init(String newName)
   {
     assert (name == null);
-    
+
     name = newName;
   }
-  
+
   final String getName()
   {
     return name;
   }
-  
+
   final void enter(Context ctx)
   {
     calls++;
     context = ctx;
-    
+
     enterImpl(ctx);
   }
-  
+
   protected void enterImpl(Context ctx)
   {
   }
-  
+
   final Context context()
   {
     return context;
   }
-  
+
   final int getCalls()
   {
     return calls;
@@ -148,10 +148,10 @@ public abstract class ScannerState
 
   /**
    * <p>Stores a successor's state name for a certain transition.</p>
-   * 
+   *
    * <p>This method is only used at the configuration time of the state
    * machine.</p>
-   * 
+   *
    * @param transition One of the transition constants.
    * @param stateName The state name of the successor.
    */
@@ -165,10 +165,10 @@ public abstract class ScannerState
 
   /** <p>Retrieves a the state name of a successor for the given transition
    * constant.</p>
-   * 
+   *
    * <p>Returns the default successor's state name if no special setup was
    * prepared.</p>
-   * 
+   *
    * @param transition One of the transition constants.
    * @return The state name of the successor.
    */
@@ -181,7 +181,7 @@ public abstract class ScannerState
 
   /**
    * Sets the name for the default successor state.
-   * 
+   *
    * @param newDefaultSuccessor The default successor's state name.
    */
   final void setDefaultSuccessor(String newDefaultSuccessor)
@@ -203,7 +203,7 @@ public abstract class ScannerState
                                        String valueAsString);
 
   abstract void objectArrayInstantiation(String arrayClassName, String lengthAsString, ObjectId objectId);
-  
+
   abstract void primitiveArrayInstantiation(String arrayClassName, String lengthAsString, ObjectId objectId);
 
   abstract void arraySet(String indexAsString);
@@ -222,7 +222,7 @@ public abstract class ScannerState
 
   /**
    * <p>A special event that does not provoke a direct transition.</p>
-   * 
+   *
    * <p>Instead the transition is done by the <code>ScanEngine</code>: It goes
    * back to the previous state and just uses this method to inform the state
    * about this happening.</p>
@@ -232,5 +232,5 @@ public abstract class ScannerState
   void enter()
   {
   }
-  
+
 }

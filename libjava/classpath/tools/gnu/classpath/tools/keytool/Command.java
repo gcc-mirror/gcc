@@ -192,7 +192,7 @@ abstract class Command
    * implementation attempts to release any resources that may have been
    * allocated at the time the exception occurs, before re-throwing that
    * exception.
-   * 
+   *
    * @throws Exception if an exception occurs during the processing of this
    *           command. For a more comprehensive list of exceptions that may
    *           occur, see the documentation of the {@link #setup()} and
@@ -235,7 +235,7 @@ abstract class Command
    * <code>startIndex</code> argument pointing to the keyword argument that
    * uniquelly identifies the command itself; e.g. <code>-genkey</code> or
    * <code>-list</code>, etc...
-   * 
+   *
    * @param args an array of options for this handler and possibly other
    *          commands and their options.
    * @return the remaining un-processed <code>args</code>.
@@ -257,7 +257,7 @@ abstract class Command
    * <p>
    * Handlers usually initialize their local variables and resources within the
    * scope of this call.
-   * 
+   *
    * @throws IOException if an I/O related exception, such as opening an input
    *           stream, occurs during the execution of this method.
    * @throws UnsupportedCallbackException if a requested callback handler
@@ -284,7 +284,7 @@ abstract class Command
    * <p>
    * The code in this (abstract) class throws a <i>Not implemented yet</i>
    * runtime exception. Concrete implementations MUST override this method.
-   * 
+   *
    * @throws CertificateException If no concrete implementation was found for a
    *           certificate Factory of a designated type. In this tool, the type
    *           is usually X.509 v1.
@@ -378,7 +378,7 @@ abstract class Command
    * <code>false</code> to the first argument implying that no attempt to
    * create the keystore will be made if one was not found at the designated
    * location.
-   * 
+   *
    * @param className the potentially null fully qualified class name of a
    *          security provider to add at runtime, if no installed provider is
    *          able to provide a key store implementation of the desired type.
@@ -398,7 +398,7 @@ abstract class Command
   /**
    * Convenience method to setup the key store given its type, its password, its
    * location and portentially a specialized security provider.
-   * 
+   *
    * @param createIfNotFound if <code>true</code> then create the keystore if
    *          it was not found; otherwise do not.
    * @param className the potentially null fully qualified class name of a
@@ -422,7 +422,7 @@ abstract class Command
   /**
    * Set a security provider class name to (install and) use for key store
    * related operations.
-   * 
+   *
    * @param className the possibly null, fully qualified class name of a
    *          security provider to add, if it is not already installed, to the
    *          set of available providers.
@@ -447,7 +447,7 @@ abstract class Command
 
   /**
    * Set the type of key store to initialize, load and use.
-   * 
+   *
    * @param type the possibly null type of the key store. if this argument is
    *          <code>null</code>, or is an empty string, then this method sets
    *          the type of the key store to be the default value returned from
@@ -468,7 +468,7 @@ abstract class Command
   /**
    * Set the key password given a command line option argument. If no value was
    * present on the command line then prompt the user to provide one.
-   * 
+   *
    * @param password a possibly null key password gleaned from the command line.
    * @throws IOException if an I/O related exception occurs.
    * @throws UnsupportedCallbackException if no concrete implementation of a
@@ -485,7 +485,7 @@ abstract class Command
   /**
    * Set the Alias to use when associating Key Entries and Trusted Certificates
    * in the current key store.
-   * 
+   *
    * @param name the possibly null alias to use. If this arfument is
    *          <code>null</code>, then a default value of <code>mykey</code>
    *          will be used instead.
@@ -497,7 +497,7 @@ abstract class Command
 
   /**
    * Set the key password given a command line option argument.
-   * 
+   *
    * @param password a possibly null key password gleaned from the command line.
    */
   protected void setKeyPasswordNoPrompt(String password)
@@ -509,7 +509,7 @@ abstract class Command
   /**
    * Prompt the user to provide a password to protect a Key Entry in the key
    * store.
-   * 
+   *
    * @throws IOException if an I/O related exception occurs.
    * @throws UnsupportedCallbackException if no concrete implementation of a
    *           password callback was found at runtime.
@@ -545,7 +545,7 @@ abstract class Command
 
   /**
    * Set the key store URL to use.
-   * 
+   *
    * @param createIfNotFound when <code>true</code> an attempt to create a
    *          keystore at the designated location will be made. If
    *          <code>false</code> then no file creation is carried out, which
@@ -699,7 +699,7 @@ abstract class Command
   /**
    * Set both the key-pair generation algorithm, and the digital signature
    * algorithm instances to use when generating new entries.
-   * 
+   *
    * @param kpAlg the possibly null name of a key-pair generator algorithm.
    *          if this argument is <code>null</code> or is an empty string, the
    *          "DSS" algorithm will be used.
@@ -754,7 +754,7 @@ abstract class Command
    * <code>MD5withRSA</code>. If the private key is neither a private DSA nor
    * a private RSA key, then this method throws an
    * {@link IllegalArgumentException}.
-   * 
+   *
    * @param algorithm the possibly null name of a digital signature algorithm.
    * @param privateKey an instance of a private key to use as a fal-back option
    *          when <code>algorithm</code> is invalid.
@@ -780,7 +780,7 @@ abstract class Command
   /**
    * Set the validity period, in number of days, to use when issuing new
    * certificates.
-   * 
+   *
    * @param days the number of days, as a string, the generated certificate will
    *          be valid for, starting from today's date. if this argument is
    *          <code>null</code>, a default value of <code>90</code> days
@@ -807,14 +807,14 @@ abstract class Command
    * RFC-2459 (http://rfc.net/rfc2459.html) fully describes the structure and
    * semantics of X.509 certificates. The ASN.1 structures below are gleaned
    * from that reference.
-   * 
+   *
    * <pre>
    *  Certificate ::= SEQUENCE {
    *    tbsCertificate      TBSCertificate,
    *    signatureAlgorithm  AlgorithmIdentifier,
    *    signatureValue      BIT STRING
    *  }
-   *  
+   *
    *  TBSCertificate ::= SEQUENCE {
    *    version           [0] EXPLICIT Version DEFAULT v1,
    *    serialNumber          CertificateSerialNumber,
@@ -824,29 +824,29 @@ abstract class Command
    *    subject               Name,
    *    subjectPublicKeyInfo  SubjectPublicKeyInfo
    *  }
-   *  
+   *
    *  Version ::= INTEGER { v1(0), v2(1), v3(2) }
-   *  
+   *
    *  CertificateSerialNumber ::= INTEGER
-   *  
+   *
    *  Validity ::= SEQUENCE {
    *    notBefore  Time,
    *    notAfter   Time
    *  }
-   *  
+   *
    *  Time ::= CHOICE {
    *    utcTime      UTCTime,
    *    generalTime  GeneralizedTime
    *  }
-   *  
+   *
    *  UniqueIdentifier ::= BIT STRING
-   *  
+   *
    *  SubjectPublicKeyInfo ::= SEQUENCE {
    *    algorithm         AlgorithmIdentifier,
    *    subjectPublicKey  BIT STRING
    *  }
    * </pre>
-   * 
+   *
    * @param distinguishedName the X.500 Distinguished Name to use as both the
    *          Issuer and Subject of the self-signed certificate to generate.
    * @param publicKey the public key of the issuer/subject.
@@ -890,7 +890,7 @@ abstract class Command
     // algorithm field in an AlgorithmIdentifier, the encoding shall omit
     // the parameters field.  That is, the AlgorithmIdentifier shall be a
     // SEQUENCE of one component - the OBJECT IDENTIFIER id-dsa-with-sha1.
-    // 
+    //
     // for RSA signatures:
     // ...When any of these three OIDs (i.e. xxxWithRSAEncryption) appears
     // within the ASN.1 type AlgorithmIdentifier, the parameters component of
@@ -905,7 +905,7 @@ abstract class Command
 
     long notBefore = System.currentTimeMillis();
     long notAfter = notBefore + validityInDays * MILLIS_IN_A_DAY;
-    
+
     ArrayList validity = new ArrayList(2);
     validity.add(new DERValue(DER.UTC_TIME, new Date(notBefore)));
     validity.add(new DERValue(DER.UTC_TIME, new Date(notAfter)));
@@ -958,30 +958,30 @@ abstract class Command
    * signature algorithm used to sign the certificate. The OIDs returned are
    * those described in RFC-2459. They are listed here for the sake of
    * completness.
-   * 
+   *
    * <pre>
    *  id-dsa-with-sha1 OBJECT IDENTIFIER ::= {
    *    iso(1) member-body(2) us(840) x9-57 (10040) x9cm(4) 3
    *  }
-   *  
+   *
    *  md2WithRSAEncryption OBJECT IDENTIFIER ::= {
    *    iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) 2
    *  }
-   *  
+   *
    *  md5WithRSAEncryption OBJECT IDENTIFIER ::= {
    *    iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) 4
    *  }
-   *  
+   *
    *  sha-1WithRSAEncryption OBJECT IDENTIFIER ::= {
    *    iso(1) member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs-1(1) 5
    *  }
    * </pre>
-   * 
+   *
    * <b>IMPORTANT</b>: This method checks the signature algorithm name against
    * (a) The GNU algorithm implementation's name, and (b) publicly referenced
    * names of the same algorithm. In other words this search is not
    * comprehensive and may fail for uncommon names of the same algorithms.
-   * 
+   *
    * @return the OID of the signature algorithm in use.
    * @throws InvalidParameterException if the concrete signature algorithm does
    *           not know its name, no OID is known/supported for that name, or we
@@ -1001,7 +1001,7 @@ abstract class Command
     if (algorithm.equalsIgnoreCase(Registry.DSS_SIG)
         || algorithm.equalsIgnoreCase("SHA1withDSA")) //$NON-NLS-1$
       return SHA1_WITH_DSA;
-    
+
     if (algorithm.equalsIgnoreCase(Registry.RSA_PKCS1_V1_5_SIG + "-" //$NON-NLS-1$
                                    + Registry.MD2_HASH)
         || algorithm.equalsIgnoreCase("MD2withRSA")) //$NON-NLS-1$
@@ -1027,7 +1027,7 @@ abstract class Command
    * by handlers if/when the key store password has changed, or amendements have
    * been made to the contents of the store; e.g. addition of a new Key Entry or
    * a Trusted Certificate.
-   * 
+   *
    * @param password the password protecting the key store.
    * @throws IOException if an I/O related exception occurs during the process.
    * @throws CertificateException if any of the certificates in the current key
@@ -1057,8 +1057,8 @@ abstract class Command
 
   /**
    * Convenience method. Calls the method with the same name passing it the
-   * same password characters used to initially load the key-store. 
-   * 
+   * same password characters used to initially load the key-store.
+   *
    * @throws IOException if an I/O related exception occurs during the process.
    * @throws KeyStoreException if the key store has not been loaded previously.
    * @throws NoSuchAlgorithmException if a required data integrity algorithm
@@ -1075,7 +1075,7 @@ abstract class Command
   /**
    * Prints a human-readable form of the designated certificate to a designated
    * {@link PrintWriter}.
-   * 
+   *
    * @param certificate the certificate to process.
    * @param writer where to print it.
    * @throws CertificateEncodingException if an exception occurs while obtaining
@@ -1099,7 +1099,7 @@ abstract class Command
   /**
    * Convenience method. Prints a human-readable form of the designated
    * certificate to <code>System.out</code>.
-   * 
+   *
    * @param certificate the certificate to process.
    * @throws CertificateEncodingException if an exception occurs while obtaining
    *           the DER encoded form <code>certificate</code>.
@@ -1114,7 +1114,7 @@ abstract class Command
    * Digest the designated contents with MD5 and return a string representation
    * suitable for use as a fingerprint; i.e. sequence of hexadecimal pairs of
    * characters separated by a colon.
-   * 
+   *
    * @param contents the non-null contents to digest.
    * @return a sequence of hexadecimal pairs of characters separated by colons.
    */
@@ -1138,7 +1138,7 @@ abstract class Command
   /**
    * Ensure that the currently set Alias is contained in the currently set key
    * store; otherwise throw an exception.
-   * 
+   *
    * @throws KeyStoreException if the keystore has not been loaded.
    * @throws IllegalArgumentException if the currently set alias is not known to
    *           the currently set key store.
@@ -1153,7 +1153,7 @@ abstract class Command
   /**
    * Ensure that the currently set Alias is associated with a Key Entry in the
    * currently set key store; otherwise throw an exception.
-   * 
+   *
    * @throws KeyStoreException if the keystore has not been loaded.
    * @throws SecurityException if the currently set alias is not a Key Entry in
    *           the currently set key store.
@@ -1204,7 +1204,7 @@ abstract class Command
    * provider, by-passing the Security search mechanism. The default console
    * callback handler implementation is
    * {@link gnu.javax.security.auth.callback.ConsoleCallbackHandler}.
-   * 
+   *
    * @return a console-based {@link CallbackHandler}.
    */
   protected CallbackHandler getCallbackHandler()

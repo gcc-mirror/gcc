@@ -103,11 +103,11 @@ public class DSSKeyPairX509Codec
    * <p>
    * The <i>subjectPublicKey</i> field, which is a BIT STRING, contains the
    * DER-encoded form of the DSA public key as an INTEGER.
-   * 
+   *
    * <pre>
    *       DSAPublicKey ::= INTEGER -- public key, Y
    * </pre>
-   * 
+   *
    * @param key the {@link PublicKey} instance to encode. MUST be an instance of
    *          {@link DSSPublicKey}.
    * @return the ASN.1 representation of the <i>SubjectPublicKeyInfo</i> in an

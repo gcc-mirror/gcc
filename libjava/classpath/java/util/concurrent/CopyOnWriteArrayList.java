@@ -75,12 +75,12 @@ import java.util.RandomAccess;
  * This class is especially useful when used with event handling, like the
  * following code demonstrates:<br />
  * <code><pre>
- * 
+ *
  * CopyOnWriteArrayList<EventListener> listeners =
  *   new CopyOnWriteArrayList<EventListener>();
- * 
+ *
  * [...]
- * 
+ *
  * for (final EventListener listener : listeners)
  *   {
  *     Runnable dispatcher = new Runnable() {
@@ -89,22 +89,22 @@ import java.util.RandomAccess;
  *         listener.preferenceChange(event);
  *       }
  *     };
- *         
+ *
  *     Executor executor = Executors.newSingleThreadExecutor();
  *     executor.execute(dispatcher);
  *   }
  * </pre></code>
- * 
+ *
  * @since 1.5
  */
-public class CopyOnWriteArrayList<E> 
+public class CopyOnWriteArrayList<E>
   implements List<E>, RandomAccess, Cloneable, Serializable
 {
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = 8673264195747942595L;
-  
+
   /**
    * Where the data is stored.
    */
@@ -121,7 +121,7 @@ public class CopyOnWriteArrayList<E>
   /**
    * Construct a new ArrayList, and initialize it with the elements in the
    * supplied Collection. The initial capacity is 110% of the Collection's size.
-   * 
+   *
    * @param c
    *          the collection whose elements will initialize this list
    * @throws NullPointerException
@@ -139,7 +139,7 @@ public class CopyOnWriteArrayList<E>
   /**
    * Construct a new ArrayList, and initialize it with the elements in the
    * supplied array.
-   * 
+   *
    * @param array
    *          the array used to initialize this list
    * @throws NullPointerException
@@ -152,7 +152,7 @@ public class CopyOnWriteArrayList<E>
 
   /**
    * Returns the number of elements in this list.
-   * 
+   *
    * @return the list size
    */
   public int size()
@@ -162,7 +162,7 @@ public class CopyOnWriteArrayList<E>
 
   /**
    * Checks if the list is empty.
-   * 
+   *
    * @return true if there are no elements
    */
   public boolean isEmpty()
@@ -172,7 +172,7 @@ public class CopyOnWriteArrayList<E>
 
   /**
    * Returns true if element is in this ArrayList.
-   * 
+   *
    * @param e
    *          the element whose inclusion in the List is being tested
    * @return true if the list contains e
@@ -207,7 +207,7 @@ public class CopyOnWriteArrayList<E>
   /**
    * Returns the lowest index at which element appears in this List, or -1 if it
    * does not appear.
-   * 
+   *
    * @param e
    *          the element whose inclusion in the List is being tested
    * @return the index where e was found
@@ -243,7 +243,7 @@ public class CopyOnWriteArrayList<E>
   /**
    * Returns the highest index at which element appears in this List, or -1 if
    * it does not appear.
-   * 
+   *
    * @param e
    *          the element whose inclusion in the List is being tested
    * @return the index where e was found
@@ -278,7 +278,7 @@ public class CopyOnWriteArrayList<E>
 
   /**
    * Creates a shallow copy of this ArrayList (elements are not cloned).
-   * 
+   *
    * @return the cloned object
    */
   public Object clone()
@@ -298,7 +298,7 @@ public class CopyOnWriteArrayList<E>
   /**
    * Returns an Object array containing all of the elements in this ArrayList.
    * The array is independent of this list.
-   * 
+   *
    * @return an array representation of this list
    */
   public Object[] toArray()
@@ -316,7 +316,7 @@ public class CopyOnWriteArrayList<E>
    * of the elements in this List, a new Array will be created and returned; if
    * the passed-in Array is <i>larger</i> than the size of this List, then
    * size() index will be set to null.
-   * 
+   *
    * @param a
    *          the passed-in Array
    * @return an array representation of this list
@@ -338,7 +338,7 @@ public class CopyOnWriteArrayList<E>
 
   /**
    * Retrieves the element at the user-supplied index.
-   * 
+   *
    * @param index
    *          the index of the element we are fetching
    * @throws IndexOutOfBoundsException
@@ -352,7 +352,7 @@ public class CopyOnWriteArrayList<E>
   /**
    * Sets the element at the specified index. The new element, e, can be an
    * object of any type or null.
-   * 
+   *
    * @param index
    *          the index at which the element is being set
    * @param e
@@ -373,7 +373,7 @@ public class CopyOnWriteArrayList<E>
   /**
    * Appends the supplied element to the end of this list. The element, e, can
    * be an object of any type or null.
-   * 
+   *
    * @param e
    *          the element to be appended to this list
    * @return true, the add will always succeed
@@ -392,7 +392,7 @@ public class CopyOnWriteArrayList<E>
    * Adds the supplied element at the specified index, shifting all elements
    * currently at that index or higher one to the right. The element, e, can be
    * an object of any type or null.
-   * 
+   *
    * @param index
    *          the index at which the element is being added
    * @param e
@@ -412,7 +412,7 @@ public class CopyOnWriteArrayList<E>
 
   /**
    * Removes the element at the user-supplied index.
-   * 
+   *
    * @param index
    *          the index of the element to be removed
    * @return the removed Object
@@ -423,20 +423,20 @@ public class CopyOnWriteArrayList<E>
   {
     if (index < 0 || index >= this.size())
       throw new IndexOutOfBoundsException("index = " +  index);
-    
+
     E[] snapshot = this.data;
     E[] newData = (E[]) new Object[snapshot.length - 1];
-    
+
     E result = snapshot[index];
-    
+
     if (index > 0)
       System.arraycopy(snapshot, 0, newData, 0, index);
-    
+
     System.arraycopy(snapshot, index + 1, newData, index,
                      snapshot.length - index - 1);
-    
+
     this.data = newData;
-    
+
     return result;
   }
 
@@ -444,7 +444,7 @@ public class CopyOnWriteArrayList<E>
    * Remove the first occurrence, if any, of the given object from this list,
    * returning <code>true</code> if the object was removed, <code>false</code>
    * otherwise.
-   * 
+   *
    * @param element the object to be removed.
    * @return true if element was removed, false otherwise. false means also that
    * the underlying storage was unchanged after this operation concluded.
@@ -458,7 +458,7 @@ public class CopyOnWriteArrayList<E>
       return false;
 
     E[] newData = (E[]) new Object[len - 1];
-    
+
     // search the element to remove while filling the backup array
     // this way we can run this method in O(n)
     int elementIndex = -1;
@@ -469,40 +469,40 @@ public class CopyOnWriteArrayList<E>
             elementIndex = i;
             break;
           }
-        
+
         if (i < newData.length)
           newData[i] = snapshot[i];
       }
-    
+
     if (elementIndex < 0)
       return false;
-     
+
     System.arraycopy(snapshot, elementIndex + 1, newData, elementIndex,
                      snapshot.length - elementIndex - 1);
     this.data = newData;
-    
+
     return true;
   }
-  
+
   /**
    * Removes all the elements contained in the given collection.
    * This method removes the elements that are contained in both
    * this list and in the given collection.
-   * 
+   *
    * @param c the collection containing the elements to be removed from this
    * list.
    * @return true if at least one element was removed, indicating that
-   * the list internal storage changed as a result, false otherwise. 
+   * the list internal storage changed as a result, false otherwise.
    */
   public synchronized boolean removeAll(Collection<?> c)
   {
     if (c.size() == 0)
       return false;
-    
+
     E [] snapshot = this.data;
-    E [] storage = (E[]) new Object[this.data.length]; 
+    E [] storage = (E[]) new Object[this.data.length];
     boolean changed = false;
-    
+
     int length = 0;
     for (E element : snapshot)
       {
@@ -514,18 +514,18 @@ public class CopyOnWriteArrayList<E>
         else
           storage[length++] = element;
       }
-    
+
     if (!changed)
       return false;
-    
+
     E[] newData = (E[]) new Object[length];
     System.arraycopy(storage, 0, newData, 0, length);
-    
+
     this.data = newData;
-    
+
     return true;
   }
-  
+
   /**
    * Removes all the elements that are not in the passed collection.
    * If the collection is void, this method has the same effect of
@@ -533,7 +533,7 @@ public class CopyOnWriteArrayList<E>
    * Please, note that this method is extremely slow (unless the argument has
    * <code>size == 0</code>) and has bad performance is both space and time
    * usage.
-   * 
+   *
    * @param c the collection containing the elements to be retained by this
    * list.
    * @return true the list internal storage changed as a result of this
@@ -548,31 +548,31 @@ public class CopyOnWriteArrayList<E>
         this.clear();
         return true;
       }
-    
+
     E [] snapshot = this.data;
-    E [] storage = (E[]) new Object[this.data.length]; 
-    
+    E [] storage = (E[]) new Object[this.data.length];
+
     int length = 0;
     for (E element : snapshot)
       {
         if (c.contains(element))
           storage[length++] = element;
       }
-    
+
     // means we retained all the elements previously in our storage
     // we are running already slow here, but at least we avoid copying
     // another array and changing the internal storage
     if (length == snapshot.length)
       return false;
-    
+
     E[] newData = (E[]) new Object[length];
     System.arraycopy(storage, 0, newData, 0, length);
-    
+
     this.data = newData;
-    
+
     return true;
   }
-  
+
   /**
    * Removes all elements from this List
    */
@@ -586,7 +586,7 @@ public class CopyOnWriteArrayList<E>
    * what happens if you modify the list while this is taking place; for
    * example, if the collection contains this list. c can contain objects of any
    * type, as well as null values.
-   * 
+   *
    * @param c
    *          a Collection containing elements to be added to this List
    * @return true if the list was modified, in other words c is not empty
@@ -602,7 +602,7 @@ public class CopyOnWriteArrayList<E>
    * Add all elements in the supplied collection, inserting them beginning at
    * the specified index. c can contain objects of any type, as well as null
    * values.
-   * 
+   *
    * @param index
    *          the index at which the elements will be inserted
    * @param c
@@ -616,37 +616,37 @@ public class CopyOnWriteArrayList<E>
   {
     if (index < 0 || index > this.size())
       throw new IndexOutOfBoundsException("index = " +  index);
-    
+
     int csize = c.size();
     if (csize == 0)
       return false;
-    
+
     E[] data = this.data;
     Iterator<? extends E> itr = c.iterator();
-    
+
     E[] newData = (E[]) new Object[data.length + csize];
-    
+
     // avoid this call at all if we were asked to put the elements at the
     // beginning of our storage
     if (index != 0)
       System.arraycopy(data, 0, newData, 0, index);
-    
+
     int itemsLeft = index;
-    
+
     for (E value : c)
       newData[index++] = value;
-    
+
     // now copy the remaining elements
     System.arraycopy(data, itemsLeft, newData, 0, data.length - itemsLeft);
-    
+
     this.data = newData;
-    
+
     return true;
   }
-  
+
   /**
    * Adds an element if the list does not contains it already.
-   * 
+   *
    * @param val the element to add to the list.
    * @return true if the element was added, false otherwise.
    */
@@ -661,7 +661,7 @@ public class CopyOnWriteArrayList<E>
   /**
    * Adds all the element from the given collection that are not already
    * in this list.
-   * 
+   *
    * @param c the Collection containing the elements to be inserted
    * @return true the list internal storage changed as a result of this
    * operation, false otherwise.
@@ -671,28 +671,28 @@ public class CopyOnWriteArrayList<E>
     int size = c.size();
     if (size == 0)
       return 0;
-    
+
     E [] snapshot = this.data;
     E [] storage = (E[]) new Object[size];
-    
+
     size = 0;
     for (E val : c)
       {
         if (!this.contains(val))
           storage[size++] = val;
       }
-    
+
     if (size == 0)
       return 0;
-    
+
     // append storage to data
     E [] newData = (E[]) new Object[snapshot.length + size];
-    
+
     System.arraycopy(snapshot, 0, newData, 0, snapshot.length);
     System.arraycopy(storage, 0, newData, snapshot.length, size);
-    
+
     this.data = newData;
-    
+
     return size;
   }
 
@@ -705,19 +705,19 @@ public class CopyOnWriteArrayList<E>
   {
     if (o == null)
       return false;
-    
+
     if (this == o)
       return true;
-    
+
     // let's see if 'o' is a list, if so, we need to compare the elements
     // as returned by the iterator
     if (o instanceof List)
       {
         List<?> source = (List<?>) o;
-        
+
         if (source.size() != this.size())
           return false;
-        
+
         Iterator<?> sourceIterator = source.iterator();
         for (E element : this)
           {
@@ -727,10 +727,10 @@ public class CopyOnWriteArrayList<E>
 
         return true;
       }
-    
+
     return false;
   }
-  
+
   public int hashCode()
   {
     // see http://java.sun.com/6/docs/api/java/util/List.html#hashcode()
@@ -741,14 +741,14 @@ public class CopyOnWriteArrayList<E>
       }
     return hashcode;
   }
-  
+
   /**
    * Return an Iterator containing the elements of this list.
    * The Iterator uses a snapshot of the state of the internal storage
    * at the moment this method is called and does <strong>not</strong> support
    * update operations, so no synchronization is needed to traverse the
    * iterator.
-   * 
+   *
    * @return an Iterator containing the elements of this list in sequence.
    */
   public Iterator<E> iterator()
@@ -757,7 +757,7 @@ public class CopyOnWriteArrayList<E>
     {
       E [] iteratorData = CopyOnWriteArrayList.this.data;
       int currentElement = 0;
-      
+
       public boolean hasNext()
       {
         return (currentElement < iteratorData.length);
@@ -776,14 +776,14 @@ public class CopyOnWriteArrayList<E>
       }
     };
   }
-  
+
   /**
    * Return a ListIterator containing the elements of this list.
    * The Iterator uses a snapshot of the state of the internal storage
    * at the moment this method is called and does <strong>not</strong> support
    * update operations, so no synchronization is needed to traverse the
    * iterator.
-   * 
+   *
    * @return a ListIterator containing the elements of this list in sequence.
    */
   public ListIterator<E> listIterator()
@@ -800,7 +800,7 @@ public class CopyOnWriteArrayList<E>
    * at the moment this method is called and does <strong>not</strong> support
    * update operations, so no synchronization is needed to traverse the
    * iterator.
-   * 
+   *
    * @param index the index at which to start iterating.
    * @return a ListIterator containing the elements of this list in sequence.
    */
@@ -814,7 +814,7 @@ public class CopyOnWriteArrayList<E>
     {
       E [] iteratorData = CopyOnWriteArrayList.this.data;
       int currentElement = index;
-      
+
       public void add(E o)
       {
         throw new UnsupportedOperationException("updating of elements in " +
@@ -836,7 +836,7 @@ public class CopyOnWriteArrayList<E>
       {
         if (hasNext() == false)
           throw new java.util.NoSuchElementException();
-        
+
         return iteratorData[currentElement++];
       }
 
@@ -849,7 +849,7 @@ public class CopyOnWriteArrayList<E>
       {
         if (hasPrevious() == false)
           throw new java.util.NoSuchElementException();
-        
+
         return iteratorData[--currentElement];
       }
 
@@ -871,10 +871,10 @@ public class CopyOnWriteArrayList<E>
                                                 "iterators is not supported " +
                                                 "by this class");
       }
-      
+
     };
   }
-  
+
   /**
    * Obtain a List view of a subsection of this list, from fromIndex
    * (inclusive) to toIndex (exclusive). If the two indices are equal, the
@@ -907,7 +907,7 @@ public class CopyOnWriteArrayList<E>
    *
    * All methods first check to see if the actual modCount of the backing
    * list is equal to its expected value, and throw a
-   * ConcurrentModificationException if it is not. 
+   * ConcurrentModificationException if it is not.
    *
    * @param fromIndex the index that the returned list should start from
    *        (inclusive)
@@ -941,7 +941,7 @@ public class CopyOnWriteArrayList<E>
    * @author Original author unknown
    * @author Eric Blake (ebb9@email.byu.edu)
    */
-  private static class SubList<E> 
+  private static class SubList<E>
     extends AbstractList<E>
   {
     // Package visible, for use by iterator.
@@ -968,7 +968,7 @@ public class CopyOnWriteArrayList<E>
       offset = fromIndex;
       size = toIndex - fromIndex;
     }
-    
+
     /**
      * This method checks the two modCount fields to ensure that there has
      * not been a concurrent modification, returning if all is okay.
@@ -982,7 +982,7 @@ public class CopyOnWriteArrayList<E>
       if (data != backingList.data)
         throw new ConcurrentModificationException();
     }
-    
+
     /**
      * This method checks that a value is between 0 and size (inclusive). If
      * it is not, an exception is thrown.
@@ -997,7 +997,7 @@ public class CopyOnWriteArrayList<E>
         throw new IndexOutOfBoundsException("Index: " + index +
                                             ", Size:" + size);
     }
-    
+
     /**
      * This method checks that a value is between 0 (inclusive) and size
      * (exclusive). If it is not, an exception is thrown.
@@ -1012,7 +1012,7 @@ public class CopyOnWriteArrayList<E>
         throw new IndexOutOfBoundsException("Index: " + index +
                                             ", Size:" + size);
     }
-    
+
     /**
      * Specified by AbstractList.subList to return the private field size.
      *
@@ -1028,7 +1028,7 @@ public class CopyOnWriteArrayList<E>
           return size;
         }
     }
-    
+
     public void clear()
     {
       synchronized (backingList)
@@ -1037,17 +1037,17 @@ public class CopyOnWriteArrayList<E>
           E[] newData = (E[]) new Object[snapshot.length - size];
 
           int toIndex = size + offset;
-          
+
           System.arraycopy(snapshot, 0, newData, 0, offset);
           System.arraycopy(snapshot, toIndex, newData, offset,
                            snapshot.length - toIndex);
-          
+
           backingList.data = newData;
           this.data = backingList.data;
           this.size = 0;
         }
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -1070,14 +1070,14 @@ public class CopyOnWriteArrayList<E>
         {
           checkMod();
           checkBoundsExclusive(index);
-          
+
           E el =  backingList.set(index + offset, o);
           this.data = backingList.data;
-          
+
           return el;
         }
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -1093,11 +1093,11 @@ public class CopyOnWriteArrayList<E>
       {
         checkMod();
         checkBoundsExclusive(index);
-        
+
         return backingList.get(index + offset);
       }
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -1119,14 +1119,14 @@ public class CopyOnWriteArrayList<E>
       {
         checkMod();
         checkBoundsInclusive(index);
-      
+
         backingList.add(index + offset, o);
-        
+
         this.data = backingList.data;
         size++;
       }
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -1145,14 +1145,14 @@ public class CopyOnWriteArrayList<E>
         checkMod();
         checkBoundsExclusive(index);
         E o = backingList.remove(index + offset);
-        
+
         this.data = backingList.data;
         size--;
-        
+
         return o;
       }
     }
-    
+
     /**
      * Specified by AbstractList.subList to delegate to the backing list.
      *
@@ -1178,14 +1178,14 @@ public class CopyOnWriteArrayList<E>
         checkBoundsInclusive(index);
         int csize = c.size();
         boolean result = backingList.addAll(offset + index, c);
-        
+
         this.data = backingList.data;
         size += csize;
-        
+
         return result;
       }
     }
-    
+
     /**
      * Specified by AbstractList.subList to return addAll(size, c).
      *
@@ -1208,7 +1208,7 @@ public class CopyOnWriteArrayList<E>
         return addAll(size, c);
       }
     }
-    
+
     /**
      * Specified by AbstractList.subList to return listIterator().
      *
@@ -1218,7 +1218,7 @@ public class CopyOnWriteArrayList<E>
     {
       return listIterator();
     }
-    
+
     /**
      * Specified by AbstractList.subList to return a wrapper around the
      * backing list's iterator.
@@ -1363,7 +1363,7 @@ public class CopyOnWriteArrayList<E>
         /**
          * Adds the supplied object before the element that would be returned
          * by a call to <code>next()</code>, if the list supports addition.
-         * 
+         *
          * @param o The object to add to the list.
          * @throws UnsupportedOperationException if the list doesn't support
          *         the addition of new elements.
@@ -1378,7 +1378,7 @@ public class CopyOnWriteArrayList<E>
         {
           throw new UnsupportedOperationException("Modification not supported " +
               "on CopyOnWriteArrayList iterators");
-        } 
+        }
       };
     }
   } // class SubList
@@ -1407,7 +1407,7 @@ public class CopyOnWriteArrayList<E>
 
   /**
    * Serializes this object to the given stream.
-   * 
+   *
    * @param s
    *          the stream to write to
    * @throws IOException
@@ -1430,7 +1430,7 @@ public class CopyOnWriteArrayList<E>
 
   /**
    * Deserializes this object from the given stream.
-   * 
+   *
    * @param s
    *          the stream to read from
    * @throws ClassNotFoundException
@@ -1455,7 +1455,7 @@ public class CopyOnWriteArrayList<E>
   {
     return o1 == null ? o2 == null : o1.equals(o2);
   }
-  
+
   Object[] getArray()
   {
     return data;

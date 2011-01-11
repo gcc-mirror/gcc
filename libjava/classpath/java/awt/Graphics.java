@@ -74,8 +74,8 @@ public abstract class Graphics
    *
    * @param x The new X coordinate of the clipping region rect.
    * @param y The new Y coordinate of the clipping region rect.
-   * @param width The width of the clipping region intersect rectangle. 
-   * @param height The height of the clipping region intersect rectangle. 
+   * @param width The width of the clipping region intersect rectangle.
+   * @param height The height of the clipping region intersect rectangle.
    *
    * @return A copy of this object, modified as specified.
    */
@@ -122,12 +122,12 @@ public abstract class Graphics
 
   /**
    * Sets this context info "XOR" mode, where the targe pixles are
-   * XOR-ed when drawn on. 
+   * XOR-ed when drawn on.
    *
    * @param color The color to XOR against.
    */
   public abstract void setXORMode(Color color);
-  
+
   /**
    * Returns the current font for this graphics context.
    *
@@ -162,7 +162,7 @@ public abstract class Graphics
   public abstract FontMetrics getFontMetrics(Font font);
 
   /**
-   * Returns the bounding rectangle of the clipping region for this 
+   * Returns the bounding rectangle of the clipping region for this
    * graphics context.
    *
    * @return The bounding rectangle for the clipping region.
@@ -170,7 +170,7 @@ public abstract class Graphics
   public abstract Rectangle getClipBounds();
 
   /**
-   * Returns the bounding rectangle of the clipping region for this 
+   * Returns the bounding rectangle of the clipping region for this
    * graphics context.
    *
    * @return The bounding rectangle for the clipping region.
@@ -313,19 +313,19 @@ public abstract class Graphics
     Color color = getColor();
     Color tl = color.brighter();
     Color br = color.darker();
-    
+
     if (!raised)
       {
         Color tmp = tl;
         tl = br;
         br = tmp;
       }
-    
+
     int x1 = x;
     int y1 = y;
     int x2 = x + width;
     int y2 = y + height;
-    
+
     setColor(tl);
     drawLine(x1, y1, x2, y1);
     drawLine(x1, y2, x1, y1);
@@ -488,8 +488,8 @@ public abstract class Graphics
 
   /**
    * Draws all of the image that is available and returns.  If the image
-   * is not completely loaded, <code>false</code> is returned and 
-   * the specified iamge observer is notified as more data becomes 
+   * is not completely loaded, <code>false</code> is returned and
+   * the specified iamge observer is notified as more data becomes
    * available.
    *
    * @param image The image to draw.
@@ -502,12 +502,12 @@ public abstract class Graphics
    */
   public abstract boolean drawImage(Image image, int x, int y,
                                     ImageObserver observer);
- 
+
   /**
    * Draws all of the image that is available and returns.  The image
    * is scaled to fit in the specified rectangle.  If the image
-   * is not completely loaded, <code>false</code> is returned and 
-   * the specified iamge observer is notified as more data becomes 
+   * is not completely loaded, <code>false</code> is returned and
+   * the specified iamge observer is notified as more data becomes
    * available.
    *
    * @param image The image to draw.
@@ -522,11 +522,11 @@ public abstract class Graphics
    */
   public abstract boolean drawImage(Image image, int x, int y, int width,
                                     int height, ImageObserver observer);
- 
+
   /**
    * Draws all of the image that is available and returns.  If the image
-   * is not completely loaded, <code>false</code> is returned and 
-   * the specified iamge observer is notified as more data becomes 
+   * is not completely loaded, <code>false</code> is returned and
+   * the specified iamge observer is notified as more data becomes
    * available.
    *
    * @param image The image to draw.
@@ -540,12 +540,12 @@ public abstract class Graphics
    */
   public abstract boolean drawImage(Image image, int x, int y, Color bgcolor,
                                     ImageObserver observer);
- 
+
   /**
    * Draws all of the image that is available and returns.  The image
    * is scaled to fit in the specified rectangle.  If the image
-   * is not completely loaded, <code>false</code> is returned and 
-   * the specified iamge observer is notified as more data becomes 
+   * is not completely loaded, <code>false</code> is returned and
+   * the specified iamge observer is notified as more data becomes
    * available.
    *
    * @param image The image to draw.
@@ -596,7 +596,7 @@ public abstract class Graphics
   /**
    * Returns a string representation of this object.
    *
-   * @return A string representation of this object. 
+   * @return A string representation of this object.
    */
   public String toString()
   {
@@ -626,7 +626,7 @@ public abstract class Graphics
   public Rectangle getClipBounds(Rectangle r)
   {
     Rectangle clipBounds = getClipBounds();
-  
+
     if (r == null)
       return clipBounds;
 

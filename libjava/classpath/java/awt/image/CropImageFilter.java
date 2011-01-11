@@ -44,7 +44,7 @@ import java.util.Hashtable;
 /**
  * Currently this filter does almost nothing and needs to be implemented.
  *
- * @author C. Brian Jones (cbj@gnu.org) 
+ * @author C. Brian Jones (cbj@gnu.org)
  */
 public class CropImageFilter extends ImageFilter
 {
@@ -62,10 +62,10 @@ public class CropImageFilter extends ImageFilter
      * @param height the height of the cropped rectangle
      */
     public CropImageFilter(int x, int y, int width, int height) {
-	this.x = x;
-	this.y = y;
-	this.width = width;
-	this.height = height;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
     }
 
     /**
@@ -73,14 +73,14 @@ public class CropImageFilter extends ImageFilter
      * being produced using this method.  This filter overrides this
      * method in order to set the dimentions to the size of the
      * cropped rectangle instead of the size of the image.
-     * 
+     *
      * @param width the width of the image
-     * @param height the height of the image 
+     * @param height the height of the image
      */
     public void setDimensions(int width, int height)
     {
       if (consumer != null)
-	consumer.setDimensions(this.width, this.height);
+        consumer.setDimensions(this.width, this.height);
     }
 
     /**
@@ -89,7 +89,7 @@ public class CropImageFilter extends ImageFilter
      * <br>
      * FIXME - What property is set for this class?
      *
-     * @param props the list of properties associated with this image 
+     * @param props the list of properties associated with this image
      */
     public void setProperties(Hashtable<?, ?> props)
     {
@@ -102,7 +102,7 @@ public class CropImageFilter extends ImageFilter
     /**
      * This function delivers a rectangle of pixels where any
      * pixel(m,n) is stored in the array as a <code>byte</code> at
-     * index (n * scansize + m + offset).  
+     * index (n * scansize + m + offset).
      *
      * @param x the x coordinate of the rectangle
      * @param y the y coordinate of the rectangle
@@ -113,37 +113,37 @@ public class CropImageFilter extends ImageFilter
      * @param offset the index of the first pixels in the <code>pixels</code> array
      * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
      */
-    public void setPixels(int x, int y, int w, int h, 
-	   ColorModel model, byte[] pixels, int offset, int scansize)
+    public void setPixels(int x, int y, int w, int h,
+           ColorModel model, byte[] pixels, int offset, int scansize)
     {
-	Rectangle filterBounds = new Rectangle(this.x, this.y,
-	                                       this.width, this.height);
-	Rectangle pixelBounds = new Rectangle(x, y, w, h);
+        Rectangle filterBounds = new Rectangle(this.x, this.y,
+                                               this.width, this.height);
+        Rectangle pixelBounds = new Rectangle(x, y, w, h);
 
-	if (filterBounds.intersects(pixelBounds))
-	{
-	    Rectangle bounds = filterBounds.intersection(pixelBounds);
+        if (filterBounds.intersects(pixelBounds))
+        {
+            Rectangle bounds = filterBounds.intersection(pixelBounds);
 
-	    byte[] cropped = new byte[bounds.width * bounds.height];
-	    for (int i = 0; i < bounds.height; i++)
-	    {
-		int start = (bounds.y - pixelBounds.y + i) * scansize + offset;
+            byte[] cropped = new byte[bounds.width * bounds.height];
+            for (int i = 0; i < bounds.height; i++)
+            {
+                int start = (bounds.y - pixelBounds.y + i) * scansize + offset;
 
-		for (int j = 0; j < bounds.width; j++)
-		    cropped[i * bounds.width + j] = pixels[start + bounds.x + j];
-	    }
-	    
-	    if (consumer != null)
-	      consumer.setPixels(0, 0,
-				 bounds.width, bounds.height,
-				 model, cropped, 0, bounds.width);
-	}
+                for (int j = 0; j < bounds.width; j++)
+                    cropped[i * bounds.width + j] = pixels[start + bounds.x + j];
+            }
+
+            if (consumer != null)
+              consumer.setPixels(0, 0,
+                                 bounds.width, bounds.height,
+                                 model, cropped, 0, bounds.width);
+        }
     }
 
     /**
      * This function delivers a rectangle of pixels where any
      * pixel(m,n) is stored in the array as an <code>int</code> at
-     * index (n * scansize + m + offset).  
+     * index (n * scansize + m + offset).
      *
      * @param x the x coordinate of the rectangle
      * @param y the y coordinate of the rectangle
@@ -154,32 +154,31 @@ public class CropImageFilter extends ImageFilter
      * @param offset the index of the first pixels in the <code>pixels</code> array
      * @param scansize the width to use in extracting pixels from the <code>pixels</code> array
      */
-    public void setPixels(int x, int y, int w, int h, 
+    public void setPixels(int x, int y, int w, int h,
            ColorModel model, int[] pixels, int offset, int scansize)
     {
-	Rectangle filterBounds = new Rectangle(this.x, this.y,
-	                                       this.width, this.height);
-	Rectangle pixelBounds = new Rectangle(x, y, w, h);
+        Rectangle filterBounds = new Rectangle(this.x, this.y,
+                                               this.width, this.height);
+        Rectangle pixelBounds = new Rectangle(x, y, w, h);
 
-	if (filterBounds.intersects(pixelBounds))
-	{
-	    Rectangle bounds = filterBounds.intersection(pixelBounds);
+        if (filterBounds.intersects(pixelBounds))
+        {
+            Rectangle bounds = filterBounds.intersection(pixelBounds);
 
-	    int[] cropped = new int[bounds.width * bounds.height];
-	    for (int i = 0; i < bounds.height; i++)
-	    {
-		int start = (bounds.y - pixelBounds.y + i) * scansize + offset;
+            int[] cropped = new int[bounds.width * bounds.height];
+            for (int i = 0; i < bounds.height; i++)
+            {
+                int start = (bounds.y - pixelBounds.y + i) * scansize + offset;
 
-		for (int j = 0; j < bounds.width; j++)
-		    cropped[i * bounds.width + j] = pixels[start + bounds.x + j];
-	    }
-	    
-	    if (consumer != null)
-	      consumer.setPixels(0, 0,
-				 bounds.width, bounds.height,
-				 model, cropped, 0, bounds.width);
-	}
+                for (int j = 0; j < bounds.width; j++)
+                    cropped[i * bounds.width + j] = pixels[start + bounds.x + j];
+            }
+
+            if (consumer != null)
+              consumer.setPixels(0, 0,
+                                 bounds.width, bounds.height,
+                                 model, cropped, 0, bounds.width);
+        }
     }
 
 }
-

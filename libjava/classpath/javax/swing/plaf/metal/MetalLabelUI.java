@@ -79,12 +79,12 @@ public class MetalLabelUI
       metalLabelUI = new MetalLabelUI();
     return metalLabelUI;
   }
-  
+
   /**
-   * Draws the text for a disabled label, using the color defined in the 
+   * Draws the text for a disabled label, using the color defined in the
    * {@link UIManager} defaults with the key
    * <code>Label.disabledForeground</code>.
-   * 
+   *
    * @param l  the label.
    * @param g  the graphics device.
    * @param s  the label text.

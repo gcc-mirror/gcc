@@ -90,7 +90,7 @@ public class Demo
         System.out.print(".");
       }
     System.out.println("ok.");
-    System.out.println();    
+    System.out.println();
 
     // Test the stream oriented communication.
     DirectTest.main(args);

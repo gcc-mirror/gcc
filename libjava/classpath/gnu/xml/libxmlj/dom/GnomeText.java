@@ -1,4 +1,4 @@
-/* GnomeText.java - 
+/* GnomeText.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -57,7 +57,7 @@ implements Text
   {
     super (id);
   }
-  
+
   public Text splitText (int offset)
     throws DOMException
   {
@@ -69,14 +69,14 @@ implements Text
     setNodeValue (part2);
     return text;
   }
-  
+
   // DOM Level 3
 
   public boolean isElementContentWhitespace ()
   {
     return getTextContent ().trim ().length () == 0;
   }
-  
+
   public String getWholeText ()
   {
     Node first = this;
@@ -103,7 +103,7 @@ implements Text
       {
         setNodeValue (content);
       }
-    
+
     Node first = this;
     Node node = getPreviousSibling ();
     while (node != null && node instanceof Text)

@@ -40,7 +40,7 @@ package javax.sound.midi;
 
 /**
  * A Patch describes where an Instrument is loaded on a Synthesizer.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -50,11 +50,11 @@ public class Patch
   // Private data describing the patch
   private int bank = 0;
   private int program = 0;
-  
+
   /**
    * Create a Patch object, specifying the bank and program in which this Patch
    * is located.
-   * 
+   *
    * @param bank the bank in which this Patch is located
    * @param program the program in which this Patch is located
    */
@@ -63,20 +63,20 @@ public class Patch
     this.bank = bank;
     this.program = program;
   }
-  
+
   /**
    * Get the bank in which this Patch is located.
-   * 
+   *
    * @return the bank in which this Patch is located
    */
   public int getBank()
   {
     return bank;
   }
-  
+
   /**
    * Get the program in which this Patch is located.
-   * 
+   *
    * @return the program in which this Patch is located
    */
   public int getProgram()

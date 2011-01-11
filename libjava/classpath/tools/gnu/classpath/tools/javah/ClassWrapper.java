@@ -193,14 +193,14 @@ public class ClassWrapper
         superClass.makeVtable();
         vtable = new ArrayList<MethodNode>(superClass.vtable);
         bridgeTargets = new HashSet<String>(superClass.bridgeTargets);
-	methodNameMap = new HashMap<String,String>(superClass.methodNameMap);
+        methodNameMap = new HashMap<String,String>(superClass.methodNameMap);
       }
     else
       {
         // Object.
         vtable = new ArrayList<MethodNode>();
         bridgeTargets = new HashSet<String>();
-	methodNameMap = new HashMap<String,String>();
+        methodNameMap = new HashMap<String,String>();
       }
     addLocalMethods();
     addInterfaces(this);
@@ -217,18 +217,18 @@ public class ClassWrapper
         MethodNode m = (MethodNode) i.next();
         String desc = MethodHelper.getBridgeTarget(m);
         if (desc != null)
-	  {
-	    String sum = m.name + desc;
-	    boolean newTarget = bridgeTargets.add(sum);
-	    if (newTarget)
-	      {
-		// Bridge target that is new in this class.
-		String cname = this.name;
-		int index = cname.lastIndexOf('/');
-		cname = cname.substring(index + 1);
-		methodNameMap.put(sum, cname + "$" + m.name);
-	      }
-	  }
+          {
+            String sum = m.name + desc;
+            boolean newTarget = bridgeTargets.add(sum);
+            if (newTarget)
+              {
+                // Bridge target that is new in this class.
+                String cname = this.name;
+                int index = cname.lastIndexOf('/');
+                cname = cname.substring(index + 1);
+                methodNameMap.put(sum, cname + "$" + m.name);
+              }
+          }
       }
   }
 
@@ -255,13 +255,13 @@ public class ClassWrapper
     while (i.hasNext())
       {
         MethodNode m = (MethodNode) i.next();
-	String nameToUse;
-	String sum = m.name + m.desc;
-	if (bridgeTargets.contains(sum))
-	  nameToUse = (String) methodNameMap.get(sum);
-	else
-	  nameToUse = m.name;
-	methodNameMap.put(sum, nameToUse);
+        String nameToUse;
+        String sum = m.name + m.desc;
+        if (bridgeTargets.contains(sum))
+          nameToUse = (String) methodNameMap.get(sum);
+        else
+          nameToUse = m.name;
+        methodNameMap.put(sum, nameToUse);
         MethodHelper.print(out, m, this, nameToUse);
       }
   }

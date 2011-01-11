@@ -57,6 +57,5 @@ public interface CommandObject
    */
   void setCommandContext(String verb, DataHandler dh)
     throws IOException;
-  
-}
 
+}

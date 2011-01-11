@@ -142,7 +142,7 @@ public class BasicGraphicsUtils
       g.setColor(darkShadow);
       g.drawLine(x + 1, y + 1, x2 - 2, y + 1);         // top, inner
       g.drawLine(x + 1, y + 2, x + 1, y2 - 2);         // left, inner
-      
+
       g.setColor(highlight);
       g.drawLine(x + 1, y2 - 1, x2 - 1, y2 - 1);       // bottom, inner
       g.drawLine(x2 - 1, y + 1, x2 - 1, y2 - 2);       // right, inner
@@ -156,8 +156,8 @@ public class BasicGraphicsUtils
       g.setColor(oldColor);
     }
   }
-  
-  
+
+
   /**
    * Determines the width of the border that gets painted by
    * {@link #drawEtchedRect}.
@@ -229,7 +229,7 @@ public class BasicGraphicsUtils
   {
     return new Insets(2, 2, 2, 2);
   }
-  
+
 
   /**
    * Draws a border that is suitable for buttons of the Basic look and
@@ -310,8 +310,8 @@ public class BasicGraphicsUtils
       g.setColor(oldColor);
     }
   }
-  
-  
+
+
   /**
    * Draws a rectangle that appears lowered into the surface, given
    * four colors that are used for drawing.
@@ -363,8 +363,8 @@ public class BasicGraphicsUtils
                    darkShadow, shadow,
                    highlight, lightHighlight);
   }
-  
-  
+
+
   /**
    * Draws a String at the given location, underlining the first
    * occurence of a specified character. The algorithm for determining
@@ -390,7 +390,7 @@ public class BasicGraphicsUtils
    *        the GNU Classpath implementation does not underline
    *        anything if <code>underlinedChar</code> is outside
    *        the range of <code>char</code>.
-   *        
+   *
    * @param x the x coordinate of the text, as it would be passed to
    *        {@link java.awt.Graphics#drawString(java.lang.String,
    *        int, int)}.
@@ -436,7 +436,7 @@ public class BasicGraphicsUtils
    *        <code>text</code>.  If <code>underlinedIndex</code> falls
    *        outside the range <code>[0, text.length() - 1]</code>, the
    *        text will be drawn without underlining anything.
-   *        
+   *
    * @param x the x coordinate of the text, as it would be passed to
    *        {@link java.awt.Graphics#drawString(java.lang.String,
    *        int, int)}.
@@ -518,7 +518,7 @@ public class BasicGraphicsUtils
       underline.width = underlineX1 - underlineX2;
     }
 
-    
+
     underline.height = lineMetrics.getUnderlineThickness();
     underline.y = lineMetrics.getUnderlineOffset();
     if (underline.y == 0)
@@ -597,7 +597,7 @@ public class BasicGraphicsUtils
    *        <code>text</code>.  If <code>underlinedIndex</code> falls
    *        outside the range <code>[0, text.length() - 1]</code>, the
    *        text will be drawn without underlining anything.
-   *        
+   *
    * @param x the x coordinate of the text, as it would be passed to
    *        {@link java.awt.Graphics#drawString(java.lang.String,
    *        int, int)}.
@@ -683,7 +683,7 @@ public class BasicGraphicsUtils
       underline.width = underlineX1 - underlineX2;
     }
 
-    
+
     underline.height = lineMetrics.getUnderlineThickness();
     underline.y = lineMetrics.getUnderlineOffset();
     if (underline.y == 0)
@@ -761,8 +761,8 @@ public class BasicGraphicsUtils
    *         and <code>height</code> fields indicate the preferred
    *         extent in pixels.
    *
-   * @see javax.swing.SwingUtilities#layoutCompoundLabel(JComponent, 
-   *      FontMetrics, String, Icon, int, int, int, int, Rectangle, Rectangle, 
+   * @see javax.swing.SwingUtilities#layoutCompoundLabel(JComponent,
+   *      FontMetrics, String, Icon, int, int, int, int, Rectangle, Rectangle,
    *      Rectangle, int)
    */
   public static Dimension getPreferredButtonSize(AbstractButton b,
@@ -795,7 +795,7 @@ public class BasicGraphicsUtils
       b.getFontMetrics(b.getFont()), // see comment above
       b.getText(),
       b.getIcon(),
-      b.getVerticalAlignment(), 
+      b.getVerticalAlignment(),
       b.getHorizontalAlignment(),
       b.getVerticalTextPosition(),
       b.getHorizontalTextPosition(),

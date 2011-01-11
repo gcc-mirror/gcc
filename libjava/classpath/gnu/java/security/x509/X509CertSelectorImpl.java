@@ -194,4 +194,3 @@ public class X509CertSelectorImpl implements CertSelector
     return matchIssuer && matchSubject;
   }
 }
-

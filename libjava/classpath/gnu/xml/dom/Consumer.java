@@ -1,4 +1,4 @@
-/* Consumer.java -- 
+/* Consumer.java --
    Copyright (C) 2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -81,8 +81,8 @@ public class Consumer extends DomConsumer
     public Consumer ()
     throws SAXException
     {
-	super (DomDocument.class);
-	setHandler (new Backdoor (this));
+        super (DomDocument.class);
+        setHandler (new Backdoor (this));
     }
 
     /**
@@ -93,8 +93,8 @@ public class Consumer extends DomConsumer
     public Consumer (EventConsumer next)
     throws SAXException
     {
-	super (DomDocument.class, next);
-	setHandler (new Backdoor (this));
+        super (DomDocument.class, next);
+        setHandler (new Backdoor (this));
     }
 
     /**
@@ -105,160 +105,160 @@ public class Consumer extends DomConsumer
      */
     public static class Backdoor extends DomConsumer.Handler
     {
-	/**
-	 * Constructor.
-	 * @param consumer must have been initialized to use the
-	 *	{@link DomDocument} class (or a subclass) for
-	 *	constructing DOM trees
-	 */
-	protected Backdoor (DomConsumer consumer)
-	throws SAXException
-	    { super (consumer); }
+        /**
+         * Constructor.
+         * @param consumer must have been initialized to use the
+         *      {@link DomDocument} class (or a subclass) for
+         *      constructing DOM trees
+         */
+        protected Backdoor (DomConsumer consumer)
+        throws SAXException
+            { super (consumer); }
 
-	// helper routine
-	private DomDoctype getDoctype ()
-	throws SAXException
-	{
-	    DomDocument		doc = (DomDocument) getDocument ();
-	    DocumentType	dt = doc.getDoctype ();
+        // helper routine
+        private DomDoctype getDoctype ()
+        throws SAXException
+        {
+            DomDocument         doc = (DomDocument) getDocument ();
+            DocumentType        dt = doc.getDoctype ();
 
-	    if (dt == null)
-		throw new SAXException ("doctype missing!");
-	    return (DomDoctype) dt;
-	}
+            if (dt == null)
+                throw new SAXException ("doctype missing!");
+            return (DomDoctype) dt;
+        }
 
-	// SAX2 "lexical" event
-	public void startDTD (String name, String publicId, String systemId)
-	throws SAXException
-	{
-	    DomDocument		doc = (DomDocument) getDocument ();
+        // SAX2 "lexical" event
+        public void startDTD (String name, String publicId, String systemId)
+        throws SAXException
+        {
+            DomDocument         doc = (DomDocument) getDocument ();
 
-	    super.startDTD (name, publicId, systemId);
-	    // DOM L2 doctype creation model is bizarre
-	    DomDoctype dt = new DomDoctype (doc, name, publicId, systemId);
-	    doc.appendChild (dt);
-	}
+            super.startDTD (name, publicId, systemId);
+            // DOM L2 doctype creation model is bizarre
+            DomDoctype dt = new DomDoctype (doc, name, publicId, systemId);
+            doc.appendChild (dt);
+        }
 
-	// SAX2 "lexical" event
-	public void endDTD ()
-	throws SAXException
-	{
-	    super.endDTD ();
-	    // DOM L2 has no way to make things readonly
-	    getDoctype ().makeReadonly ();
-	}
+        // SAX2 "lexical" event
+        public void endDTD ()
+        throws SAXException
+        {
+            super.endDTD ();
+            // DOM L2 has no way to make things readonly
+            getDoctype ().makeReadonly ();
+        }
 
-	// SAX1 DTD event
-	public void notationDecl (
-	    String name,
-	    String publicId, String systemId
-	) throws SAXException
-	{
-	    // DOM L2 can't create/save notation nodes
-	    getDoctype ().declareNotation (name, publicId, systemId);
-	}
+        // SAX1 DTD event
+        public void notationDecl (
+            String name,
+            String publicId, String systemId
+        ) throws SAXException
+        {
+            // DOM L2 can't create/save notation nodes
+            getDoctype ().declareNotation (name, publicId, systemId);
+        }
 
-	// SAX1 DTD event
-	public void unparsedEntityDecl (
-	    String name,
-	    String publicId, String systemId,
-	    String notationName
-	) throws SAXException
-	{
-	    // DOM L2 can't create/save entity nodes
-	    getDoctype ().declareEntity (name, publicId, systemId,
-	    	notationName);
-	}
+        // SAX1 DTD event
+        public void unparsedEntityDecl (
+            String name,
+            String publicId, String systemId,
+            String notationName
+        ) throws SAXException
+        {
+            // DOM L2 can't create/save entity nodes
+            getDoctype ().declareEntity (name, publicId, systemId,
+                notationName);
+        }
 
-	// SAX2 declaration event
-	public void internalEntityDecl (String name, String value)
-	throws SAXException
-	{
-	    // DOM L2 can't create/save entity nodes
-	    // NOTE:  this doesn't save the value as a child of this
-	    // node, though it could realistically do so.
-	    getDoctype ().declareEntity (name, null, null, null);
-	}
+        // SAX2 declaration event
+        public void internalEntityDecl (String name, String value)
+        throws SAXException
+        {
+            // DOM L2 can't create/save entity nodes
+            // NOTE:  this doesn't save the value as a child of this
+            // node, though it could realistically do so.
+            getDoctype ().declareEntity (name, null, null, null);
+        }
 
-	// SAX2 declaration event
-	public void externalEntityDecl (
-	    String name,
-	    String publicId,
-	    String systemId
-	) throws SAXException
-	{
-	    // DOM L2 can't create/save entity nodes
-	    // NOTE:  DOM allows for these to have children, if
-	    // they don't have unbound namespace references.
-	    getDoctype ().declareEntity (name, publicId, systemId, null);
-	}
+        // SAX2 declaration event
+        public void externalEntityDecl (
+            String name,
+            String publicId,
+            String systemId
+        ) throws SAXException
+        {
+            // DOM L2 can't create/save entity nodes
+            // NOTE:  DOM allows for these to have children, if
+            // they don't have unbound namespace references.
+            getDoctype ().declareEntity (name, publicId, systemId, null);
+        }
 
-	// SAX2 element
-	public void startElement (
-	    String uri,
-	    String localName,
-	    String qName,
-	    Attributes atts
-	) throws SAXException
-	{
-	    Node		top;
+        // SAX2 element
+        public void startElement (
+            String uri,
+            String localName,
+            String qName,
+            Attributes atts
+        ) throws SAXException
+        {
+            Node                top;
 
-	    super.startElement (uri, localName, qName, atts);
+            super.startElement (uri, localName, qName, atts);
 
-	    // might there be more work?
-	    top = getTop ();
-	    if (!top.hasAttributes () || !(atts instanceof Attributes2))
-		return;
+            // might there be more work?
+            top = getTop ();
+            if (!top.hasAttributes () || !(atts instanceof Attributes2))
+                return;
 
-	    // remember any attributes that got defaulted
-	    DomNamedNodeMap	map = (DomNamedNodeMap) top.getAttributes ();
-	    Attributes2		attrs = (Attributes2) atts;
-	    int			length = atts.getLength ();
+            // remember any attributes that got defaulted
+            DomNamedNodeMap     map = (DomNamedNodeMap) top.getAttributes ();
+            Attributes2         attrs = (Attributes2) atts;
+            int                 length = atts.getLength ();
 
-	    //map.compact ();
-	    for (int i = 0; i < length; i++) {
-		if (attrs.isSpecified (i))
-		    continue;
+            //map.compact ();
+            for (int i = 0; i < length; i++) {
+                if (attrs.isSpecified (i))
+                    continue;
 
-		// value was defaulted.
-		String		temp = attrs.getQName (i);
-		DomAttr		attr;
+                // value was defaulted.
+                String          temp = attrs.getQName (i);
+                DomAttr         attr;
 
-		if ("".equals (temp))
-		    attr = (DomAttr) map.getNamedItemNS (attrs.getURI (i),
-			    atts.getLocalName (i));
-		else
-		    attr = (DomAttr) map.getNamedItem (temp);
+                if ("".equals (temp))
+                    attr = (DomAttr) map.getNamedItemNS (attrs.getURI (i),
+                            atts.getLocalName (i));
+                else
+                    attr = (DomAttr) map.getNamedItem (temp);
 
-		// DOM L2 can't write this flag, only read it
-		attr.setSpecified (false);
-	    }
-	}
+                // DOM L2 can't write this flag, only read it
+                attr.setSpecified (false);
+            }
+        }
 
-	public void endElement (
-	    String uri,
-	    String localName,
-	    String qName
-	) throws SAXException
-	{
-	    DomNode	top = (DomNode) getTop ();
-	    top.compact ();
-	    super.endElement (uri, localName, qName);
-	}
+        public void endElement (
+            String uri,
+            String localName,
+            String qName
+        ) throws SAXException
+        {
+            DomNode     top = (DomNode) getTop ();
+            top.compact ();
+            super.endElement (uri, localName, qName);
+        }
 
-	protected Text createText (
-	    boolean	isCDATA,
-	    char	buf [],
-	    int		off,
-	    int		len
-	) {
-	    DomDocument	doc = (DomDocument) getDocument ();
+        protected Text createText (
+            boolean     isCDATA,
+            char        buf [],
+            int         off,
+            int         len
+        ) {
+            DomDocument doc = (DomDocument) getDocument ();
 
-	    if (isCDATA)
-		return doc.createCDATASection (buf, off, len);
-	    else
-		return doc.createTextNode (buf, off, len);
-	}
+            if (isCDATA)
+                return doc.createCDATASection (buf, off, len);
+            else
+                return doc.createTextNode (buf, off, len);
+        }
 
         public void elementDecl(String name, String model)
           throws SAXException
@@ -266,87 +266,87 @@ public class Consumer extends DomConsumer
           getDoctype().elementDecl(name, model);
         }
 
-	public void attributeDecl (
-	    String	ename,
-	    String	aname,
-	    String	type,
-	    String	mode,
-	    String	value
-	) throws SAXException
-	{
+        public void attributeDecl (
+            String      ename,
+            String      aname,
+            String      type,
+            String      mode,
+            String      value
+        ) throws SAXException
+        {
           getDoctype().attributeDecl(ename, aname, type, mode, value);
             /*
-	    if (value == null && !"ID".equals (type))
-		return;
-	    
-	    DomDoctype.ElementInfo	info;
+            if (value == null && !"ID".equals (type))
+                return;
 
-	    info = getDoctype ().getElementInfo (ename);
-	    if (value != null)
-		info.setAttrDefault (aname, value);
-	    if ("ID".equals (type))
-		info.setIdAttr (aname);
+            DomDoctype.ElementInfo      info;
+
+            info = getDoctype ().getElementInfo (ename);
+            if (value != null)
+                info.setAttrDefault (aname, value);
+            if ("ID".equals (type))
+                info.setIdAttr (aname);
                 */
-            
-	}
 
-	// force duplicate name checking off while we're
-	// using parser output (don't duplicate the work)
-	public void startDocument () throws SAXException
-	{
-	    super.startDocument ();
-	    
+        }
+
+        // force duplicate name checking off while we're
+        // using parser output (don't duplicate the work)
+        public void startDocument () throws SAXException
+        {
+            super.startDocument ();
+
             DomDocument doc = (DomDocument) getDocument ();
             doc.setStrictErrorChecking(false);
             doc.setBuilding(true);
-	}
+        }
 
-	public void endDocument ()
-	throws SAXException
-	{
-	    DomDocument doc = (DomDocument) getDocument ();
-	    doc.setStrictErrorChecking(true);
+        public void endDocument ()
+        throws SAXException
+        {
+            DomDocument doc = (DomDocument) getDocument ();
+            doc.setStrictErrorChecking(true);
             doc.setBuilding(false);
-	    doc.compact ();
+            doc.compact ();
             DomDoctype doctype = (DomDoctype) doc.getDoctype();
             if (doctype != null)
               {
                 doctype.makeReadonly();
               }
-	    super.endDocument ();
-	}
+            super.endDocument ();
+        }
 
-	// these three methods collaborate to populate entity
-	// refs, marking contents readonly on end-of-entity
+        // these three methods collaborate to populate entity
+        // refs, marking contents readonly on end-of-entity
 
-	public boolean canPopulateEntityRefs ()
-	    { return true; }
+        public boolean canPopulateEntityRefs ()
+            { return true; }
 
-	public void startEntity (String name)
-	throws SAXException
-	{
-	    if (name.charAt (0) == '%' || "[dtd]".equals (name))
-		return;
-	    super.startEntity (name);
+        public void startEntity (String name)
+        throws SAXException
+        {
+            if (name.charAt (0) == '%' || "[dtd]".equals (name))
+                return;
+            super.startEntity (name);
 
-	    DomNode	top = (DomNode) getTop ();
+            DomNode     top = (DomNode) getTop ();
 
-	    if (top.getNodeType () == Node.ENTITY_REFERENCE_NODE)
-		top.readonly = false;
-	}
+            if (top.getNodeType () == Node.ENTITY_REFERENCE_NODE)
+                top.readonly = false;
+        }
 
-	public void endEntity (String name)
-	throws SAXException
-	{
-	    if (name.charAt (0) == '%' || "[dtd]".equals (name))
-		return;
-	    DomNode	top = (DomNode) getTop ();
+        public void endEntity (String name)
+        throws SAXException
+        {
+            if (name.charAt (0) == '%' || "[dtd]".equals (name))
+                return;
+            DomNode     top = (DomNode) getTop ();
 
-	    if (top.getNodeType () == Node.ENTITY_REFERENCE_NODE) {
-		top.compact ();
-		top.makeReadonly ();
-	    }
-	    super.endEntity (name);
-	}
+            if (top.getNodeType () == Node.ENTITY_REFERENCE_NODE) {
+                top.compact ();
+                top.makeReadonly ();
+            }
+            super.endEntity (name);
+        }
     }
 }

@@ -125,7 +125,7 @@ public class Cursor implements java.io.Serializable
                                   "North Resize Cursor", "South Resize Cursor",
                                   "West Resize Cursor", "East Resize Cursor",
                                   "Hand Cursor", "Move Cursor" };
-  
+
   public static final int CUSTOM_CURSOR    = 0xFFFFFFFF;
 
   private static final int PREDEFINED_COUNT = 14;
@@ -154,11 +154,11 @@ public class Cursor implements java.io.Serializable
     this.type = type;
 
     name = NAMES[type];
-      
+
     // FIXME: lookup?
   }
 
-  /** This constructor is used internally only. 
+  /** This constructor is used internally only.
    * Application code should call Toolkit.createCustomCursor().
    */
   protected Cursor(String name)
@@ -233,7 +233,7 @@ public class Cursor implements java.io.Serializable
   public String toString()
   {
     return (this.getClass()
-	    + "[type=" + getType()
-	    + ",name=" + getName() + "]");
+            + "[type=" + getType()
+            + ",name=" + getName() + "]");
   }
 }

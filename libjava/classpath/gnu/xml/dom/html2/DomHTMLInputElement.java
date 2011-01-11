@@ -1,4 +1,4 @@
-/* DomHTMLInputElement.java -- 
+/* DomHTMLInputElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -68,7 +68,7 @@ public class DomHTMLInputElement
   {
     setHTMLAttribute("value", defaultValue);
   }
-  
+
   public boolean getDefaultChecked()
   {
     return getBooleanHTMLAttribute("checked");
@@ -83,7 +83,7 @@ public class DomHTMLInputElement
   {
     return (HTMLFormElement) getParentElement("form");
   }
-  
+
   public String getAccept()
   {
     return getHTMLAttribute("accept");
@@ -93,7 +93,7 @@ public class DomHTMLInputElement
   {
     setHTMLAttribute("accept", accept);
   }
-  
+
   public String getAccessKey()
   {
     return getHTMLAttribute("accesskey");
@@ -103,7 +103,7 @@ public class DomHTMLInputElement
   {
     setHTMLAttribute("accesskey", accessKey);
   }
-  
+
   public String getAlign()
   {
     return getHTMLAttribute("align");
@@ -113,7 +113,7 @@ public class DomHTMLInputElement
   {
     setHTMLAttribute("align", align);
   }
-  
+
   public String getAlt()
   {
     return getHTMLAttribute("alt");
@@ -123,7 +123,7 @@ public class DomHTMLInputElement
   {
     setHTMLAttribute("alt", alt);
   }
-  
+
   public boolean getChecked()
   {
     if (checked == null)
@@ -137,7 +137,7 @@ public class DomHTMLInputElement
   {
     this.checked = Boolean.valueOf(checked);
   }
-  
+
   public boolean getDisabled()
   {
     return getBooleanHTMLAttribute("disabled");
@@ -147,7 +147,7 @@ public class DomHTMLInputElement
   {
     setBooleanHTMLAttribute("disabled", disabled);
   }
-  
+
   public int getMaxLength()
   {
     return getIntHTMLAttribute("maxLength");
@@ -157,7 +157,7 @@ public class DomHTMLInputElement
   {
     setIntHTMLAttribute("maxLength", maxLength);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -167,7 +167,7 @@ public class DomHTMLInputElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public boolean getReadOnly()
   {
     return getBooleanHTMLAttribute("readonly");
@@ -177,7 +177,7 @@ public class DomHTMLInputElement
   {
     setBooleanHTMLAttribute("readonly", readOnly);
   }
-  
+
   public int getSize()
   {
     return getIntHTMLAttribute("size");
@@ -187,7 +187,7 @@ public class DomHTMLInputElement
   {
     setIntHTMLAttribute("size", size);
   }
-  
+
   public String getSrc()
   {
     return getHTMLAttribute("src");
@@ -197,7 +197,7 @@ public class DomHTMLInputElement
   {
     setHTMLAttribute("src", src);
   }
-  
+
   public int getTabIndex()
   {
     return getIntHTMLAttribute("tabindex");
@@ -207,7 +207,7 @@ public class DomHTMLInputElement
   {
     setIntHTMLAttribute("tabindex", tabIndex);
   }
-  
+
   public String getType()
   {
     return getHTMLAttribute("type");
@@ -217,7 +217,7 @@ public class DomHTMLInputElement
   {
     setHTMLAttribute("type", type);
   }
-  
+
   public String getUseMap()
   {
     return getHTMLAttribute("usemap");
@@ -227,7 +227,7 @@ public class DomHTMLInputElement
   {
     setHTMLAttribute("usemap", useMap);
   }
-  
+
   public String getValue()
   {
     if (value == null)
@@ -261,6 +261,5 @@ public class DomHTMLInputElement
   {
     dispatchUIEvent("click");
   }
-  
-}
 
+}

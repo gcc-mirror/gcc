@@ -42,8 +42,8 @@ import java.util.Date;
 /**
  * A PNG tIME chunk.
  */
-public class PNGTime extends PNGChunk 
-{ 
+public class PNGTime extends PNGChunk
+{
   private Date date;
 
   protected PNGTime( int type, byte[] data, int crc ) throws PNGException
@@ -55,7 +55,7 @@ public class PNGTime extends PNGChunk
     // PNG value is absolute (2006, not 106 or 06), java is from 1900.
     int year = ( (data[0] & 0xFF) << 8 ) | (data[1] & 0xFF);
     int month = (data[2] & 0xFF); // java counts from 0. PNG from 1.
-    int day = (data[3] & 0xFF); 
+    int day = (data[3] & 0xFF);
     int hour = (data[4] & 0xFF);
     int minute = (data[5] & 0xFF);
     int second = (data[6] & 0xFF);

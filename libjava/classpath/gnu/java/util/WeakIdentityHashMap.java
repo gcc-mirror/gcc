@@ -686,12 +686,12 @@ public class WeakIdentityHashMap extends AbstractMap implements Map
       {
          if (next == null)
             throw new InternalError("WeakIdentityHashMap in inconsistent state");
-         prev = next; 
+         prev = next;
          next = prev.next;
       }
     if (prev == null)
       buckets[slot] = bucket.next;
-    else 
+    else
       prev.next = bucket.next;
 
     size--;

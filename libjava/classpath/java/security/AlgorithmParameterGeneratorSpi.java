@@ -39,8 +39,8 @@ package java.security;
 import java.security.spec.AlgorithmParameterSpec;
 
 /**
-   AlgorithmParameterGeneratorSpi is the Service Provider 
-   Interface for the AlgorithmParameterGenerator class. 
+   AlgorithmParameterGeneratorSpi is the Service Provider
+   Interface for the AlgorithmParameterGenerator class.
    This class is used to generate the algorithm parameters
    for a specific algorithm.
 
@@ -61,7 +61,7 @@ public abstract class AlgorithmParameterGeneratorSpi
      Initializes the parameter generator with the specified size
      and SecureRandom
 
-     @param size the size( in number of bits) 
+     @param size the size( in number of bits)
      @param random the SecureRandom class to use for randomness
    */
   protected abstract void engineInit(int size, SecureRandom random);
@@ -80,7 +80,7 @@ public abstract class AlgorithmParameterGeneratorSpi
      @throws InvalidAlgorithmParameterException genParamSpec is invalid
    */
   protected abstract void engineInit(AlgorithmParameterSpec genParamSpec,
-				     SecureRandom random) throws
+                                     SecureRandom random) throws
     InvalidAlgorithmParameterException;
 
 

@@ -48,8 +48,8 @@ package com.sun.javadoc;
  *
  * @since 1.5
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- */ 
-public interface TypeVariable 
+ */
+public interface TypeVariable
   extends Type
 {
 

@@ -1,4 +1,4 @@
-/* DomExtern.java -- 
+/* DomExtern.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,17 +48,17 @@ package gnu.xml.dom;
  * of them is defined fully enough to permit full use of the
  * XML feature they partially expose. </p>
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public abstract class DomExtern
   extends DomNode
 {
- 
+
   private final String name;
   private final String publicId;
   private final String systemId;
-  
+
   /**
    * Constructs a node associated with the specified document,
    * with the specified descriptive data.
@@ -98,7 +98,7 @@ public abstract class DomExtern
   {
     return publicId;
   }
-  
+
   /**
    * <b>DOM L1</b>
    * Returns the object's name.
@@ -112,6 +112,5 @@ public abstract class DomExtern
   {
     return name;
   }
-  
-}
 
+}

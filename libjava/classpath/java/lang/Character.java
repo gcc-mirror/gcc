@@ -168,7 +168,7 @@ public final class Character implements Serializable, Comparable<Character>
      *        standard.
      */
     private UnicodeBlock(int start, int end, String name,
-			 String canonicalName)
+                         String canonicalName)
     {
       super(name);
       this.start = start;
@@ -202,8 +202,8 @@ public final class Character implements Serializable, Comparable<Character>
     public static UnicodeBlock of(int codePoint)
     {
       if (codePoint > MAX_CODE_POINT)
-	throw new IllegalArgumentException("The supplied integer value is " +
-					   "too large to be a codepoint.");
+        throw new IllegalArgumentException("The supplied integer value is " +
+                                           "too large to be a codepoint.");
       // Simple binary search for the correct block.
       int low = 0;
       int hi = sets.length - 1;
@@ -278,7 +278,7 @@ public final class Character implements Serializable, Comparable<Character>
             return SURROGATES_AREA;
           break;
         case CONSTANT:
-          if (usCollator.compare(blockName, "SURROGATES_AREA") == 0) 
+          if (usCollator.compare(blockName, "SURROGATES_AREA") == 0)
             return SURROGATES_AREA;
           break;
       }
@@ -292,12 +292,12 @@ public final class Character implements Serializable, Comparable<Character>
           break;
         case NO_SPACES:
           for (UnicodeBlock block : sets)
-	    {
-	      String nsName = block.canonicalName.replaceAll(" ","");
-	      if (usCollator.compare(blockName, nsName) == 0)
-		return block;
-	    }
-	  break;
+            {
+              String nsName = block.canonicalName.replaceAll(" ","");
+              if (usCollator.compare(blockName, nsName) == 0)
+                return block;
+            }
+          break;
         case CONSTANT:
           for (UnicodeBlock block : sets)
             if (usCollator.compare(blockName, block.toString()) == 0)
@@ -314,7 +314,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock BASIC_LATIN
       = new UnicodeBlock(0x0000, 0x007F,
-                         "BASIC_LATIN", 
+                         "BASIC_LATIN",
                          "Basic Latin");
 
     /**
@@ -323,7 +323,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LATIN_1_SUPPLEMENT
       = new UnicodeBlock(0x0080, 0x00FF,
-                         "LATIN_1_SUPPLEMENT", 
+                         "LATIN_1_SUPPLEMENT",
                          "Latin-1 Supplement");
 
     /**
@@ -332,7 +332,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LATIN_EXTENDED_A
       = new UnicodeBlock(0x0100, 0x017F,
-                         "LATIN_EXTENDED_A", 
+                         "LATIN_EXTENDED_A",
                          "Latin Extended-A");
 
     /**
@@ -341,7 +341,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LATIN_EXTENDED_B
       = new UnicodeBlock(0x0180, 0x024F,
-                         "LATIN_EXTENDED_B", 
+                         "LATIN_EXTENDED_B",
                          "Latin Extended-B");
 
     /**
@@ -350,7 +350,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock IPA_EXTENSIONS
       = new UnicodeBlock(0x0250, 0x02AF,
-                         "IPA_EXTENSIONS", 
+                         "IPA_EXTENSIONS",
                          "IPA Extensions");
 
     /**
@@ -359,7 +359,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SPACING_MODIFIER_LETTERS
       = new UnicodeBlock(0x02B0, 0x02FF,
-                         "SPACING_MODIFIER_LETTERS", 
+                         "SPACING_MODIFIER_LETTERS",
                          "Spacing Modifier Letters");
 
     /**
@@ -368,7 +368,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock COMBINING_DIACRITICAL_MARKS
       = new UnicodeBlock(0x0300, 0x036F,
-                         "COMBINING_DIACRITICAL_MARKS", 
+                         "COMBINING_DIACRITICAL_MARKS",
                          "Combining Diacritical Marks");
 
     /**
@@ -377,7 +377,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock GREEK
       = new UnicodeBlock(0x0370, 0x03FF,
-                         "GREEK", 
+                         "GREEK",
                          "Greek");
 
     /**
@@ -386,7 +386,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CYRILLIC
       = new UnicodeBlock(0x0400, 0x04FF,
-                         "CYRILLIC", 
+                         "CYRILLIC",
                          "Cyrillic");
 
     /**
@@ -396,7 +396,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CYRILLIC_SUPPLEMENTARY
       = new UnicodeBlock(0x0500, 0x052F,
-                         "CYRILLIC_SUPPLEMENTARY", 
+                         "CYRILLIC_SUPPLEMENTARY",
                          "Cyrillic Supplementary");
 
     /**
@@ -405,7 +405,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ARMENIAN
       = new UnicodeBlock(0x0530, 0x058F,
-                         "ARMENIAN", 
+                         "ARMENIAN",
                          "Armenian");
 
     /**
@@ -414,7 +414,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock HEBREW
       = new UnicodeBlock(0x0590, 0x05FF,
-                         "HEBREW", 
+                         "HEBREW",
                          "Hebrew");
 
     /**
@@ -423,7 +423,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ARABIC
       = new UnicodeBlock(0x0600, 0x06FF,
-                         "ARABIC", 
+                         "ARABIC",
                          "Arabic");
 
     /**
@@ -433,7 +433,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SYRIAC
       = new UnicodeBlock(0x0700, 0x074F,
-                         "SYRIAC", 
+                         "SYRIAC",
                          "Syriac");
 
     /**
@@ -443,7 +443,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock THAANA
       = new UnicodeBlock(0x0780, 0x07BF,
-                         "THAANA", 
+                         "THAANA",
                          "Thaana");
 
     /**
@@ -452,7 +452,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock DEVANAGARI
       = new UnicodeBlock(0x0900, 0x097F,
-                         "DEVANAGARI", 
+                         "DEVANAGARI",
                          "Devanagari");
 
     /**
@@ -461,7 +461,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock BENGALI
       = new UnicodeBlock(0x0980, 0x09FF,
-                         "BENGALI", 
+                         "BENGALI",
                          "Bengali");
 
     /**
@@ -470,7 +470,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock GURMUKHI
       = new UnicodeBlock(0x0A00, 0x0A7F,
-                         "GURMUKHI", 
+                         "GURMUKHI",
                          "Gurmukhi");
 
     /**
@@ -479,7 +479,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock GUJARATI
       = new UnicodeBlock(0x0A80, 0x0AFF,
-                         "GUJARATI", 
+                         "GUJARATI",
                          "Gujarati");
 
     /**
@@ -488,7 +488,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ORIYA
       = new UnicodeBlock(0x0B00, 0x0B7F,
-                         "ORIYA", 
+                         "ORIYA",
                          "Oriya");
 
     /**
@@ -497,7 +497,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock TAMIL
       = new UnicodeBlock(0x0B80, 0x0BFF,
-                         "TAMIL", 
+                         "TAMIL",
                          "Tamil");
 
     /**
@@ -506,7 +506,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock TELUGU
       = new UnicodeBlock(0x0C00, 0x0C7F,
-                         "TELUGU", 
+                         "TELUGU",
                          "Telugu");
 
     /**
@@ -515,7 +515,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock KANNADA
       = new UnicodeBlock(0x0C80, 0x0CFF,
-                         "KANNADA", 
+                         "KANNADA",
                          "Kannada");
 
     /**
@@ -524,7 +524,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MALAYALAM
       = new UnicodeBlock(0x0D00, 0x0D7F,
-                         "MALAYALAM", 
+                         "MALAYALAM",
                          "Malayalam");
 
     /**
@@ -534,7 +534,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SINHALA
       = new UnicodeBlock(0x0D80, 0x0DFF,
-                         "SINHALA", 
+                         "SINHALA",
                          "Sinhala");
 
     /**
@@ -543,7 +543,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock THAI
       = new UnicodeBlock(0x0E00, 0x0E7F,
-                         "THAI", 
+                         "THAI",
                          "Thai");
 
     /**
@@ -552,7 +552,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LAO
       = new UnicodeBlock(0x0E80, 0x0EFF,
-                         "LAO", 
+                         "LAO",
                          "Lao");
 
     /**
@@ -561,7 +561,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock TIBETAN
       = new UnicodeBlock(0x0F00, 0x0FFF,
-                         "TIBETAN", 
+                         "TIBETAN",
                          "Tibetan");
 
     /**
@@ -571,7 +571,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MYANMAR
       = new UnicodeBlock(0x1000, 0x109F,
-                         "MYANMAR", 
+                         "MYANMAR",
                          "Myanmar");
 
     /**
@@ -580,7 +580,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock GEORGIAN
       = new UnicodeBlock(0x10A0, 0x10FF,
-                         "GEORGIAN", 
+                         "GEORGIAN",
                          "Georgian");
 
     /**
@@ -589,7 +589,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock HANGUL_JAMO
       = new UnicodeBlock(0x1100, 0x11FF,
-                         "HANGUL_JAMO", 
+                         "HANGUL_JAMO",
                          "Hangul Jamo");
 
     /**
@@ -599,7 +599,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ETHIOPIC
       = new UnicodeBlock(0x1200, 0x137F,
-                         "ETHIOPIC", 
+                         "ETHIOPIC",
                          "Ethiopic");
 
     /**
@@ -609,7 +609,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CHEROKEE
       = new UnicodeBlock(0x13A0, 0x13FF,
-                         "CHEROKEE", 
+                         "CHEROKEE",
                          "Cherokee");
 
     /**
@@ -619,7 +619,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS
       = new UnicodeBlock(0x1400, 0x167F,
-                         "UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS", 
+                         "UNIFIED_CANADIAN_ABORIGINAL_SYLLABICS",
                          "Unified Canadian Aboriginal Syllabics");
 
     /**
@@ -629,7 +629,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock OGHAM
       = new UnicodeBlock(0x1680, 0x169F,
-                         "OGHAM", 
+                         "OGHAM",
                          "Ogham");
 
     /**
@@ -639,7 +639,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock RUNIC
       = new UnicodeBlock(0x16A0, 0x16FF,
-                         "RUNIC", 
+                         "RUNIC",
                          "Runic");
 
     /**
@@ -649,7 +649,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock TAGALOG
       = new UnicodeBlock(0x1700, 0x171F,
-                         "TAGALOG", 
+                         "TAGALOG",
                          "Tagalog");
 
     /**
@@ -659,7 +659,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock HANUNOO
       = new UnicodeBlock(0x1720, 0x173F,
-                         "HANUNOO", 
+                         "HANUNOO",
                          "Hanunoo");
 
     /**
@@ -669,7 +669,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock BUHID
       = new UnicodeBlock(0x1740, 0x175F,
-                         "BUHID", 
+                         "BUHID",
                          "Buhid");
 
     /**
@@ -679,7 +679,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock TAGBANWA
       = new UnicodeBlock(0x1760, 0x177F,
-                         "TAGBANWA", 
+                         "TAGBANWA",
                          "Tagbanwa");
 
     /**
@@ -689,7 +689,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock KHMER
       = new UnicodeBlock(0x1780, 0x17FF,
-                         "KHMER", 
+                         "KHMER",
                          "Khmer");
 
     /**
@@ -699,7 +699,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MONGOLIAN
       = new UnicodeBlock(0x1800, 0x18AF,
-                         "MONGOLIAN", 
+                         "MONGOLIAN",
                          "Mongolian");
 
     /**
@@ -709,7 +709,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LIMBU
       = new UnicodeBlock(0x1900, 0x194F,
-                         "LIMBU", 
+                         "LIMBU",
                          "Limbu");
 
     /**
@@ -719,7 +719,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock TAI_LE
       = new UnicodeBlock(0x1950, 0x197F,
-                         "TAI_LE", 
+                         "TAI_LE",
                          "Tai Le");
 
     /**
@@ -729,7 +729,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock KHMER_SYMBOLS
       = new UnicodeBlock(0x19E0, 0x19FF,
-                         "KHMER_SYMBOLS", 
+                         "KHMER_SYMBOLS",
                          "Khmer Symbols");
 
     /**
@@ -739,7 +739,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock PHONETIC_EXTENSIONS
       = new UnicodeBlock(0x1D00, 0x1D7F,
-                         "PHONETIC_EXTENSIONS", 
+                         "PHONETIC_EXTENSIONS",
                          "Phonetic Extensions");
 
     /**
@@ -748,7 +748,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LATIN_EXTENDED_ADDITIONAL
       = new UnicodeBlock(0x1E00, 0x1EFF,
-                         "LATIN_EXTENDED_ADDITIONAL", 
+                         "LATIN_EXTENDED_ADDITIONAL",
                          "Latin Extended Additional");
 
     /**
@@ -757,7 +757,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock GREEK_EXTENDED
       = new UnicodeBlock(0x1F00, 0x1FFF,
-                         "GREEK_EXTENDED", 
+                         "GREEK_EXTENDED",
                          "Greek Extended");
 
     /**
@@ -766,7 +766,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock GENERAL_PUNCTUATION
       = new UnicodeBlock(0x2000, 0x206F,
-                         "GENERAL_PUNCTUATION", 
+                         "GENERAL_PUNCTUATION",
                          "General Punctuation");
 
     /**
@@ -775,7 +775,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SUPERSCRIPTS_AND_SUBSCRIPTS
       = new UnicodeBlock(0x2070, 0x209F,
-                         "SUPERSCRIPTS_AND_SUBSCRIPTS", 
+                         "SUPERSCRIPTS_AND_SUBSCRIPTS",
                          "Superscripts and Subscripts");
 
     /**
@@ -784,7 +784,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CURRENCY_SYMBOLS
       = new UnicodeBlock(0x20A0, 0x20CF,
-                         "CURRENCY_SYMBOLS", 
+                         "CURRENCY_SYMBOLS",
                          "Currency Symbols");
 
     /**
@@ -793,7 +793,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock COMBINING_MARKS_FOR_SYMBOLS
       = new UnicodeBlock(0x20D0, 0x20FF,
-                         "COMBINING_MARKS_FOR_SYMBOLS", 
+                         "COMBINING_MARKS_FOR_SYMBOLS",
                          "Combining Marks for Symbols");
 
     /**
@@ -802,7 +802,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LETTERLIKE_SYMBOLS
       = new UnicodeBlock(0x2100, 0x214F,
-                         "LETTERLIKE_SYMBOLS", 
+                         "LETTERLIKE_SYMBOLS",
                          "Letterlike Symbols");
 
     /**
@@ -811,7 +811,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock NUMBER_FORMS
       = new UnicodeBlock(0x2150, 0x218F,
-                         "NUMBER_FORMS", 
+                         "NUMBER_FORMS",
                          "Number Forms");
 
     /**
@@ -820,7 +820,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ARROWS
       = new UnicodeBlock(0x2190, 0x21FF,
-                         "ARROWS", 
+                         "ARROWS",
                          "Arrows");
 
     /**
@@ -829,7 +829,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MATHEMATICAL_OPERATORS
       = new UnicodeBlock(0x2200, 0x22FF,
-                         "MATHEMATICAL_OPERATORS", 
+                         "MATHEMATICAL_OPERATORS",
                          "Mathematical Operators");
 
     /**
@@ -838,7 +838,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MISCELLANEOUS_TECHNICAL
       = new UnicodeBlock(0x2300, 0x23FF,
-                         "MISCELLANEOUS_TECHNICAL", 
+                         "MISCELLANEOUS_TECHNICAL",
                          "Miscellaneous Technical");
 
     /**
@@ -847,7 +847,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CONTROL_PICTURES
       = new UnicodeBlock(0x2400, 0x243F,
-                         "CONTROL_PICTURES", 
+                         "CONTROL_PICTURES",
                          "Control Pictures");
 
     /**
@@ -856,7 +856,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock OPTICAL_CHARACTER_RECOGNITION
       = new UnicodeBlock(0x2440, 0x245F,
-                         "OPTICAL_CHARACTER_RECOGNITION", 
+                         "OPTICAL_CHARACTER_RECOGNITION",
                          "Optical Character Recognition");
 
     /**
@@ -865,7 +865,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ENCLOSED_ALPHANUMERICS
       = new UnicodeBlock(0x2460, 0x24FF,
-                         "ENCLOSED_ALPHANUMERICS", 
+                         "ENCLOSED_ALPHANUMERICS",
                          "Enclosed Alphanumerics");
 
     /**
@@ -874,7 +874,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock BOX_DRAWING
       = new UnicodeBlock(0x2500, 0x257F,
-                         "BOX_DRAWING", 
+                         "BOX_DRAWING",
                          "Box Drawing");
 
     /**
@@ -883,7 +883,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock BLOCK_ELEMENTS
       = new UnicodeBlock(0x2580, 0x259F,
-                         "BLOCK_ELEMENTS", 
+                         "BLOCK_ELEMENTS",
                          "Block Elements");
 
     /**
@@ -892,7 +892,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock GEOMETRIC_SHAPES
       = new UnicodeBlock(0x25A0, 0x25FF,
-                         "GEOMETRIC_SHAPES", 
+                         "GEOMETRIC_SHAPES",
                          "Geometric Shapes");
 
     /**
@@ -901,7 +901,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MISCELLANEOUS_SYMBOLS
       = new UnicodeBlock(0x2600, 0x26FF,
-                         "MISCELLANEOUS_SYMBOLS", 
+                         "MISCELLANEOUS_SYMBOLS",
                          "Miscellaneous Symbols");
 
     /**
@@ -910,7 +910,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock DINGBATS
       = new UnicodeBlock(0x2700, 0x27BF,
-                         "DINGBATS", 
+                         "DINGBATS",
                          "Dingbats");
 
     /**
@@ -920,7 +920,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MISCELLANEOUS_MATHEMATICAL_SYMBOLS_A
       = new UnicodeBlock(0x27C0, 0x27EF,
-                         "MISCELLANEOUS_MATHEMATICAL_SYMBOLS_A", 
+                         "MISCELLANEOUS_MATHEMATICAL_SYMBOLS_A",
                          "Miscellaneous Mathematical Symbols-A");
 
     /**
@@ -930,7 +930,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SUPPLEMENTAL_ARROWS_A
       = new UnicodeBlock(0x27F0, 0x27FF,
-                         "SUPPLEMENTAL_ARROWS_A", 
+                         "SUPPLEMENTAL_ARROWS_A",
                          "Supplemental Arrows-A");
 
     /**
@@ -940,7 +940,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock BRAILLE_PATTERNS
       = new UnicodeBlock(0x2800, 0x28FF,
-                         "BRAILLE_PATTERNS", 
+                         "BRAILLE_PATTERNS",
                          "Braille Patterns");
 
     /**
@@ -950,7 +950,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SUPPLEMENTAL_ARROWS_B
       = new UnicodeBlock(0x2900, 0x297F,
-                         "SUPPLEMENTAL_ARROWS_B", 
+                         "SUPPLEMENTAL_ARROWS_B",
                          "Supplemental Arrows-B");
 
     /**
@@ -960,7 +960,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MISCELLANEOUS_MATHEMATICAL_SYMBOLS_B
       = new UnicodeBlock(0x2980, 0x29FF,
-                         "MISCELLANEOUS_MATHEMATICAL_SYMBOLS_B", 
+                         "MISCELLANEOUS_MATHEMATICAL_SYMBOLS_B",
                          "Miscellaneous Mathematical Symbols-B");
 
     /**
@@ -970,7 +970,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SUPPLEMENTAL_MATHEMATICAL_OPERATORS
       = new UnicodeBlock(0x2A00, 0x2AFF,
-                         "SUPPLEMENTAL_MATHEMATICAL_OPERATORS", 
+                         "SUPPLEMENTAL_MATHEMATICAL_OPERATORS",
                          "Supplemental Mathematical Operators");
 
     /**
@@ -980,7 +980,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MISCELLANEOUS_SYMBOLS_AND_ARROWS
       = new UnicodeBlock(0x2B00, 0x2BFF,
-                         "MISCELLANEOUS_SYMBOLS_AND_ARROWS", 
+                         "MISCELLANEOUS_SYMBOLS_AND_ARROWS",
                          "Miscellaneous Symbols and Arrows");
 
     /**
@@ -990,7 +990,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CJK_RADICALS_SUPPLEMENT
       = new UnicodeBlock(0x2E80, 0x2EFF,
-                         "CJK_RADICALS_SUPPLEMENT", 
+                         "CJK_RADICALS_SUPPLEMENT",
                          "CJK Radicals Supplement");
 
     /**
@@ -1000,7 +1000,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock KANGXI_RADICALS
       = new UnicodeBlock(0x2F00, 0x2FDF,
-                         "KANGXI_RADICALS", 
+                         "KANGXI_RADICALS",
                          "Kangxi Radicals");
 
     /**
@@ -1010,7 +1010,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock IDEOGRAPHIC_DESCRIPTION_CHARACTERS
       = new UnicodeBlock(0x2FF0, 0x2FFF,
-                         "IDEOGRAPHIC_DESCRIPTION_CHARACTERS", 
+                         "IDEOGRAPHIC_DESCRIPTION_CHARACTERS",
                          "Ideographic Description Characters");
 
     /**
@@ -1019,7 +1019,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CJK_SYMBOLS_AND_PUNCTUATION
       = new UnicodeBlock(0x3000, 0x303F,
-                         "CJK_SYMBOLS_AND_PUNCTUATION", 
+                         "CJK_SYMBOLS_AND_PUNCTUATION",
                          "CJK Symbols and Punctuation");
 
     /**
@@ -1028,7 +1028,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock HIRAGANA
       = new UnicodeBlock(0x3040, 0x309F,
-                         "HIRAGANA", 
+                         "HIRAGANA",
                          "Hiragana");
 
     /**
@@ -1037,7 +1037,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock KATAKANA
       = new UnicodeBlock(0x30A0, 0x30FF,
-                         "KATAKANA", 
+                         "KATAKANA",
                          "Katakana");
 
     /**
@@ -1046,7 +1046,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock BOPOMOFO
       = new UnicodeBlock(0x3100, 0x312F,
-                         "BOPOMOFO", 
+                         "BOPOMOFO",
                          "Bopomofo");
 
     /**
@@ -1055,7 +1055,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock HANGUL_COMPATIBILITY_JAMO
       = new UnicodeBlock(0x3130, 0x318F,
-                         "HANGUL_COMPATIBILITY_JAMO", 
+                         "HANGUL_COMPATIBILITY_JAMO",
                          "Hangul Compatibility Jamo");
 
     /**
@@ -1064,7 +1064,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock KANBUN
       = new UnicodeBlock(0x3190, 0x319F,
-                         "KANBUN", 
+                         "KANBUN",
                          "Kanbun");
 
     /**
@@ -1074,7 +1074,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock BOPOMOFO_EXTENDED
       = new UnicodeBlock(0x31A0, 0x31BF,
-                         "BOPOMOFO_EXTENDED", 
+                         "BOPOMOFO_EXTENDED",
                          "Bopomofo Extended");
 
     /**
@@ -1084,7 +1084,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock KATAKANA_PHONETIC_EXTENSIONS
       = new UnicodeBlock(0x31F0, 0x31FF,
-                         "KATAKANA_PHONETIC_EXTENSIONS", 
+                         "KATAKANA_PHONETIC_EXTENSIONS",
                          "Katakana Phonetic Extensions");
 
     /**
@@ -1093,7 +1093,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ENCLOSED_CJK_LETTERS_AND_MONTHS
       = new UnicodeBlock(0x3200, 0x32FF,
-                         "ENCLOSED_CJK_LETTERS_AND_MONTHS", 
+                         "ENCLOSED_CJK_LETTERS_AND_MONTHS",
                          "Enclosed CJK Letters and Months");
 
     /**
@@ -1102,7 +1102,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CJK_COMPATIBILITY
       = new UnicodeBlock(0x3300, 0x33FF,
-                         "CJK_COMPATIBILITY", 
+                         "CJK_COMPATIBILITY",
                          "CJK Compatibility");
 
     /**
@@ -1112,7 +1112,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A
       = new UnicodeBlock(0x3400, 0x4DBF,
-                         "CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A", 
+                         "CJK_UNIFIED_IDEOGRAPHS_EXTENSION_A",
                          "CJK Unified Ideographs Extension A");
 
     /**
@@ -1122,7 +1122,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock YIJING_HEXAGRAM_SYMBOLS
       = new UnicodeBlock(0x4DC0, 0x4DFF,
-                         "YIJING_HEXAGRAM_SYMBOLS", 
+                         "YIJING_HEXAGRAM_SYMBOLS",
                          "Yijing Hexagram Symbols");
 
     /**
@@ -1131,7 +1131,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CJK_UNIFIED_IDEOGRAPHS
       = new UnicodeBlock(0x4E00, 0x9FFF,
-                         "CJK_UNIFIED_IDEOGRAPHS", 
+                         "CJK_UNIFIED_IDEOGRAPHS",
                          "CJK Unified Ideographs");
 
     /**
@@ -1141,7 +1141,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock YI_SYLLABLES
       = new UnicodeBlock(0xA000, 0xA48F,
-                         "YI_SYLLABLES", 
+                         "YI_SYLLABLES",
                          "Yi Syllables");
 
     /**
@@ -1151,7 +1151,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock YI_RADICALS
       = new UnicodeBlock(0xA490, 0xA4CF,
-                         "YI_RADICALS", 
+                         "YI_RADICALS",
                          "Yi Radicals");
 
     /**
@@ -1160,7 +1160,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock HANGUL_SYLLABLES
       = new UnicodeBlock(0xAC00, 0xD7AF,
-                         "HANGUL_SYLLABLES", 
+                         "HANGUL_SYLLABLES",
                          "Hangul Syllables");
 
     /**
@@ -1170,7 +1170,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock HIGH_SURROGATES
       = new UnicodeBlock(0xD800, 0xDB7F,
-                         "HIGH_SURROGATES", 
+                         "HIGH_SURROGATES",
                          "High Surrogates");
 
     /**
@@ -1180,7 +1180,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock HIGH_PRIVATE_USE_SURROGATES
       = new UnicodeBlock(0xDB80, 0xDBFF,
-                         "HIGH_PRIVATE_USE_SURROGATES", 
+                         "HIGH_PRIVATE_USE_SURROGATES",
                          "High Private Use Surrogates");
 
     /**
@@ -1190,7 +1190,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LOW_SURROGATES
       = new UnicodeBlock(0xDC00, 0xDFFF,
-                         "LOW_SURROGATES", 
+                         "LOW_SURROGATES",
                          "Low Surrogates");
 
     /**
@@ -1199,7 +1199,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock PRIVATE_USE_AREA
       = new UnicodeBlock(0xE000, 0xF8FF,
-                         "PRIVATE_USE_AREA", 
+                         "PRIVATE_USE_AREA",
                          "Private Use Area");
 
     /**
@@ -1208,7 +1208,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CJK_COMPATIBILITY_IDEOGRAPHS
       = new UnicodeBlock(0xF900, 0xFAFF,
-                         "CJK_COMPATIBILITY_IDEOGRAPHS", 
+                         "CJK_COMPATIBILITY_IDEOGRAPHS",
                          "CJK Compatibility Ideographs");
 
     /**
@@ -1217,7 +1217,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ALPHABETIC_PRESENTATION_FORMS
       = new UnicodeBlock(0xFB00, 0xFB4F,
-                         "ALPHABETIC_PRESENTATION_FORMS", 
+                         "ALPHABETIC_PRESENTATION_FORMS",
                          "Alphabetic Presentation Forms");
 
     /**
@@ -1226,7 +1226,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ARABIC_PRESENTATION_FORMS_A
       = new UnicodeBlock(0xFB50, 0xFDFF,
-                         "ARABIC_PRESENTATION_FORMS_A", 
+                         "ARABIC_PRESENTATION_FORMS_A",
                          "Arabic Presentation Forms-A");
 
     /**
@@ -1236,7 +1236,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock VARIATION_SELECTORS
       = new UnicodeBlock(0xFE00, 0xFE0F,
-                         "VARIATION_SELECTORS", 
+                         "VARIATION_SELECTORS",
                          "Variation Selectors");
 
     /**
@@ -1245,7 +1245,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock COMBINING_HALF_MARKS
       = new UnicodeBlock(0xFE20, 0xFE2F,
-                         "COMBINING_HALF_MARKS", 
+                         "COMBINING_HALF_MARKS",
                          "Combining Half Marks");
 
     /**
@@ -1254,7 +1254,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CJK_COMPATIBILITY_FORMS
       = new UnicodeBlock(0xFE30, 0xFE4F,
-                         "CJK_COMPATIBILITY_FORMS", 
+                         "CJK_COMPATIBILITY_FORMS",
                          "CJK Compatibility Forms");
 
     /**
@@ -1263,7 +1263,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SMALL_FORM_VARIANTS
       = new UnicodeBlock(0xFE50, 0xFE6F,
-                         "SMALL_FORM_VARIANTS", 
+                         "SMALL_FORM_VARIANTS",
                          "Small Form Variants");
 
     /**
@@ -1272,7 +1272,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock ARABIC_PRESENTATION_FORMS_B
       = new UnicodeBlock(0xFE70, 0xFEFF,
-                         "ARABIC_PRESENTATION_FORMS_B", 
+                         "ARABIC_PRESENTATION_FORMS_B",
                          "Arabic Presentation Forms-B");
 
     /**
@@ -1281,7 +1281,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock HALFWIDTH_AND_FULLWIDTH_FORMS
       = new UnicodeBlock(0xFF00, 0xFFEF,
-                         "HALFWIDTH_AND_FULLWIDTH_FORMS", 
+                         "HALFWIDTH_AND_FULLWIDTH_FORMS",
                          "Halfwidth and Fullwidth Forms");
 
     /**
@@ -1290,7 +1290,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SPECIALS
       = new UnicodeBlock(0xFFF0, 0xFFFF,
-                         "SPECIALS", 
+                         "SPECIALS",
                          "Specials");
 
     /**
@@ -1300,7 +1300,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LINEAR_B_SYLLABARY
       = new UnicodeBlock(0x10000, 0x1007F,
-                         "LINEAR_B_SYLLABARY", 
+                         "LINEAR_B_SYLLABARY",
                          "Linear B Syllabary");
 
     /**
@@ -1310,7 +1310,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock LINEAR_B_IDEOGRAMS
       = new UnicodeBlock(0x10080, 0x100FF,
-                         "LINEAR_B_IDEOGRAMS", 
+                         "LINEAR_B_IDEOGRAMS",
                          "Linear B Ideograms");
 
     /**
@@ -1320,7 +1320,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock AEGEAN_NUMBERS
       = new UnicodeBlock(0x10100, 0x1013F,
-                         "AEGEAN_NUMBERS", 
+                         "AEGEAN_NUMBERS",
                          "Aegean Numbers");
 
     /**
@@ -1330,7 +1330,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock OLD_ITALIC
       = new UnicodeBlock(0x10300, 0x1032F,
-                         "OLD_ITALIC", 
+                         "OLD_ITALIC",
                          "Old Italic");
 
     /**
@@ -1340,7 +1340,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock GOTHIC
       = new UnicodeBlock(0x10330, 0x1034F,
-                         "GOTHIC", 
+                         "GOTHIC",
                          "Gothic");
 
     /**
@@ -1350,7 +1350,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock UGARITIC
       = new UnicodeBlock(0x10380, 0x1039F,
-                         "UGARITIC", 
+                         "UGARITIC",
                          "Ugaritic");
 
     /**
@@ -1360,7 +1360,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock DESERET
       = new UnicodeBlock(0x10400, 0x1044F,
-                         "DESERET", 
+                         "DESERET",
                          "Deseret");
 
     /**
@@ -1370,7 +1370,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SHAVIAN
       = new UnicodeBlock(0x10450, 0x1047F,
-                         "SHAVIAN", 
+                         "SHAVIAN",
                          "Shavian");
 
     /**
@@ -1380,7 +1380,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock OSMANYA
       = new UnicodeBlock(0x10480, 0x104AF,
-                         "OSMANYA", 
+                         "OSMANYA",
                          "Osmanya");
 
     /**
@@ -1390,7 +1390,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CYPRIOT_SYLLABARY
       = new UnicodeBlock(0x10800, 0x1083F,
-                         "CYPRIOT_SYLLABARY", 
+                         "CYPRIOT_SYLLABARY",
                          "Cypriot Syllabary");
 
     /**
@@ -1400,7 +1400,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock BYZANTINE_MUSICAL_SYMBOLS
       = new UnicodeBlock(0x1D000, 0x1D0FF,
-                         "BYZANTINE_MUSICAL_SYMBOLS", 
+                         "BYZANTINE_MUSICAL_SYMBOLS",
                          "Byzantine Musical Symbols");
 
     /**
@@ -1410,7 +1410,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MUSICAL_SYMBOLS
       = new UnicodeBlock(0x1D100, 0x1D1FF,
-                         "MUSICAL_SYMBOLS", 
+                         "MUSICAL_SYMBOLS",
                          "Musical Symbols");
 
     /**
@@ -1420,7 +1420,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock TAI_XUAN_JING_SYMBOLS
       = new UnicodeBlock(0x1D300, 0x1D35F,
-                         "TAI_XUAN_JING_SYMBOLS", 
+                         "TAI_XUAN_JING_SYMBOLS",
                          "Tai Xuan Jing Symbols");
 
     /**
@@ -1430,7 +1430,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock MATHEMATICAL_ALPHANUMERIC_SYMBOLS
       = new UnicodeBlock(0x1D400, 0x1D7FF,
-                         "MATHEMATICAL_ALPHANUMERIC_SYMBOLS", 
+                         "MATHEMATICAL_ALPHANUMERIC_SYMBOLS",
                          "Mathematical Alphanumeric Symbols");
 
     /**
@@ -1440,7 +1440,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B
       = new UnicodeBlock(0x20000, 0x2A6DF,
-                         "CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B", 
+                         "CJK_UNIFIED_IDEOGRAPHS_EXTENSION_B",
                          "CJK Unified Ideographs Extension B");
 
     /**
@@ -1450,7 +1450,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock CJK_COMPATIBILITY_IDEOGRAPHS_SUPPLEMENT
       = new UnicodeBlock(0x2F800, 0x2FA1F,
-                         "CJK_COMPATIBILITY_IDEOGRAPHS_SUPPLEMENT", 
+                         "CJK_COMPATIBILITY_IDEOGRAPHS_SUPPLEMENT",
                          "CJK Compatibility Ideographs Supplement");
 
     /**
@@ -1460,7 +1460,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock TAGS
       = new UnicodeBlock(0xE0000, 0xE007F,
-                         "TAGS", 
+                         "TAGS",
                          "Tags");
 
     /**
@@ -1470,7 +1470,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock VARIATION_SELECTORS_SUPPLEMENT
       = new UnicodeBlock(0xE0100, 0xE01EF,
-                         "VARIATION_SELECTORS_SUPPLEMENT", 
+                         "VARIATION_SELECTORS_SUPPLEMENT",
                          "Variation Selectors Supplement");
 
     /**
@@ -1480,7 +1480,7 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SUPPLEMENTARY_PRIVATE_USE_AREA_A
       = new UnicodeBlock(0xF0000, 0xFFFFF,
-                         "SUPPLEMENTARY_PRIVATE_USE_AREA_A", 
+                         "SUPPLEMENTARY_PRIVATE_USE_AREA_A",
                          "Supplementary Private Use Area-A");
 
     /**
@@ -1490,13 +1490,13 @@ public final class Character implements Serializable, Comparable<Character>
      */
     public static final UnicodeBlock SUPPLEMENTARY_PRIVATE_USE_AREA_B
       = new UnicodeBlock(0x100000, 0x10FFFF,
-                         "SUPPLEMENTARY_PRIVATE_USE_AREA_B", 
+                         "SUPPLEMENTARY_PRIVATE_USE_AREA_B",
                          "Supplementary Private Use Area-B");
 
     /**
      * Surrogates Area.
      * 'D800' - 'DFFF'.
-     * @deprecated As of 1.5, the three areas, 
+     * @deprecated As of 1.5, the three areas,
      * <a href="#HIGH_SURROGATES">HIGH_SURROGATES</a>,
      * <a href="#HIGH_PRIVATE_USE_SURROGATES">HIGH_PRIVATE_USE_SURROGATES</a>
      * and <a href="#LOW_SURROGATES">LOW_SURROGATES</a>, as defined
@@ -1508,7 +1508,7 @@ public final class Character implements Serializable, Comparable<Character>
     public static final UnicodeBlock SURROGATES_AREA
       = new UnicodeBlock(0xD800, 0xDFFF,
                          "SURROGATES_AREA",
-			 "Surrogates Area");
+                         "Surrogates Area");
 
     /**
      * The defined subsets.
@@ -1643,9 +1643,9 @@ public final class Character implements Serializable, Comparable<Character>
   } // class UnicodeBlock
 
   /**
-   * A class to encompass all the properties of characters in the 
+   * A class to encompass all the properties of characters in the
    * private use blocks in the Unicode standard.  This class extends
-   * UnassignedCharacters because the return type from getType() is 
+   * UnassignedCharacters because the return type from getType() is
    * different.
    * @author Anthony Balkissoon abalkiss at redhat dot com
    *
@@ -1657,25 +1657,25 @@ public final class Character implements Serializable, Comparable<Character>
      */
     static int getType(int cp)
     {
-      // The upper 2 code points in any plane are considered unassigned, 
+      // The upper 2 code points in any plane are considered unassigned,
       // even in the private-use planes.
       if ((cp & 0xffff) >= 0xfffe)
         return UnassignedCharacters.getType(cp);
       return PRIVATE_USE;
     }
-    
+
     /**
      * Returns true if the character cp is defined.
      */
     static boolean isDefined(int cp)
     {
-      // The upper 2 code points in any plane are considered unassigned, 
+      // The upper 2 code points in any plane are considered unassigned,
       // even in the private-use planes.
       if ((cp & 0xffff) >= 0xfffe)
         return UnassignedCharacters.isDefined(cp);
       return true;
     }
-    
+
     /**
      * Gets the directionality for the character cp.
      */
@@ -1686,9 +1686,9 @@ public final class Character implements Serializable, Comparable<Character>
       return DIRECTIONALITY_LEFT_TO_RIGHT;
     }
   }
-  
+
   /**
-   * A class to encompass all the properties of code points that are 
+   * A class to encompass all the properties of code points that are
    * currently undefined in the Unicode standard.
    * @author Anthony Balkissoon abalkiss at redhat dot com
    *
@@ -1707,7 +1707,7 @@ public final class Character implements Serializable, Comparable<Character>
     }
 
     /**
-     * Returns the Unicode directionality property for unassigned 
+     * Returns the Unicode directionality property for unassigned
      * characters.
      * @param cp the character
      * @return DIRECTIONALITY_UNDEFINED
@@ -1736,9 +1736,9 @@ public final class Character implements Serializable, Comparable<Character>
     {
       return UNASSIGNED;
     }
-    
+
     /**
-     * Returns false to indiciate that the character is not defined in the 
+     * Returns false to indiciate that the character is not defined in the
      * Unicode standard.
      * @param cp the character
      * @return false
@@ -1759,7 +1759,7 @@ public final class Character implements Serializable, Comparable<Character>
     }
 
     /**
-     * Returns false to indicate that the character cannot be ignored 
+     * Returns false to indicate that the character cannot be ignored
      * within an identifier
      * @param cp the character
      * @return false
@@ -1770,7 +1770,7 @@ public final class Character implements Serializable, Comparable<Character>
     }
 
     /**
-     * Returns false to indicate that the character cannot be part of a 
+     * Returns false to indicate that the character cannot be part of a
      * Java identifier.
      * @param cp the character
      * @return false
@@ -1781,7 +1781,7 @@ public final class Character implements Serializable, Comparable<Character>
     }
 
     /**
-     * Returns false to indicate that the character cannot be start a 
+     * Returns false to indicate that the character cannot be start a
      * Java identifier.
      * @param cp the character
      * @return false
@@ -1821,7 +1821,7 @@ public final class Character implements Serializable, Comparable<Character>
     {
       return false;
     }
-    
+
     /**
      * Returns false to indicate that the character cannot is not mirrored.
      * @param cp the character
@@ -1841,7 +1841,7 @@ public final class Character implements Serializable, Comparable<Character>
     {
       return false;
     }
-    
+
     /**
      * Returns false to indicate that the character it not a titlecase letter.
      * @param cp the character
@@ -1851,9 +1851,9 @@ public final class Character implements Serializable, Comparable<Character>
     {
       return false;
     }
-    
+
     /**
-     * Returns false to indicate that the character cannot be part of a 
+     * Returns false to indicate that the character cannot be part of a
      * Unicode identifier.
      * @param cp the character
      * @return false
@@ -1864,7 +1864,7 @@ public final class Character implements Serializable, Comparable<Character>
     }
 
     /**
-     * Returns false to indicate that the character cannot start a 
+     * Returns false to indicate that the character cannot start a
      * Unicode identifier.
      * @param cp the character
      * @return false
@@ -1904,7 +1904,7 @@ public final class Character implements Serializable, Comparable<Character>
     {
       return cp;
     }
-    
+
     /**
      * Returns cp to indicate this character has no titlecase conversion.
      * @param cp the character
@@ -1923,7 +1923,7 @@ public final class Character implements Serializable, Comparable<Character>
     static int toUpperCase(int cp)
     {
       return cp;
-    }    
+    }
   }
 
   /**
@@ -2014,7 +2014,7 @@ public final class Character implements Serializable, Comparable<Character>
    * This value is <code>'\uDFFF'</code>.
    * @since 1.5
    */
-  public static final char MAX_LOW_SURROGATE = '\uDFFF';  
+  public static final char MAX_LOW_SURROGATE = '\uDFFF';
 
   /**
    * The minimum Unicode surrogate code unit in the UTF-16 character encoding.
@@ -2034,7 +2034,7 @@ public final class Character implements Serializable, Comparable<Character>
    * The lowest possible supplementary Unicode code point (the first code
    * point outside the basic multilingual plane (BMP)).
    * This value is <code>0x10000</code>.
-   */ 
+   */
   public static final int MIN_SUPPLEMENTARY_CODE_POINT = 0x10000;
 
   /**
@@ -2418,7 +2418,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #readCodePoint(int)
    * @see CharData#BLOCKS
    */
-  private static final char[][] blocks = 
+  private static final char[][] blocks =
     new char[][]{
                  String.zeroBasedStringValue(CharData.BLOCKS[0]),
                  String.zeroBasedStringValue(CharData.BLOCKS[1]),
@@ -2443,7 +2443,7 @@ public final class Character implements Serializable, Comparable<Character>
    * of String.value to avoid copying the array.
    * @see CharData#DATA
    */
-  private static final char[][] data = 
+  private static final char[][] data =
     new char[][]{
                  String.zeroBasedStringValue(CharData.DATA[0]),
                  String.zeroBasedStringValue(CharData.DATA[1]),
@@ -2468,7 +2468,7 @@ public final class Character implements Serializable, Comparable<Character>
    * of String.value to avoid copying the array.
    * @see CharData#NUM_VALUE
    */
-  private static final char[][] numValue = 
+  private static final char[][] numValue =
     new char[][]{
                  String.zeroBasedStringValue(CharData.NUM_VALUE[0]),
                  String.zeroBasedStringValue(CharData.NUM_VALUE[1]),
@@ -2492,8 +2492,8 @@ public final class Character implements Serializable, Comparable<Character>
    * Stores unicode uppercase attribute table. Exploit package visibility
    * of String.value to avoid copying the array.
    * @see CharData#UPPER
-   */  
-  private static final char[][] upper = 
+   */
+  private static final char[][] upper =
     new char[][]{
                  String.zeroBasedStringValue(CharData.UPPER[0]),
                  String.zeroBasedStringValue(CharData.UPPER[1]),
@@ -2518,7 +2518,7 @@ public final class Character implements Serializable, Comparable<Character>
    * of String.value to avoid copying the array.
    * @see CharData#LOWER
    */
-  private static final char[][] lower = 
+  private static final char[][] lower =
     new char[][]{
                  String.zeroBasedStringValue(CharData.LOWER[0]),
                  String.zeroBasedStringValue(CharData.LOWER[1]),
@@ -2544,7 +2544,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see CharData#DIRECTION
    */
   // Package visible for use by String.
-  static final char[][] direction = 
+  static final char[][] direction =
     new char[][]{
                  String.zeroBasedStringValue(CharData.DIRECTION[0]),
                  String.zeroBasedStringValue(CharData.DIRECTION[1]),
@@ -2569,7 +2569,7 @@ public final class Character implements Serializable, Comparable<Character>
    * String.value to avoid copying the array.
    * @see CharData#TITLE
    */
-  private static final char[] title = String.zeroBasedStringValue(CharData.TITLE);  
+  private static final char[] title = String.zeroBasedStringValue(CharData.TITLE);
 
   /**
    * Mask for grabbing the type out of the contents of data.
@@ -2698,7 +2698,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isLowerCase((int)ch);
   }
-  
+
   /**
    * Determines if a character is a Unicode lowercase letter. For example,
    * <code>'a'</code> is lowercase.  Returns true if getType() returns
@@ -2712,7 +2712,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #isTitleCase(char)
    * @see #toLowerCase(char)
    * @see #getType(char)
-   * 
+   *
    * @since 1.5
    */
   public static boolean isLowerCase(int codePoint)
@@ -2738,7 +2738,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isUpperCase((int)ch);
   }
-  
+
   /**
    * Determines if a character is a Unicode uppercase letter. For example,
    * <code>'A'</code> is uppercase.  Returns true if getType() returns
@@ -2752,7 +2752,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #isTitleCase(char)
    * @see #toUpperCase(char)
    * @see #getType(char)
-   * 
+   *
    * @since 1.5
    */
   public static boolean isUpperCase(int codePoint)
@@ -2792,14 +2792,14 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #isUpperCase(char)
    * @see #toTitleCase(char)
    * @see #getType(char)
-   * 
+   *
    * @since 1.5
    */
   public static boolean isTitleCase(int codePoint)
   {
     return getType(codePoint) == TITLECASE_LETTER;
   }
-  
+
 
   /**
    * Determines if a character is a Unicode decimal digit. For example,
@@ -2818,7 +2818,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isDigit((int)ch);
   }
-  
+
   /**
    * Determines if a character is a Unicode decimal digit. For example,
    * <code>'0'</code> is a digit. A character is a Unicode digit if
@@ -2831,7 +2831,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #digit(char, int)
    * @see #forDigit(int, int)
    * @see #getType(char)
-   * 
+   *
    * @since 1.5
    */
 
@@ -2859,7 +2859,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isDefined((int)ch);
   }
-  
+
   /**
    * Determines if a character is part of the Unicode Standard. This is an
    * evolving standard, but covers every character in the data file.
@@ -2874,7 +2874,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #isLowerCase(char)
    * @see #isTitleCase(char)
    * @see #isUpperCase(char)
-   * 
+   *
    * @since 1.5
    */
   public static boolean isDefined(int codePoint)
@@ -2885,7 +2885,7 @@ public final class Character implements Serializable, Comparable<Character>
   /**
    * Determines if a character is a Unicode letter. Not all letters have case,
    * so this may return true when isLowerCase and isUpperCase return false.
-   * A character is a Unicode letter if getType() returns one of 
+   * A character is a Unicode letter if getType() returns one of
    * UPPERCASE_LETTER, LOWERCASE_LETTER, TITLECASE_LETTER, MODIFIER_LETTER,
    * or OTHER_LETTER.
    * <br>
@@ -2907,11 +2907,11 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isLetter((int)ch);
   }
-  
+
   /**
    * Determines if a character is a Unicode letter. Not all letters have case,
    * so this may return true when isLowerCase and isUpperCase return false.
-   * A character is a Unicode letter if getType() returns one of 
+   * A character is a Unicode letter if getType() returns one of
    * UPPERCASE_LETTER, LOWERCASE_LETTER, TITLECASE_LETTER, MODIFIER_LETTER,
    * or OTHER_LETTER.
    * <br>
@@ -2928,7 +2928,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #isTitleCase(char)
    * @see #isUnicodeIdentifierStart(char)
    * @see #isUpperCase(char)
-   * 
+   *
    * @since 1.5
    */
   public static boolean isLetter(int codePoint)
@@ -2947,17 +2947,17 @@ public final class Character implements Serializable, Comparable<Character>
    * @param index the start position in the CharSequence
    * @param codePointOffset the number of code points offset from the start
    * position
-   * @return the index into the CharSequence that is codePointOffset code 
+   * @return the index into the CharSequence that is codePointOffset code
    * points offset from index
-   * 
+   *
    * @throws NullPointerException if seq is null
    * @throws IndexOutOfBoundsException if index is negative or greater than the
    * length of the sequence.
-   * @throws IndexOutOfBoundsException if codePointOffset is positive and the 
+   * @throws IndexOutOfBoundsException if codePointOffset is positive and the
    * subsequence from index to the end of seq has fewer than codePointOffset
    * code points
    * @throws IndexOutOfBoundsException if codePointOffset is negative and the
-   * subsequence from the start of seq to index has fewer than 
+   * subsequence from the start of seq to index has fewer than
    * (-codePointOffset) code points
    * @since 1.5
    */
@@ -2968,7 +2968,7 @@ public final class Character implements Serializable, Comparable<Character>
     int len = seq.length();
     if (index < 0 || index > len)
       throw new IndexOutOfBoundsException();
-    
+
     int numToGo = codePointOffset;
     int offset = index;
     int adjust = 1;
@@ -2999,7 +2999,7 @@ public final class Character implements Serializable, Comparable<Character>
         return offset;
       }
   }
-  
+
   /**
    * Returns the index into the given char subarray that is offset
    * <code>codePointOffset</code> code points from <code>index</code>.
@@ -3010,11 +3010,11 @@ public final class Character implements Serializable, Comparable<Character>
    * @param codePointOffset the number of code points offset from <code>index
    * </code>
    * @return the index into the char array
-   * 
+   *
    * @throws NullPointerException if a is null
    * @throws IndexOutOfBoundsException if start or count is negative or if
    * start + count is greater than the length of the array
-   * @throws IndexOutOfBoundsException if index is less than start or larger 
+   * @throws IndexOutOfBoundsException if index is less than start or larger
    * than start + count
    * @throws IndexOutOfBoundsException if codePointOffset is positive and the
    * subarray from index to start + count - 1 has fewer than codePointOffset
@@ -3022,7 +3022,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @throws IndexOutOfBoundsException if codePointOffset is negative and the
    * subarray from start to index - 1 has fewer than (-codePointOffset) code
    * points
-   * 
+   *
    * @since 1.5
    */
   public static int offsetByCodePoints(char[] a,
@@ -3035,7 +3035,7 @@ public final class Character implements Serializable, Comparable<Character>
     int end = start + count;
     if (start < 0 || count < 0 || end > len || index < start || index > end)
       throw new IndexOutOfBoundsException();
-    
+
     int numToGo = codePointOffset;
     int offset = index;
     int adjust = 1;
@@ -3069,18 +3069,18 @@ public final class Character implements Serializable, Comparable<Character>
       }
 
   }
-  
+
   /**
    * Returns the number of Unicode code points in the specified range of the
    * given CharSequence.  The first char in the range is at position
-   * beginIndex and the last one is at position endIndex - 1.  Paired 
-   * surrogates (supplementary characters are represented by a pair of chars - 
-   * one from the high surrogates and one from the low surrogates) 
+   * beginIndex and the last one is at position endIndex - 1.  Paired
+   * surrogates (supplementary characters are represented by a pair of chars -
+   * one from the high surrogates and one from the low surrogates)
    * count as just one code point.
    * @param seq the CharSequence to inspect
    * @param beginIndex the beginning of the range
    * @param endIndex the end of the range
-   * @return the number of Unicode code points in the given range of the 
+   * @return the number of Unicode code points in the given range of the
    * sequence
    * @throws NullPointerException if seq is null
    * @throws IndexOutOfBoundsException if beginIndex is negative, endIndex is
@@ -3093,7 +3093,7 @@ public final class Character implements Serializable, Comparable<Character>
     int len = seq.length();
     if (beginIndex < 0 || endIndex > len || beginIndex > endIndex)
       throw new IndexOutOfBoundsException();
-        
+
     int count = 0;
     for (int i = beginIndex; i < endIndex; i++)
       {
@@ -3102,24 +3102,24 @@ public final class Character implements Serializable, Comparable<Character>
         if (isHighSurrogate(seq.charAt(i)) && (i + 1) < endIndex
             && isLowSurrogate(seq.charAt(i + 1)))
           i ++;
-      }    
+      }
     return count;
   }
-  
+
   /**
    * Returns the number of Unicode code points in the specified range of the
    * given char array.  The first char in the range is at position
    * offset and the length of the range is count.  Paired surrogates
-   * (supplementary characters are represented by a pair of chars - 
-   * one from the high surrogates and one from the low surrogates) 
+   * (supplementary characters are represented by a pair of chars -
+   * one from the high surrogates and one from the low surrogates)
    * count as just one code point.
    * @param a the char array to inspect
    * @param offset the beginning of the range
    * @param count the length of the range
-   * @return the number of Unicode code points in the given range of the 
+   * @return the number of Unicode code points in the given range of the
    * array
    * @throws NullPointerException if a is null
-   * @throws IndexOutOfBoundsException if offset or count is negative or if 
+   * @throws IndexOutOfBoundsException if offset or count is negative or if
    * offset + countendIndex is larger than the length of a.
    * @since 1.5
    */
@@ -3130,7 +3130,7 @@ public final class Character implements Serializable, Comparable<Character>
     int end = offset + count;
     if (offset < 0 || count < 0 || end > len)
       throw new IndexOutOfBoundsException();
-        
+
     int counter = 0;
     for (int i = offset; i < end; i++)
       {
@@ -3139,7 +3139,7 @@ public final class Character implements Serializable, Comparable<Character>
         if (isHighSurrogate(a[i]) && (i + 1) < end
             && isLowSurrogate(a[i + 1]))
           i ++;
-      }    
+      }
     return counter;
   }
 
@@ -3177,7 +3177,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #isJavaLetterOrDigit(char)
    * @see #isLetter(char)
    * @see #isUnicodeIdentifierPart(char)
-   * 
+   *
    * @since 1.5
    */
   public static boolean isLetterOrDigit(int codePoint)
@@ -3190,7 +3190,7 @@ public final class Character implements Serializable, Comparable<Character>
            | (1 << OTHER_LETTER)
            | (1 << DECIMAL_DIGIT_NUMBER))) != 0;
   }
-  
+
   /**
    * Determines if a character can start a Java identifier. This is the
    * combination of isLetter, any character where getType returns
@@ -3306,7 +3306,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isJavaIdentifierPart((int)ch);
   }
-  
+
   /**
    * Determines if a character can follow the first letter in
    * a Java identifier.  This is the combination of isJavaLetter (isLetter,
@@ -3411,7 +3411,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isUnicodeIdentifierPart((int)ch);
   }
-  
+
   /**
    * Determines if a character can follow the first letter in
    * a Unicode identifier. This includes letters, connecting punctuation,
@@ -3512,7 +3512,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return (char) (lower[0][readCodePoint((int)ch) >>> 7] + ch);
   }
-  
+
   /**
    * Converts a Unicode character into its lowercase equivalent mapping.
    * If a mapping does not exist, then the character passed is returned.
@@ -3525,7 +3525,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #isUpperCase(char)
    * @see #toTitleCase(char)
    * @see #toUpperCase(char)
-   * 
+   *
    * @since 1.5
    */
   public static int toLowerCase(int codePoint)
@@ -3537,7 +3537,7 @@ public final class Character implements Serializable, Comparable<Character>
       return UnassignedCharacters.toLowerCase(codePoint);
     if (plane > 14)
       return PrivateUseCharacters.toLowerCase(codePoint);
-    
+
     // The short value stored in lower[plane] is the signed difference between
     // codePoint and its lowercase conversion.
     return ((short)lower[plane][readCodePoint(codePoint) >>> 7]) + codePoint;
@@ -3560,7 +3560,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return (char) (upper[0][readCodePoint((int)ch) >>> 7] + ch);
   }
-  
+
   /**
    * Converts a Unicode character into its uppercase equivalent mapping.
    * If a mapping does not exist, then the character passed is returned.
@@ -3573,7 +3573,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #isUpperCase(char)
    * @see #toLowerCase(char)
    * @see #toTitleCase(char)
-   * 
+   *
    * @since 1.5
    */
   public static int toUpperCase(int codePoint)
@@ -3585,7 +3585,7 @@ public final class Character implements Serializable, Comparable<Character>
       return UnassignedCharacters.toUpperCase(codePoint);
     if (plane > 14)
       return PrivateUseCharacters.toUpperCase(codePoint);
-        
+
     // The short value stored in upper[plane] is the signed difference between
     // codePoint and its uppercase conversion.
     return ((short)upper[plane][readCodePoint(codePoint) >>> 7]) + codePoint;
@@ -3623,7 +3623,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #isTitleCase(char)
    * @see #toLowerCase(char)
    * @see #toUpperCase(char)
-   * 
+   *
    * @since 1.5
    */
   public static int toTitleCase(int codePoint)
@@ -3693,7 +3693,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     if (radix < MIN_RADIX || radix > MAX_RADIX)
       return -1;
-    
+
     // If the code point is unassigned or in one of the private use areas
     // then we delegate the call to the appropriate private static inner class.
     int plane = codePoint >>> 16;
@@ -3709,8 +3709,8 @@ public final class Character implements Serializable, Comparable<Character>
       {
         // Signedness doesn't matter; 0xffff vs. -1 are both rejected.
         int digit = numValue[plane][attr >> 7];
-        
-        // If digit is less than or equal to -3 then the numerical value was 
+
+        // If digit is less than or equal to -3 then the numerical value was
         // too large to fit into numValue and is stored in CharData.LARGENUMS.
         if (digit <= -3)
           digit = CharData.LARGENUMS[-digit - 3];
@@ -3718,7 +3718,7 @@ public final class Character implements Serializable, Comparable<Character>
       }
     return -1;
   }
-  
+
   /**
    * Returns the Unicode numeric value property of a character. For example,
    * <code>'\\u216C'</code> (the Roman numeral fifty) returns 50.
@@ -3751,7 +3751,7 @@ public final class Character implements Serializable, Comparable<Character>
     // Treat numValue as signed.
     return (short) numValue[0][readCodePoint((int)ch) >> 7];
   }
-  
+
   /**
    * Returns the Unicode numeric value property of a character. For example,
    * <code>'\\u216C'</code> (the Roman numeral fifty) returns 50.
@@ -3788,9 +3788,9 @@ public final class Character implements Serializable, Comparable<Character>
       return UnassignedCharacters.getNumericValue(codePoint);
     if (plane > 14)
       return PrivateUseCharacters.getNumericValue(codePoint);
-    
+
     // If the value N found in numValue[plane] is less than or equal to -3
-    // then the numeric value was too big to fit into 16 bits and is 
+    // then the numeric value was too big to fit into 16 bits and is
     // stored in CharData.LARGENUMS at offset (-N - 3).
     short num = (short)numValue[plane][readCodePoint(codePoint) >> 7];
     if (num <= -3)
@@ -3837,7 +3837,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isSpaceChar((int)ch);
   }
-  
+
   /**
    * Determines if a character is a Unicode space character. This includes
    * SPACE_SEPARATOR, LINE_SEPARATOR, and PARAGRAPH_SEPARATOR.
@@ -3878,7 +3878,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isWhitespace((int) ch);
   }
-  
+
   /**
    * Determines if a character is Java whitespace. This includes Unicode
    * space characters (SPACE_SEPARATOR, LINE_SEPARATOR, and
@@ -3903,7 +3903,7 @@ public final class Character implements Serializable, Comparable<Character>
       return UnassignedCharacters.isWhiteSpace(codePoint);
     if (plane > 14)
       return PrivateUseCharacters.isWhiteSpace(codePoint);
-    
+
     int attr = readCodePoint(codePoint);
     return ((((1 << (attr & TYPE_MASK))
               & ((1 << SPACE_SEPARATOR)
@@ -3937,14 +3937,14 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return isISOControl((int)ch);
   }
-  
+
   /**
    * Determines if the character is an ISO Control character.  This is true
    * if the code point is in the range [0, 0x001F] or if it is in the range
    * [0x007F, 0x009F].
    * @param codePoint the character to check
    * @return true if the character is in one of the above ranges
-   * 
+   *
    * @since 1.5
    */
   public static boolean isISOControl(int codePoint)
@@ -3952,7 +3952,7 @@ public final class Character implements Serializable, Comparable<Character>
     if ((codePoint >= 0 && codePoint <= 0x001F)
         || (codePoint >= 0x007F && codePoint <= 0x009F))
       return true;
-    return false;      
+    return false;
   }
 
   /**
@@ -3996,7 +3996,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return getType((int)ch);
   }
-  
+
   /**
    * Returns the Unicode general category property of a character.
    *
@@ -4032,7 +4032,7 @@ public final class Character implements Serializable, Comparable<Character>
    * @see #MODIFIER_SYMBOL
    * @see #INITIAL_QUOTE_PUNCTUATION
    * @see #FINAL_QUOTE_PUNCTUATION
-   * 
+   *
    * @since 1.5
    */
   public static int getType(int codePoint)
@@ -4044,7 +4044,7 @@ public final class Character implements Serializable, Comparable<Character>
       return UnassignedCharacters.getType(codePoint);
     if (plane > 14)
       return PrivateUseCharacters.getType(codePoint);
-    
+
     return readCodePoint(codePoint) & TYPE_MASK;
   }
 
@@ -4105,7 +4105,7 @@ public final class Character implements Serializable, Comparable<Character>
     return getDirectionality((int)ch);
   }
 
-  
+
   /**
    * Returns the Unicode directionality property of the character. This
    * is used in the visual ordering of text.
@@ -4143,11 +4143,11 @@ public final class Character implements Serializable, Comparable<Character>
       return UnassignedCharacters.getDirectionality(codePoint);
     if (plane > 14)
       return PrivateUseCharacters.getDirectionality(codePoint);
-    
+
     // The result will correctly be signed.
     return (byte) (direction[plane][readCodePoint(codePoint) >> 7] >> 2);
   }
-  
+
   /**
    * Determines whether the character is mirrored according to Unicode. For
    * example, <code>\u0028</code> (LEFT PARENTHESIS) appears as '(' in
@@ -4161,7 +4161,7 @@ public final class Character implements Serializable, Comparable<Character>
   {
     return (readCodePoint((int)ch) & MIRROR_MASK) != 0;
   }
-  
+
   /**
    * Determines whether the character is mirrored according to Unicode. For
    * example, <code>\u0028</code> (LEFT PARENTHESIS) appears as '(' in
@@ -4180,7 +4180,7 @@ public final class Character implements Serializable, Comparable<Character>
       return UnassignedCharacters.isMirrored(codePoint);
     if (plane > 14)
       return PrivateUseCharacters.isMirrored(codePoint);
-    
+
     return (readCodePoint(codePoint) & MIRROR_MASK) != 0;
   }
 
@@ -4229,7 +4229,7 @@ public final class Character implements Serializable, Comparable<Character>
   /**
    * Converts a unicode code point to a UTF-16 representation of that
    * code point.
-   * 
+   *
    * @param codePoint the unicode code point
    *
    * @return the UTF-16 representation of that code point
@@ -4288,7 +4288,7 @@ public final class Character implements Serializable, Comparable<Character>
     else
       {
         dst[dstIndex] = (char) codePoint;
-        result = 1; 
+        result = 1;
       }
     return result;
   }
@@ -4305,9 +4305,9 @@ public final class Character implements Serializable, Comparable<Character>
    */
   public static int charCount(int codePoint)
   {
-    return 
-      (codePoint >= MIN_SUPPLEMENTARY_CODE_POINT) 
-      ? 2 
+    return
+      (codePoint >= MIN_SUPPLEMENTARY_CODE_POINT)
+      ? 2
       : 1;
   }
 
@@ -4510,7 +4510,7 @@ public final class Character implements Serializable, Comparable<Character>
   public static int codePointBefore(char[] chars, int index, int start)
   {
     if (index < start || index > chars.length
-	|| start < 0 || start >= chars.length)
+        || start < 0 || start >= chars.length)
       throw new IndexOutOfBoundsException();
     --index;
     char low = chars[index];

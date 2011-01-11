@@ -1,4 +1,4 @@
-/* OMGVMCID.java -- 
+/* OMGVMCID.java --
  Copyright (C) 2005 Free Software Foundation, Inc.
 
  This file is part of GNU Classpath.
@@ -56,11 +56,11 @@ package org.omg.CORBA;
  * assigned space, the assignment of values to minor codes is left to the
  * vendor.
  * </p>
- * 
+ *
  * <p>
  * The VMCID 0 and 0xFFFFF0000 are reserved for experimental use.
  * </p>
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public interface OMGVMCID

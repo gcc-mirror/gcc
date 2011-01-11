@@ -1,4 +1,4 @@
-/* DSSSignatureRawCodec.java -- 
+/* DSSSignatureRawCodec.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -78,7 +78,7 @@ public class DSSSignatureRawCodec
    * the <code>toByteArray()</code> method on the DSS parameter <code>s</code>.
    * </li>
    * </ol>
-   * 
+   *
    * @param signature the signature to encode, consisting of the two DSS
    *          parameters <code>r</code> and <code>s</code> as a
    *          {@link BigInteger} array.

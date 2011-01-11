@@ -57,7 +57,7 @@ import java.util.prefs.BackingStoreException;
  * beneath the user's home directory.  The preferences for the node are
  * stored in a single properties file in that directory.  Sub-nodes are
  * stored in subdirectories.  This implementation uses file locking to
- * mediate access to the properties files. 
+ * mediate access to the properties files.
  */
 public class FileBasedPreferences
     extends AbstractPreferences
@@ -217,7 +217,7 @@ public class FileBasedPreferences
           {
             // Write the underlying file.
             directory.mkdirs();
-            
+
             FileOutputStream fos = null;
             FileLock lock = null;
             try

@@ -79,23 +79,23 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
     // Special case where we can find the comparator to use.
     if (c instanceof SortedSet)
       {
-	SortedSet<? extends E> ss = (SortedSet<? extends E>) c;
-	this.comparator = (Comparator<? super E>) ss.comparator();
-	// We can insert the elements directly, since they are sorted.
-	int i = 0;
-	for (E val : ss)
-	  {
-	    if (val == null)
-	      throw new NullPointerException();
-	    storage[i++] = val;
-	  }
+        SortedSet<? extends E> ss = (SortedSet<? extends E>) c;
+        this.comparator = (Comparator<? super E>) ss.comparator();
+        // We can insert the elements directly, since they are sorted.
+        int i = 0;
+        for (E val : ss)
+          {
+            if (val == null)
+              throw new NullPointerException();
+            storage[i++] = val;
+          }
       }
     else if (c instanceof PriorityQueue)
       {
-	PriorityQueue<? extends E> pq = (PriorityQueue<? extends E>) c;
-	this.comparator = (Comparator<? super E>)pq.comparator();
-	// We can just copy the contents.
-	System.arraycopy(pq.storage, 0, storage, 0, pq.storage.length);
+        PriorityQueue<? extends E> pq = (PriorityQueue<? extends E>) c;
+        this.comparator = (Comparator<? super E>)pq.comparator();
+        // We can just copy the contents.
+        System.arraycopy(pq.storage, 0, storage, 0, pq.storage.length);
       }
 
     addAll(c);
@@ -109,7 +109,7 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
   public PriorityQueue(int cap, Comparator<? super E> comp)
   {
     if (cap < 1)
-      throw new IllegalArgumentException();      
+      throw new IllegalArgumentException();
     this.used = 0;
     this.storage = (E[]) new Object[cap];
     this.comparator = comp;
@@ -118,7 +118,7 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
   public PriorityQueue(PriorityQueue<? extends E> c)
   {
     this(Math.max(1, (int) (1.1 * c.size())),
-	 (Comparator<? super E>)c.comparator());
+         (Comparator<? super E>)c.comparator());
     // We can just copy the contents.
     System.arraycopy(c.storage, 0, storage, 0, c.storage.length);
   }
@@ -126,14 +126,14 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
   public PriorityQueue(SortedSet<? extends E> c)
   {
     this(Math.max(1, (int) (1.1 * c.size())),
-	 (Comparator<? super E>)c.comparator());
+         (Comparator<? super E>)c.comparator());
     // We can insert the elements directly, since they are sorted.
     int i = 0;
     for (E val : c)
       {
-	if (val == null)
-	  throw new NullPointerException();
-	storage[i++] = val;
+        if (val == null)
+          throw new NullPointerException();
+        storage[i++] = val;
       }
   }
 
@@ -157,22 +157,22 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
 
       public boolean hasNext()
       {
-	return count < used;
+        return count < used;
       }
 
       public E next()
       {
-	while (storage[++index] == null)
-	  ;
-        
-	++count;
-	return storage[index];
+        while (storage[++index] == null)
+          ;
+
+        ++count;
+        return storage[index];
       }
 
       public void remove()
       {
-	PriorityQueue.this.remove(index);
-	index--;
+        PriorityQueue.this.remove(index);
+        index--;
       }
     };
   }
@@ -209,14 +209,14 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
   {
     if (o != null)
       {
-	for (int i = 0; i < storage.length; ++i)
-	  {
-	    if (o.equals(storage[i]))
-	      {
-		remove(i);
-		return true;
-	      }
-	  }
+        for (int i = 0; i < storage.length; ++i)
+          {
+            if (o.equals(storage[i]))
+              {
+                remove(i);
+                return true;
+              }
+          }
       }
     return false;
   }
@@ -237,12 +237,12 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
     int save = used;
     for (E val : c)
       {
-	if (val == null)
-	  throw new NullPointerException();
-	newSlot = findSlot(newSlot);
-	storage[newSlot] = val;
-	++used;
-	bubbleUp(newSlot);
+        if (val == null)
+          throw new NullPointerException();
+        newSlot = findSlot(newSlot);
+        storage[newSlot] = val;
+        ++used;
+        bubbleUp(newSlot);
       }
 
     return save != used;
@@ -253,17 +253,17 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
     int slot;
     if (used == storage.length)
       {
-	resize();
-	slot = used;
+        resize();
+        slot = used;
       }
     else
       {
-	for (slot = start + 1; slot < storage.length; ++slot)
-	  {
-	    if (storage[slot] == null)
-	      break;
-	  }
-	// We'll always find a slot.
+        for (slot = start + 1; slot < storage.length; ++slot)
+          {
+            if (storage[slot] == null)
+              break;
+          }
+        // We'll always find a slot.
       }
     return slot;
   }
@@ -275,28 +275,28 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
     // the bottom of the tree.
     while (storage[index] != null)
       {
-	int child = 2 * index + 1;
+        int child = 2 * index + 1;
 
-	// See if we went off the end.
-	if (child >= storage.length)
-	  {
-	    storage[index] = null;
-	    break;
-	  }
+        // See if we went off the end.
+        if (child >= storage.length)
+          {
+            storage[index] = null;
+            break;
+          }
 
-	// Find which child we want to promote.  If one is not null,
-	// we pick it.  If both are null, it doesn't matter, we're
-	// about to leave.  If neither is null, pick the lesser.
-	if (child + 1 >= storage.length || storage[child + 1] == null)
-	  {
-	    // Nothing.
-	  }
-	else if (storage[child] == null
-		 || (Collections.compare(storage[child], storage[child + 1],
-					 comparator) > 0))
-	  ++child;
-	storage[index] = storage[child];
-	index = child;
+        // Find which child we want to promote.  If one is not null,
+        // we pick it.  If both are null, it doesn't matter, we're
+        // about to leave.  If neither is null, pick the lesser.
+        if (child + 1 >= storage.length || storage[child + 1] == null)
+          {
+            // Nothing.
+          }
+        else if (storage[child] == null
+                 || (Collections.compare(storage[child], storage[child + 1],
+                                         comparator) > 0))
+          ++child;
+        storage[index] = storage[child];
+        index = child;
       }
     --used;
   }
@@ -307,23 +307,23 @@ public class PriorityQueue<E> extends AbstractQueue<E> implements Serializable
     // it up the tree to its natural resting place.
     while (index > 0)
       {
-	// This works regardless of whether we're at 2N+1 or 2N+2.
-	int parent = (index - 1) / 2;
-	if (Collections.compare(storage[parent], storage[index], comparator)
-	    <= 0)
-	  {
-	    // Parent is the same or smaller than this element, so the
-	    // invariant is preserved.  Note that if the new element
-	    // is smaller than the parent, then it is necessarily
-	    // smaller than the parent's other child.
-	    break;
-	  }
+        // This works regardless of whether we're at 2N+1 or 2N+2.
+        int parent = (index - 1) / 2;
+        if (Collections.compare(storage[parent], storage[index], comparator)
+            <= 0)
+          {
+            // Parent is the same or smaller than this element, so the
+            // invariant is preserved.  Note that if the new element
+            // is smaller than the parent, then it is necessarily
+            // smaller than the parent's other child.
+            break;
+          }
 
-	E temp = storage[index];
-	storage[index] = storage[parent];
-	storage[parent] = temp;
+        E temp = storage[index];
+        storage[index] = storage[parent];
+        storage[parent] = temp;
 
-	index = parent;
+        index = parent;
       }
   }
 

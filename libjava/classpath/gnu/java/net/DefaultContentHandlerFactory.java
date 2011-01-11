@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -49,7 +49,7 @@ import java.util.HashSet;
 class ImageHandler extends ContentHandler
 {
   static ImageHandler instance = new ImageHandler();
-  
+
   public Object getContent(URLConnection urlc) throws IOException
   {
     // FIXME: implement using ImageIO
@@ -80,7 +80,7 @@ public class DefaultContentHandlerFactory implements ContentHandlerFactory
       "image/x-xbitmap",
       "image/x-xpixmap"
     };
-   
+
   private static HashSet<String> imageTypes
     = new HashSet<String>(Arrays.asList(known_image_types));
 

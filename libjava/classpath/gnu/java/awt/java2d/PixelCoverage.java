@@ -124,7 +124,7 @@ final class PixelCoverage
     Bucket match = current;
     while (match != null && match.xPos != x)
       {
-        
+
       }
 
     return match;

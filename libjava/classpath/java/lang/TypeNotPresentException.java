@@ -43,7 +43,7 @@ package java.lang;
  * Thrown when a type is accessed using a <code>String</code>-based
  * representation, but no definition of the supplied type is found.
  * This is effectively an unchecked equivalent of the existing
- * <code>ClassNotFound</code> exception.  
+ * <code>ClassNotFound</code> exception.
  * </p>
  * <p>
  * It may occur due to an attempt to load a missing class, interface or
@@ -66,7 +66,7 @@ public class TypeNotPresentException
    * may be used to provide additional history, with regards to the
    * root of the problem.  It is perfectly valid for this to be null,
    * if the cause of the problem is unknown.
-   * 
+   *
    * @param typeName the name of the missing type.
    * @param cause the cause of this exception, or null if the cause
    *              is unknown.

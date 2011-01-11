@@ -1,4 +1,4 @@
-/* NIOSocket.java -- 
+/* NIOSocket.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,7 +48,7 @@ import java.nio.channels.SocketChannel;
 public final class NIOSocket extends Socket
 {
   private SocketChannelImpl channel;
-    
+
   protected NIOSocket (SocketChannelImpl channel)
     throws IOException
   {
@@ -66,12 +66,12 @@ public final class NIOSocket extends Socket
   //  this.impl = channel.getPlainSocketImpl();
   //  this.channel = channel;
   //}
-  
+
   public final SocketChannel getChannel()
   {
     return channel;
   }
-  
+
   public boolean isConnected()
   {
     return channel.isConnected();

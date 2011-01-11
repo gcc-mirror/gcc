@@ -1,4 +1,4 @@
-/* DomHTMLFrameElement.java -- 
+/* DomHTMLFrameElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,7 +65,7 @@ public class DomHTMLFrameElement
   {
     setHTMLAttribute("frameborder", frameBorder);
   }
-  
+
   public String getLongDesc()
   {
     return getHTMLAttribute("longdesc");
@@ -75,7 +75,7 @@ public class DomHTMLFrameElement
   {
     setHTMLAttribute("longdesc", longDesc);
   }
-  
+
   public String getMarginHeight()
   {
     return getHTMLAttribute("marginheight");
@@ -85,7 +85,7 @@ public class DomHTMLFrameElement
   {
     setHTMLAttribute("marginheight", marginHeight);
   }
-  
+
   public String getMarginWidth()
   {
     return getHTMLAttribute("marginwidth");
@@ -95,7 +95,7 @@ public class DomHTMLFrameElement
   {
     setHTMLAttribute("marginwidth", marginWidth);
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -105,7 +105,7 @@ public class DomHTMLFrameElement
   {
     setHTMLAttribute("name", name);
   }
-  
+
   public boolean getNoResize()
   {
     return getBooleanHTMLAttribute("noresize");
@@ -115,7 +115,7 @@ public class DomHTMLFrameElement
   {
     setBooleanHTMLAttribute("noresize", noResize);
   }
-  
+
   public String getScrolling()
   {
     return getHTMLAttribute("scrolling");
@@ -125,7 +125,7 @@ public class DomHTMLFrameElement
   {
     setHTMLAttribute("scrolling", scrolling);
   }
-  
+
   public String getSrc()
   {
     return getHTMLAttribute("src");
@@ -141,6 +141,5 @@ public class DomHTMLFrameElement
     // TODO getContentDocument
     return null;
   }
-  
-}
 
+}

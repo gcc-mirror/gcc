@@ -68,16 +68,16 @@ public abstract class NameValuePairHelper
   {
     ORB orb = OrbRestricted.Singleton;
     StructMember[] members = new StructMember[ 2 ];
-    
+
     TypeCode field;
-    
+
     field =
       orb.create_alias_tc("IDL:omg.org/DynamicAny/FieldName:1.0",
                           "FieldName",
                           orb.get_primitive_tc(TCKind.tk_string)
       );
     members [ 0 ] = new StructMember("id", field, null);
-    
+
     field = orb.get_primitive_tc(TCKind.tk_any);
     members [ 1 ] = new StructMember("value", field, null);
     return orb.create_struct_tc(id(), "NameValuePair", members);
@@ -111,7 +111,7 @@ public abstract class NameValuePairHelper
       {
         BAD_OPERATION bad = new BAD_OPERATION("NameValuePair expected");
         bad.initCause(cex);
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         throw bad;
       }
   }

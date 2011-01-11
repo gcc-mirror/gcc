@@ -45,11 +45,11 @@ import javax.print.attribute.PrintRequestAttribute;
 
 /**
  * The <code>JobSheets</code> printing attribute specifies if a
- * job start/end sheets should be printed. 
+ * job start/end sheets should be printed.
  * <p>
  * <b>IPP Compatibility:</b> JobSheets is an IPP 1.1 attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -59,24 +59,24 @@ public class JobSheets extends EnumSyntax
   private static final long serialVersionUID = -4735258056132519759L;
 
   /**
-   * No job sheet is printed. 
+   * No job sheet is printed.
    */
   public static final JobSheets NONE = new JobSheets(0);
-  
+
   /**
-   * The standard job sheet is printed. The sheet and if it 
+   * The standard job sheet is printed. The sheet and if it
    * is printed only as start sheet or also as end sheet is
    * site specific.
    */
   public static final JobSheets STANDARD = new JobSheets(1);
 
   private static final String[] stringTable = { "none", "standard" };
-  
+
   private static final JobSheets[] enumValueTable = { NONE, STANDARD };
-  
+
   /**
    * Constructs a <code>JobSheets</code> object.
-   * 
+   *
    * @param value the enum value.
    */
   protected JobSheets(int value)
@@ -103,7 +103,7 @@ public class JobSheets extends EnumSyntax
   {
     return "job-sheets";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

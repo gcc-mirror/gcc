@@ -49,7 +49,7 @@ import java.lang.reflect.Proxy;
  * {@link CompositeData} object.  An instance of {@link CompositeData}
  * consists of a series of key-value mappings.  This handler assumes
  * these keys to be the names of attributes, and thus provides
- * accessor methods by returning the associated value.  
+ * accessor methods by returning the associated value.
  * </p>
  * <p>
  * As an example, consider the following interface:
@@ -110,7 +110,7 @@ public class CompositeDataInvocationHandler
   {
     if (data == null)
       throw new IllegalArgumentException("The CompositeData instance " +
-					 "must be non-null.");
+                                         "must be non-null.");
     this.data = data;
   }
 
@@ -149,18 +149,18 @@ public class CompositeDataInvocationHandler
     String mName = method.getName();
     if (mName.equals("equals"))
       {
-	if (args[0] instanceof Proxy)
-	  {
-	    InvocationHandler h = Proxy.getInvocationHandler(args[0]);
-	    if (h instanceof CompositeDataInvocationHandler)
-	      return data.equals(((CompositeDataInvocationHandler)
-				  h).getCompositeData());
-	  }
-	return false;
+        if (args[0] instanceof Proxy)
+          {
+            InvocationHandler h = Proxy.getInvocationHandler(args[0]);
+            if (h instanceof CompositeDataInvocationHandler)
+              return data.equals(((CompositeDataInvocationHandler)
+                                  h).getCompositeData());
+          }
+        return false;
       }
     if (mName.equals("hashCode"))
       {
-	return data.hashCode();
+        return data.hashCode();
       }
     String attrib = null;
     if (mName.startsWith("get"))
@@ -171,18 +171,18 @@ public class CompositeDataInvocationHandler
       throw new NoSuchMethodException(mName + " is not an accessor.");
     if (!data.containsKey(attrib))
       {
-	if (Character.isLowerCase(attrib.charAt(0)))
-	  throw new NoSuchMethodException("The attribute " +
-					  attrib + " is not available " +
-					  "in the given CompositeData " +
-					  "object");
-	attrib = Character.toLowerCase(attrib.charAt(0))
-	  + attrib.substring(1);
-	if (!data.containsKey(attrib))
-	  throw new NoSuchMethodException("The attribute " +
-					  attrib + " is not available " +
-					  "in the given CompositeData " +
-					  "object");
+        if (Character.isLowerCase(attrib.charAt(0)))
+          throw new NoSuchMethodException("The attribute " +
+                                          attrib + " is not available " +
+                                          "in the given CompositeData " +
+                                          "object");
+        attrib = Character.toLowerCase(attrib.charAt(0))
+          + attrib.substring(1);
+        if (!data.containsKey(attrib))
+          throw new NoSuchMethodException("The attribute " +
+                                          attrib + " is not available " +
+                                          "in the given CompositeData " +
+                                          "object");
       }
     return data.get(attrib);
   }

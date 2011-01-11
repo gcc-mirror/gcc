@@ -118,7 +118,7 @@ public class BasicDesktopIconUI extends DesktopIconUI
       yOffset = e.getY();
       pane = frame.getDesktopPane();
       if (pane != null)
-	pane.getDesktopManager().beginDraggingFrame(desktopIcon);
+        pane.getDesktopManager().beginDraggingFrame(desktopIcon);
     }
 
     /**
@@ -129,7 +129,7 @@ public class BasicDesktopIconUI extends DesktopIconUI
     public void mouseReleased(MouseEvent e)
     {
       if (pane != null)
-	pane.getDesktopManager().endDraggingFrame(desktopIcon);
+        pane.getDesktopManager().endDraggingFrame(desktopIcon);
       xOffset = 0;
       yOffset = 0;
     }
@@ -147,9 +147,9 @@ public class BasicDesktopIconUI extends DesktopIconUI
                                int newHeight)
     {
       if (pane != null)
-	pane.getDesktopManager().dragFrame(f, newX, newY);
+        pane.getDesktopManager().dragFrame(f, newX, newY);
       else
-	desktopIcon.setBounds(newX, newY, newWidth, newHeight);
+        desktopIcon.setBounds(newX, newY, newWidth, newHeight);
     }
   }
 
@@ -308,7 +308,7 @@ public class BasicDesktopIconUI extends DesktopIconUI
 
   /** The PropertyChangeListener listening to the JDesktopIcon. */
   private transient PropertyChangeListener propertyHandler;
-  
+
   /** The default icon used when no frame icon is given by the JInternalFrame. */
   static Icon defaultIcon = new InternalFrameDefaultMenuIcon();
 
@@ -389,15 +389,15 @@ public class BasicDesktopIconUI extends DesktopIconUI
   {
     if (c instanceof JDesktopIcon)
       {
-	desktopIcon = (JDesktopIcon) c;
-	desktopIcon.setLayout(new BorderLayout());
-	frame = desktopIcon.getInternalFrame();
+        desktopIcon = (JDesktopIcon) c;
+        desktopIcon.setLayout(new BorderLayout());
+        frame = desktopIcon.getInternalFrame();
 
-	installDefaults();
-	installComponents();
-	installListeners();
+        installDefaults();
+        installComponents();
+        installListeners();
 
-	desktopIcon.setOpaque(true);
+        desktopIcon.setOpaque(true);
       }
   }
 
@@ -409,11 +409,11 @@ public class BasicDesktopIconUI extends DesktopIconUI
   public void uninstallUI(JComponent c)
   {
     desktopIcon.setOpaque(false);
-    
+
     uninstallListeners();
     uninstallComponents();
     uninstallDefaults();
-    
+
     frame = null;
     desktopIcon.setLayout(null);
     desktopIcon = null;
@@ -444,7 +444,7 @@ public class BasicDesktopIconUI extends DesktopIconUI
   protected void uninstallComponents()
   {
     desktopIcon.remove(button);
-    
+
     button = null;
   }
 
@@ -460,29 +460,29 @@ public class BasicDesktopIconUI extends DesktopIconUI
 
     propertyHandler = new PropertyChangeListener()
         {
-	  public void propertyChange(PropertyChangeEvent e)
-	  {
-	    if (e.getPropertyName().equals(JInternalFrame.TITLE_PROPERTY))
-	      button.setText(desktopIcon.getInternalFrame().getTitle());
-	    else if (e.getPropertyName().equals(JInternalFrame.FRAME_ICON_PROPERTY))
-	      {
-		Icon use = desktopIcon.getInternalFrame().getFrameIcon();
-		if (use == null)
-		  use = defaultIcon;
-		button.setIcon(use);
-	      }
-	    desktopIcon.revalidate();
-	    desktopIcon.repaint();
-	  }
+          public void propertyChange(PropertyChangeEvent e)
+          {
+            if (e.getPropertyName().equals(JInternalFrame.TITLE_PROPERTY))
+              button.setText(desktopIcon.getInternalFrame().getTitle());
+            else if (e.getPropertyName().equals(JInternalFrame.FRAME_ICON_PROPERTY))
+              {
+                Icon use = desktopIcon.getInternalFrame().getFrameIcon();
+                if (use == null)
+                  use = defaultIcon;
+                button.setIcon(use);
+              }
+            desktopIcon.revalidate();
+            desktopIcon.repaint();
+          }
         };
     frame.addPropertyChangeListener(propertyHandler);
 
     button.addActionListener(new ActionListener()
         {
-	  public void actionPerformed(ActionEvent e)
-	  {
+          public void actionPerformed(ActionEvent e)
+          {
             deiconize();
-	  }
+          }
         });
   }
 
@@ -492,10 +492,10 @@ public class BasicDesktopIconUI extends DesktopIconUI
   protected void uninstallListeners()
   {
     // button is nulled so no need to remove it.
-    
+
     frame.removePropertyChangeListener(propertyHandler);
     propertyHandler = null;
-    
+
     desktopIcon.removeMouseMotionListener(mouseHandler);
     desktopIcon.removeMouseListener(mouseHandler);
   }
@@ -506,7 +506,7 @@ public class BasicDesktopIconUI extends DesktopIconUI
   protected void installDefaults()
   {
     // FIXME: Move border to defaults.
-    desktopIcon.setBorder(new DesktopIconBorder());  
+    desktopIcon.setBorder(new DesktopIconBorder());
   }
 
   /**
@@ -578,7 +578,7 @@ public class BasicDesktopIconUI extends DesktopIconUI
   /**
    * This method deiconizes the JInternalFrame associated with the JDesktopIcon.
    */
-  public void deiconize() 
+  public void deiconize()
   {
     try
     {

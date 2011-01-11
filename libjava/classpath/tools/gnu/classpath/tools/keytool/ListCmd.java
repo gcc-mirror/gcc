@@ -69,7 +69,7 @@ import java.util.logging.Logger;
  *      a default value of <code>mykey</code> shall be used when this option is
  *      omitted from the command line.
  *      <p></dd>
- *      
+ *
  *      <dt>-storetype STORE_TYPE</dt>
  *      <dd>Use this option to specify the type of the key store to use. The
  *      default value, if this option is omitted, is that of the property
@@ -77,7 +77,7 @@ import java.util.logging.Logger;
  *      obtained by invoking the {@link java.security.KeyStore#getDefaultType()}
  *      static method.
  *      <p></dd>
- *      
+ *
  *      <dt>-keystore URL</dt>
  *      <dd>Use this option to specify the location of the key store to use.
  *      The default value is a file {@link java.net.URL} referencing the file
@@ -90,13 +90,13 @@ import java.util.logging.Logger;
  *      name (with absolute or relative path-name) of a key store --as if the
  *      protocol was <code>file:</code>.
  *      <p></dd>
- *      
+ *
  *      <dt>-storepass PASSWORD</dt>
  *      <dd>Use this option to specify the password protecting the key store. If
  *      this option is omitted from the command line, you will be prompted to
  *      provide a password.
  *      <p></dd>
- *      
+ *
  *      <dt>-provider PROVIDER_CLASS_NAME</dt>
  *      <dd>A fully qualified class name of a Security Provider to add to the
  *      current list of Security Providers already installed in the JVM in-use.
@@ -104,11 +104,11 @@ import java.util.logging.Logger;
  *      added to the runtime --i.e. it was not already installed-- then the tool
  *      will attempt to removed this Security Provider before exiting.
  *      <p></dd>
- *      
+ *
  *      <dt>-rfc</dt>
  *      <dd>Use RFC-1421 specifications when encoding the output.
  *      <p></dd>
- *      
+ *
  *      <dt>-v</dt>
  *      <dd>Output the certificate in human-readable format. If both this option
  *      and the <code>-rfc</code> option are detected on the command line, the
@@ -307,7 +307,7 @@ class ListCmd extends Command
 
   /**
    * Prints the certificate(s) associated with the designated alias.
-   * 
+   *
    * @param anAlias a non-null string denoting an alias in the key-store.
    * @param writer where to print.
    * @throws KeyStoreException if an exception occurs while obtaining the
@@ -355,7 +355,7 @@ class ListCmd extends Command
    * is generated.
    * <p>Note that both <code>v</code> and <code>rfc</code> cannot both be
    * <code>true</code> at the same time.
-   * 
+   *
    * @param chain the certificate chain to process.
    * @param writer where to print.
    * @throws CertificateEncodingException if an exception occurs while obtaining
@@ -395,7 +395,7 @@ class ListCmd extends Command
    * is generated.
    * <p>Note that both <code>v</code> and <code>rfc</code> cannot both be
    * <code>true</code> at the same time.
-   * 
+   *
    * @param certificate the certificate to process.
    * @param writer where to print.
    * @throws CertificateEncodingException if an exception occurs while obtaining

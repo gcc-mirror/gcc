@@ -18,23 +18,23 @@ package org.w3c.dom.html2;
  */
 public interface HTMLFrameSetElement extends HTMLElement {
     /**
-     * The number of columns of frames in the frameset. See the cols attribute 
+     * The number of columns of frames in the frameset. See the cols attribute
      * definition in HTML 4.01.
      */
     public String getCols();
     /**
-     * The number of columns of frames in the frameset. See the cols attribute 
+     * The number of columns of frames in the frameset. See the cols attribute
      * definition in HTML 4.01.
      */
     public void setCols(String cols);
 
     /**
-     * The number of rows of frames in the frameset. See the rows attribute 
+     * The number of rows of frames in the frameset. See the rows attribute
      * definition in HTML 4.01.
      */
     public String getRows();
     /**
-     * The number of rows of frames in the frameset. See the rows attribute 
+     * The number of rows of frames in the frameset. See the rows attribute
      * definition in HTML 4.01.
      */
     public void setRows(String rows);

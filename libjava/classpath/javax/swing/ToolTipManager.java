@@ -219,9 +219,9 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
   {
     if (! enabled)
       {
-	enterTimer.stop();
-	exitTimer.stop();
-	insideTimer.stop();
+        enterTimer.stop();
+        exitTimer.stop();
+        insideTimer.stop();
       }
 
     this.enabled = enabled;
@@ -276,7 +276,7 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
    * mouse enters a Component.
    *
    * @param delay The initial delay before the ToolTip is shown.
-   * 
+   *
    * @throws IllegalArgumentException if <code>delay</code> is less than zero.
    */
   public void setInitialDelay(int delay)
@@ -299,7 +299,7 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
    * Sets the time the ToolTip will be shown before being hidden.
    *
    * @param delay  the delay (in milliseconds) before tool tips are hidden.
-   * 
+   *
    * @throws IllegalArgumentException if <code>delay</code> is less than zero.
    */
   public void setDismissDelay(int delay)
@@ -323,7 +323,7 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
    * Component, the tooltip will be shown immediately.
    *
    * @param delay The reshow delay (in milliseconds).
-   * 
+   *
    * @throws IllegalArgumentException if <code>delay</code> is less than zero.
    */
   public void setReshowDelay(int delay)
@@ -386,7 +386,7 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
    * This method is called when the mouse exits a JComponent registered with the
    * ToolTipManager. When the mouse exits, the tooltip should be hidden
    * immediately.
-   * 
+   *
    * @param event
    *          The MouseEvent.
    */
@@ -421,8 +421,8 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
       enterTimer.restart();
     else if (insideTimer.isRunning())
       {
-	insideTimer.stop();
-	hideTip();
+        insideTimer.stop();
+        hideTip();
       }
   }
 
@@ -517,7 +517,7 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
     Point p = currentPoint;
     Point cP = currentComponent.getLocationOnScreen();
     Dimension dims = currentTip.getPreferredSize();
-    
+
     JLayeredPane pane = null;
     JRootPane r = ((JRootPane) SwingUtilities.getAncestorOfClass(JRootPane.class,
                                                                  currentComponent));
@@ -525,12 +525,12 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
       pane = r.getLayeredPane();
     if (pane == null)
       return;
-    
+
     p.translate(cP.x, cP.y);
     adjustLocation(p, pane, dims);
-    
+
     currentTip.setBounds(0, 0, dims.width, dims.height);
-    
+
     PopupFactory factory = PopupFactory.getSharedInstance();
     popup = factory.getPopup(currentComponent, currentTip, p.x, p.y);
     popup.show();
@@ -539,7 +539,7 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
   /**
    * Adjusts the point to a new location on the component,
    * using the currentTip's dimensions.
-   * 
+   *
    * @param p - the point to convert.
    * @param c - the component the point is on.
    * @param d - the dimensions of the currentTip.
@@ -554,10 +554,10 @@ public class ToolTipManager extends MouseAdapter implements MouseMotionListener
       p.y += d.height;
     if (p.y + d.height > c.getHeight())
       p.y -= d.height;
-    
+
     return p;
   }
-  
+
   /**
    * This method hides the ToolTip.
    * This is package-private to avoid an accessor method.

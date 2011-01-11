@@ -1,4 +1,4 @@
-/* Particle.java -- 
+/* Particle.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -56,6 +56,5 @@ class Particle
     this.maxOccurs = maxOccurs;
     this.term = term;
   }
-  
-}
 
+}

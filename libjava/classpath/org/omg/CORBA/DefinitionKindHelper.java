@@ -85,7 +85,7 @@ public abstract class DefinitionKindHelper
                   "dk_Wstring", "dk_Fixed", "dk_Value", "dk_ValueBox",
                   "dk_ValueMember", "dk_Native"
                  };
-    
+
     return
     OrbRestricted.Singleton.create_enum_tc(id(), "DefinitionKind",
                                            members

@@ -54,7 +54,7 @@ import javax.net.ssl.SSLSessionContext;
  * be subclassed to add extended functionality to session contexts, such
  * as by storing sessions in files on disk, or by sharing contexts
  * across different JVM instances.
- * 
+ *
  * <p>In order to securely store sessions, along with private key data,
  * the abstract methods {@lnk {@link #load(char[])} and {@link #store(char[])}
  * come into play. When storing sessions, a session context implementation
@@ -62,10 +62,10 @@ import javax.net.ssl.SSLSessionContext;
  * before either writing the {@link java.io.Serializable} session to the
  * underlying store, or getting the opaque {@link Session#privateData()}
  * class from the session, and storing that.
- * 
+ *
  * <p>As a simple example, that writes sessions to some object output
  * stream:
- * 
+ *
  * <pre>
   char[] password = ...;
   ObjectOutputStream out = ...;
@@ -75,12 +75,12 @@ import javax.net.ssl.SSLSessionContext;
       s.prepare(password);
       out.writeObject(s);
     }</pre>
- * 
+ *
  * <p>The reverse must be done when deserializing sessions, by using the
  * {@link Session#repair(char[])} method, possibly by first calling
  * {@link Session#setPrivateData(java.io.Serializable)} with the read,
  * opaque private data type. Thus an example of reading may be:
- * 
+ *
  * <pre>
   char[] password = ...;
   ObjectInputStream in = ...;
@@ -91,19 +91,19 @@ import javax.net.ssl.SSLSessionContext;
       s.repair(password);
       addToThisStore(s);
     }</pre>
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public abstract class AbstractSessionContext implements SSLSessionContext
 {
   protected long timeout;
-  private static Class<? extends AbstractSessionContext> 
+  private static Class<? extends AbstractSessionContext>
     implClass = SimpleSessionContext.class;
 
   /**
    * Create a new instance of a session context, according to the configured
    * implementation class.
-   * 
+   *
    * @return The new session context.
    * @throws SSLException If an error occurs in creating the instance.
    */
@@ -126,12 +126,12 @@ public abstract class AbstractSessionContext implements SSLSessionContext
   /**
    * Reconfigure this instance to use a different session context
    * implementation.
-   * 
+   *
    * <p><strong>Note:</strong> this method requires that the caller have
    * {@link SSLPermission} with target
    * <code>gnu.javax.net.ssl.AbstractSessionContext</code> and action
    * <code>setImplClass</code>.
-   * 
+   *
    * @param clazz The new implementation class.
    * @throws SecurityException If the caller does not have permission to
    *  change the session context.
@@ -183,7 +183,7 @@ public abstract class AbstractSessionContext implements SSLSessionContext
       }
     return s;
   }
-  
+
   public final SSLSession getSession(String host, int port)
   {
     for (Enumeration e = getIds(); e.hasMoreElements(); )
@@ -203,18 +203,18 @@ public abstract class AbstractSessionContext implements SSLSessionContext
         int port2 = s.getPeerPort();
         if (port != port2)
           continue;
-        
+
         // Else, a match.
         return s;
       }
-    
+
     return null;
   }
-  
+
   /**
    * To be implemented by subclasses. Subclasses do not need to check
    * timeouts in this method.
-   * 
+   *
    * @param sessionId The session ID.
    * @return The session, or <code>null</code> if the requested session
    *  was not found.
@@ -225,7 +225,7 @@ public abstract class AbstractSessionContext implements SSLSessionContext
   {
     return (int) (timeout / 1000);
   }
-  
+
   /**
    * Load this session store from the underlying media, if supported
    * by the implementation.
@@ -265,7 +265,7 @@ public abstract class AbstractSessionContext implements SSLSessionContext
   public abstract void remove (byte[] sessionId);
 
   /**
-   * 
+   *
    */
   public final void setSessionTimeout(int seconds)
   {
@@ -273,7 +273,7 @@ public abstract class AbstractSessionContext implements SSLSessionContext
       throw new IllegalArgumentException("timeout may not be negative");
     this.timeout = (long) seconds * 1000;
   }
-  
+
   /**
    * Commit this session store to the underlying media. For session
    * store implementations that support saving sessions across

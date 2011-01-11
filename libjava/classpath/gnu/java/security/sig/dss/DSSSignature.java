@@ -1,4 +1,4 @@
-/* DSSSignature.java -- 
+/* DSSSignature.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -211,7 +211,7 @@ public class DSSSignature
 
   /**
    * Returns the output of a signature generation phase.
-   * 
+   *
    * @return an object encapsulating the DSS signature pair <code>r</code> and
    *         <code>s</code>.
    */
@@ -223,7 +223,7 @@ public class DSSSignature
   /**
    * Returns the output of a previously generated signature object as a pair of
    * {@link java.math.BigInteger}.
-   * 
+   *
    * @return the DSS signature pair <code>r</code> and <code>s</code>.
    */
   private BigInteger[] decodeSignature(Object signature)

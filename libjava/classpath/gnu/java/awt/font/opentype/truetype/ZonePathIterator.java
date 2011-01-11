@@ -70,7 +70,7 @@ final class ZonePathIterator
    */
   private static final int EMIT_CLOSE = 1;
 
-  
+
   /**
    * If <code>state</code> has this value, <code>currentSegment</code>
    * will emit a <code>SEG_MOVETO</code> segment to the first point in
@@ -115,7 +115,7 @@ final class ZonePathIterator
    */
   private int contourStart;
 
-  
+
   private int type;
 
   /**
@@ -152,7 +152,7 @@ final class ZonePathIterator
     return (state != EMIT_CLOSE) && (curPoint >= numPoints);
   }
 
-    
+
   public void next()
   {
     boolean onCurve;
@@ -231,7 +231,7 @@ final class ZonePathIterator
     else
       return p + 1;
   }
-  
+
 
 
   /**
@@ -244,7 +244,7 @@ final class ZonePathIterator
     {
     case EMIT_CLOSE:
       return PathIterator.SEG_CLOSE;
-    
+
     case EMIT_MOVETO:
       return getStartSegment(curPoint, coords);
 
@@ -270,7 +270,7 @@ final class ZonePathIterator
     if (floats == null)
       floats = new float[6];
     int result;
-    
+
     result = currentSegment(floats);
     for (int i = 0; i < 6; i++)
       coords[i] = floats[i];
@@ -362,7 +362,7 @@ final class ZonePathIterator
     if (zone.isOnCurve(contourStart))
     {
       x = zone.getX(contourStart, type);
-      y = zone.getY(contourStart, type);    
+      y = zone.getY(contourStart, type);
     }
     else
     {

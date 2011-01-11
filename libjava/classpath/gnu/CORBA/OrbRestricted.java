@@ -527,7 +527,7 @@ public class OrbRestricted extends org.omg.CORBA_2_3.ORB
 
     super.destroy();
   }
-  
+
   /**
    * Create a typecode, representing a tree-like structure.
    * This structure contains a member that is a sequence of the same type,
@@ -565,7 +565,7 @@ public class OrbRestricted extends org.omg.CORBA_2_3.ORB
     r.add(new StructMember("", recurs, null));
     return r;
   }
-  
+
   /**
    * Get the default context of this ORB. This is an initial root of all
    * contexts.
@@ -579,5 +579,5 @@ public class OrbRestricted extends org.omg.CORBA_2_3.ORB
   {
     return new gnuContext("", null);
   }
-  
+
 }

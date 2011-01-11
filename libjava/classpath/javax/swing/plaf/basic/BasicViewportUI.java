@@ -43,7 +43,7 @@ import javax.swing.LookAndFeel;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ViewportUI;
 
-public class BasicViewportUI extends ViewportUI 
+public class BasicViewportUI extends ViewportUI
 {
   protected void installDefaults(JComponent c)
   {
@@ -61,13 +61,13 @@ public class BasicViewportUI extends ViewportUI
     return new BasicViewportUI();
   }
 
-  public void installUI(JComponent c) 
+  public void installUI(JComponent c)
   {
     super.installUI(c);
     installDefaults(c);
   }
 
-  public void uninstallUI(JComponent c) 
+  public void uninstallUI(JComponent c)
   {
     super.uninstallUI(c);
     uninstallDefaults(c);

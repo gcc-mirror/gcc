@@ -85,7 +85,7 @@ public abstract class Context
    * Search the values.
    *
    * @param start_scope the context at which to initiate the search.
-   * @param flags the search operation flags. 
+   * @param flags the search operation flags.
    * The flag {@link CTX_RESTRICT_SCOPE} means
    * that search is restricted to the start_scope.
    * @param pattern the property being searched, can be
@@ -109,14 +109,14 @@ public abstract class Context
    * @param value the property value (the {@link Any} must hold string).
    */
   public abstract void set_one_value(String name, Any value);
-  
+
   /**
    * Set multiple properties.
-   * 
-   * @param values a list of properties, the {@link Any}'s 
+   *
+   * @param values a list of properties, the {@link Any}'s
    * in the list components must hold strings.
    */
   public abstract void set_values(NVList values);
-  
-  
+
+
 }

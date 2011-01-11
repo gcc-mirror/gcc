@@ -1,4 +1,4 @@
-/* NameClass.java -- 
+/* NameClass.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -46,5 +46,5 @@ abstract class NameClass
 {
 
   abstract boolean matchesName(String uri, String localName);
-  
+
 }

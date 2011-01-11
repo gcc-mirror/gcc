@@ -108,7 +108,7 @@ final class EmptyAttributeSet
       {
         throw new NoSuchElementException("No more elements");
       }
-      
+
     };
   }
 

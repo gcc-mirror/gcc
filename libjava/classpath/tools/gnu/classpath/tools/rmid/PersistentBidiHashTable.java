@@ -61,7 +61,7 @@ import java.util.TimerTask;
  * database change or at most after ALWAYS_UPDATE, if the database is updated
  * very frequently. To ensure that no information is lost, the shutdown method
  * must be called before exit.
- * 
+ *
  * @author Audrius Meskauskas (audriusa@bioinformatics.org)
  */
 public class PersistentBidiHashTable extends BidiTable implements
@@ -129,7 +129,7 @@ public class PersistentBidiHashTable extends BidiTable implements
   /**
    * Create a new persistent table that stores its information into the given
    * file. The ActivationSystemImpl.singleton2 must be assigned.
-   * 
+   *
    * @param file
    *          the file, where the table stores its information.
    * @param coldStart

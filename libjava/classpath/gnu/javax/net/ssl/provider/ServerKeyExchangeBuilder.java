@@ -1,4 +1,4 @@
-/* ServerKeyExchangeBuilder.java -- 
+/* ServerKeyExchangeBuilder.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -42,7 +42,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Builder for {@link ServerKeyExchange} objects.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public class ServerKeyExchangeBuilder extends ServerKeyExchange
@@ -68,7 +68,7 @@ public class ServerKeyExchangeBuilder extends ServerKeyExchange
     ensureCapacity(params.remaining());
     buffer.duplicate().put(params);
   }
-  
+
   public void setSignature(ByteBuffer signature)
   {
     if (suite.keyExchangeAlgorithm() == KeyExchangeAlgorithm.NONE)
@@ -77,7 +77,7 @@ public class ServerKeyExchangeBuilder extends ServerKeyExchange
     ensureCapacity(paramsLen + signature.remaining());
     ((ByteBuffer) buffer.duplicate().position(paramsLen)).put(signature);
   }
-  
+
   public void ensureCapacity(int capacity)
   {
     if (buffer.capacity() >= capacity)

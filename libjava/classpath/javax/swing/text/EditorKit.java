@@ -51,7 +51,7 @@ import javax.swing.JEditorPane;
 public abstract class EditorKit implements Cloneable, Serializable
 {
   private static final long serialVersionUID = -5044124649345887822L;
-  
+
   public EditorKit()
   {
     // Nothing to do here.

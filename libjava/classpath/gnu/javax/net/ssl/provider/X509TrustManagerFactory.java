@@ -83,7 +83,7 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
 
   private static final String sep
     = AccessController.doPrivileged(new GetPropertyAction("file.separator"));
-  
+
   /**
    * The location of the JSSE key store.
    */
@@ -253,7 +253,7 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
       throws CertificateException
     {
       CertPathValidator validator = null;
-      
+
       try
         {
           validator = CertPathValidator.getInstance("PKIX");
@@ -262,9 +262,9 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
         {
           throw new CertificateException(nsae);
         }
-      
+
       CertPath path = new X509CertPath(Arrays.asList(chain));
-      
+
       PKIXParameters params = null;
       try
         {
@@ -277,7 +277,7 @@ public class X509TrustManagerFactory extends TrustManagerFactorySpi
         {
           throw new CertificateException(iape);
         }
-      
+
       try
         {
           validator.validate(path, params);

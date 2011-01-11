@@ -56,7 +56,7 @@ import javax.management.ObjectName;
  * basic Java types.  As a result, the valid instances of this
  * class are predefined, and no constructor is given for creating
  * new instances.
- * 
+ *
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @since 1.5
  */
@@ -80,7 +80,7 @@ public final class SimpleType<T>
    * The {@link SimpleType} representation of
    * <code>java.lang.Boolean</code>.
    */
-  public static final SimpleType<Boolean> BOOLEAN; 
+  public static final SimpleType<Boolean> BOOLEAN;
 
   /**
    * The {@link SimpleType} representation of
@@ -98,7 +98,7 @@ public final class SimpleType<T>
    * The {@link SimpleType} representation of
    * <code>java.util.Date</code>.
    */
-  public static final SimpleType<Date> DATE; 
+  public static final SimpleType<Date> DATE;
 
   /**
    * The {@link SimpleType} representation of
@@ -171,28 +171,28 @@ public final class SimpleType<T>
   {
     try
       {
-	BIGDECIMAL = new SimpleType<BigDecimal>("java.math.BigDecimal");
-	BIGINTEGER = new SimpleType<BigInteger>("java.math.BigInteger");
-	BOOLEAN = new SimpleType<Boolean>("java.lang.Boolean");
-	BYTE = new SimpleType<Byte>("java.lang.Byte");
-	CHARACTER = new SimpleType<Character>("java.lang.Character");
-	DATE = new SimpleType<Date>("java.util.Date");
-	DOUBLE = new SimpleType<Double>("java.lang.Double");
-	FLOAT = new SimpleType<Float>("java.lang.Float");
-	INTEGER = new SimpleType<Integer>("java.lang.Integer");
-	LONG = new SimpleType<Long>("java.lang.Long");
-	OBJECTNAME = 
-	  new SimpleType<ObjectName>("javax.management.ObjectName");
-	SHORT = new SimpleType<Short>("java.lang.Short");
-	STRING = new SimpleType<String>("java.lang.String");
-	VOID = new SimpleType<Void>("java.lang.Void");
+        BIGDECIMAL = new SimpleType<BigDecimal>("java.math.BigDecimal");
+        BIGINTEGER = new SimpleType<BigInteger>("java.math.BigInteger");
+        BOOLEAN = new SimpleType<Boolean>("java.lang.Boolean");
+        BYTE = new SimpleType<Byte>("java.lang.Byte");
+        CHARACTER = new SimpleType<Character>("java.lang.Character");
+        DATE = new SimpleType<Date>("java.util.Date");
+        DOUBLE = new SimpleType<Double>("java.lang.Double");
+        FLOAT = new SimpleType<Float>("java.lang.Float");
+        INTEGER = new SimpleType<Integer>("java.lang.Integer");
+        LONG = new SimpleType<Long>("java.lang.Long");
+        OBJECTNAME =
+          new SimpleType<ObjectName>("javax.management.ObjectName");
+        SHORT = new SimpleType<Short>("java.lang.Short");
+        STRING = new SimpleType<String>("java.lang.String");
+        VOID = new SimpleType<Void>("java.lang.Void");
       }
     catch (OpenDataException e)
       {
-	/* In normal circumstances, this shouldn't be possible. */
-	throw new IllegalStateException("A invalid class name " +
-					"was passed to the SimpleType " +
-					"constructor.", e);
+        /* In normal circumstances, this shouldn't be possible. */
+        throw new IllegalStateException("A invalid class name " +
+                                        "was passed to the SimpleType " +
+                                        "constructor.", e);
       }
   }
 
@@ -200,12 +200,12 @@ public final class SimpleType<T>
    * Constructs a new {@link SimpleType} instance for the given
    * class name.  The class name is also used as the type name
    * and description of the {@link OpenType} instance.
-   * 
+   *
    * @param name the name of the class this instance should
    *             represent.
    * @throws OpenDataException if somehow the constructor of the
    *                           superclass is passed an invalid
-   *                           class name. 
+   *                           class name.
    */
   private SimpleType(String name)
     throws OpenDataException
@@ -224,7 +224,7 @@ public final class SimpleType<T>
    * {@link SimpleType}.</li>
    * <li>The class names are equal.</li>
    * </ul>
-   * 
+   *
    * @param obj the object to compare with.
    * @return true if the conditions above hold.
    */
@@ -319,7 +319,7 @@ public final class SimpleType<T>
     if (equals(VOID))
       return VOID;
     throw new InvalidObjectException("Invalid simple type instance " +
-				     "deserialized.");
+                                     "deserialized.");
   }
 
   /**
@@ -342,8 +342,8 @@ public final class SimpleType<T>
   {
     if (string == null)
       string = getClass().getName()
-	+ "[name=" + getClassName()
-	+ "]";
+        + "[name=" + getClassName()
+        + "]";
     return string;
   }
 

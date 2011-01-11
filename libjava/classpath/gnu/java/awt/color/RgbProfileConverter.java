@@ -82,27 +82,27 @@ public class RgbProfileConverter implements ColorSpaceConverter
     // get TRCs
     try
       {
-	rTRC = new ToneReproductionCurve(profile.getGamma(ICC_ProfileRGB.REDCOMPONENT));
+        rTRC = new ToneReproductionCurve(profile.getGamma(ICC_ProfileRGB.REDCOMPONENT));
       }
     catch (ProfileDataException e)
       {
-	rTRC = new ToneReproductionCurve(profile.getTRC(ICC_ProfileRGB.REDCOMPONENT));
+        rTRC = new ToneReproductionCurve(profile.getTRC(ICC_ProfileRGB.REDCOMPONENT));
       }
     try
       {
-	gTRC = new ToneReproductionCurve(profile.getGamma(ICC_ProfileRGB.GREENCOMPONENT));
+        gTRC = new ToneReproductionCurve(profile.getGamma(ICC_ProfileRGB.GREENCOMPONENT));
       }
     catch (ProfileDataException e)
       {
-	gTRC = new ToneReproductionCurve(profile.getTRC(ICC_ProfileRGB.GREENCOMPONENT));
+        gTRC = new ToneReproductionCurve(profile.getTRC(ICC_ProfileRGB.GREENCOMPONENT));
       }
     try
       {
-	bTRC = new ToneReproductionCurve(profile.getGamma(ICC_ProfileRGB.BLUECOMPONENT));
+        bTRC = new ToneReproductionCurve(profile.getGamma(ICC_ProfileRGB.BLUECOMPONENT));
       }
     catch (ProfileDataException e)
       {
-	bTRC = new ToneReproductionCurve(profile.getTRC(ICC_ProfileRGB.BLUECOMPONENT));
+        bTRC = new ToneReproductionCurve(profile.getTRC(ICC_ProfileRGB.BLUECOMPONENT));
       }
 
     // If a CLUT is available, it should be used, and the TRCs ignored.
@@ -112,30 +112,30 @@ public class RgbProfileConverter implements ColorSpaceConverter
     // unpredictable results. This is in line with the Java specification,
     try
       {
-	toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB0Tag);
+        toPCS = new ColorLookUpTable(profile, ICC_Profile.icSigAToB0Tag);
       }
     catch (Exception e)
       {
-	toPCS = null;
+        toPCS = null;
       }
 
     try
       {
-	fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA0Tag);
+        fromPCS = new ColorLookUpTable(profile, ICC_Profile.icSigBToA0Tag);
       }
     catch (Exception e)
       {
-	fromPCS = null;
+        fromPCS = null;
       }
 
     // Calculate the inverse matrix if no reverse CLUT is available
     if(fromPCS == null)
-	inv_matrix = invertMatrix(matrix);
-    else 
+        inv_matrix = invertMatrix(matrix);
+    else
       {
         // otherwise just set it to an identity matrix
-	inv_matrix = new float[3][3];
-	inv_matrix[0][0] = inv_matrix[1][1] = inv_matrix[2][2] = 1.0f;
+        inv_matrix = new float[3][3];
+        inv_matrix[0][0] = inv_matrix[1][1] = inv_matrix[2][2] = 1.0f;
       }
   }
 
@@ -191,7 +191,7 @@ public class RgbProfileConverter implements ColorSpaceConverter
     out[2] = bTRC.reverseLookup(temp[2]);
 
     // FIXME: Sun appears to clip the return values to [0,1]
-    // I don't believe that is a Good Thing, 
+    // I don't believe that is a Good Thing,
     // (some colorspaces may allow values outside that range.)
     // So we return the actual values here.
     return out;

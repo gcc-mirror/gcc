@@ -297,7 +297,7 @@ public class ParagraphView extends FlowView implements TabExpander
   /**
    * Sets the justification of the paragraph.
    *
-   * @param j the justification to set 
+   * @param j the justification to set
    */
   protected void setJustification(int j)
   {

@@ -41,27 +41,27 @@ import java.awt.Font;
 import java.awt.MenuComponent;
 import java.awt.peer.MenuComponentPeer;
 
-public class QtMenuComponentPeer extends NativeWrapper 
+public class QtMenuComponentPeer extends NativeWrapper
   implements MenuComponentPeer
 {
   protected QtToolkit toolkit;
   protected MenuComponent owner;
-  
+
   public QtMenuComponentPeer( QtToolkit kit, MenuComponent owner )
   {
     this.toolkit = kit;
     this.owner = owner;
     nativeObject = 0;
-    synchronized(this) 
+    synchronized(this)
       {
-	callInit(); // Calls the init method FROM THE MAIN THREAD.
-	try
-	  {	
-	    wait(); // Wait for the thing to be created.
-	  }
-	catch(InterruptedException e)
-	  {
-	  }
+        callInit(); // Calls the init method FROM THE MAIN THREAD.
+        try
+          {
+            wait(); // Wait for the thing to be created.
+          }
+        catch(InterruptedException e)
+          {
+          }
       }
     setup();
   }
@@ -80,7 +80,7 @@ public class QtMenuComponentPeer extends NativeWrapper
   {
     dispose();
   }
-  
+
   // ************ Public methods *********************
 
   public native void dispose();
@@ -88,7 +88,7 @@ public class QtMenuComponentPeer extends NativeWrapper
   public void setFont(Font font)
   {
     // TODO Auto-generated method stub
-    
+
   }
 
 }

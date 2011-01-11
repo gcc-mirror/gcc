@@ -1,4 +1,4 @@
-/* DES.java -- 
+/* DES.java --
    Copyright (C) 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -204,7 +204,7 @@ public class DES
   /**
    * Weak keys (parity adjusted): If all the bits in each half are either 0
    * or 1, then the key used for any cycle of the algorithm is the same as
-   * all other cycles. 
+   * all other cycles.
    */
   public static final byte[][] WEAK_KEYS = {
       Util.toBytesFromString("0101010101010101"),

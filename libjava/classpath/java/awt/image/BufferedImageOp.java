@@ -1,4 +1,4 @@
-/* BufferedImageOp.java -- 
+/* BufferedImageOp.java --
    Copyright (C) 2002, 2006, Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -43,65 +43,65 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
 /**
- * An operation that is performed on one <code>BufferedImage</code> (the 
+ * An operation that is performed on one <code>BufferedImage</code> (the
  * source) producing a new <code>BufferedImage</code> (the destination).
  */
 public interface BufferedImageOp
 {
   /**
    * Performs an operation on the source image, returning the result in a
-   * <code>BufferedImage</code>.  If <code>dest</code> is <code>null</code>, a 
+   * <code>BufferedImage</code>.  If <code>dest</code> is <code>null</code>, a
    * new <code>BufferedImage</code> will be created by calling the
    * {@link #createCompatibleDestImage} method.  If <code>dest</code>
-   * is not <code>null</code>, the result is written to <code>dest</code> then 
-   * returned (this avoids creating a new <code>BufferedImage</code> each 
+   * is not <code>null</code>, the result is written to <code>dest</code> then
+   * returned (this avoids creating a new <code>BufferedImage</code> each
    * time this method is called).
-   * 
+   *
    * @param src  the source image.
    * @param dst  the destination image (<code>null</code> permitted).
-   * 
+   *
    * @return The filterd image.
    */
   BufferedImage filter(BufferedImage src, BufferedImage dst);
-  
+
   /**
    * Returns the bounds of the destination image on the basis of this
    * <code>BufferedImageOp</code> being applied to the specified source image.
-   * 
+   *
    * @param src  the source image.
-   * 
+   *
    * @return The destination bounds.
    */
   Rectangle2D getBounds2D(BufferedImage src);
-  
+
   /**
-   * Returns a new <code>BufferedImage</code> that can be used by this 
-   * <code>BufferedImageOp</code> as the destination image when filtering 
+   * Returns a new <code>BufferedImage</code> that can be used by this
+   * <code>BufferedImageOp</code> as the destination image when filtering
    * the specified source image.
-   * 
+   *
    * @param src  the source image.
    * @param dstCM  the color model for the destination image.
-   * 
+   *
    * @return A new image that can be used as the destination image.
    */
   BufferedImage createCompatibleDestImage(BufferedImage src, ColorModel dstCM);
-  
+
   /**
    * Returns the point on the destination image that corresponds to the given
    * point on the source image.
-   * 
+   *
    * @param src  the source point.
    * @param dst  the destination point (<code>null</code> permitted).
-   * 
+   *
    * @return The destination point.
    */
   Point2D getPoint2D(Point2D src, Point2D dst);
-  
+
   /**
    * Returns the rendering hints for this operation.
-   * 
+   *
    * @return The rendering hints.
    */
   RenderingHints getRenderingHints();
-  
-} 
+
+}

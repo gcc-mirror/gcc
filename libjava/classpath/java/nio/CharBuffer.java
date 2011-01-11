@@ -1,4 +1,4 @@
-/* CharBuffer.java -- 
+/* CharBuffer.java --
    Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -53,7 +53,7 @@ public abstract class CharBuffer extends Buffer
   final char[] backing_buffer;
 
   CharBuffer (int capacity, int limit, int position, int mark,
-	      RawData address, char[] backing_buffer, int array_offset)
+              RawData address, char[] backing_buffer, int array_offset)
   {
     super (capacity, limit, position, mark, address);
     this.backing_buffer = backing_buffer;
@@ -77,16 +77,16 @@ public abstract class CharBuffer extends Buffer
    * @param length the length of the region in the array to wrap
    *
    * @return a new <code>CharBuffer</code> object
-   * 
+   *
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
   public static final CharBuffer wrap(char[] array, int offset, int length)
   {
     return new CharBufferImpl(array, 0, array.length, offset + length, offset,
-			      -1, false);
+                              -1, false);
   }
-  
+
   /**
    * Wraps a character sequence into a <code>CharBuffer</code> object.
    *
@@ -98,16 +98,16 @@ public abstract class CharBuffer extends Buffer
   {
     return wrap(seq, 0, seq.length());
   }
-  
+
   /**
    * Wraps a character sequence into a <code>CharBuffer</code> object.
-   * 
+   *
    * @param seq the sequence to wrap
    * @param start the index of the first character to wrap
    * @param end the index of the first character not to wrap
    *
    * @return a new <code>CharBuffer</code> object
-   * 
+   *
    * @exception IndexOutOfBoundsException If the preconditions on the offset
    * and length parameters do not hold
    */
@@ -128,11 +128,11 @@ public abstract class CharBuffer extends Buffer
   {
     return wrap(array, 0, array.length);
   }
-  
+
   /**
    * This method transfers <code>char</code>s from this buffer into the given
    * destination array. Before the transfer, it checks if there are fewer than
-   * length <code>char</code>s remaining in this buffer. 
+   * length <code>char</code>s remaining in this buffer.
    *
    * @param dst The destination array
    * @param offset The offset within the array of the first <code>char</code>
@@ -207,7 +207,7 @@ public abstract class CharBuffer extends Buffer
       {
         char[] toPut = new char [src.remaining ()];
         src.get (toPut);
-	put (toPut);
+        put (toPut);
       }
 
     return this;
@@ -223,7 +223,7 @@ public abstract class CharBuffer extends Buffer
    * must be non-negative and no larger than src.length.
    * @param length The number of bytes to be read from the given array;
    * must be non-negative and no larger than src.length - offset.
-   * 
+   *
    * @exception BufferOverflowException If there is insufficient space in this
    * buffer for the remaining <code>char</code>s in the source array.
    * @exception IndexOutOfBoundsException If the preconditions on the offset
@@ -234,7 +234,7 @@ public abstract class CharBuffer extends Buffer
   {
     checkArraySize(src.length, offset, length);
     checkForOverflow(length);
-		    
+
     for (int i = offset; i < offset + length; i++)
       put (src [i]);
 
@@ -246,7 +246,7 @@ public abstract class CharBuffer extends Buffer
    * into the buffer.
    *
    * @param src The array to copy into the buffer.
-   * 
+   *
    * @exception BufferOverflowException If there is insufficient space in this
    * buffer for the remaining <code>char</code>s in the source array.
    * @exception ReadOnlyBufferException If this buffer is read-only.
@@ -296,7 +296,7 @@ public abstract class CharBuffer extends Buffer
       throw new UnsupportedOperationException ();
 
     checkIfReadOnly();
-    
+
     return array_offset;
   }
 
@@ -317,8 +317,8 @@ public abstract class CharBuffer extends Buffer
     int multiplier = 1;
     for (int i = position() + 1; i < limit(); ++i)
       {
-	  multiplier *= 31;
-	  hashCode += (get(i) + 30)*multiplier;
+          multiplier *= 31;
+          hashCode += (get(i) + 30)*multiplier;
       }
     return hashCode;
   }
@@ -347,21 +347,21 @@ public abstract class CharBuffer extends Buffer
     int num = Math.min(remaining(), other.remaining());
     int pos_this = position();
     int pos_other = other.position();
-    
+
     for (int count = 0; count < num; count++)
       {
-	 char a = get(pos_this++);
-	 char b = other.get(pos_other++);
-      	 
-	 if (a == b)
-	   continue;
-      	   
-	 if (a < b)
-	   return -1;
-      	   
-	 return 1;
+         char a = get(pos_this++);
+         char b = other.get(pos_other++);
+
+         if (a == b)
+           continue;
+
+         if (a < b)
+           return -1;
+
+         return 1;
       }
-      
+
      return remaining() - other.remaining();
   }
 
@@ -383,7 +383,7 @@ public abstract class CharBuffer extends Buffer
    * Writes the <code>char</code> at this buffer's current position,
    * and then increments the position.
    *
-   * @exception BufferOverflowException If there no remaining 
+   * @exception BufferOverflowException If there no remaining
    * <code>char</code>s in this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
@@ -396,7 +396,7 @@ public abstract class CharBuffer extends Buffer
    * than the buffer's limit.
    */
   public abstract char get (int index);
-  
+
   /**
    * Absolute put method.
    *
@@ -408,7 +408,7 @@ public abstract class CharBuffer extends Buffer
 
   /**
    * Compacts this buffer.
-   * 
+   *
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
   public abstract CharBuffer compact ();
@@ -435,7 +435,7 @@ public abstract class CharBuffer extends Buffer
    * buffer's content.
    */
   public abstract CharBuffer asReadOnlyBuffer ();
-  
+
   /**
    * Returns the remaining content of the buffer as a string.
    */
@@ -455,7 +455,7 @@ public abstract class CharBuffer extends Buffer
    * Returns the length of the remaining chars in this buffer.
    */
   public final int length ()
-  { 
+  {
     return remaining ();
   }
 
@@ -470,7 +470,7 @@ public abstract class CharBuffer extends Buffer
 
   /**
    * Relative put method.
-   * 
+   *
    * @exception BufferOverflowException If there is insufficient space in this
    * buffer.
    * @exception IndexOutOfBoundsException If the preconditions on the start
@@ -481,10 +481,10 @@ public abstract class CharBuffer extends Buffer
   {
     return put (str.toCharArray (), start, length);
   }
-  
+
   /**
    * Relative put method.
-   * 
+   *
    * @exception BufferOverflowException If there is insufficient space in this
    * buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
@@ -493,10 +493,10 @@ public abstract class CharBuffer extends Buffer
   {
     return put (str.toCharArray (), 0, str.length ());
   }
-  
+
   /**
    * Returns the character at <code>position() + index</code>.
-   * 
+   *
    * @exception IndexOutOfBoundsException If index is negative not smaller than
    * <code>remaining()</code>.
    */
@@ -505,7 +505,7 @@ public abstract class CharBuffer extends Buffer
     if (index < 0
         || index >= remaining ())
       throw new IndexOutOfBoundsException ();
-    
+
     return get (position () + index);
   }
 

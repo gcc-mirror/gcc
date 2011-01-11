@@ -45,22 +45,22 @@ import javax.swing.ListSelectionModel;
  * An event that indicates a change to a list selection, including the source
  * of the change (a {@link ListSelectionModel}) and the range of items in the
  * list that have potentially changed their selection status.
- * 
+ *
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public class ListSelectionEvent extends EventObject 
+public class ListSelectionEvent extends EventObject
 {
 
-  /** 
-   * The index of the first list item in the range of items that has 
-   * potentially had its selection status modified. 
+  /**
+   * The index of the first list item in the range of items that has
+   * potentially had its selection status modified.
    */
   private int firstIndex = 0;
 
-  /** 
-   * The index of the last list item in the range of items that has 
-   * potentially had its selection status modified. 
+  /**
+   * The index of the last list item in the range of items that has
+   * potentially had its selection status modified.
    */
   private int lastIndex = 0;
 
@@ -69,52 +69,52 @@ public class ListSelectionEvent extends EventObject
 
   /**
    * Creates a new <code>ListSelectionEvent</code>.
-   * 
+   *
    * @param source  the event source (<code>null</code> not permitted).
    * @param firstIndex  the first index.
    * @param lastIndex  the last index.
-   * @param isAdjusting  a flag indicating that this event is one in a series 
+   * @param isAdjusting  a flag indicating that this event is one in a series
    *                     of events updating a selection.
-   * 
-   * @throws IllegalArgumentException if <code>source</code> is 
+   *
+   * @throws IllegalArgumentException if <code>source</code> is
    *         <code>null</code>.
    */
   public ListSelectionEvent(Object source, int firstIndex,
-      int lastIndex, boolean isAdjusting) 
+      int lastIndex, boolean isAdjusting)
   {
     super(source);
     this.firstIndex = firstIndex;
     this.lastIndex = lastIndex;
     this.isAdjusting = isAdjusting;
   }
- 
+
   /**
    * Returns the first index.
-   * 
+   *
    * @return The first index.
    */
-  public int getFirstIndex() 
+  public int getFirstIndex()
   {
     return firstIndex;
   }
 
   /**
    * Returns the last index.
-   * 
+   *
    * @return The last index.
    */
-  public int getLastIndex() 
+  public int getLastIndex()
   {
     return lastIndex;
   }
 
   /**
-   * Returns the flag that indicates that this event is one in a series of 
+   * Returns the flag that indicates that this event is one in a series of
    * events updating a selection.
-   * 
+   *
    * @return A boolean.
    */
-  public boolean getValueIsAdjusting() 
+  public boolean getValueIsAdjusting()
   {
     return isAdjusting;
   }
@@ -122,13 +122,13 @@ public class ListSelectionEvent extends EventObject
   /**
    * Returns a string representation of the event, typically used for debugging
    * purposes.
-   * 
+   *
    * @return A string representation of the event.
    */
-  public String toString() 
+  public String toString()
   {
-    return this.getClass().toString() + "[ source=" + source.toString() 
-        + " firstIndex= " + firstIndex + " lastIndex= " + lastIndex 
+    return this.getClass().toString() + "[ source=" + source.toString()
+        + " firstIndex= " + firstIndex + " lastIndex= " + lastIndex
         + " isAdjusting= " + isAdjusting + " ]";
   }
 

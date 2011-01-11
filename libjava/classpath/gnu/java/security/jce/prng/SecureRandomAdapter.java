@@ -1,4 +1,4 @@
-/* SecureRandomAdapter.java -- 
+/* SecureRandomAdapter.java --
    Copyright (C) 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -68,7 +68,7 @@ import java.net.URL;
  * <p>All the abstract methods in the {@link SecureRandomSpi} class are
  * implemented by this class and all its sub-classes.</p>
  */
-public abstract class SecureRandomAdapter 
+public abstract class SecureRandomAdapter
   extends SecureRandomSpi
 {
 
@@ -100,7 +100,7 @@ public abstract class SecureRandomAdapter
   }
 
   public static final byte[] getSeed(int numBytes)
-  {  
+  {
     URL sourceUrl = null;
     String urlStr = null;
 
@@ -117,7 +117,7 @@ public abstract class SecureRandomAdapter
     catch (MalformedURLException ignored)
       {
         logger.log(Level.WARNING,
-		   SECURERANDOM_SOURCE + " property is malformed: {0}", 
+                   SECURERANDOM_SOURCE + " property is malformed: {0}",
                    urlStr);
       }
 
@@ -132,7 +132,7 @@ public abstract class SecureRandomAdapter
         catch (MalformedURLException mue)
           {
             logger.log(Level.WARNING,
-		       JAVA_SECURITY_EGD + " property is malformed: {0}",
+                       JAVA_SECURITY_EGD + " property is malformed: {0}",
                        urlStr);
           }
       }

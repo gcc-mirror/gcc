@@ -1,4 +1,4 @@
-/* DSSKeyPairGenerator.java -- 
+/* DSSKeyPairGenerator.java --
    Copyright 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -217,7 +217,7 @@ public class DSSKeyPairGenerator
 
   /**
    * Configures this instance.
-   * 
+   *
    * @param attributes the map of name/value pairs to use.
    * @exception IllegalArgumentException if the designated MODULUS_LENGTH value
    *              is not greater than 512, less than 1024 and not of the form
@@ -361,7 +361,7 @@ public class DSSKeyPairGenerator
 
   /**
    * Fills the designated byte array with random data.
-   * 
+   *
    * @param buffer the byte array to fill with random data.
    */
   private void nextRandomBytes(byte[] buffer)

@@ -52,41 +52,39 @@ import java.awt.Dimension;
 public class DecodeRGB4 extends BMPDecoder {
 
     public DecodeRGB4(BMPFileHeader fh, BMPInfoHeader ih){
-	super(fh, ih);
+        super(fh, ih);
     }
 
     public BufferedImage decode(ImageInputStream in) throws IOException, BMPException {
-	IndexColorModel palette = readPalette(in);
-	skipToImage(in);
-	
-	Dimension d = infoHeader.getSize();
-	int h = (int)d.getHeight();
-	int w = (int)d.getWidth();
-	int size = (w*h) >> 1;
+        IndexColorModel palette = readPalette(in);
+        skipToImage(in);
 
-	// Scanline padded to dword offsets
-	int wbytes = (w + (w & 1)) >> 1;
-	int scansize = ((wbytes & 3) != 0)? (wbytes + 4 - (wbytes&3)) : wbytes;
+        Dimension d = infoHeader.getSize();
+        int h = (int)d.getHeight();
+        int w = (int)d.getWidth();
+        int size = (w*h) >> 1;
 
-	byte[] data = new byte[wbytes*h];
+        // Scanline padded to dword offsets
+        int wbytes = (w + (w & 1)) >> 1;
+        int scansize = ((wbytes & 3) != 0)? (wbytes + 4 - (wbytes&3)) : wbytes;
 
-	for(int y=h-1;y>=0;y--){
-	    byte[] scanline = new byte[scansize];
-	    if(in.read(scanline) != scansize)
-		throw new IOException("Couldn't read image data.");
+        byte[] data = new byte[wbytes*h];
 
-	    for(int x=0;x<wbytes;x++)
-		data[x + y*wbytes] = scanline[x];
-	}
-	SampleModel sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-							 w, h, 4);
+        for(int y=h-1;y>=0;y--){
+            byte[] scanline = new byte[scansize];
+            if(in.read(scanline) != scansize)
+                throw new IOException("Couldn't read image data.");
 
-	DataBuffer db = new DataBufferByte(data, w*h, 0);
-	WritableRaster raster = Raster.createWritableRaster(sm, db, null);
-    
-	return new BufferedImage(palette, raster, false, null);
+            for(int x=0;x<wbytes;x++)
+                data[x + y*wbytes] = scanline[x];
+        }
+        SampleModel sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                                         w, h, 4);
+
+        DataBuffer db = new DataBufferByte(data, w*h, 0);
+        WritableRaster raster = Raster.createWritableRaster(sm, db, null);
+
+        return new BufferedImage(palette, raster, false, null);
     }
 
 }
-
-

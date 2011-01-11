@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -65,8 +65,8 @@ class IndexContext extends AbstractContext
   {
     if (! isSetter)
       {
-	argument = o;
-	isSetter = true;
+        argument = o;
+        isSetter = true;
       }
     else
       throw new AssemblyException(new IllegalStateException("More than one argument for indiced access is not possible."));
@@ -87,10 +87,10 @@ class IndexContext extends AbstractContext
   {
     if (isSetter)
       {
-	// setter
-	outerContext.set(index, argument);
+        // setter
+        outerContext.set(index, argument);
 
-	return null;
+        return null;
       }
     else
       // getter

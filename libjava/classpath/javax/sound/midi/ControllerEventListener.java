@@ -41,9 +41,9 @@ package javax.sound.midi;
 import java.util.EventListener;
 
 /**
- * The interface defines the methods to be implemented by classes wanting 
+ * The interface defines the methods to be implemented by classes wanting
  * to be notified on MIDI controller events from a Sequencer.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *

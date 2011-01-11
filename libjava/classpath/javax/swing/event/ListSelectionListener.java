@@ -42,18 +42,18 @@ import java.util.EventListener;
 import javax.swing.ListSelectionModel;
 
 /**
- * A listener that receives {@link ListSelectionEvent} notifications, 
+ * A listener that receives {@link ListSelectionEvent} notifications,
  * typically from a {@link ListSelectionModel} when it is modified.
  *
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public interface ListSelectionListener extends EventListener 
+public interface ListSelectionListener extends EventListener
 {
 
   /**
    * Receives notification of a {@link ListSelectionEvent}.
-   * 
+   *
    * @param event  the event.
    */
   void valueChanged(ListSelectionEvent event);

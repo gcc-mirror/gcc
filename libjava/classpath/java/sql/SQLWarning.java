@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -43,7 +43,7 @@ package java.sql;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public class SQLWarning extends SQLException 
+public class SQLWarning extends SQLException
 {
   static final long serialVersionUID = 3917336774604784856L;
 
@@ -99,7 +99,7 @@ public class SQLWarning extends SQLException
   /**
    * This method returns the exception that is chained to this object.
    *
-   * @return The exception chained to this object, which may be 
+   * @return The exception chained to this object, which may be
    *         <code>null</code>.
    */
   public SQLWarning getNextWarning()

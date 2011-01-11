@@ -1,4 +1,4 @@
-/* IALG.java -- 
+/* IALG.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -66,7 +66,7 @@ public final class IALG
 
   /**
    * Returns an instance of a SASL-SRP IALG implementation.
-   * 
+   *
    * @param algorithm the name of the HMAC algorithm.
    * @return an instance of this object.
    */
@@ -118,7 +118,7 @@ public final class IALG
 
   /**
    * Returns the length (in bytes) of this SASL SRP Integrity Algorithm.
-   * 
+   *
    * @return the length, in bytes, of this integrity protection algorithm.
    */
   public int length()

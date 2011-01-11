@@ -1,4 +1,4 @@
-/* TransformerFactoryImpl.java -- 
+/* TransformerFactoryImpl.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -148,7 +148,7 @@ public class TransformerFactoryImpl
       }
     return new Stylesheet(this, parent, doc, systemId, precedence);
   }
-  
+
   public Source getAssociatedStylesheet(Source source,
                                         String media,
                                         String title,
@@ -365,14 +365,14 @@ public class TransformerFactoryImpl
     Transformer transformer = newTransformer();
     return new SAXTransformerHandler(this, transformer);
   }
-  
+
   public TransformerHandler newTransformerHandler(Source source)
     throws TransformerConfigurationException
   {
     Transformer transformer = newTransformer(source);
     return new SAXTransformerHandler(this, transformer);
   }
-  
+
   public TransformerHandler newTransformerHandler(Templates templates)
     throws TransformerConfigurationException
   {
@@ -391,7 +391,7 @@ public class TransformerFactoryImpl
   {
     throw new UnsupportedOperationException();
   }
-  
+
   // -- SAXTransformerFactory end --
 
   /**
@@ -434,5 +434,5 @@ public class TransformerFactoryImpl
           out.close();
       }
   }
-  
+
 }

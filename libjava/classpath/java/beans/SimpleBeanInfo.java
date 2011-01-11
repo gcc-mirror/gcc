@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -65,75 +65,75 @@ import java.net.URL;
  **/
 
 public class SimpleBeanInfo implements BeanInfo {
-	/** Force Introspection of the general bean info.
-	 ** @return <CODE>null</CODE>.
-	 **/
-	public BeanDescriptor getBeanDescriptor() {
-		return null;
-	}
+        /** Force Introspection of the general bean info.
+         ** @return <CODE>null</CODE>.
+         **/
+        public BeanDescriptor getBeanDescriptor() {
+                return null;
+        }
 
-	/** Force Introspection of the events this Bean type
-	 ** fires.
-	 ** @return <CODE>null</CODE>
-	 **/
-	public EventSetDescriptor[] getEventSetDescriptors() {
-		return null;
-	}
+        /** Force Introspection of the events this Bean type
+         ** fires.
+         ** @return <CODE>null</CODE>
+         **/
+        public EventSetDescriptor[] getEventSetDescriptors() {
+                return null;
+        }
 
-	/** Say that there is no "default" event set.
-	 ** @return <CODE>-1</CODE>.
-	 **/
-	public int getDefaultEventIndex() {
-		return -1;
-	}
+        /** Say that there is no "default" event set.
+         ** @return <CODE>-1</CODE>.
+         **/
+        public int getDefaultEventIndex() {
+                return -1;
+        }
 
-	/** Force Introspection of the Bean properties.
-	 ** @return <CODE>null</CODE>.
-	 **/
-	public PropertyDescriptor[] getPropertyDescriptors() {
-		return null;
-	}
+        /** Force Introspection of the Bean properties.
+         ** @return <CODE>null</CODE>.
+         **/
+        public PropertyDescriptor[] getPropertyDescriptors() {
+                return null;
+        }
 
-	/** Say that there is no "default" property.
-	 ** @return <CODE>-1</CODE>.
-	 **/
-	public int getDefaultPropertyIndex() {
-		return -1;
-	}
+        /** Say that there is no "default" property.
+         ** @return <CODE>-1</CODE>.
+         **/
+        public int getDefaultPropertyIndex() {
+                return -1;
+        }
 
-	/** Force Introspection of the Bean's methods.
-	 ** @return <CODE>null</CODE>.
-	 **/
-	public MethodDescriptor[] getMethodDescriptors() {
-		return null;
-	}
+        /** Force Introspection of the Bean's methods.
+         ** @return <CODE>null</CODE>.
+         **/
+        public MethodDescriptor[] getMethodDescriptors() {
+                return null;
+        }
 
-	/** Tell the Introspector to go look for other BeanInfo
-	 ** itself.
-	 ** @return <CODE>null</CODE>.
-	 **/
-	public BeanInfo[] getAdditionalBeanInfo() {
-		return null;
-	}
+        /** Tell the Introspector to go look for other BeanInfo
+         ** itself.
+         ** @return <CODE>null</CODE>.
+         **/
+        public BeanInfo[] getAdditionalBeanInfo() {
+                return null;
+        }
 
-	/** Say that this Bean has no icons.
-	 ** @param iconType the type of icon
-	 ** @return <CODE>null</CODE>.
-	 **/
-	public Image getIcon(int iconType) {
-		return null;
-	}
+        /** Say that this Bean has no icons.
+         ** @param iconType the type of icon
+         ** @return <CODE>null</CODE>.
+         **/
+        public Image getIcon(int iconType) {
+                return null;
+        }
 
-	/** Helper method to load an image using the Bean class
-	 ** getResource() method on the BeanInfo class (using
-	 ** getClass(), since you'll extend this class to get
-	 ** the BeanInfo).  Basically it's assumed that the Bean
-	 ** and its BeanInfo are both loaded by the same
-	 ** ClassLoader, generally a reasonable assumption.
-	 ** @param location the URL relative
-	 ** @return the Image in question (possibly <code>null</code>).
-	 **/
-	public Image loadImage(String location) 
+        /** Helper method to load an image using the Bean class
+         ** getResource() method on the BeanInfo class (using
+         ** getClass(), since you'll extend this class to get
+         ** the BeanInfo).  Basically it's assumed that the Bean
+         ** and its BeanInfo are both loaded by the same
+         ** ClassLoader, generally a reasonable assumption.
+         ** @param location the URL relative
+         ** @return the Image in question (possibly <code>null</code>).
+         **/
+        public Image loadImage(String location)
     {
       if (location == null)
         return null;
@@ -141,6 +141,5 @@ public class SimpleBeanInfo implements BeanInfo {
       if (url == null)
         return null;
       return Toolkit.getDefaultToolkit().getImage(url);
-	}
+        }
 }
-

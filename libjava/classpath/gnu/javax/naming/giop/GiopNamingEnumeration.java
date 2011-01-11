@@ -51,7 +51,7 @@ import org.omg.CosNaming.BindingListHolder;
 /**
  * Iterates over name class pairs, obtaining values first from the binding list
  * and then from the binding iterator.
- * 
+ *
  * @author Audrius Meskauskas
  */
 public abstract class GiopNamingEnumeration implements NamingEnumeration
@@ -60,18 +60,18 @@ public abstract class GiopNamingEnumeration implements NamingEnumeration
    * The array of bindings, returned at once.
    */
   Binding[] list;
-  
+
   /**
    * The binding iterator to obtain the subsequent bindings. May be null,
    * if all values are stored in the <code>list</code>.
    */
   BindingIterator iterator;
-  
+
   /**
    * The batch size.
    */
   int batch;
-  
+
   /**
    * The position of the element in the binding list, that must be returned
    * during the subsequent call of the next(). If this field is grater or equal
@@ -79,17 +79,17 @@ public abstract class GiopNamingEnumeration implements NamingEnumeration
    * iterator.
    */
   int p;
-  
+
   GiopNamingEnumeration(BindingListHolder bh, BindingIteratorHolder bih, int batchSize)
   {
     list = bh.value;
     iterator = bih.value;
     batch = batchSize;
   }
-  
+
   /**
    * Convert from the CORBA binding into that this enumeration should return.
-   * 
+   *
    * @param binding
    *          the binding to convert
    * @return the value, that must be returned by the {@link #next()}.
@@ -104,10 +104,10 @@ public abstract class GiopNamingEnumeration implements NamingEnumeration
         iterator = null;
       }
   }
-  
+
   /**
    * Checks if there are more elements to return.
-   * 
+   *
    * @throws NamingException
    *           never
    */
@@ -118,7 +118,7 @@ public abstract class GiopNamingEnumeration implements NamingEnumeration
 
   /**
    * Returns the next element.
-   * 
+   *
    * @throws NamingException
    *           never
    */
@@ -155,7 +155,7 @@ public abstract class GiopNamingEnumeration implements NamingEnumeration
     else
       throw new NoSuchElementException();
   }
-  
+
   /**
    * Tries to obtain more elements, return true on success. Updates the fields
    * accordingly.

@@ -37,7 +37,7 @@ import org.objectweb.asm.tree.JumpInsnNode;
 
 /**
  * A method subroutine (corresponds to a JSR instruction).
- * 
+ *
  * @author Eric Bruneton
  */
 class Subroutine {

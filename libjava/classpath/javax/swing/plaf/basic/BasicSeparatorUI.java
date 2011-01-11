@@ -86,10 +86,10 @@ public class BasicSeparatorUI extends SeparatorUI
 
     if (c instanceof JSeparator)
       {
-	JSeparator s = (JSeparator) c;
+        JSeparator s = (JSeparator) c;
 
-	installDefaults(s);
-	installListeners(s);
+        installDefaults(s);
+        installListeners(s);
       }
   }
 
@@ -104,10 +104,10 @@ public class BasicSeparatorUI extends SeparatorUI
   {
     if (c instanceof JSeparator)
       {
-	JSeparator s = (JSeparator) c;
+        JSeparator s = (JSeparator) c;
 
-	uninstallListeners(s);
-	uninstallDefaults(s);
+        uninstallListeners(s);
+        uninstallDefaults(s);
       }
   }
 
@@ -138,7 +138,7 @@ public class BasicSeparatorUI extends SeparatorUI
 
   /**
    * This method installs any listeners that need
-   * to be attached to the JSeparator or any of its 
+   * to be attached to the JSeparator or any of its
    * components.
    *
    * @param s The JSeparator that is being installed.
@@ -156,15 +156,15 @@ public class BasicSeparatorUI extends SeparatorUI
    */
   protected void uninstallListeners(JSeparator s)
   {
-    // Separators don't receive events.  
+    // Separators don't receive events.
   }
 
   /**
-   * The separator is made of two lines. The top line will be 
-   * the shadow color (or left line if it's vertical). The bottom 
-   * or right line will be the highlight color. The two lines will 
-   * be centered inside the bounds box. If the separator is horizontal, 
-   * then it will be vertically centered, or if it's vertical, it will 
+   * The separator is made of two lines. The top line will be
+   * the shadow color (or left line if it's vertical). The bottom
+   * or right line will be the highlight color. The two lines will
+   * be centered inside the bounds box. If the separator is horizontal,
+   * then it will be vertically centered, or if it's vertical, it will
    * be horizontally centered.
    *
    * @param g The Graphics object to paint with
@@ -175,15 +175,15 @@ public class BasicSeparatorUI extends SeparatorUI
     Rectangle r = new Rectangle();
     SwingUtilities.calculateInnerArea(c, r);
     Color saved = g.getColor();
-    
+
     JSeparator s;
     if (c instanceof JSeparator)
       s = (JSeparator) c;
     else
       return;
-      
+
     if (s.getOrientation() == JSeparator.HORIZONTAL)
-      {    
+      {
         int midAB = r.height / 2;
         g.setColor(shadow);
         g.drawLine(r.x, r.y + midAB - 1, r.x + r.width, r.y + midAB - 1);
@@ -204,7 +204,7 @@ public class BasicSeparatorUI extends SeparatorUI
   }
 
   /**
-   * This method returns the preferred size of the 
+   * This method returns the preferred size of the
    * JComponent.
    *
    * @param c The JComponent to measure.
@@ -216,8 +216,8 @@ public class BasicSeparatorUI extends SeparatorUI
     Dimension pref = new Dimension(2, 0);
     if (c instanceof JSeparator)
       {
-	JSeparator s = (JSeparator) c;
-	if (s.getOrientation() == JSeparator.HORIZONTAL)
+        JSeparator s = (JSeparator) c;
+        if (s.getOrientation() == JSeparator.HORIZONTAL)
           pref = new Dimension(0, 2);
       }
     return pref;

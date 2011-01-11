@@ -150,7 +150,7 @@ public abstract class Formatter
     {
       try
       {
-	msg = bundle.getString(msg);
+        msg = bundle.getString(msg);
       }
       catch (java.util.MissingResourceException _)
       {
@@ -160,8 +160,8 @@ public abstract class Formatter
     /* Format the message if there are parameters. */
     params = record.getParameters();
     if ((params != null)
-	&& (params.length > 0)
-	&& (msg.indexOf("{0") >= 0))
+        && (params.length > 0)
+        && (msg.indexOf("{0") >= 0))
     {
       msg = MessageFormat.format(msg, params);
     }

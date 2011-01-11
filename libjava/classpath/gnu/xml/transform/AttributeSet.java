@@ -1,4 +1,4 @@
-/* AttributeSet.java -- 
+/* AttributeSet.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -62,6 +62,5 @@ final class AttributeSet
                             children.clone(stylesheet),
                             name, uas);
   }
-  
-}
 
+}

@@ -81,7 +81,7 @@ public abstract class ServiceContextHelper
   /**
    * Insert the ServiceContext into the given Any. This method uses the
    * ServiceContextHolder.
-   * 
+   *
    * @param any the Any to insert into.
    * @param that the ServiceContext to insert.
    */
@@ -105,7 +105,7 @@ public abstract class ServiceContextHelper
     catch (ClassCastException cex)
       {
         BAD_OPERATION bad = new BAD_OPERATION("ServiceContext expected");
-        bad.minor = Minor.Any;        
+        bad.minor = Minor.Any;
         bad.initCause(cex);
         throw bad;
       }

@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -50,7 +50,7 @@ import java.io.Serializable;
  * Represents the object identifier, unique for the host that generated it.
  * The ObjID contains inside the integer object identifier that, if needed,
  * may indicated that this is a reference to one of the well known objects
- * on that host (registry, activator or dgc) and the {@link UID} that 
+ * on that host (registry, activator or dgc) and the {@link UID} that
  * ensures uniqueness.
  */
 public final class ObjID
@@ -121,7 +121,7 @@ public final class ObjID
    * <li>{@link #DGC_ID} - distributed garbage collector (grants lease
    * durations to keep the object before it is garbage collected.</li>
    * </ul>
-   * 
+   *
    * @param id the well known object id, one of the above.
    */
   public ObjID(int id)
@@ -184,8 +184,8 @@ public final class ObjID
       return a == b;
     else
       return a.equals(b);
-  }  
-  
+  }
+
   /**
    * Get the string representation.
    */

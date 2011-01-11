@@ -40,7 +40,7 @@ package gnu.javax.net.ssl.provider;
 
 /**
  * Debug constants for Jessie.
- * 
+ *
  * @author Casey Marshall (csm@gnu.org)
  */
 public final class Debug
@@ -50,13 +50,13 @@ public final class Debug
    * logger.
    */
   public static final boolean DEBUG = true;
-  
+
   /**
    * Set to true to dump out info about the SSL key exchange. Since this
    * MAY contain sensitive data, it is a separate value.
    */
   public static final boolean DEBUG_KEY_EXCHANGE = true;
-  
+
   /**
    * Set to true to turn on dumping of decrypted packets. Since this will
    * log potentially-sensitive information (i.e., decrypted messages), only

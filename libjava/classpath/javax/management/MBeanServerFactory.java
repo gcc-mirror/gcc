@@ -134,7 +134,7 @@ public class MBeanServerFactory
    * The default domain name is used when the domain name specified by
    * the user is <code>null</code.  A reference to the created server is
    * retained, so that it can be retrieved at a later date using
-   * {@link #findMBeanServer}.  
+   * {@link #findMBeanServer}.
    *
    * @param domain the default domain name of the server.
    * @return a new {@link MBeanServer} instance.
@@ -161,34 +161,34 @@ public class MBeanServerFactory
     MBeanServer server = createServer(domain);
     try
       {
-	ObjectName dn = new
-	  ObjectName("JMImplementation:type=MBeanServerDelegate");
-	servers.put(server.getAttribute(dn, "MBeanServerId"), server);
+        ObjectName dn = new
+          ObjectName("JMImplementation:type=MBeanServerDelegate");
+        servers.put(server.getAttribute(dn, "MBeanServerId"), server);
       }
     catch (MalformedObjectNameException e)
       {
-	throw (Error) 
-	  (new InternalError("Malformed delegate bean name.").initCause(e));
+        throw (Error)
+          (new InternalError("Malformed delegate bean name.").initCause(e));
       }
     catch (MBeanException e)
       {
-	throw (Error) 
-	  (new InternalError("Exception in getMBeanServerId().").initCause(e));
+        throw (Error)
+          (new InternalError("Exception in getMBeanServerId().").initCause(e));
       }
     catch (AttributeNotFoundException e)
       {
-	throw (Error) 
-	  (new InternalError("Could not find MBeanServerId attribute.").initCause(e));
+        throw (Error)
+          (new InternalError("Could not find MBeanServerId attribute.").initCause(e));
       }
     catch (InstanceNotFoundException e)
       {
-	throw (Error) 
-	  (new InternalError("Could not find the delegate bean.").initCause(e));
+        throw (Error)
+          (new InternalError("Could not find the delegate bean.").initCause(e));
       }
     catch (ReflectionException e)
       {
-	throw (Error) 
-	  (new InternalError("Could not call getMBeanServerId().").initCause(e));
+        throw (Error)
+          (new InternalError("Could not call getMBeanServerId().").initCause(e));
       }
     return server;
   }
@@ -225,7 +225,7 @@ public class MBeanServerFactory
    * Returns the class loader repository used by the specified server.
    * This is equivalent to calling {@link MBeanServer#getClassLoaderRepository()}
    * on the given server.
-   * 
+   *
    * @param server the server whose class loader repository should be
    *               retrieved.
    * @throws NullPointerException if <code>server</code> is <code>null</code>.
@@ -246,7 +246,7 @@ public class MBeanServerFactory
    * used when the domain name specified by the user is <code>null</code.
    * No reference to the created server is retained, so the server is
    * garbage collected when it is no longer used, but it can not be
-   * retrieved at a later date using {@link #findMBeanServer}.   
+   * retrieved at a later date using {@link #findMBeanServer}.
    * Calling this method is equivalent to calling
    * {@link newMBeanServer(String)} with a <code>null</code> value.
    *
@@ -331,42 +331,42 @@ public class MBeanServerFactory
       SystemProperties.getProperty("javax.management.builder.initial");
     if (builderClass == null)
       {
-	if (builder == null ||
-	    builder.getClass() != MBeanServerBuilder.class)
-	  builder = new MBeanServerBuilder();
+        if (builder == null ||
+            builder.getClass() != MBeanServerBuilder.class)
+          builder = new MBeanServerBuilder();
       }
     else if (!(builder != null &&
-	       builderClass.equals(builder.getClass().getName())))
+               builderClass.equals(builder.getClass().getName())))
       {
-	ClassLoader cl = Thread.currentThread().getContextClassLoader();
-	if (cl == null)
-	  cl = MBeanServerFactory.class.getClassLoader();
-	try
-	  {
-	    Class<?> bClass = Class.forName(builderClass, true, cl);
-	    builder = (MBeanServerBuilder) bClass.newInstance();
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	    throw (JMRuntimeException) (new JMRuntimeException("The builder class, " 
-							       + builderClass +
-							       ", could not be found."))
-	      .initCause(e);
-	  }
-	catch (InstantiationException e)
-	  {
-	    throw (JMRuntimeException) (new JMRuntimeException("The builder class, " 
-							       + builderClass +
-							       ", could not be instantiated."))
-	      .initCause(e);
-	  }
-	catch (IllegalAccessException e)
-	  {
-	    throw (JMRuntimeException) (new JMRuntimeException("The builder class, " 
-							       + builderClass +
-							       ", could not be accessed."))
-	      .initCause(e);
-	  }
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl == null)
+          cl = MBeanServerFactory.class.getClassLoader();
+        try
+          {
+            Class<?> bClass = Class.forName(builderClass, true, cl);
+            builder = (MBeanServerBuilder) bClass.newInstance();
+          }
+        catch (ClassNotFoundException e)
+          {
+            throw (JMRuntimeException) (new JMRuntimeException("The builder class, "
+                                                               + builderClass +
+                                                               ", could not be found."))
+              .initCause(e);
+          }
+        catch (InstantiationException e)
+          {
+            throw (JMRuntimeException) (new JMRuntimeException("The builder class, "
+                                                               + builderClass +
+                                                               ", could not be instantiated."))
+              .initCause(e);
+          }
+        catch (IllegalAccessException e)
+          {
+            throw (JMRuntimeException) (new JMRuntimeException("The builder class, "
+                                                               + builderClass +
+                                                               ", could not be accessed."))
+              .initCause(e);
+          }
       }
     MBeanServerDelegate delegate = builder.newMBeanServerDelegate();
     if (delegate == null)
@@ -399,12 +399,12 @@ public class MBeanServerFactory
     Iterator<MBeanServer> i = servers.values().iterator();
     while (i.hasNext())
       {
-	MBeanServer s = i.next();
-	if (server == s)
-	  {
-	    i.remove();
-	    return;
-	  }
+        MBeanServer s = i.next();
+        if (server == s)
+          {
+            i.remove();
+            return;
+          }
       }
     throw new IllegalArgumentException("The server given is not referenced.");
   }

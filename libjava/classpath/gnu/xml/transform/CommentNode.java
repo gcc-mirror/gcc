@@ -1,4 +1,4 @@
-/* CommentNode.java -- 
+/* CommentNode.java --
    Copyright (C) 2004,2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -94,10 +94,10 @@ final class CommentNode
                  context, pos, len,
                  parent, nextSibling);
   }
-  
+
   public String toString()
   {
     return "comment";
   }
-  
+
 }

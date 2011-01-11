@@ -1,4 +1,4 @@
-/* TextConsumer.java -- 
+/* TextConsumer.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -72,8 +72,8 @@ public class TextConsumer extends XMLWriter implements EventConsumer
     public TextConsumer (Writer w, boolean isXhtml)
     throws IOException
     {
-	super (w, isXhtml ? "US-ASCII" : null);
-	setXhtml (isXhtml);
+        super (w, isXhtml ? "US-ASCII" : null);
+        setXhtml (isXhtml);
     }
 
     /**
@@ -83,9 +83,9 @@ public class TextConsumer extends XMLWriter implements EventConsumer
     public TextConsumer (Writer w)
     throws IOException
     {
-	this (w, false);
+        this (w, false);
     }
-	
+
     /**
      * Constructs a consumer that writes its input as XML text,
      * encoded in UTF-8.  XHTML rules are not followed.
@@ -93,25 +93,25 @@ public class TextConsumer extends XMLWriter implements EventConsumer
     public TextConsumer (OutputStream out)
     throws IOException
     {
-	this (new OutputStreamWriter (out, "UTF8"), false);
+        this (new OutputStreamWriter (out, "UTF8"), false);
     }
 
     /** <b>EventConsumer</b> Returns the document handler being used. */
     public ContentHandler getContentHandler ()
-	{ return this; }
+        { return this; }
 
     /** <b>EventConsumer</b> Returns the dtd handler being used. */
     public DTDHandler getDTDHandler ()
-	{ return this; }
+        { return this; }
 
     /** <b>XMLReader</b>Retrieves a property (lexical and decl handlers) */
     public Object getProperty (String propertyId)
     throws SAXNotRecognizedException
     {
-	if (EventFilter.LEXICAL_HANDLER.equals (propertyId))
-	    return this;
-	if (EventFilter.DECL_HANDLER.equals (propertyId))
-	    return this;
-	throw new SAXNotRecognizedException (propertyId);
+        if (EventFilter.LEXICAL_HANDLER.equals (propertyId))
+            return this;
+        if (EventFilter.DECL_HANDLER.equals (propertyId))
+            return this;
+        throw new SAXNotRecognizedException (propertyId);
     }
 }

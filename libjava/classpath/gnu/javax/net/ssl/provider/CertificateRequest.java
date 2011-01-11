@@ -62,7 +62,7 @@ public class CertificateRequest implements Handshake.Body
   // -------------------------------------------------------------------------
 
   protected ByteBuffer buffer;
-  
+
   // Constructor.
   // -------------------------------------------------------------------------
 

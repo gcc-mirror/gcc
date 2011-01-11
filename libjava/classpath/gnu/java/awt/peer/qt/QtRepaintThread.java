@@ -42,13 +42,13 @@ package gnu.java.awt.peer.qt;
  * do this directly from the paint callback in QtComponentPeer, because that
  * is executed from the main thread. Thus, if a call is made at the same time
  * which requires execution by the main thread, and this is sharing a lock with
- * paint(), then a deadlock will occur, which must be avoided. In general, 
+ * paint(), then a deadlock will occur, which must be avoided. In general,
  * the main Qt thread should avoid calling into java code as far as possible.
  *
  */
-public class QtRepaintThread extends Thread 
+public class QtRepaintThread extends Thread
 {
-  static class RepaintComponent 
+  static class RepaintComponent
   {
     public QtComponentPeer curr;
     public RepaintComponent next;
@@ -72,7 +72,7 @@ public class QtRepaintThread extends Thread
       this.h = h;
     }
   }
-  
+
   RepaintComponent component;
   boolean busy;
 
@@ -85,39 +85,39 @@ public class QtRepaintThread extends Thread
   {
     while( true )
       {
-	try
-	  {
-	    busy = false;
-	    // Wait for a repaint
-	    sleep(100);
-	    busy = true;
-	  }
-	catch (InterruptedException ie)
-	  {
-	    while( component != null )
-	      {
-		try
-		  {
-		    if( component.paintAll )
-		      {
-			// update the back-buffer.
-			component.curr.paintBackBuffer(); 
-			component.curr.QtUpdate(); // trigger a native repaint event
-		      }
-		    else
-		      {
-			component.curr.paintBackBuffer(component.x, component.y,
-						       component.w, component.h);
-			component.curr.QtUpdateArea(component.x, component.y,
-						    component.w, component.h); 
-		      }
-		  }
-		catch (InterruptedException e)
-		  {
-		  }
-		component = component.next;
-	      }
-	  }
+        try
+          {
+            busy = false;
+            // Wait for a repaint
+            sleep(100);
+            busy = true;
+          }
+        catch (InterruptedException ie)
+          {
+            while( component != null )
+              {
+                try
+                  {
+                    if( component.paintAll )
+                      {
+                        // update the back-buffer.
+                        component.curr.paintBackBuffer();
+                        component.curr.QtUpdate(); // trigger a native repaint event
+                      }
+                    else
+                      {
+                        component.curr.paintBackBuffer(component.x, component.y,
+                                                       component.w, component.h);
+                        component.curr.QtUpdateArea(component.x, component.y,
+                                                    component.w, component.h);
+                      }
+                  }
+                catch (InterruptedException e)
+                  {
+                  }
+                component = component.next;
+              }
+          }
       }
   }
 
@@ -130,9 +130,9 @@ public class QtRepaintThread extends Thread
       component = new RepaintComponent(p);
     else
       {
-	RepaintComponent r = component;
-	while( r.next != null ) r = r.next;
-	r.next = new RepaintComponent(p);
+        RepaintComponent r = component;
+        while( r.next != null ) r = r.next;
+        r.next = new RepaintComponent(p);
       }
     interrupt();
   }
@@ -140,16 +140,16 @@ public class QtRepaintThread extends Thread
   /**
    * Enqueue a component for repainting.
    */
-  public synchronized void queueComponent(QtComponentPeer p, int x, int y, 
-					  int w, int h)
+  public synchronized void queueComponent(QtComponentPeer p, int x, int y,
+                                          int w, int h)
   {
     if( component == null )
       component = new RepaintComponent(p, x, y, w, h);
     else
       {
-	RepaintComponent r = component;
-	while( r.next != null ) r = r.next;
-	r.next = new RepaintComponent(p, x, y, w, h);
+        RepaintComponent r = component;
+        while( r.next != null ) r = r.next;
+        r.next = new RepaintComponent(p, x, y, w, h);
       }
     interrupt();
   }

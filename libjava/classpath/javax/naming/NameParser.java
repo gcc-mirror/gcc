@@ -46,10 +46,10 @@ package javax.naming;
  * @see Context#getNameParser(Name)
  */
 public interface NameParser
-{ 
+{
   /**
    * Parser the string name representation into the {@link Name} representation
-   * 
+   *
    * @param name the string representation of the name
    * @return the {@link Name} representation of the name.
    * @throws InvalidNameException if the name violates the syntax, expected by
@@ -58,5 +58,3 @@ public interface NameParser
    */
   Name parse (String name) throws NamingException;
 }
-
-

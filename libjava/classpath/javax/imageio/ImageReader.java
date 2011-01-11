@@ -290,7 +290,7 @@ public abstract class ImageReader
   {
     if (availableLocales == null)
       return null;
-    
+
     return (Locale[]) availableLocales.clone();
   }
 
@@ -770,14 +770,14 @@ public abstract class ImageReader
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadProgressListener listener =
-	      (IIOReadProgressListener) it.next();
-	    listener.imageComplete (this);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadProgressListener listener =
+              (IIOReadProgressListener) it.next();
+            listener.imageComplete (this);
+          }
       }
   }
 
@@ -793,14 +793,14 @@ public abstract class ImageReader
   {
      if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadProgressListener listener =
-	      (IIOReadProgressListener) it.next();
-	    listener.imageProgress(this, percentageDone);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadProgressListener listener =
+              (IIOReadProgressListener) it.next();
+            listener.imageProgress(this, percentageDone);
+          }
       }
   }
   /**
@@ -815,14 +815,14 @@ public abstract class ImageReader
   {
      if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadProgressListener listener =
-	      (IIOReadProgressListener) it.next();
-	    listener.imageStarted(this, imageIndex);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadProgressListener listener =
+              (IIOReadProgressListener) it.next();
+            listener.imageStarted(this, imageIndex);
+          }
       }
   }
 
@@ -842,19 +842,19 @@ public abstract class ImageReader
    * @param bands the affected bands in the destination
    */
   protected void processImageUpdate(BufferedImage image, int minX, int minY,
-				    int width, int height, int periodX,
-				    int periodY, int[] bands)
+                                    int width, int height, int periodX,
+                                    int periodY, int[] bands)
   {
     if (updateListeners != null)
       {
-	Iterator it = updateListeners.iterator();
+        Iterator it = updateListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
-	    listener.imageUpdate(this, image, minX, minY, width, height,
-				 periodX, periodY, bands);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
+            listener.imageUpdate(this, image, minX, minY, width, height,
+                                 periodX, periodY, bands);
+          }
       }
   }
 
@@ -869,13 +869,13 @@ public abstract class ImageReader
   {
     if (updateListeners != null)
       {
-	Iterator it = updateListeners.iterator();
+        Iterator it = updateListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
-	    listener.passComplete(this, image);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
+            listener.passComplete(this, image);
+          }
       }
   }
 
@@ -898,19 +898,19 @@ public abstract class ImageReader
    * @param bands the affected bands in the destination
    */
   protected void processPassStarted(BufferedImage image, int pass, int minPass,
-				    int maxPass, int minX, int minY,
-				    int periodX, int periodY, int[] bands)
+                                    int maxPass, int minX, int minY,
+                                    int periodX, int periodY, int[] bands)
   {
     if (updateListeners != null)
       {
-	Iterator it = updateListeners.iterator();
+        Iterator it = updateListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
-	    listener.passStarted(this, image, pass, minPass, maxPass, minX,
-				 minY, periodX, periodY, bands);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
+            listener.passStarted(this, image, pass, minPass, maxPass, minX,
+                                 minY, periodX, periodY, bands);
+          }
       }
   }
 
@@ -922,14 +922,14 @@ public abstract class ImageReader
   {
      if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadProgressListener listener =
-	      (IIOReadProgressListener) it.next();
-	    listener.readAborted(this);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadProgressListener listener =
+              (IIOReadProgressListener) it.next();
+            listener.readAborted(this);
+          }
       }
   }
   /**
@@ -941,14 +941,14 @@ public abstract class ImageReader
   {
      if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadProgressListener listener =
-	      (IIOReadProgressListener) it.next();
-	    listener.sequenceComplete(this);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadProgressListener listener =
+              (IIOReadProgressListener) it.next();
+            listener.sequenceComplete(this);
+          }
       }
   }
 
@@ -964,14 +964,14 @@ public abstract class ImageReader
 
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadProgressListener listener =
-	      (IIOReadProgressListener) it.next();
-	    listener.sequenceStarted(this, minIndex);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadProgressListener listener =
+              (IIOReadProgressListener) it.next();
+            listener.sequenceStarted(this, minIndex);
+          }
       }
   }
 
@@ -984,14 +984,14 @@ public abstract class ImageReader
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadProgressListener listener =
-	      (IIOReadProgressListener) it.next();
-	    listener.thumbnailComplete(this);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadProgressListener listener =
+              (IIOReadProgressListener) it.next();
+            listener.thumbnailComplete(this);
+          }
       }
   }
 
@@ -1006,13 +1006,13 @@ public abstract class ImageReader
   {
     if (updateListeners != null)
       {
-	Iterator it = updateListeners.iterator();
+        Iterator it = updateListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
-	    listener.thumbnailPassComplete(this, thumbnail);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
+            listener.thumbnailPassComplete(this, thumbnail);
+          }
       }
   }
 
@@ -1035,21 +1035,21 @@ public abstract class ImageReader
    * @param bands the affected bands in the destination
    */
   protected void processThumbnailPassStarted(BufferedImage thumbnail, int pass,
-					     int minPass, int maxPass, int minX,
-					     int minY, int periodX, int periodY,
-					     int[] bands)
+                                             int minPass, int maxPass, int minX,
+                                             int minY, int periodX, int periodY,
+                                             int[] bands)
   {
     if (updateListeners != null)
       {
-	Iterator it = updateListeners.iterator();
+        Iterator it = updateListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
-	    listener.thumbnailPassStarted(this, thumbnail, pass, minPass,
-					  maxPass, minX, minY, periodX,
-					  periodY, bands);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
+            listener.thumbnailPassStarted(this, thumbnail, pass, minPass,
+                                          maxPass, minX, minY, periodX,
+                                          periodY, bands);
+          }
       }
   }
 
@@ -1065,14 +1065,14 @@ public abstract class ImageReader
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadProgressListener listener =
-	      (IIOReadProgressListener) it.next();
-	    listener.thumbnailProgress(this, percentageDone);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadProgressListener listener =
+              (IIOReadProgressListener) it.next();
+            listener.thumbnailProgress(this, percentageDone);
+          }
       }
   }
 
@@ -1090,14 +1090,14 @@ public abstract class ImageReader
   {
     if (progressListeners != null)
       {
-	Iterator it = progressListeners.iterator();
+        Iterator it = progressListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadProgressListener listener =
-	      (IIOReadProgressListener) it.next();
-	    listener.thumbnailStarted(this, imageIndex, thumbnailIndex);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadProgressListener listener =
+              (IIOReadProgressListener) it.next();
+            listener.thumbnailStarted(this, imageIndex, thumbnailIndex);
+          }
       }
   }
 
@@ -1117,19 +1117,19 @@ public abstract class ImageReader
    * @param bands the affected bands in the destination
    */
   protected void processThumbnailUpdate(BufferedImage image, int minX, int minY,
-					int width, int height, int periodX,
-					int periodY, int[] bands)
+                                        int width, int height, int periodX,
+                                        int periodY, int[] bands)
   {
     if (updateListeners != null)
       {
-	Iterator it = updateListeners.iterator();
+        Iterator it = updateListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
-	    listener.thumbnailUpdate(this, image, minX, minY, width, height,
-				     periodX, periodY, bands);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadUpdateListener listener = (IIOReadUpdateListener) it.next();
+            listener.thumbnailUpdate(this, image, minX, minY, width, height,
+                                     periodX, periodY, bands);
+          }
       }
   }
 
@@ -1147,14 +1147,14 @@ public abstract class ImageReader
       throw new IllegalArgumentException ("null argument");
     if (warningListeners != null)
       {
-	Iterator it = warningListeners.iterator();
+        Iterator it = warningListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadWarningListener listener =
-	      (IIOReadWarningListener) it.next();
-	    listener.warningOccurred(this, warning);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadWarningListener listener =
+              (IIOReadWarningListener) it.next();
+            listener.warningOccurred(this, warning);
+          }
       }
   }
 
@@ -1179,7 +1179,7 @@ public abstract class ImageReader
    * not a String
    */
   protected void processWarningOccurred(String baseName,
-					String keyword)
+                                        String keyword)
   {
     if (baseName == null || keyword == null)
       throw new IllegalArgumentException ("null argument");
@@ -1188,22 +1188,22 @@ public abstract class ImageReader
 
     try
       {
-	b = ResourceBundle.getBundle(baseName, getLocale());
+        b = ResourceBundle.getBundle(baseName, getLocale());
       }
     catch (MissingResourceException e)
       {
-	throw new IllegalArgumentException ("no resource bundle found");
+        throw new IllegalArgumentException ("no resource bundle found");
       }
 
     Object str = null;
 
     try
       {
-	str = b.getObject(keyword);
+        str = b.getObject(keyword);
       }
     catch (MissingResourceException e)
       {
-	throw new IllegalArgumentException ("no results found for keyword");
+        throw new IllegalArgumentException ("no results found for keyword");
       }
 
     if (! (str instanceof String))
@@ -1213,14 +1213,14 @@ public abstract class ImageReader
 
     if (warningListeners != null)
       {
-	Iterator it = warningListeners.iterator();
+        Iterator it = warningListeners.iterator();
 
-	while (it.hasNext())
-	  {
-	    IIOReadWarningListener listener =
-	      (IIOReadWarningListener) it.next();
-	    listener.warningOccurred(this, warning);
-	  }
+        while (it.hasNext())
+          {
+            IIOReadWarningListener listener =
+              (IIOReadWarningListener) it.next();
+            listener.warningOccurred(this, warning);
+          }
       }
   }
 
@@ -1292,7 +1292,7 @@ public abstract class ImageReader
    * @exception IndexOutOfBoundsException if either the frame index or
    * the thumbnail index is out-of-bounds
    * @exception IOException if a read error occurs
-   * 
+   *
    */
   public BufferedImage readThumbnail(int imageIndex, int thumbnailIndex)
     throws IOException
@@ -1329,13 +1329,13 @@ public abstract class ImageReader
    *
    * @param listener the listener to remove
    */
-  public void removeIIOReadProgressListener(IIOReadProgressListener listener) 
+  public void removeIIOReadProgressListener(IIOReadProgressListener listener)
   {
     if (listener == null)
       return;
     if (progressListeners != null)
       {
-	progressListeners.remove(listener);
+        progressListeners.remove(listener);
       }
   }
 
@@ -1344,14 +1344,14 @@ public abstract class ImageReader
    *
    * @param listener the listener to remove
    */
-  public void removeIIOReadUpdateListener(IIOReadUpdateListener listener) 
+  public void removeIIOReadUpdateListener(IIOReadUpdateListener listener)
   {
     if (listener == null)
       return;
 
     if (updateListeners != null)
       {
-	updateListeners.remove(listener);
+        updateListeners.remove(listener);
       }
   }
 
@@ -1366,7 +1366,7 @@ public abstract class ImageReader
       return;
     if (warningListeners != null)
       {
-	warningListeners.remove(listener);
+        warningListeners.remove(listener);
       }
   }
 
@@ -1379,16 +1379,16 @@ public abstract class ImageReader
   {
     if (locale != null)
       {
-	// Check if its a valid locale.
-	boolean found = false;
+        // Check if its a valid locale.
+        boolean found = false;
 
-	if (availableLocales != null)
-	  for (int i = availableLocales.length - 1; i >= 0; --i)
-	    if (availableLocales[i].equals(locale))
-	      found = true;
+        if (availableLocales != null)
+          for (int i = availableLocales.length - 1; i >= 0; --i)
+            if (availableLocales[i].equals(locale))
+              found = true;
 
-	if (! found)
-	  throw new IllegalArgumentException("looale not available");
+        if (! found)
+          throw new IllegalArgumentException("looale not available");
       }
 
     this.locale = locale;
@@ -1411,8 +1411,8 @@ public abstract class ImageReader
    * destination band indices are invalid
    */
   protected static void checkReadParamBandSettings(ImageReadParam param,
-						   int numSrcBands,
-						   int numDstBands)
+                                                   int numSrcBands,
+                                                   int numDstBands)
   {
     int[] srcBands = param.getSourceBands();
     int[] dstBands = param.getDestinationBands();
@@ -1513,11 +1513,11 @@ public abstract class ImageReader
    * regions is empty
    */
   protected static void computeRegions (ImageReadParam param,
-					int srcWidth,
-					int srcHeight,
-					BufferedImage image,
-					Rectangle srcRegion,
-					Rectangle destRegion)
+                                        int srcWidth,
+                                        int srcHeight,
+                                        BufferedImage image,
+                                        Rectangle srcRegion,
+                                        Rectangle destRegion)
   {
     if (srcRegion == null || destRegion == null)
       throw new IllegalArgumentException ("null region");
@@ -1594,9 +1594,9 @@ public abstract class ImageReader
    * height is greater than Integer.MAX_VALUE
    */
   protected static BufferedImage getDestination (ImageReadParam param,
-						 Iterator<ImageTypeSpecifier> imageTypes,
-						 int width,
-						 int height)
+                                                 Iterator<ImageTypeSpecifier> imageTypes,
+                                                 int width,
+                                                 int height)
     throws IIOException
   {
     if (imageTypes == null || !imageTypes.hasNext())
@@ -1751,8 +1751,8 @@ public abstract class ImageReader
    * @return a clipped rectangle
    */
   protected static Rectangle getSourceRegion (ImageReadParam param,
-					      int srcWidth,
-					      int srcHeight)
+                                              int srcWidth,
+                                              int srcHeight)
   {
     Rectangle clippedRegion = new Rectangle (0, 0, srcWidth, srcHeight);
 
@@ -1870,7 +1870,7 @@ public abstract class ImageReader
    * @exception IOException if a read error occurs
    */
   public IIOImage readAll (int imageIndex,
-			   ImageReadParam param)
+                           ImageReadParam param)
     throws IOException
   {
     checkReadParamBandSettings (param,
@@ -1953,7 +1953,7 @@ public abstract class ImageReader
    * @exception IOException if a read error occurs
    */
   public RenderedImage readAsRenderedImage (int imageIndex,
-					    ImageReadParam param)
+                                            ImageReadParam param)
     throws IOException
   {
     return read (imageIndex, param);
@@ -2033,4 +2033,3 @@ public abstract class ImageReader
     clearAbortRequest ();
   }
 }
-

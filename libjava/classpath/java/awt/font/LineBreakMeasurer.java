@@ -45,17 +45,17 @@ public final class LineBreakMeasurer
 {
   private AttributedCharacterIterator text;
   private int position;
-  private TextMeasurer tm; 
+  private TextMeasurer tm;
   private int numChars;
 
-  public LineBreakMeasurer(AttributedCharacterIterator text, 
-			   BreakIterator breakIter, FontRenderContext frc)
+  public LineBreakMeasurer(AttributedCharacterIterator text,
+                           BreakIterator breakIter, FontRenderContext frc)
   {
     this( text, frc );
   }
 
-  public LineBreakMeasurer(AttributedCharacterIterator text, 
-			   FontRenderContext frc)
+  public LineBreakMeasurer(AttributedCharacterIterator text,
+                           FontRenderContext frc)
   {
     this.text = text;
     position = 0;
@@ -63,15 +63,15 @@ public final class LineBreakMeasurer
     tm = new TextMeasurer( text, frc );
   }
 
-  public void deleteChar(AttributedCharacterIterator newParagraph, 
-			 int deletePos)
+  public void deleteChar(AttributedCharacterIterator newParagraph,
+                         int deletePos)
   {
     tm.deleteChar( newParagraph, deletePos );
     position = 0;
   }
 
-  public void insertChar(AttributedCharacterIterator newParagraph, 
-			 int insertPos)
+  public void insertChar(AttributedCharacterIterator newParagraph,
+                         int insertPos)
   {
     tm.insertChar( newParagraph, insertPos );
     position = 0;
@@ -82,8 +82,8 @@ public final class LineBreakMeasurer
     return nextLayout( wrappingWidth, numChars, false );
   }
 
-  public TextLayout nextLayout(float wrappingWidth, int offsetLimit, 
-			       boolean requireNextWord)
+  public TextLayout nextLayout(float wrappingWidth, int offsetLimit,
+                               boolean requireNextWord)
   {
     int next = nextOffset( wrappingWidth, offsetLimit, requireNextWord );
     TextLayout tl = tm.getLayout( position, next );
@@ -96,8 +96,8 @@ public final class LineBreakMeasurer
     return nextOffset( wrappingWidth, numChars, false );
   }
 
-  public int nextOffset(float wrappingWidth, int offsetLimit, 
-			boolean requireNextWord)
+  public int nextOffset(float wrappingWidth, int offsetLimit,
+                        boolean requireNextWord)
   {
     int guessOffset = tm.getLineBreakIndex(position, wrappingWidth);
     if( offsetLimit > numChars )
@@ -105,8 +105,8 @@ public final class LineBreakMeasurer
 
     if( guessOffset > offsetLimit )
       {
-	text.setIndex( offsetLimit );
-	return offsetLimit;
+        text.setIndex( offsetLimit );
+        return offsetLimit;
       }
 
     text.setIndex( guessOffset );
@@ -117,18 +117,18 @@ public final class LineBreakMeasurer
 
     // Otherwise jump forward or backward to the last such char.
     if( !requireNextWord )
-      while( !Character.isWhitespace( text.previous() ) && 
-	     guessOffset > position )
-	guessOffset--; 
+      while( !Character.isWhitespace( text.previous() ) &&
+             guessOffset > position )
+        guessOffset--;
     else
-      while( !Character.isWhitespace( text.next() ) && 
-	     guessOffset < offsetLimit )
-	guessOffset++;
-    
+      while( !Character.isWhitespace( text.next() ) &&
+             guessOffset < offsetLimit )
+        guessOffset++;
+
     if( guessOffset > offsetLimit )
       {
-	text.setIndex( offsetLimit );
-	return offsetLimit;
+        text.setIndex( offsetLimit );
+        return offsetLimit;
       }
 
     text.setIndex( guessOffset );
@@ -146,4 +146,3 @@ public final class LineBreakMeasurer
     return position;
   }
 }
-

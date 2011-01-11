@@ -162,39 +162,39 @@ public abstract class IIOMetadata
   {
     if (formatName == null)
       throw new IllegalArgumentException("formatName may not be null");
-    
+
     String formatClassName = null;
 
     if (isStandardMetadataFormatSupported()
-	&& formatName.equals(nativeMetadataFormatName))
+        && formatName.equals(nativeMetadataFormatName))
       formatClassName = nativeMetadataFormatClassName;
     else
       {
-	String[] extraFormatNames = getExtraMetadataFormatNames();
-	
-	for (int i = extraFormatNames.length - 1; i >= 0; --i)
-	  if (extraFormatNames[i].equals(formatName))
-	    {
-	      formatClassName = extraFormatNames[i];
-	      break;
-	    }
+        String[] extraFormatNames = getExtraMetadataFormatNames();
+
+        for (int i = extraFormatNames.length - 1; i >= 0; --i)
+          if (extraFormatNames[i].equals(formatName))
+            {
+              formatClassName = extraFormatNames[i];
+              break;
+            }
       }
 
     if (formatClassName == null)
       throw new IllegalArgumentException("unknown format");
 
     IIOMetadataFormat format;
-    
+
     try
       {
-	format = (IIOMetadataFormat) Class.forName(formatClassName)
-					  .newInstance();
+        format = (IIOMetadataFormat) Class.forName(formatClassName)
+                                          .newInstance();
       }
     catch (Exception e)
       {
-	IllegalStateException ise = new IllegalStateException();
-	ise.initCause(e);
-	throw ise;
+        IllegalStateException ise = new IllegalStateException();
+        ise.initCause(e);
+        throw ise;
       }
 
     return format;
@@ -203,18 +203,18 @@ public abstract class IIOMetadata
   public String[] getMetadataFormatNames()
   {
     String[] formatNames = getExtraMetadataFormatNames();
-    
+
     if (isStandardMetadataFormatSupported())
       {
         // Combine native metadata format name and extra metadata format names
-	// into one String array.
-	String[] tmp = new String[formatNames.length + 1];
-	tmp[0] = getNativeMetadataFormatName();
+        // into one String array.
+        String[] tmp = new String[formatNames.length + 1];
+        tmp[0] = getNativeMetadataFormatName();
 
-	for (int i = 1; i < tmp.length; ++i)
-	  tmp[i] = formatNames[i - 1];
+        for (int i = 1; i < tmp.length; ++i)
+          tmp[i] = formatNames[i - 1];
 
-	formatNames = tmp;
+        formatNames = tmp;
       }
 
     return formatNames;
@@ -287,7 +287,7 @@ public abstract class IIOMetadata
   }
 
   private void appendChild (IIOMetadataNode node,
-			    IIOMetadataNode child)
+                            IIOMetadataNode child)
   {
     if (child != null)
       node.appendChild(child);

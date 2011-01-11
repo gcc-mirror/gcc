@@ -52,7 +52,7 @@ public abstract class InternalFrameAdapter implements InternalFrameListener
   {
     // Nothing to do here.
   }
-	
+
   /**
    * Internal frame activated.
    *

@@ -70,7 +70,7 @@ public class KqueueSelectorImpl extends AbstractSelector
   private static final int MAX_DOUBLING_CAPACITY = 16384;
   private static final int CAP_INCREMENT = 1024;
   private static final int INITIAL_CAPACITY;
-    
+
   static
   {
     try
@@ -88,7 +88,7 @@ public class KqueueSelectorImpl extends AbstractSelector
       _sizeof_struct_kevent = -1;
     INITIAL_CAPACITY = 16 * _sizeof_struct_kevent;
   }
-  
+
   /**
    * Tell if kqueue-based selectors are supported on this system.
    *
@@ -96,15 +96,15 @@ public class KqueueSelectorImpl extends AbstractSelector
    *  compiled in to Classpath.
    */
   public static native boolean kqueue_supported();
-  
+
   /* Our native file descriptor. */
   private int kq;
-  
+
   private HashMap/*<Integer,KqueueSelectionKeyImpl>*/ keys;
   private HashSet/*<KqueueSelectionKeyImpl>*/ selected;
   private Thread blockedThread;
   private ByteBuffer events;
-  
+
   private static final int OP_ACCEPT  = SelectionKey.OP_ACCEPT;
   private static final int OP_CONNECT = SelectionKey.OP_CONNECT;
   private static final int OP_READ    = SelectionKey.OP_READ;
@@ -160,7 +160,7 @@ public class KqueueSelectorImpl extends AbstractSelector
   {
     if (!isOpen())
       throw new ClosedSelectorException();
-    
+
     return selected;
   }
 
@@ -181,20 +181,20 @@ public class KqueueSelectorImpl extends AbstractSelector
       blockedThread.interrupt();
     return this;
   }
-  
+
   public String toString()
   {
     return super.toString() + " [ fd: " + kq + " ]";
   }
-  
+
   public boolean equals(Object o)
   {
     if (!(o instanceof KqueueSelectorImpl))
       return false;
-    
+
     return ((KqueueSelectorImpl) o).kq == kq;
   }
-  
+
   int doSelect(long timeout) throws IOException
   {
     Set cancelled = cancelledKeys();
@@ -207,7 +207,7 @@ public class KqueueSelectorImpl extends AbstractSelector
             KqueueSelectionKeyImpl key = (KqueueSelectionKeyImpl) it.next();
             key.interestOps = 0;
           }
-        
+
         int events_size = (2 * _sizeof_struct_kevent) * keys.size();
         int num_events = 0;
 
@@ -215,7 +215,7 @@ public class KqueueSelectorImpl extends AbstractSelector
           {
             Map.Entry e = (Map.Entry) it.next();
             KqueueSelectionKeyImpl key = (KqueueSelectionKeyImpl) e.getValue();
-            
+
             SelectableChannel ch = key.channel();
             if (ch instanceof VMChannelOwner)
               {
@@ -226,7 +226,7 @@ public class KqueueSelectorImpl extends AbstractSelector
                     continue;
                   }
               }
-            
+
             // If this key is registering a read filter, add it to the buffer.
             if (key.needCommitRead())
               {
@@ -235,7 +235,7 @@ public class KqueueSelectorImpl extends AbstractSelector
                            key.activeOps & (OP_READ | OP_ACCEPT), key.key);
                 num_events++;
               }
-            
+
             // If this key is registering a write filter, add it to the buffer.
             if (key.needCommitWrite())
               {
@@ -271,7 +271,7 @@ public class KqueueSelectorImpl extends AbstractSelector
 
         //System.out.println("dump of keys selected:");
         //dump_selection_keys((ByteBuffer) events.duplicate().limit(n * _sizeof_struct_kevent));
-        
+
         // Commit the operations we've just added in the call to kevent.
         for (Iterator it = keys.values().iterator(); it.hasNext(); )
           {
@@ -288,7 +288,7 @@ public class KqueueSelectorImpl extends AbstractSelector
             int y = fetch_key(events.slice());
             KqueueSelectionKeyImpl key =
               (KqueueSelectionKeyImpl) keys.get(new Integer(y));
-            
+
             if (key == null)
               {
                 System.out.println("WARNING! no key found for selected key " + y);
@@ -301,7 +301,7 @@ public class KqueueSelectorImpl extends AbstractSelector
             key.readyOps = ready_ops(events.slice(), key.interestOps);
             selected.add(key);
           }
-        
+
         // Finally, remove the cancelled keys.
         for (Iterator it = cancelled.iterator(); it.hasNext(); )
           {
@@ -317,7 +317,7 @@ public class KqueueSelectorImpl extends AbstractSelector
       }
     }
   }
-  
+
   protected SelectionKey register(AbstractSelectableChannel channel,
                                   int interestOps,
                                   Object attachment)
@@ -336,7 +336,7 @@ public class KqueueSelectorImpl extends AbstractSelector
       {
         throw new IllegalArgumentException("channel is closed or invalid");
       }
-    
+
     KqueueSelectionKeyImpl result = new KqueueSelectionKeyImpl(this, channel);
     result.interestOps = interestOps;
     result.attach(attachment);
@@ -351,7 +351,7 @@ public class KqueueSelectorImpl extends AbstractSelector
     }
     return result;
   }
-  
+
   void setInterestOps(KqueueSelectionKeyImpl key, int ops)
   {
     synchronized (keys)
@@ -359,11 +359,11 @@ public class KqueueSelectorImpl extends AbstractSelector
       key.interestOps = ops;
     }
   }
-  
+
   /**
    * Reallocate the events buffer. This is the destination buffer for
    * events returned by kevent. This method will:
-   * 
+   *
    *   * Grow the buffer if there is insufficent space for all registered
    *     events.
    *   * Shrink the buffer if it is more than twice the size needed.
@@ -380,7 +380,7 @@ public class KqueueSelectorImpl extends AbstractSelector
             cap += CAP_INCREMENT;
           else
             cap = cap << 1;
-          
+
           events = ByteBuffer.allocateDirect(cap);
         }
       else if (events.capacity() > 4 * (_sizeof_struct_kevent) * keys.size() + 1
@@ -392,12 +392,12 @@ public class KqueueSelectorImpl extends AbstractSelector
         }
     }
   }
-  
+
   //synchronized void updateOps(KqueueSelectionKeyImpl key, int interestOps)
   //{
   //  updateOps(key, interestOps, 0, false);
   //}
-  
+
   /*void updateOps(KqueueSelectionKeyImpl key, int interestOps,
                  int activeOps, int fd)
   {
@@ -437,25 +437,25 @@ public class KqueueSelectorImpl extends AbstractSelector
                            + " }");
       }
   }
-  
+
   /**
    * Return the size of a <code>struct kevent</code> on this system.
    *
    * @return The size of <code>struct kevent</code>.
    */
   private static native int sizeof_struct_kevent();
-  
+
   /**
    * Opens a kqueue descriptor.
-   * 
+   *
    * @return The new kqueue descriptor.
    * @throws IOException If opening fails.
    */
   private static native int implOpen() throws IOException;
-  
+
   /**
    * Closes the kqueue file descriptor.
-   * 
+   *
    * @param kq The kqueue file descriptor.
    * @throws IOException
    */
@@ -474,7 +474,7 @@ public class KqueueSelectorImpl extends AbstractSelector
    */
   private static native void kevent_set(ByteBuffer nstate, int i, int fd,
                                         int interestOps, int activeOps, int key);
-  
+
   /**
    * Poll for events. The source events are stored in <code>events</code>,
    * which is also where polled events will be placed.
@@ -490,7 +490,7 @@ public class KqueueSelectorImpl extends AbstractSelector
    */
   private static native int kevent(int kq, ByteBuffer events, int nevents,
                                    int nout, long timeout);
-  
+
   /**
    * Fetch a polled key from a native state buffer. For each kevent key we
    * create, we put the native state info (one or more <code>struct
@@ -503,7 +503,7 @@ public class KqueueSelectorImpl extends AbstractSelector
    * @return The key object.
    */
   private static native int fetch_key(ByteBuffer nstate);
-  
+
   /**
    * Fetch the ready ops of the associated native state. That is, this
    * inspects the first argument as a <code>struct kevent</code>, looking
@@ -516,7 +516,7 @@ public class KqueueSelectorImpl extends AbstractSelector
    * @return The bit set representing the ready operations.
    */
   private static native int ready_ops(ByteBuffer nstate, int interestOps);
-  
+
   /**
    * Check if kevent returned EV_EOF for a selection key.
    *

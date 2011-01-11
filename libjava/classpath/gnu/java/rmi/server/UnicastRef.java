@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -461,7 +461,7 @@ public class UnicastRef
   {
     return ("UnicastRef");
   }
-  
+
   /**
    * Return the string representing the remote reference information.
    */
@@ -497,7 +497,7 @@ public class UnicastRef
   /**
    * Check if this UnicastRef points to the object as the passed UnicastRef.
    * Both the object Id and manager must be the same.
-   * 
+   *
    * @return true if the passed reference points to the same remote object as
    *         this reference, false otherwise.
    */

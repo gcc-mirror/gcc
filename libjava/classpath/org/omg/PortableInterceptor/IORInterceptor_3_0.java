@@ -44,13 +44,13 @@ import org.omg.CORBA.portable.IDLEntity;
  * The IORInterceptor_3_0 adds to {@link Interceptor} functionality, available
  * since CORBA 3.0. These new operations are defined separately in
  * {@link IORInterceptor_3_0Operations}.
- * 
- * IORInterceptor_3_0 is registered exactly in the same way as the 
+ *
+ * IORInterceptor_3_0 is registered exactly in the same way as the
  * {@link IORInterceptor}. The ORB calls the additional methods to all
  * IOR interceptors that implement this extended interface.
- * 
+ *
  * @since 1.5
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public interface IORInterceptor_3_0

@@ -95,7 +95,7 @@ public class NamingMap
         if (containsValue(object))
           throw new AlreadyBound("The object has another name");
       }
-    
+
     // There are no restrictions in binding the object.
     rebind(name, object);
   }

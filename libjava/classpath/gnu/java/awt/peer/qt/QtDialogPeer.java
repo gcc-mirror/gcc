@@ -68,6 +68,6 @@ public class QtDialogPeer extends QtWindowPeer implements DialogPeer
   public void setBounds(int x, int y, int width, int height)
   {
     setBoundsNative(x, y, width, height,
-		    !((Dialog)owner).isResizable());
+                    !((Dialog)owner).isResizable());
   }
 }

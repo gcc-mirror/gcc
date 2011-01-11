@@ -1,4 +1,4 @@
-/* DomHTMLMapElement.java -- 
+/* DomHTMLMapElement.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ public class DomHTMLMapElement
     ret.evaluate();
     return ret;
   }
-  
+
   public String getName()
   {
     return getHTMLAttribute("name");
@@ -74,6 +74,5 @@ public class DomHTMLMapElement
   {
     setHTMLAttribute("name", name);
   }
-  
-}
 
+}

@@ -42,14 +42,14 @@ import javax.print.attribute.EnumSyntax;
 
 
 /**
- * The <code>ReferenceUriSchemesSupported</code> attribute provides 
+ * The <code>ReferenceUriSchemesSupported</code> attribute provides
  * the supported URI schemes (e.g. ftp) which are supported by the
  * printer service to be used as uri reference for document data.
  * <p>
- * <b>IPP Compatibility:</b> ReferenceUriSchemesSupported is an IPP 1.1 
+ * <b>IPP Compatibility:</b> ReferenceUriSchemesSupported is an IPP 1.1
  * attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -63,59 +63,59 @@ public class ReferenceUriSchemesSupported extends EnumSyntax
    */
   public static final ReferenceUriSchemesSupported FTP =
     new ReferenceUriSchemesSupported(0);
-  
+
   /**
    * The hyper text transfer protocol (HTTP).
    */
   public static final ReferenceUriSchemesSupported HTTP =
     new ReferenceUriSchemesSupported(1);
-  
+
   /**
    * The secure hyper text transfer protocol (HTTPS).
    */
   public static final ReferenceUriSchemesSupported HTTPS =
     new ReferenceUriSchemesSupported(2);
-  
+
   /**
    * The gopher protocol.
    */
   public static final ReferenceUriSchemesSupported GOPHER =
     new ReferenceUriSchemesSupported(3);
-  
+
   /**
    * The USENET news - RFC 1738.
    */
   public static final ReferenceUriSchemesSupported NEWS =
     new ReferenceUriSchemesSupported(4);
-  
+
   /**
    * The network news transfer protocol (NNTP) - RFC 1738.
    */
   public static final ReferenceUriSchemesSupported NNTP =
     new ReferenceUriSchemesSupported(5);
-  
+
   /**
    * The wide area information server protocol (WAIS) - RFC 4156.
    */
   public static final ReferenceUriSchemesSupported WAIS =
     new ReferenceUriSchemesSupported(6);
-  
+
   /**
    * A filename specific to the host.
    */
   public static final ReferenceUriSchemesSupported FILE =
     new ReferenceUriSchemesSupported(7);
 
-  private static final String[] stringTable = { "ftp", "http", "https", 
-                                                "gopher", "news", "nntp", 
+  private static final String[] stringTable = { "ftp", "http", "https",
+                                                "gopher", "news", "nntp",
                                                 "wais", "file" };
 
-  private static final ReferenceUriSchemesSupported[] enumValueTable = 
+  private static final ReferenceUriSchemesSupported[] enumValueTable =
     { FTP, HTTP, HTTPS, GOPHER, NEWS, NNTP, WAIS, FILE };
 
   /**
    * Constructs a <code>ReferenceUriSchemeSupported</code> object.
-   * 
+   *
    * @param value the enum value.
    */
   protected ReferenceUriSchemesSupported(int value)
@@ -142,7 +142,7 @@ public class ReferenceUriSchemesSupported extends EnumSyntax
   {
     return "reference-uri-schemes-supported";
   }
-  
+
   /**
    * Returns a table with the enumeration values represented as strings
    * for this object.

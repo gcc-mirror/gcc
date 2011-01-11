@@ -39,9 +39,9 @@ exception statement from your version. */
 package javax.sound.midi;
 
 /**
- * A Soundbank is a container for instruments which may be loaded into 
+ * A Soundbank is a container for instruments which may be loaded into
  * a Synthesizer.
- * 
+ *
  * @author Anthony Green (green@redhat.com)
  * @since 1.3
  *
@@ -50,50 +50,50 @@ public interface Soundbank
 {
   /**
    * Get the sound bank name.
-   * 
+   *
    * @return the sound bank name
    */
   String getName();
-  
+
   /**
    * Get the sound bank version.
-   * 
+   *
    * @return the sound bank version
    */
   String getVersion();
 
   /**
    * Get the sound bank vendor.
-   * 
+   *
    * @return the sound bank vendor
    */
   String getVendor();
-  
-  
+
+
   /**
    * Get the sound bank description.
-   * 
+   *
    * @return the sound bank description
    */
   String getDescription();
-  
+
   /**
    * Get an array of non-Instrument resources in this sound bank.
-   * 
+   *
    * @return an array of non-instrument resources in this sound bank
    */
   SoundbankResource[] getResources();
-  
+
   /**
    * Get an array of Instruments in this sound bank.
-   * 
+   *
    * @return an array of instruments in this sound bank
    */
   Instrument[] getInstruments();
-  
+
   /**
    * Get the Instrument for the given Patch.
-   * 
+   *
    * @param patch the Patch to search for
    * @return the Instrument corresponding to patch
    */

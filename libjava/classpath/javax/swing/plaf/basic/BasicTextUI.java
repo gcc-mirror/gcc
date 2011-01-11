@@ -126,7 +126,7 @@ public abstract class BasicTextUI extends TextUI
   private static class FocusHandler
     implements FocusListener
   {
-    public void focusGained(FocusEvent e) 
+    public void focusGained(FocusEvent e)
     {
       // Nothing to do here.
     }
@@ -147,7 +147,7 @@ public abstract class BasicTextUI extends TextUI
             {
               if (sm != null)
                 sm.checkSystemClipboardAccess();
-              
+
               Clipboard cb = Toolkit.getDefaultToolkit().getSystemSelection();
               if (cb != null)
                 {
@@ -291,7 +291,7 @@ public abstract class BasicTextUI extends TextUI
       EditorKit editorKit = BasicTextUI.this.getEditorKit(getComponent());
       factory = editorKit.getViewFactory();
       if (factory == null)
-	factory = BasicTextUI.this;
+        factory = BasicTextUI.this;
       return factory;
     }
 
@@ -317,7 +317,7 @@ public abstract class BasicTextUI extends TextUI
     {
       if (view != null)
         view.setParent(null);
-      
+
       if (v != null)
         v.setParent(this);
 
@@ -718,7 +718,7 @@ public abstract class BasicTextUI extends TextUI
     if (color == null || color instanceof UIResource)
       {
         color = UIManager.getColor(prefix  + ".selectionBackground");
-        textComponent.setSelectionColor(color);    
+        textComponent.setSelectionColor(color);
       }
 
     Insets margin = textComponent.getMargin();
@@ -756,7 +756,7 @@ public abstract class BasicTextUI extends TextUI
    */
   protected void installListeners()
   {
-    // 
+    //
     if (SystemProperties.getProperty("gnu.swing.text.no-xlike-clipboard")
         == null)
       {
@@ -768,11 +768,11 @@ public abstract class BasicTextUI extends TextUI
 
   /**
    * Returns the name of the keymap for this type of TextUI.
-   * 
+   *
    * This is implemented so that the classname of this TextUI
    * without the package prefix is returned. This way subclasses
    * don't have to override this method.
-   * 
+   *
    * @return the name of the keymap for this TextUI
    */
   protected String getKeymapName()
@@ -822,10 +822,10 @@ public abstract class BasicTextUI extends TextUI
                                      getInputMap());
     SwingUtilities.replaceUIActionMap(textComponent, getActionMap());
   }
-  
+
   /**
    * Creates an ActionMap to be installed on the text component.
-   * 
+   *
    * @return an ActionMap to be installed on the text component
    */
   private ActionMap getActionMap()
@@ -963,7 +963,7 @@ public abstract class BasicTextUI extends TextUI
    */
   protected void uninstallKeyboardActions()
   {
-    SwingUtilities.replaceUIInputMap(textComponent, JComponent.WHEN_FOCUSED, 
+    SwingUtilities.replaceUIInputMap(textComponent, JComponent.WHEN_FOCUSED,
                                      null);
     SwingUtilities.replaceUIActionMap(textComponent, null);
   }
@@ -1150,7 +1150,7 @@ public abstract class BasicTextUI extends TextUI
         highlighter.paint(g);
         g.setColor(oldColor);
       }
-      
+
     rootView.paint(g, getVisibleEditorRect());
 
     if (caret != null && textComponent.hasFocus())
@@ -1482,11 +1482,11 @@ public abstract class BasicTextUI extends TextUI
     // Return null if the component has no valid size.
     if (width <= 0 || height <= 0)
       return null;
-	
+
     Insets insets = textComponent.getInsets(cachedInsets);
     return new Rectangle(insets.left, insets.top,
-			 width - insets.left - insets.right,
-			 height - insets.top - insets.bottom);
+                         width - insets.left - insets.right,
+                         height - insets.top - insets.bottom);
   }
 
   /**
@@ -1507,10 +1507,10 @@ public abstract class BasicTextUI extends TextUI
    */
   protected void modelChanged()
   {
-    if (textComponent == null || rootView == null) 
+    if (textComponent == null || rootView == null)
       return;
     ViewFactory factory = rootView.getViewFactory();
-    if (factory == null) 
+    if (factory == null)
       return;
     Document doc = textComponent.getDocument();
     if (doc == null)

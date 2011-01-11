@@ -175,13 +175,13 @@ public class Polygon implements Shape, Serializable
     int i = npoints;
     while (--i >= 0)
       {
-	xpoints[i] += dx;
-	ypoints[i] += dy;
+        xpoints[i] += dx;
+        ypoints[i] += dy;
       }
     if (bounds != null)
       {
-	bounds.x += dx;
-	bounds.y += dy;
+        bounds.x += dx;
+        bounds.y += dy;
       }
   }
 
@@ -196,43 +196,43 @@ public class Polygon implements Shape, Serializable
   {
     if (npoints + 1 > xpoints.length)
       {
-	int[] newx = new int[npoints + 1];
-	System.arraycopy(xpoints, 0, newx, 0, npoints);
-	xpoints = newx;
+        int[] newx = new int[npoints + 1];
+        System.arraycopy(xpoints, 0, newx, 0, npoints);
+        xpoints = newx;
       }
     if (npoints + 1 > ypoints.length)
       {
-	int[] newy = new int[npoints + 1];
-	System.arraycopy(ypoints, 0, newy, 0, npoints);
-	ypoints = newy;
+        int[] newy = new int[npoints + 1];
+        System.arraycopy(ypoints, 0, newy, 0, npoints);
+        ypoints = newy;
       }
     xpoints[npoints] = x;
     ypoints[npoints] = y;
     npoints++;
     if (bounds != null)
       {
-	if (npoints == 1)
-	  {
-	    bounds.x = x;
-	    bounds.y = y;
-	  }
-	else
-	  {
-	    if (x < bounds.x)
-	      {
-		bounds.width += bounds.x - x;
-		bounds.x = x;
-	      }
-	    else if (x > bounds.x + bounds.width)
-	      bounds.width = x - bounds.x;
-	    if (y < bounds.y)
-	      {
-		bounds.height += bounds.y - y;
-		bounds.y = y;
-	      }
-	    else if (y > bounds.y + bounds.height)
-	      bounds.height = y - bounds.y;
-	  }
+        if (npoints == 1)
+          {
+            bounds.x = x;
+            bounds.y = y;
+          }
+        else
+          {
+            if (x < bounds.x)
+              {
+                bounds.width += bounds.x - x;
+                bounds.x = x;
+              }
+            else if (x > bounds.x + bounds.width)
+              bounds.width = x - bounds.x;
+            if (y < bounds.y)
+              {
+                bounds.height += bounds.y - y;
+                bounds.y = y;
+              }
+            else if (y > bounds.y + bounds.height)
+              bounds.height = y - bounds.y;
+          }
       }
   }
 
@@ -263,27 +263,27 @@ public class Polygon implements Shape, Serializable
   {
     if (bounds == null)
       {
-	if (npoints == 0)
-	  return bounds = new Rectangle();
-	int i = npoints - 1;
-	int minx = xpoints[i];
-	int maxx = minx;
-	int miny = ypoints[i];
-	int maxy = miny;
-	while (--i >= 0)
-	  {
-	    int x = xpoints[i];
-	    int y = ypoints[i];
-	    if (x < minx)
-	      minx = x;
-	    else if (x > maxx)
-	      maxx = x;
-	    if (y < miny)
-	      miny = y;
-	    else if (y > maxy)
-	      maxy = y;
-	  }
-	bounds = new Rectangle(minx, miny, maxx - minx, maxy - miny);
+        if (npoints == 0)
+          return bounds = new Rectangle();
+        int i = npoints - 1;
+        int minx = xpoints[i];
+        int maxx = minx;
+        int miny = ypoints[i];
+        int maxy = miny;
+        while (--i >= 0)
+          {
+            int x = xpoints[i];
+            int y = ypoints[i];
+            if (x < minx)
+              minx = x;
+            else if (x > maxx)
+              maxx = x;
+            if (y < miny)
+              miny = y;
+            else if (y > maxy)
+              maxy = y;
+          }
+        bounds = new Rectangle(minx, miny, maxx - minx, maxy - miny);
       }
     return bounds;
   }
@@ -476,45 +476,45 @@ public class Polygon implements Shape, Serializable
   {
     return new PathIterator()
       {
-	/** The current vertex of iteration. */
-	private int vertex;
+        /** The current vertex of iteration. */
+        private int vertex;
 
-	public int getWindingRule()
-	{
-	  return WIND_EVEN_ODD;
-	}
+        public int getWindingRule()
+        {
+          return WIND_EVEN_ODD;
+        }
 
-	public boolean isDone()
-	{
-	  return vertex > npoints;
-	}
+        public boolean isDone()
+        {
+          return vertex > npoints;
+        }
 
-	public void next()
-	{
-	  vertex++;
-	}
+        public void next()
+        {
+          vertex++;
+        }
 
-	public int currentSegment(float[] coords)
-	{
-	  if (vertex >= npoints)
-	    return SEG_CLOSE;
-	  coords[0] = xpoints[vertex];
-	  coords[1] = ypoints[vertex];
-	  if (transform != null)
-	    transform.transform(coords, 0, coords, 0, 1);
-	  return vertex == 0 ? SEG_MOVETO : SEG_LINETO;
-	}
+        public int currentSegment(float[] coords)
+        {
+          if (vertex >= npoints)
+            return SEG_CLOSE;
+          coords[0] = xpoints[vertex];
+          coords[1] = ypoints[vertex];
+          if (transform != null)
+            transform.transform(coords, 0, coords, 0, 1);
+          return vertex == 0 ? SEG_MOVETO : SEG_LINETO;
+        }
 
-	public int currentSegment(double[] coords)
-	{
-	  if (vertex >= npoints)
-	    return SEG_CLOSE;
-	  coords[0] = xpoints[vertex];
-	  coords[1] = ypoints[vertex];
-	  if (transform != null)
-	    transform.transform(coords, 0, coords, 0, 1);
-	  return vertex == 0 ? SEG_MOVETO : SEG_LINETO;
-	}
+        public int currentSegment(double[] coords)
+        {
+          if (vertex >= npoints)
+            return SEG_CLOSE;
+          coords[0] = xpoints[vertex];
+          coords[1] = ypoints[vertex];
+          if (transform != null)
+            transform.transform(coords, 0, coords, 0, 1);
+          return vertex == 0 ? SEG_MOVETO : SEG_LINETO;
+        }
       };
   }
 
@@ -560,17 +560,17 @@ public class Polygon implements Shape, Serializable
 
     if (useYaxis)
       {
-	xp = ypoints;
-	yp = xpoints;
-	double swap;
-	swap = y;
-	y = x;
-	x = swap;
+        xp = ypoints;
+        yp = xpoints;
+        double swap;
+        swap = y;
+        y = x;
+        x = swap;
       }
     else
       {
-	xp = xpoints;
-	yp = ypoints;
+        xp = xpoints;
+        yp = ypoints;
       }
 
     /* Get a value which is small but not insignificant relative the path. */
@@ -580,19 +580,19 @@ public class Polygon implements Shape, Serializable
     y0 = yp[0] - y;
     for (int i = 1; i < npoints; i++)
       {
-	x1 = xp[i] - x;
-	y1 = yp[i] - y;
+        x1 = xp[i] - x;
+        y1 = yp[i] - y;
 
-	if (y0 == 0.0)
-	  y0 -= epsilon;
-	if (y1 == 0.0)
-	  y1 -= epsilon;
-	if (y0 * y1 < 0)
-	  if (Line2D.linesIntersect(x0, y0, x1, y1, epsilon, 0.0, distance, 0.0))
-	    ++crossings;
+        if (y0 == 0.0)
+          y0 -= epsilon;
+        if (y1 == 0.0)
+          y1 -= epsilon;
+        if (y0 * y1 < 0)
+          if (Line2D.linesIntersect(x0, y0, x1, y1, epsilon, 0.0, distance, 0.0))
+            ++crossings;
 
-	x0 = xp[i] - x;
-	y0 = yp[i] - y;
+        x0 = xp[i] - x;
+        y0 = yp[i] - y;
       }
 
     // end segment
@@ -604,9 +604,8 @@ public class Polygon implements Shape, Serializable
       y1 -= epsilon;
     if (y0 * y1 < 0)
       if (Line2D.linesIntersect(x0, y0, x1, y1, epsilon, 0.0, distance, 0.0))
-	++crossings;
+        ++crossings;
 
     return crossings;
   }
 } // class Polygon
-

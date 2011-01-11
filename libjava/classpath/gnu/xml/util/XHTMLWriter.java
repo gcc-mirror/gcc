@@ -1,4 +1,4 @@
-/* XHTMLWriter.java -- 
+/* XHTMLWriter.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -67,7 +67,7 @@ public class XHTMLWriter extends XMLWriter
     public XHTMLWriter ()
     throws IOException
     {
-	this (System.out);
+        this (System.out);
     }
 
     /**
@@ -75,15 +75,15 @@ public class XHTMLWriter extends XMLWriter
      * is used to write SAX events in the US-ASCII encoding, as XHTML.
      *
      * @param out Where US-ASCII encoding of the stream of SAX
-     *	events will be sent.
+     *  events will be sent.
      */
     public XHTMLWriter (OutputStream out)
     throws IOException
     {
-	// not all JVMs understand "ASCII" as an encoding name, so
-	// we use 8859_1 (they all seem to handle that one) and
-	// make the echo handler filter out non-ASCII characters
-	this (new OutputStreamWriter (out, "8859_1"), "US-ASCII");
+        // not all JVMs understand "ASCII" as an encoding name, so
+        // we use 8859_1 (they all seem to handle that one) and
+        // make the echo handler filter out non-ASCII characters
+        this (new OutputStreamWriter (out, "8859_1"), "US-ASCII");
     }
 
     /**
@@ -94,7 +94,7 @@ public class XHTMLWriter extends XMLWriter
      */
     public XHTMLWriter (Writer out)
     {
-	this (out, null);
+        this (out, null);
     }
 
     /**
@@ -104,11 +104,11 @@ public class XHTMLWriter extends XMLWriter
      *
      * @param out Where the stream of SAX events will be written.
      * @param encoding If non-null, this names the encoding to be
-     *	placed in the encoding declaration.
+     *  placed in the encoding declaration.
      */
     public XHTMLWriter (Writer out, String encoding)
     {
-	super (out, encoding);
-	setXhtml (true);
+        super (out, encoding);
+        setXhtml (true);
     }
 }

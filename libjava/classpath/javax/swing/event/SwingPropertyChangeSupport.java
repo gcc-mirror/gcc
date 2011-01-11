@@ -51,19 +51,19 @@ import java.beans.PropertyChangeSupport;
  * @author Andrew Selkirk
  */
 public final class SwingPropertyChangeSupport
-  extends PropertyChangeSupport 
+  extends PropertyChangeSupport
 {
 
   private static final long serialVersionUID = 7162625831330845068L;
 
   /**
    * Creates a new instance.
-   * 
+   *
    * @param source  the source (<code>null</code> not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>source</code> is <code>null</code>.
    */
-  public SwingPropertyChangeSupport(Object source) 
+  public SwingPropertyChangeSupport(Object source)
   {
     super(source);
   }

@@ -1,5 +1,5 @@
 /* Vector.java -- Class that provides growable arrays.
-   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2006,  
+   Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005, 2006,
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -167,8 +167,8 @@ public class Vector<T> extends AbstractList<T>
 
   /**
    * Copies the contents of the Vector into the provided array.  If the
-   * array is too small to fit all the elements in the Vector, an 
-   * {@link IndexOutOfBoundsException} is thrown without modifying the array.  
+   * array is too small to fit all the elements in the Vector, an
+   * {@link IndexOutOfBoundsException} is thrown without modifying the array.
    * Old elements in the array are overwritten by the new elements.
    *
    * @param a target array for the copy
@@ -578,7 +578,7 @@ public class Vector<T> extends AbstractList<T>
   {
     if (a.length < elementCount)
       a = (S[]) Array.newInstance(a.getClass().getComponentType(),
-				  elementCount);
+                                  elementCount);
     else if (a.length > elementCount)
       a[elementCount] = null;
     System.arraycopy(elementData, 0, a, 0, elementCount);
@@ -800,7 +800,7 @@ public class Vector<T> extends AbstractList<T>
     int end = index + csize;
     if (elementCount > 0 && index != elementCount)
       System.arraycopy(elementData, index,
-		       elementData, end, elementCount - index);
+                       elementData, end, elementCount - index);
     elementCount += csize;
     for ( ; index < end; index++)
       elementData[index] = itr.next();
@@ -941,7 +941,7 @@ public class Vector<T> extends AbstractList<T>
     // do so).
     throw new ArrayIndexOutOfBoundsException(index + operator + elementCount);
   }
-  
+
   /**
    * Serializes this object to the given stream.
    *

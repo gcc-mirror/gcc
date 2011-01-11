@@ -148,7 +148,7 @@ public class TexturePaintContext
    * @param h the height
    *
    * @return the Raster that is used for painting
-   * 
+   *
    */
   public Raster getRaster(int x1, int y1, int w, int h)
   {
@@ -175,9 +175,9 @@ public class TexturePaintContext
             int dy = (int) dest[1];
 
             // The modulo operation gives us the replication effect.
-            dx = ((dx - minX) % width) + minX;  
+            dx = ((dx - minX) % width) + minX;
             dy = ((dy - minY) % height) + minY;
-            
+
             // Handle possible negative values (replicating above the top-left)
             if (dx < 0)
               dx += width;

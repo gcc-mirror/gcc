@@ -41,12 +41,12 @@ package gnu.javax.net.ssl.provider;
 public enum SignatureAlgorithm
 {
   ANONYMOUS, RSA, DSA;
-  
+
   /**
    * Returns the algorithm name for this signature algorithm, which can
    * be used with the JCA API to get a {@link java.security.Signature} for
    * that algorithm.
-   * 
+   *
    * @return The algorithm name.
    */
   public String algorithm()

@@ -51,21 +51,21 @@ import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
 import java.awt.image.VolatileImage;
 
-public class GdkGraphicsConfiguration 
+public class GdkGraphicsConfiguration
   extends GraphicsConfiguration
 {
   GdkScreenGraphicsDevice gdkScreenGraphicsDevice;
-  
+
   ColorModel opaqueColorModel;
 
   ColorModel bitmaskColorModel;
 
   ColorModel translucentColorModel;
-  
+
   public GdkGraphicsConfiguration(GdkScreenGraphicsDevice dev)
   {
     gdkScreenGraphicsDevice = dev;
-    
+
     opaqueColorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF, 0);
     bitmaskColorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF, 0x1000000);
     translucentColorModel = new DirectColorModel(32, 0xFF0000, 0xFF00, 0xFF, 0xFF000000);
@@ -81,7 +81,7 @@ public class GdkGraphicsConfiguration
     return new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
   }
 
-  public BufferedImage createCompatibleImage(int w, int h, 
+  public BufferedImage createCompatibleImage(int w, int h,
                                              int transparency)
   {
     return createCompatibleImage(w, h);
@@ -137,7 +137,7 @@ public class GdkGraphicsConfiguration
 
   public BufferCapabilities getBufferCapabilities()
   {
-    return new BufferCapabilities(getImageCapabilities(), 
+    return new BufferCapabilities(getImageCapabilities(),
                                   getImageCapabilities(),
                                   BufferCapabilities.FlipContents.UNDEFINED);
   }

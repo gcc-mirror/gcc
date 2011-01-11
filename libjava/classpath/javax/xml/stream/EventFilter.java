@@ -1,4 +1,4 @@
-/* EventFilter.java -- 
+/* EventFilter.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,6 +49,5 @@ public interface EventFilter
    * Indicates whether this filter can accept the specified event.
    */
   boolean accept(XMLEvent event);
-  
-}
 
+}

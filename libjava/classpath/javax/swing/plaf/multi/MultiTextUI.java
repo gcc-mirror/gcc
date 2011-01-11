@@ -58,35 +58,35 @@ import javax.swing.text.View;
 import javax.swing.text.Position.Bias;
 
 /**
- * A UI delegate that that coordinates multiple {@link TextUI} 
- * instances, one from the primary look and feel, and one or more from the 
+ * A UI delegate that that coordinates multiple {@link TextUI}
+ * instances, one from the primary look and feel, and one or more from the
  * auxiliary look and feel(s).
- * 
+ *
  * @see UIManager#addAuxiliaryLookAndFeel(LookAndFeel)
  */
-public class MultiTextUI extends TextUI 
+public class MultiTextUI extends TextUI
 {
 
   /** A list of references to the actual component UIs. */
   protected Vector uis;
-    
+
   /**
    * Creates a new <code>MultiTextUI</code> instance.
-   * 
+   *
    * @see #createUI(JComponent)
    */
-  public MultiTextUI() 
+  public MultiTextUI()
   {
     uis = new Vector();
   }
-  
+
   /**
-   * Creates a delegate object for the specified component.  If any auxiliary 
+   * Creates a delegate object for the specified component.  If any auxiliary
    * look and feels support this component, a <code>MultiTextUI</code> is
    * returned, otherwise the UI from the default look and feel is returned.
-   * 
+   *
    * @param target  the component.
-   * 
+   *
    * @see MultiLookAndFeel#createUIs(ComponentUI, Vector, JComponent)
    */
   public static ComponentUI createUI(JComponent target)
@@ -94,11 +94,11 @@ public class MultiTextUI extends TextUI
     MultiTextUI mui = new MultiTextUI();
     return MultiLookAndFeel.createUIs(mui, mui.uis, target);
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#installUI(JComponent)} method for all 
+   * Calls the {@link ComponentUI#installUI(JComponent)} method for all
    * the UI delegates managed by this <code>MultiTextUI</code>.
-   * 
+   *
    * @param c  the component.
    */
   public void installUI(JComponent c)
@@ -112,9 +112,9 @@ public class MultiTextUI extends TextUI
   }
 
   /**
-   * Calls the {@link ComponentUI#uninstallUI(JComponent)} method for all 
+   * Calls the {@link ComponentUI#uninstallUI(JComponent)} method for all
    * the UI delegates managed by this <code>MultiTextUI</code>.
-   * 
+   *
    * @param c  the component.
    */
   public void uninstallUI(JComponent c)
@@ -126,39 +126,39 @@ public class MultiTextUI extends TextUI
       ui.uninstallUI(c);
     }
   }
-  
+
   /**
    * Returns an array containing the UI delegates managed by this
-   * <code>MultiTextUI</code>.  The first item in the array is always 
+   * <code>MultiTextUI</code>.  The first item in the array is always
    * the UI delegate from the installed default look and feel.
-   * 
+   *
    * @return An array of UI delegates.
    */
   public ComponentUI[] getUIs()
   {
     return MultiLookAndFeel.uisToArray(uis);
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#contains(JComponent, int, int)} method for all 
-   * the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the result for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * Calls the {@link ComponentUI#contains(JComponent, int, int)} method for all
+   * the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the result for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
    * @param x  the x-coordinate.
    * @param y  the y-coordinate.
-   * 
+   *
    * @return <code>true</code> if the specified (x, y) coordinate falls within
    *         the bounds of the component as rendered by the UI delegate in the
-   *         primary look and feel, and <code>false</code> otherwise. 
+   *         primary look and feel, and <code>false</code> otherwise.
    */
-  public boolean contains(JComponent c, int x, int y) 
+  public boolean contains(JComponent c, int x, int y)
   {
     boolean result = false;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.contains(c, x, y);
@@ -171,11 +171,11 @@ public class MultiTextUI extends TextUI
       }
     return result;
   }
-  
+
   /**
-   * Calls the {@link ComponentUI#update(Graphics, JComponent)} method for all 
+   * Calls the {@link ComponentUI#update(Graphics, JComponent)} method for all
    * the UI delegates managed by this <code>MultiTextUI</code>.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    */
@@ -190,9 +190,9 @@ public class MultiTextUI extends TextUI
   }
 
   /**
-   * Calls the <code>paint(Graphics, JComponent)</code> method for all the UI 
+   * Calls the <code>paint(Graphics, JComponent)</code> method for all the UI
    * delegates managed by this <code>MultiTextUI</code>.
-   * 
+   *
    * @param g  the graphics device.
    * @param c  the component.
    */
@@ -205,24 +205,24 @@ public class MultiTextUI extends TextUI
       ui.paint(g, c);
     }
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getPreferredSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the preferred size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the preferred size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The preferred size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The preferred size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getPreferredSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getPreferredSize(c);
@@ -235,24 +235,24 @@ public class MultiTextUI extends TextUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getMinimumSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the minimum size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the minimum size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The minimum size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The minimum size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getMinimumSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getMinimumSize(c);
@@ -265,24 +265,24 @@ public class MultiTextUI extends TextUI
       }
     return result;
   }
-    
+
   /**
    * Calls the {@link ComponentUI#getMaximumSize(JComponent)} method for all
-   * the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the maximum size for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the maximum size for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The maximum size returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The maximum size returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Dimension getMaximumSize(JComponent c)
   {
     Dimension result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getMaximumSize(c);
@@ -295,24 +295,24 @@ public class MultiTextUI extends TextUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getAccessibleChildrenCount(JComponent)} method
-   * for all the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the count for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the count for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component.
-   * 
-   * @return The count returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The count returned by the UI delegate from the primary
+   *         look and feel.
    */
   public int getAccessibleChildrenCount(JComponent c)
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getAccessibleChildrenCount(c);
@@ -325,25 +325,25 @@ public class MultiTextUI extends TextUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link ComponentUI#getAccessibleChild(JComponent, int)} method
-   * for all the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the child for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * for all the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the child for the UI delegate from the primary look and
+   * feel.
+   *
    * @param c  the component
    * @param i  the child index.
-   * 
-   * @return The child returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The child returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Accessible getAccessibleChild(JComponent c, int i)
   {
     Accessible result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         ComponentUI ui = (ComponentUI) iterator.next();
         result = ui.getAccessibleChild(c, i);
@@ -356,25 +356,25 @@ public class MultiTextUI extends TextUI
       }
     return result;
   }
-  
+
   /**
    * Calls the {@link TextUI#modelToView(JTextComponent, int)} method for all
-   * the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the bounds for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the bounds for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tc  the text component.
-   * 
-   * @return The bounds returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The bounds returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Rectangle modelToView(JTextComponent tc, int pos)
-      throws BadLocationException 
+      throws BadLocationException
   {
     Rectangle result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TextUI ui = (TextUI) iterator.next();
         result = ui.modelToView(tc, pos);
@@ -389,23 +389,23 @@ public class MultiTextUI extends TextUI
   }
 
   /**
-   * Calls the {@link TextUI#modelToView(JTextComponent, int, Position.Bias)} 
-   * method for all the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the bounds for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * Calls the {@link TextUI#modelToView(JTextComponent, int, Position.Bias)}
+   * method for all the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the bounds for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tc  the text component.
-   * 
-   * @return The bounds returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The bounds returned by the UI delegate from the primary
+   *         look and feel.
    */
   public Rectangle modelToView(JTextComponent tc, int pos, Bias bias)
-          throws BadLocationException 
+          throws BadLocationException
   {
     Rectangle result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TextUI ui = (TextUI) iterator.next();
         result = ui.modelToView(tc, pos, bias);
@@ -421,22 +421,22 @@ public class MultiTextUI extends TextUI
 
   /**
    * Calls the {@link TextUI#viewToModel(JTextComponent, Point)} method for all
-   * the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the position for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the position for the UI delegate from the primary look and
+   * feel.
+   *
    * @param t  the text component.
    * @param pt  the point.
-   * 
-   * @return The position returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The position returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public int viewToModel(JTextComponent t, Point pt) 
+  public int viewToModel(JTextComponent t, Point pt)
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TextUI ui = (TextUI) iterator.next();
         result = ui.viewToModel(t, pt);
@@ -451,22 +451,22 @@ public class MultiTextUI extends TextUI
   }
 
   /**
-   * Calls the {@link TextUI#viewToModel(JTextComponent, Point, Bias[])} method 
-   * for all the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the position for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * Calls the {@link TextUI#viewToModel(JTextComponent, Point, Bias[])} method
+   * for all the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the position for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tc  the text component.
-   * 
-   * @return The position returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The position returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public int viewToModel(JTextComponent tc, Point loc, Bias[] outBias) 
+  public int viewToModel(JTextComponent tc, Point loc, Bias[] outBias)
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TextUI ui = (TextUI) iterator.next();
         result = ui.viewToModel(tc, loc, outBias);
@@ -481,48 +481,48 @@ public class MultiTextUI extends TextUI
   }
 
   /**
-   * Calls the {@link TextUI#getNextVisualPositionFrom(JTextComponent, int, 
+   * Calls the {@link TextUI#getNextVisualPositionFrom(JTextComponent, int,
    * Position.Bias, int, Position.Bias[])} method for all
-   * the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the position for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the position for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tc  the text component.
-   * 
-   * @return The position returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The position returned by the UI delegate from the primary
+   *         look and feel.
    */
   public int getNextVisualPositionFrom(JTextComponent tc, int pos, Bias bias,
-          int direction, Bias[] outBias) throws BadLocationException 
+          int direction, Bias[] outBias) throws BadLocationException
   {
     int result = 0;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TextUI ui = (TextUI) iterator.next();
-        result = ui.getNextVisualPositionFrom(tc, pos, bias, direction, 
+        result = ui.getNextVisualPositionFrom(tc, pos, bias, direction,
                 outBias);
       }
     // return values from auxiliary UI delegates are ignored
     while (iterator.hasNext())
       {
         TextUI ui = (TextUI) iterator.next();
-        /* int ignored = */ ui.getNextVisualPositionFrom(tc, pos, bias, 
+        /* int ignored = */ ui.getNextVisualPositionFrom(tc, pos, bias,
             direction, outBias);
       }
     return result;
   }
 
   /**
-   * Calls the {@link TextUI#damageRange(JTextComponent, int, int)} method for 
+   * Calls the {@link TextUI#damageRange(JTextComponent, int, int)} method for
    * all the UI delegates managed by this <code>MultiTextUI</code>.
-   * 
+   *
    * @param tc  the component.
    * @param start  the start position.
    * @param end  the end position.
    */
-  public void damageRange(JTextComponent tc, int start, int end) 
+  public void damageRange(JTextComponent tc, int start, int end)
   {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
@@ -533,10 +533,10 @@ public class MultiTextUI extends TextUI
   }
 
   /**
-   * Calls the {@link TextUI#damageRange(JTextComponent, int, int, 
-   * Position.Bias, Position.Bias)} method for all the UI delegates managed by 
+   * Calls the {@link TextUI#damageRange(JTextComponent, int, int,
+   * Position.Bias, Position.Bias)} method for all the UI delegates managed by
    * this <code>MultiTextUI</code>.
-   * 
+   *
    * @param tc  the component.
    * @param start  the start position.
    * @param end  the end position.
@@ -544,7 +544,7 @@ public class MultiTextUI extends TextUI
    * @param endBias  the end bias.
    */
   public void damageRange(JTextComponent tc, int start, int end,
-        Bias startBias, Bias endBias) 
+        Bias startBias, Bias endBias)
   {
     Iterator iterator = uis.iterator();
     while (iterator.hasNext())
@@ -556,21 +556,21 @@ public class MultiTextUI extends TextUI
 
   /**
    * Calls the {@link TextUI#getEditorKit(JTextComponent)} method for all
-   * the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the editor kit for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the editor kit for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tc  the text component.
-   * 
-   * @return The editor kit returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The editor kit returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public EditorKit getEditorKit(JTextComponent tc) 
+  public EditorKit getEditorKit(JTextComponent tc)
   {
     EditorKit result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TextUI ui = (TextUI) iterator.next();
         result = ui.getEditorKit(tc);
@@ -586,21 +586,21 @@ public class MultiTextUI extends TextUI
 
   /**
    * Calls the {@link TextUI#getRootView(JTextComponent)} method for all
-   * the UI delegates managed by this <code>MultiTextUI</code>, 
-   * returning the view for the UI delegate from the primary look and 
-   * feel. 
-   * 
+   * the UI delegates managed by this <code>MultiTextUI</code>,
+   * returning the view for the UI delegate from the primary look and
+   * feel.
+   *
    * @param tc  the text component.
-   * 
-   * @return The view returned by the UI delegate from the primary 
-   *         look and feel. 
+   *
+   * @return The view returned by the UI delegate from the primary
+   *         look and feel.
    */
-  public View getRootView(JTextComponent tc) 
+  public View getRootView(JTextComponent tc)
   {
     View result = null;
     Iterator iterator = uis.iterator();
     // first UI delegate provides the return value
-    if (iterator.hasNext()) 
+    if (iterator.hasNext())
       {
         TextUI ui = (TextUI) iterator.next();
         result = ui.getRootView(tc);

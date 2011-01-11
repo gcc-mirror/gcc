@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,11 +39,11 @@ exception statement from your version. */
 package java.text;
 
 /**
- * This class iterates over a range of characters in a <code>String</code>.  
+ * This class iterates over a range of characters in a <code>String</code>.
  * For a given range of text, a beginning and ending index,
  * as well as a current index are defined.  These values can be queried
  * by the methods in this interface.  Additionally, various methods allow
- * the index to be set. 
+ * the index to be set.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
@@ -76,9 +76,9 @@ public final class StringCharacterIterator implements CharacterIterator
    * text of the specified <code>String</code>.  The initial index
    * value will be set to the first character in the string.
    *
-   * @param text The <code>String</code> to iterate through (<code>null</code> 
+   * @param text The <code>String</code> to iterate through (<code>null</code>
    *             not permitted).
-   * 
+   *
    * @throws NullPointerException if <code>text</code> is <code>null</code>.
    */
   public StringCharacterIterator (String text)
@@ -209,7 +209,7 @@ public final class StringCharacterIterator implements CharacterIterator
    * the character there.
    *
    * @return The character at the beginning of the range, or
-   * <code>DONE</code> if the range is empty. 
+   * <code>DONE</code> if the range is empty.
    */
   public char first ()
   {
@@ -225,7 +225,7 @@ public final class StringCharacterIterator implements CharacterIterator
    * will be set equal to the beginning index.
    *
    * @return The character at the end of the range, or
-   * <code>DONE</code> if the range is empty. 
+   * <code>DONE</code> if the range is empty.
    */
   public char last ()
   {
@@ -257,7 +257,7 @@ public final class StringCharacterIterator implements CharacterIterator
    * @param index The new index value.
    *
    * @return The character at the new index value or <code>DONE</code>
-   * if the index value is equal to <code>getEndIndex</code>. 
+   * if the index value is equal to <code>getEndIndex</code>.
    *
    * @exception IllegalArgumentException If the specified index is not valid
    */
@@ -313,7 +313,7 @@ public final class StringCharacterIterator implements CharacterIterator
   /*************************************************************************/
 
   /**
-   * This method tests this object for equality againt the specified 
+   * This method tests this object for equality againt the specified
    * object.  This will be true if and only if the specified object:
    * <p>
    * <ul>
@@ -336,11 +336,11 @@ public final class StringCharacterIterator implements CharacterIterator
     StringCharacterIterator sci = (StringCharacterIterator) obj;
 
     return (begin == sci.begin
-	    && end == sci.end
-	    && index == sci.index
-	    && text.equals (sci.text));
+            && end == sci.end
+            && index == sci.index
+            && text.equals (sci.text));
   }
-  
+
   /**
    * Return the hash code for this object.
    * @return the hash code

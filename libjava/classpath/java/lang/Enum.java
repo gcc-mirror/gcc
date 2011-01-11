@@ -102,17 +102,17 @@ public abstract class Enum<T extends Enum<T>>
         if (! f.isEnumConstant())
           throw new IllegalArgumentException(s);
         Class.setAccessible(f);
-	@SuppressWarnings("unchecked")
-	  S val = (S) f.get(null);
+        @SuppressWarnings("unchecked")
+          S val = (S) f.get(null);
         return val;
       }
     catch (NoSuchFieldException exception)
       {
-	throw new IllegalArgumentException(s);
+        throw new IllegalArgumentException(s);
       }
     catch (IllegalAccessException exception)
       {
-	throw new Error("Unable to access Enum class");
+        throw new Error("Unable to access Enum class");
       }
   }
 
@@ -167,7 +167,7 @@ public abstract class Enum<T extends Enum<T>>
    *         integer if <code>e.ordinal > this.ordinal</code>.
    * @throws ClassCastException if <code>e</code> is not an enumeration
    *                            constant of the same class.
-   */ 
+   */
   public final int compareTo(T e)
   {
     if (getDeclaringClass() != e.getDeclaringClass())
@@ -201,7 +201,7 @@ public abstract class Enum<T extends Enum<T>>
   /**
    * Returns the number of this enumeration constant, which represents
    * the order in which it was originally declared, starting from zero.
-   * 
+   *
    * @return the number of this constant.
    */
   public final int ordinal()

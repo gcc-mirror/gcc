@@ -1,4 +1,4 @@
-/* DateTimeAtCreation.java -- 
+/* DateTimeAtCreation.java --
    Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -45,14 +45,14 @@ import javax.print.attribute.DateTimeSyntax;
 import javax.print.attribute.PrintJobAttribute;
 
 /**
- * The <code>DateTimeAtCreation</code> attribute specifies the 
+ * The <code>DateTimeAtCreation</code> attribute specifies the
  * date and the time at which a print job was created.
  * <p>
  * <b>IPP Compatibility:</b> DateTimeAtCreation is an IPP 1.1 attribute.
  * </p>
  * @see javax.print.attribute.standard.DateTimeAtCompleted
  * @see javax.print.attribute.standard.DateTimeAtProcessing
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  */
 public final class DateTimeAtCreation extends DateTimeSyntax
@@ -77,7 +77,7 @@ public final class DateTimeAtCreation extends DateTimeSyntax
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

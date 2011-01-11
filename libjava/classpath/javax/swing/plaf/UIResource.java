@@ -1,4 +1,4 @@
-/* UIResource.java 
+/* UIResource.java
    Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,14 +44,14 @@ package javax.swing.plaf;
  * renderer with <code>ComponentUI.uninstallUI()</code> the renderer
  * property is set to <code>null</code>.
  * <br>
- * A comparison against null can be used with all properties except for 
- * the <code>java.awt.Component</code> properties font, foreground, and 
+ * A comparison against null can be used with all properties except for
+ * the <code>java.awt.Component</code> properties font, foreground, and
  * background.  The container can provide the value of the properties if
  * they are initialized or set to <code>null</code>.
- * 
+ *
  * @author Brian Jones
  *
- * @see ComponentUI 
+ * @see ComponentUI
  */
 public interface UIResource
 {

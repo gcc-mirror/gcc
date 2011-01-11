@@ -386,7 +386,7 @@ public class SizeRequirements implements Serializable
    *
    * The components are tiled in the forward direction, beginning with
    * an offset of 0.
-   * 
+   *
    * @param allocated the amount of allocated space
    * @param total the total size requirements of the components
    * @param children the size requirement of each component

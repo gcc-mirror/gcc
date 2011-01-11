@@ -136,7 +136,7 @@ public final class PropertyPermission extends BasicPermission
   {
     // Initialising the class java.util.Locale ...
     //    tries to initialise the Locale.defaultLocale static
-    //    which calls System.getProperty, 
+    //    which calls System.getProperty,
     //    which calls SecurityManager.checkPropertiesAccess,
     //    which creates a PropertyPermission with action "read,write",
     //    which calls setActions("read,write").
@@ -144,9 +144,9 @@ public final class PropertyPermission extends BasicPermission
     //    this would call Locale.getDefault() which returns null
     //       because Locale.defaultLocale hasn't been set yet
     //    then toLowerCase will fail with a null pointer exception.
-    // 
+    //
     // The solution is to take a punt on 'str' being lower case, and
-    // test accordingly.  If that fails, we convert 'str' to lower case 
+    // test accordingly.  If that fails, we convert 'str' to lower case
     // and try the tests again.
     if ("read".equals(str))
       actions = READ;
@@ -156,15 +156,15 @@ public final class PropertyPermission extends BasicPermission
       actions = READ | WRITE;
     else
       {
-	String lstr = str.toLowerCase();
-	if ("read".equals(lstr))
- 	  actions = READ;
-	else if ("write".equals(lstr))
-	  actions = WRITE;
-	else if ("read,write".equals(lstr) || "write,read".equals(lstr))
-	  actions = READ | WRITE;
-	else
-	  throw new IllegalArgumentException("illegal action " + str);
+        String lstr = str.toLowerCase();
+        if ("read".equals(lstr))
+          actions = READ;
+        else if ("write".equals(lstr))
+          actions = WRITE;
+        else if ("read,write".equals(lstr) || "write,read".equals(lstr))
+          actions = READ | WRITE;
+        else
+          throw new IllegalArgumentException("illegal action " + str);
       }
   }
 

@@ -77,5 +77,5 @@ public class TextViewer extends TextArea
         in.close();
         setText(bytes.toString());
     }
-    
+
 }

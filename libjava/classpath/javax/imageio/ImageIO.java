@@ -125,7 +125,7 @@ public final class ImageIO
       return false;
     }
   }
-  
+
   private static final class ReaderObjectFilter implements ServiceRegistry.Filter
   {
     private Object object;
@@ -179,7 +179,7 @@ public final class ImageIO
       return false;
     }
   }
-  
+
   private static final class WriterFormatFilter implements ServiceRegistry.Filter
   {
     private String formatName;
@@ -192,14 +192,14 @@ public final class ImageIO
     public boolean filter(Object provider)
     {
       if (provider instanceof ImageWriterSpi)
-	{
-	  ImageWriterSpi spi = (ImageWriterSpi) provider;
-	  String[] formatNames = spi.getFormatNames();
-	  
-	  for (int i = formatNames.length - 1; i >= 0; --i)
+        {
+          ImageWriterSpi spi = (ImageWriterSpi) provider;
+          String[] formatNames = spi.getFormatNames();
+
+          for (int i = formatNames.length - 1; i >= 0; --i)
             if (formatName.equals(formatNames[i]))
               return true;
-	}
+        }
 
       return false;
     }
@@ -229,7 +229,7 @@ public final class ImageIO
       return false;
     }
   }
-  
+
   private static final class WriterSuffixFilter implements ServiceRegistry.Filter
   {
     private String fileSuffix;
@@ -261,7 +261,7 @@ public final class ImageIO
     private String formatName;
 
     public WriterObjectFilter(ImageTypeSpecifier type,
-			      String formatName)
+                              String formatName)
     {
       this.type = type;
       this.formatName = formatName;
@@ -273,13 +273,13 @@ public final class ImageIO
         {
           ImageWriterSpi spi = (ImageWriterSpi) provider;
 
-	  if (spi.canEncodeImage(type))
-	    {
-	      String[] formatNames = spi.getFormatNames();
-	      for (int i = formatNames.length - 1; i >= 0; --i)
-		if (formatName.equals(formatNames[i]))
-		  return true;
-	    }
+          if (spi.canEncodeImage(type))
+            {
+              String[] formatNames = spi.getFormatNames();
+              for (int i = formatNames.length - 1; i >= 0; --i)
+                if (formatName.equals(formatNames[i]))
+                  return true;
+            }
         }
 
       return false;
@@ -304,11 +304,11 @@ public final class ImageIO
         {
           ImageTranscoderSpi spi = (ImageTranscoderSpi) provider;
 
-	  if (spi.getReaderServiceProviderName().equals
-	      (reader.getOriginatingProvider().getClass().getName())
-	      && spi.getWriterServiceProviderName().equals
-	      (writer.getOriginatingProvider().getClass().getName()))
-	    return true;
+          if (spi.getReaderServiceProviderName().equals
+              (reader.getOriginatingProvider().getClass().getName())
+              && spi.getWriterServiceProviderName().equals
+              (writer.getOriginatingProvider().getClass().getName()))
+            return true;
         }
 
       return false;
@@ -320,14 +320,14 @@ public final class ImageIO
   {
     Iterator<ImageReaderSpi> it;
     Object readerExtension;
-    
+
     public ImageReaderIterator(Iterator<ImageReaderSpi> it,
                                Object readerExtension)
     {
       this.it = it;
       this.readerExtension = readerExtension;
     }
-    
+
     public ImageReaderIterator(Iterator<ImageReaderSpi> it)
     {
       this.it = it;
@@ -364,14 +364,14 @@ public final class ImageIO
   {
     Iterator<ImageWriterSpi> it;
     Object writerExtension;
-    
+
     public ImageWriterIterator(Iterator<ImageWriterSpi> it,
                                Object writerExtension)
     {
       this.it = it;
       this.writerExtension = writerExtension;
     }
-    
+
     public ImageWriterIterator(Iterator<ImageWriterSpi> it)
     {
       this.it = it;
@@ -402,7 +402,7 @@ public final class ImageIO
       throw new UnsupportedOperationException();
     }
   }
-  
+
   private static File cacheDirectory;
   private static boolean useCache = true;
 
@@ -421,7 +421,7 @@ public final class ImageIO
         return Collections.EMPTY_SET.iterator();
       }
   }
-  
+
   private static Iterator<ImageWriter> getWritersByFilter(Class<ImageWriterSpi> type,
                                                           ServiceRegistry.Filter filter,
                                                           Object writerExtension)
@@ -503,7 +503,7 @@ public final class ImageIO
   {
     if (fileSuffix == null)
       throw new IllegalArgumentException("formatName may not be null");
-    
+
     return getReadersByFilter(ImageReaderSpi.class,
                               new ReaderSuffixFilter(fileSuffix),
                               fileSuffix);
@@ -523,7 +523,7 @@ public final class ImageIO
   {
     if (formatName == null)
       throw new IllegalArgumentException("formatName may not be null");
-    
+
     return getWritersByFilter(ImageWriterSpi.class,
                               new WriterFormatFilter(formatName),
                               formatName);
@@ -544,7 +544,7 @@ public final class ImageIO
   {
     if (MIMEType == null)
       throw new IllegalArgumentException("MIMEType may not be null");
-    
+
     return getWritersByFilter(ImageWriterSpi.class,
                               new WriterMIMETypeFilter(MIMEType),
                               MIMEType);
@@ -564,7 +564,7 @@ public final class ImageIO
   {
     if (fileSuffix == null)
       throw new IllegalArgumentException("fileSuffix may not be null");
-    
+
     return getWritersByFilter(ImageWriterSpi.class,
                               new WriterSuffixFilter(fileSuffix),
                               fileSuffix);
@@ -581,19 +581,19 @@ public final class ImageIO
     try
       {
         Iterator it =
-	  getRegistry().getServiceProviders(ImageReaderSpi.class, true);
-	ArrayList result = new ArrayList();
+          getRegistry().getServiceProviders(ImageReaderSpi.class, true);
+        ArrayList result = new ArrayList();
 
-	while (it.hasNext())
-	  {
-	    ImageReaderSpi spi = (ImageReaderSpi) it.next();
-	    String[] names = spi.getFormatNames();
+        while (it.hasNext())
+          {
+            ImageReaderSpi spi = (ImageReaderSpi) it.next();
+            String[] names = spi.getFormatNames();
 
-	    for (int i = names.length - 1; i >= 0; --i)
-	      result.add(names[i]);
-	  }
+            for (int i = names.length - 1; i >= 0; --i)
+              result.add(names[i]);
+          }
 
-	return (String[]) result.toArray(new String[result.size()]);
+        return (String[]) result.toArray(new String[result.size()]);
       }
     catch (IllegalArgumentException e)
       {
@@ -612,19 +612,19 @@ public final class ImageIO
     try
       {
         Iterator it =
-	  getRegistry().getServiceProviders(ImageReaderSpi.class, true);
-	ArrayList result = new ArrayList();
+          getRegistry().getServiceProviders(ImageReaderSpi.class, true);
+        ArrayList result = new ArrayList();
 
-	while (it.hasNext())
-	  {
-	    ImageReaderSpi spi = (ImageReaderSpi) it.next();
-	    String[] names = spi.getMIMETypes();
+        while (it.hasNext())
+          {
+            ImageReaderSpi spi = (ImageReaderSpi) it.next();
+            String[] names = spi.getMIMETypes();
 
-	    for (int i = names.length - 1; i >= 0; --i)
-	      result.add(names[i]);
-	  }
+            for (int i = names.length - 1; i >= 0; --i)
+              result.add(names[i]);
+          }
 
-	return (String[]) result.toArray(new String[result.size()]);
+        return (String[]) result.toArray(new String[result.size()]);
       }
     catch (IllegalArgumentException e)
       {
@@ -659,19 +659,19 @@ public final class ImageIO
     try
       {
         Iterator it =
-	  getRegistry().getServiceProviders(ImageWriterSpi.class, true);
-	ArrayList result = new ArrayList();
+          getRegistry().getServiceProviders(ImageWriterSpi.class, true);
+        ArrayList result = new ArrayList();
 
-	while (it.hasNext())
-	  {
-	    ImageWriterSpi spi = (ImageWriterSpi) it.next();
-	    String[] names = spi.getFormatNames();
+        while (it.hasNext())
+          {
+            ImageWriterSpi spi = (ImageWriterSpi) it.next();
+            String[] names = spi.getFormatNames();
 
-	    for (int i = names.length - 1; i >= 0; --i)
-	      result.add(names[i]);
-	  }
+            for (int i = names.length - 1; i >= 0; --i)
+              result.add(names[i]);
+          }
 
-	return (String[]) result.toArray(new String[result.size()]);
+        return (String[]) result.toArray(new String[result.size()]);
       }
     catch (IllegalArgumentException e)
       {
@@ -690,26 +690,26 @@ public final class ImageIO
     try
       {
         Iterator it =
-	  getRegistry().getServiceProviders(ImageWriterSpi.class, true);
-	ArrayList result = new ArrayList();
+          getRegistry().getServiceProviders(ImageWriterSpi.class, true);
+        ArrayList result = new ArrayList();
 
-	while (it.hasNext())
-	  {
-	    ImageWriterSpi spi = (ImageWriterSpi) it.next();
-	    String[] names = spi.getMIMETypes();
+        while (it.hasNext())
+          {
+            ImageWriterSpi spi = (ImageWriterSpi) it.next();
+            String[] names = spi.getMIMETypes();
 
-	    for (int i = names.length - 1; i >= 0; --i)
-	      result.add(names[i]);
-	  }
+            for (int i = names.length - 1; i >= 0; --i)
+              result.add(names[i]);
+          }
 
-	return (String[]) result.toArray(new String[result.size()]);
+        return (String[]) result.toArray(new String[result.size()]);
       }
     catch (IllegalArgumentException e)
       {
         return new String[0];
       }
   }
-  
+
   /**
    * Rescans the application classpath for ImageIO service providers
    * and registers them.
@@ -740,7 +740,7 @@ public final class ImageIO
 
         cacheDirectory.canWrite();
       }
-    
+
     ImageIO.cacheDirectory = cacheDirectory;
   }
 
@@ -841,7 +841,7 @@ public final class ImageIO
     while (writers.hasNext())
       {
         ImageWriter w = (ImageWriter) writers.next();
-        try 
+        try
           {
             w.setOutput(output);
           }
@@ -849,7 +849,7 @@ public final class ImageIO
           {
             continue;
           }
-        
+
         w.write(null, img, null);
         w.dispose();
         output.close();
@@ -1014,13 +1014,13 @@ public final class ImageIO
 
     while(spis.hasNext())
       {
-	ImageInputStreamSpi spi = (ImageInputStreamSpi) spis.next();
+        ImageInputStreamSpi spi = (ImageInputStreamSpi) spis.next();
 
-	if (input.getClass().equals(spi.getInputClass()))
-	  {
-	    foundSpi = spi;
-	    break;
-	  }
+        if (input.getClass().equals(spi.getInputClass()))
+          {
+            foundSpi = spi;
+            break;
+          }
       }
 
     return foundSpi == null ? null :
@@ -1060,13 +1060,13 @@ public final class ImageIO
 
     while(spis.hasNext())
       {
-	ImageOutputStreamSpi spi = (ImageOutputStreamSpi) spis.next();
+        ImageOutputStreamSpi spi = (ImageOutputStreamSpi) spis.next();
 
-	if (output.getClass().equals(spi.getOutputClass()))
-	  {
-	    foundSpi = spi;
-	    break;
-	  }
+        if (output.getClass().equals(spi.getOutputClass()))
+          {
+            foundSpi = spi;
+            break;
+          }
       }
 
     return foundSpi == null ? null :
@@ -1143,7 +1143,7 @@ public final class ImageIO
    * @return an iterator over a collection of image writers
    */
   public static Iterator<ImageWriter> getImageWriters (ImageTypeSpecifier type,
-					  String formatName)
+                                          String formatName)
   {
     if (type == null || formatName == null)
       throw new IllegalArgumentException ("null argument");
@@ -1226,12 +1226,12 @@ public final class ImageIO
       {
         return spiIterator.hasNext();
       }
-      
+
       public ImageTranscoder next()
       {
         return spiIterator.next().createTranscoderInstance();
       }
-      
+
       public void remove()
       {
         throw new UnsupportedOperationException();

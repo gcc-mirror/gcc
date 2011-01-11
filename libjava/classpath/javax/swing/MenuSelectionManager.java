@@ -127,7 +127,7 @@ public class MenuSelectionManager
     // clear selected path
     selectedPath.clear();
 
-    // notify all listeners that the selected path was changed    
+    // notify all listeners that the selected path was changed
     fireStateChanged();
   }
 
@@ -146,37 +146,37 @@ public class MenuSelectionManager
   {
     // Convert sourcePoint to screen coordinates.
     Point sourcePointOnScreen = sourcePoint;
-    
+
     if (source.isShowing())
       SwingUtilities.convertPointToScreen(sourcePointOnScreen, source);
 
     Point compPointOnScreen;
     Component resultComp = null;
 
-    // For each menu element on the selected path, express its location 
-    // in terms of screen coordinates and check if there is any 
+    // For each menu element on the selected path, express its location
+    // in terms of screen coordinates and check if there is any
     // menu element on the selected path that contains given source point.
     for (int i = 0; i < selectedPath.size(); i++)
       {
-	Component comp = ((Component) selectedPath.get(i));
-	Dimension size = comp.getSize();
+        Component comp = ((Component) selectedPath.get(i));
+        Dimension size = comp.getSize();
 
-	// convert location of this menu item to screen coordinates
-	compPointOnScreen = comp.getLocationOnScreen();
+        // convert location of this menu item to screen coordinates
+        compPointOnScreen = comp.getLocationOnScreen();
 
-	if (compPointOnScreen.x <= sourcePointOnScreen.x
-	    && sourcePointOnScreen.x < compPointOnScreen.x + size.width
-	    && compPointOnScreen.y <= sourcePointOnScreen.y
-	    && sourcePointOnScreen.y < compPointOnScreen.y + size.height)
-	  {
-	    Point p = sourcePointOnScreen;
-        
+        if (compPointOnScreen.x <= sourcePointOnScreen.x
+            && sourcePointOnScreen.x < compPointOnScreen.x + size.width
+            && compPointOnScreen.y <= sourcePointOnScreen.y
+            && sourcePointOnScreen.y < compPointOnScreen.y + size.height)
+          {
+            Point p = sourcePointOnScreen;
+
         if (comp.isShowing())
           SwingUtilities.convertPointFromScreen(p, comp);
-        
-	    resultComp = SwingUtilities.getDeepestComponentAt(comp, p.x, p.y);
-	    break;
-	  }
+
+            resultComp = SwingUtilities.getDeepestComponentAt(comp, p.x, p.y);
+            break;
+          }
       }
     return resultComp;
   }
@@ -232,7 +232,7 @@ public class MenuSelectionManager
             subElements = first.getSubElements();
             for (int j = 0; j < subElements.length; j++)
               {
-                MenuElement me = subElements[j]; 
+                MenuElement me = subElements[j];
                 if (me != null
                     && (SwingUtilities.isDescendingFrom(c, me.getComponent())))
                   {
@@ -315,9 +315,9 @@ public class MenuSelectionManager
     Component source = ((Component) event.getSource());
 
     // In the case of drag event, event.getSource() returns component
-    // where drag event originated. However menu element processing this 
-    // event should be the one over which mouse is currently located, 
-    // which is not necessary the source of the drag event.     
+    // where drag event originated. However menu element processing this
+    // event should be the one over which mouse is currently located,
+    // which is not necessary the source of the drag event.
     Component mouseOverMenuComp;
 
     // find over which menu element the mouse is currently located
@@ -330,28 +330,28 @@ public class MenuSelectionManager
     // Process this event only if mouse is located over some menu element
     if (mouseOverMenuComp != null && (mouseOverMenuComp instanceof MenuElement))
       {
-	MenuElement[] path = getPath(mouseOverMenuComp);
-	((MenuElement) mouseOverMenuComp).processMouseEvent(event, path,
-	                                                    manager);
+        MenuElement[] path = getPath(mouseOverMenuComp);
+        ((MenuElement) mouseOverMenuComp).processMouseEvent(event, path,
+                                                            manager);
 
-	// FIXME: Java specification says that mouse events should be
-	// forwarded to subcomponents. The code below does it, but
-	// menu's work fine without it. This code is commented for now.	  
+        // FIXME: Java specification says that mouse events should be
+        // forwarded to subcomponents. The code below does it, but
+        // menu's work fine without it. This code is commented for now.
 
-	/*
-	MenuElement[] subComponents = ((MenuElement) mouseOverMenuComp)
-	                              .getSubElements();
+        /*
+        MenuElement[] subComponents = ((MenuElement) mouseOverMenuComp)
+                                      .getSubElements();
 
-	for (int i = 0; i < subComponents.length; i++)
-	 {
-	      subComponents[i].processMouseEvent(event, path, manager);
-	 }
-	*/
+        for (int i = 0; i < subComponents.length; i++)
+         {
+              subComponents[i].processMouseEvent(event, path, manager);
+         }
+        */
       }
     else
       {
-	if (event.getID() == MouseEvent.MOUSE_RELEASED)
-	  clearSelectedPath();
+        if (event.getID() == MouseEvent.MOUSE_RELEASED)
+          clearSelectedPath();
       }
   }
 
@@ -364,8 +364,8 @@ public class MenuSelectionManager
   {
     if (path == null)
       {
-	clearSelectedPath();
-	return;
+        clearSelectedPath();
+        return;
       }
 
     int minSize = path.length; // size of the smaller path.
@@ -412,25 +412,25 @@ public class MenuSelectionManager
   private MenuElement[] getPath(Component c)
   {
     // FIXME: There is the same method in BasicMenuItemUI. However I
-    // cannot use it here instead of this method, since I cannot assume that 
+    // cannot use it here instead of this method, since I cannot assume that
     // all the menu elements on the selected path are JMenuItem or JMenu.
-    // For now I've just duplicated it here. Please 
-    // fix me or delete me if another better approach will be found, and 
+    // For now I've just duplicated it here. Please
+    // fix me or delete me if another better approach will be found, and
     // this method will not be necessary.
     ArrayList path = new ArrayList();
 
-    // if given component is JMenu, we also need to include 
-    // it's popup menu in the path 
+    // if given component is JMenu, we also need to include
+    // it's popup menu in the path
     if (c instanceof JMenu)
       path.add(((JMenu) c).getPopupMenu());
     while (c instanceof MenuElement)
       {
-	path.add(0, (MenuElement) c);
+        path.add(0, (MenuElement) c);
 
-	if (c instanceof JPopupMenu)
-	  c = ((JPopupMenu) c).getInvoker();
-	else
-	  c = c.getParent();
+        if (c instanceof JPopupMenu)
+          c = ((JPopupMenu) c).getInvoker();
+        else
+          c = c.getParent();
       }
 
     MenuElement[] pathArray = new MenuElement[path.size()];

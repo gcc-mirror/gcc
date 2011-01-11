@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -54,7 +54,7 @@ import java.util.Set;
  * characters or which is undefined over a range of characters.
  *
  * @since 1.2
- * 
+ *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.2
  */
@@ -77,7 +77,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
      * This is the attribute for the reading form of text.  This is used
      * for storing pronunciation along with the written text for languages
      * which need it.  The value of attributes of this key type are
-     * instances of <code>Annotation</code> which wrappers a 
+     * instances of <code>Annotation</code> which wrappers a
      * <code>String</code>.
      */
     public static final Attribute READING = new Attribute("reading");
@@ -117,7 +117,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
     }
 
     /**
-     * Resolves an instance of 
+     * Resolves an instance of
      * <code>AttributedCharacterIterator.Attribute</code>
      * that is being deserialized to one of the three pre-defined attribute
      * constants.  It does this by comparing the names of the attributes.  The
@@ -125,7 +125,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
      *
      * @return The resolved contant value
      *
-     * @exception InvalidObjectException If the object being deserialized 
+     * @exception InvalidObjectException If the object being deserialized
      *            cannot be resolved.
      */
     protected Object readResolve() throws InvalidObjectException
@@ -139,31 +139,31 @@ public interface AttributedCharacterIterator extends CharacterIterator
       if (getName().equals(INPUT_METHOD_SEGMENT.getName()))
         return INPUT_METHOD_SEGMENT;
 
-      throw new InvalidObjectException ("Can't resolve Attribute: " 
+      throw new InvalidObjectException ("Can't resolve Attribute: "
               + getName());
     }
-    
+
     /**
      * Tests this object for equality against the specified object.
      * The two objects will be considered equal if and only if:
      * <ul>
      * <li>The specified object is not <code>null</code>.
-     * <li>The specified object is an instance of 
+     * <li>The specified object is an instance of
      * <code>AttributedCharacterIterator.Attribute</code>.
      * <li>The specified object has the same attribute name as this object.
      * </ul>
      *
-     * @param obj  the <code>Object</code> to test for equality against this 
+     * @param obj  the <code>Object</code> to test for equality against this
      *             object.
      *
-     * @return <code>true</code> if the specified object is equal to this one, 
+     * @return <code>true</code> if the specified object is equal to this one,
      *         <code>false</code> otherwise.
      */
     public final boolean equals(Object obj)
     {
       if (obj == this)
         return true;
-      else 
+      else
         return false;
     }
 
@@ -190,15 +190,15 @@ public interface AttributedCharacterIterator extends CharacterIterator
   } // Inner class Attribute
 
   /**
-   * Returns a list of all keys that are defined for the 
+   * Returns a list of all keys that are defined for the
    * text range.  This can be an empty list if no attributes are defined.
    *
-   * @return A list of keys 
+   * @return A list of keys
    */
   Set<Attribute> getAllAttributeKeys();
 
   /**
-   * Returns a <code>Map</code> of the attributes defined for the current 
+   * Returns a <code>Map</code> of the attributes defined for the current
    * character.
    *
    * @return A <code>Map</code> of the attributes for the current character.
@@ -234,7 +234,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    * @return The start index of the run.
    */
   int getRunStart(Set<? extends Attribute> attribs);
-  
+
   /**
    * Returns the index of the first character in the run that
    * contains the specified attribute defined for the current character.
@@ -244,7 +244,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    * @return The start index of the run.
    */
   int getRunStart(AttributedCharacterIterator.Attribute attrib);
-  
+
   /**
    * Returns the index of the character after the end of the run
    * that contains all attributes defined for the current character.
@@ -252,7 +252,7 @@ public interface AttributedCharacterIterator extends CharacterIterator
    * @return The end index of the run.
    */
   int getRunLimit();
-  
+
   /**
    * Returns the index of the character after the end of the run
    * that contains all attributes in the specified <code>Set</code> defined
@@ -263,13 +263,13 @@ public interface AttributedCharacterIterator extends CharacterIterator
    * @return The end index of the run.
    */
   int getRunLimit(Set<? extends Attribute> attribs);
-  
+
   /**
    * Returns the index of the character after the end of the run
    * that contains the specified attribute defined for the current character.
    *
    * @param attrib The attribute.
-   * 
+   *
    * @return The end index of the run.
    */
   int getRunLimit(AttributedCharacterIterator.Attribute attrib);

@@ -54,12 +54,12 @@ public class HyperlinkEvent extends EventObject
     public static final EventType ENTERED = new EventType("ENTERED"); // TODO
     public static final EventType EXITED = new EventType("EXITED"); // TODO
     public static final EventType ACTIVATED = new EventType("ACTIVATED"); // TODO
-    
+
     private String type;
 
     /**
      * Creates a new Event type.
-     * 
+     *
      * @param type String representing the event type.
      */
     private EventType(String type)
@@ -77,7 +77,7 @@ public class HyperlinkEvent extends EventObject
   }
 
   private static final long serialVersionUID = -2054640811732867012L;
-  
+
   private EventType type;
   private URL url;
   private String description;
@@ -85,7 +85,7 @@ public class HyperlinkEvent extends EventObject
 
   /**
    * Creates a new <code>HyperlinkEvent</code> with the given arguments.
-   * 
+   *
    * @param source The object this link is associated to.
    * @param type The type of event.
    * @param url The URL this link pointing too.
@@ -97,21 +97,21 @@ public class HyperlinkEvent extends EventObject
 
   /**
    * Creates a new <code>HyperlinkEvent</code> with the given arguments.
-   * 
+   *
    * @param source The object this link is associated to.
    * @param type The type of event.
    * @param url The URL this link pointing too.
    * @param description The description for this link.
    */
   public HyperlinkEvent(Object source, EventType type, URL url,
-			String description)
+                        String description)
   {
     this (source, type, url, description, null);
   }
-  
+
   /**
    * Creates a new <code>HyperlinkEvent</code> with the given arguments.
-   * 
+   *
    * @param source The object this link is associated to.
    * @param type The type of event.
    * @param url The URL this link pointing too.
@@ -119,7 +119,7 @@ public class HyperlinkEvent extends EventObject
    * @param element The element in the document representing the anchor.
    */
   public HyperlinkEvent(Object source, EventType type, URL url,
-			String description, Element element)
+                        String description, Element element)
   {
     super(source);
     this.type = type;
@@ -135,7 +135,7 @@ public class HyperlinkEvent extends EventObject
   {
     return element;
   }
-  
+
   /**
    * Returns the URL of this event.
    */

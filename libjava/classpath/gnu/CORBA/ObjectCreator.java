@@ -68,7 +68,7 @@ import javax.rmi.CORBA.Util;
 /**
  * Creates java objects from the agreed IDL names for the simple case when the
  * CORBA object is directly mapped into the locally defined java class.
- * 
+ *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class ObjectCreator
@@ -110,7 +110,7 @@ public class ObjectCreator
    * Try to instantiate an object with the given IDL name. The object must be
    * mapped to the local java class. The omg.org domain must be mapped into the
    * object in either org/omg or gnu/CORBA namespace.
-   * 
+   *
    * @param idl name
    * @return instantiated object instance or null if no such available.
    */
@@ -165,10 +165,10 @@ public class ObjectCreator
 
   /**
    * Read the system exception from the given stream.
-   * 
+   *
    * @param input the CDR stream to read from.
    * @param contexts the service contexts in request/reply header/
-   * 
+   *
    * @return the exception that has been stored in the stream (IDL name, minor
    * code and completion status).
    */
@@ -228,10 +228,10 @@ public class ObjectCreator
    * Reads the user exception, having the given Id, from the input stream. The
    * id is expected to be in the form like
    * 'IDL:test/org/omg/CORBA/ORB/communication/ourUserException:1.0'
-   * 
+   *
    * @param idl the exception idl name.
    * @param input the stream to read from.
-   * 
+   *
    * @return the loaded exception.
    * @return null if the helper class cannot be found.
    */
@@ -261,7 +261,7 @@ public class ObjectCreator
   /**
    * Gets the helper class name from the string like
    * 'IDL:test/org/omg/CORBA/ORB/communication/ourUserException:1.0'
-   * 
+   *
    * @param IDL the idl name.
    */
   public static String toHelperName(String IDL)
@@ -280,7 +280,7 @@ public class ObjectCreator
 
   /**
    * Writes the system exception data to CDR output stream.
-   * 
+   *
    * @param output a stream to write data to.
    * @param ex an exception to write.
    */
@@ -295,9 +295,9 @@ public class ObjectCreator
 
   /**
    * Converts the given IDL name to class name.
-   * 
+   *
    * @param IDL the idl name.
-   * 
+   *
    */
   protected static String toClassName(String prefix, String IDL)
   {
@@ -317,9 +317,9 @@ public class ObjectCreator
    * Converts the given IDL name to class name and tries to load the matching
    * class. The OMG prefix (omg.org) is replaced by the java prefix org.omg. No
    * other prefixes are added.
-   * 
+   *
    * @param IDL the idl name.
-   * 
+   *
    * @return the matching class or null if no such is available.
    */
   public static Class Idl2class(String IDL)
@@ -362,9 +362,9 @@ public class ObjectCreator
    * and create an object instance with parameterless constructor. The OMG
    * prefix (omg.org) is replaced by the java prefix org.omg. No other prefixes
    * are added.
-   * 
+   *
    * @param IDL the idl name.
-   * 
+   *
    * @return instantiated object instance or null if such attempt was not
    * successful.
    */
@@ -390,9 +390,9 @@ public class ObjectCreator
    * inherits from IDLEntity, ValueBase or SystemException, returns repository
    * Id in the IDL:(..) form. If it does not, returns repository Id in the
    * RMI:(..) form.
-   * 
+   *
    * @param cx the class for that the name must be computed.
-   * 
+   *
    * @return the idl or rmi name.
    */
   public static synchronized String getRepositoryId(Class cx)
@@ -427,12 +427,12 @@ public class ObjectCreator
    * Insert the passed parameter into the given Any, assuming that the helper
    * class is available. The helper class must have the "Helper" suffix and be
    * in the same package as the class of the object being inserted.
-   * 
+   *
    * @param into the target to insert.
-   * 
+   *
    * @param object the object to insert. It can be any object as far as the
    * corresponding helper is provided.
-   * 
+   *
    * @return true on success, false otherwise.
    */
   public static boolean insertWithHelper(Any into, Object object)
@@ -547,7 +547,7 @@ public class ObjectCreator
           }
       }
   }
-  
+
   /**
    * Load the class with the given name. This method tries to use the context
    * class loader first. If this fails, it searches for the suitable class

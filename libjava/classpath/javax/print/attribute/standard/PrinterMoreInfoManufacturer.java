@@ -45,20 +45,20 @@ import javax.print.attribute.PrintServiceAttribute;
 import javax.print.attribute.URISyntax;
 
 /**
- * The <code>PrinterMoreInfoManufacturer</code> attribute provides a URI that 
+ * The <code>PrinterMoreInfoManufacturer</code> attribute provides a URI that
  * can be used to obtain more information about the printer device type and
  * its manufacturer.
  * <p>
- * The URI may for example contain a reference to a website of the 
- * manufacturer, containing informations and links to the latest firmware, 
- * printer drivers, manual etc. The information is normally intended for 
+ * The URI may for example contain a reference to a website of the
+ * manufacturer, containing informations and links to the latest firmware,
+ * printer drivers, manual etc. The information is normally intended for
  * end users.
- * </p> 
+ * </p>
  * <p>
- * <b>IPP Compatibility:</b> PrinterMoreInfoManufacturer is an IPP 1.1 
+ * <b>IPP Compatibility:</b> PrinterMoreInfoManufacturer is an IPP 1.1
  * attribute.
  * </p>
- * 
+ *
  * @author Michael Koch (konqueror@gmx.de)
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
@@ -69,7 +69,7 @@ public final class PrinterMoreInfoManufacturer extends URISyntax
 
   /**
    * Constructs a <code>PrinterMoreInfoManufacturer</code> object.
-   * 
+   *
    * @param uri the URI of the information..
    * @throws NullPointerException if the given uri is null.
    */
@@ -77,13 +77,13 @@ public final class PrinterMoreInfoManufacturer extends URISyntax
   {
     super(uri);
   }
-  
+
   /**
    * Tests if the given object is equal to this object.
    *
    * @param obj the object to test
    *
-   * @return <code>true</code> if both objects are equal, 
+   * @return <code>true</code> if both objects are equal,
    * <code>false</code> otherwise.
    */
   public boolean equals(Object obj)

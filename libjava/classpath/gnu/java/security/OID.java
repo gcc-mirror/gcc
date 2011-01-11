@@ -75,7 +75,7 @@ public class OID implements Cloneable, Comparable, java.io.Serializable
 
   /* Serial version id for serialization. */
   static final long serialVersionUID = 5722492029044597779L;
-  
+
   /**
    * The numeric ID structure.
    */

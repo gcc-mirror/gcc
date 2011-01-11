@@ -1,4 +1,4 @@
-/* CodingErrorAction.java -- 
+/* CodingErrorAction.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,11 +40,11 @@ package java.nio.charset;
 public class CodingErrorAction
 {
   public static final CodingErrorAction IGNORE
-	  = new CodingErrorAction("ignore");
+          = new CodingErrorAction("ignore");
   public static final CodingErrorAction REPLACE
-	  = new CodingErrorAction("replace");
+          = new CodingErrorAction("replace");
   public static final CodingErrorAction REPORT
-	  = new CodingErrorAction("report");
+          = new CodingErrorAction("report");
 
   private final String name;
 

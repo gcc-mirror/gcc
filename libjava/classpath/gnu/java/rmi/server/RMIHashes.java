@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -51,7 +51,7 @@ public class RMIHashes
 {
   //There're other places using DigestOutputStream to generate hash in classpath, but I think the way I used
   //here is more efficient, anyway, you can switch to DigestOutputStream by doing like "//or:" comments say.
-  
+
   //or:add this statement: private static final NullOutputStream nullOutputStream = new NullOutputStream ();
   public static long getMethodHash(Method meth)
   {
@@ -62,7 +62,7 @@ public class RMIHashes
         //or:remove this statement: DigestOutputStream digest_out = new DigestOutputStream (nullOutputStream, md);
         ByteArrayOutputStream digest_out = new ByteArrayOutputStream();
         DataOutputStream data_out = new DataOutputStream (digest_out);
-        
+
         CPStringBuilder sbuf = new CPStringBuilder();
         sbuf.append(meth.getName());
         sbuf.append('(');
@@ -75,7 +75,7 @@ public class RMIHashes
             sbuf.append(TypeSignature.getEncodingOfClass(rcls));
         else
             sbuf.append('V');
-        
+
         data_out.writeUTF (sbuf.toString());
         data_out.flush();
         data_out.close ();
@@ -97,4 +97,3 @@ public class RMIHashes
     return clazz.hashCode ();
   }
 }
-

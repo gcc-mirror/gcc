@@ -1,4 +1,4 @@
-/* EmptyExchangeKeys.java -- 
+/* EmptyExchangeKeys.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -64,7 +64,7 @@ public class EmptyExchangeKeys
   {
     return toString(null);
   }
-  
+
   /* (non-Javadoc)
    * @see gnu.javax.net.ssl.provider.Constructed#toString(java.lang.String)
    */

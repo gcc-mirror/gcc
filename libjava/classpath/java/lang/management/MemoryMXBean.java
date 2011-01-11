@@ -39,7 +39,7 @@ package java.lang.management;
 
 /**
  * <p>
- * Provides access to information about the memory used 
+ * Provides access to information about the memory used
  * by the virtual machine.  An instance of this bean is
  * obtained by calling
  * {@link ManagementFactory#getMemoryMXBean()}.
@@ -104,7 +104,7 @@ package java.lang.management;
  */
 public interface MemoryMXBean
 {
-  
+
   /**
    * Instigates a garbage collection cycle.  The virtual
    * machine's garbage collector should make the best
@@ -135,7 +135,7 @@ public interface MemoryMXBean
    *         memory.
    */
   MemoryUsage getNonHeapMemoryUsage();
-  
+
   /**
    * Returns the number of objects which are waiting to
    * be garbage collected (finalized).  An object is

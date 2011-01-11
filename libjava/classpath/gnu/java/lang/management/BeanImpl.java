@@ -116,66 +116,66 @@ public class BeanImpl
       return;
     try
       {
-	MBeanAttributeInfo[] oldA = info.getAttributes();
-	OpenMBeanAttributeInfo[] attribs =
-	  new OpenMBeanAttributeInfoSupport[oldA.length];
-	for (int a = 0; a < oldA.length; ++a)
-	  {
-	    OpenMBeanParameterInfo param = Translator.translate(oldA[a].getType());
-	    if (param.getMinValue() == null)
-	      {
-		Object[] lv;
-		if (param.getLegalValues() == null)
-		  lv = null;
-		else
-		  lv = param.getLegalValues().toArray();
-		attribs[a] = new OpenMBeanAttributeInfoSupport(oldA[a].getName(),
-							       oldA[a].getDescription(),
-							       ((OpenType<Object>)
-								param.getOpenType()),
-							       oldA[a].isReadable(),
-							       oldA[a].isWritable(),
-							       oldA[a].isIs(),
-							       param.getDefaultValue(),
-							       lv);
-	      }
-	    else
-	      attribs[a] = new OpenMBeanAttributeInfoSupport(oldA[a].getName(),
-							     oldA[a].getDescription(),
-							     ((OpenType<Object>)
-							      param.getOpenType()),
-							     oldA[a].isReadable(),
-							     oldA[a].isWritable(),
-							     oldA[a].isIs(),
-							     param.getDefaultValue(),
-							     ((Comparable<Object>)
-							       param.getMinValue()),
-							     ((Comparable<Object>)
-							       param.getMaxValue()));
-	  }
-	MBeanConstructorInfo[] oldC = info.getConstructors();
-	OpenMBeanConstructorInfo[] cons = new OpenMBeanConstructorInfoSupport[oldC.length];
-	for (int a = 0; a < oldC.length; ++a)
-	  cons[a] =
-	    new OpenMBeanConstructorInfoSupport(oldC[a].getName(),
-						oldC[a].getDescription(),
-						translateSignature(oldC[a].getSignature()));
-	MBeanOperationInfo[] oldO = info.getOperations();
-	OpenMBeanOperationInfo[] ops = new OpenMBeanOperationInfoSupport[oldO.length];
-	for (int a = 0; a < oldO.length; ++a)
-	  ops[a] =
-	new OpenMBeanOperationInfoSupport(oldO[a].getName(),
-					  oldO[a].getDescription(),
-					  translateSignature(oldO[a].getSignature()),
-					  Translator.translate(oldO[a].getReturnType()).getOpenType(),
-					  oldO[a].getImpact());
-	openInfo = new OpenMBeanInfoSupport(info.getClassName(), info.getDescription(),
-					    attribs, cons, ops, info.getNotifications());
+        MBeanAttributeInfo[] oldA = info.getAttributes();
+        OpenMBeanAttributeInfo[] attribs =
+          new OpenMBeanAttributeInfoSupport[oldA.length];
+        for (int a = 0; a < oldA.length; ++a)
+          {
+            OpenMBeanParameterInfo param = Translator.translate(oldA[a].getType());
+            if (param.getMinValue() == null)
+              {
+                Object[] lv;
+                if (param.getLegalValues() == null)
+                  lv = null;
+                else
+                  lv = param.getLegalValues().toArray();
+                attribs[a] = new OpenMBeanAttributeInfoSupport(oldA[a].getName(),
+                                                               oldA[a].getDescription(),
+                                                               ((OpenType<Object>)
+                                                                param.getOpenType()),
+                                                               oldA[a].isReadable(),
+                                                               oldA[a].isWritable(),
+                                                               oldA[a].isIs(),
+                                                               param.getDefaultValue(),
+                                                               lv);
+              }
+            else
+              attribs[a] = new OpenMBeanAttributeInfoSupport(oldA[a].getName(),
+                                                             oldA[a].getDescription(),
+                                                             ((OpenType<Object>)
+                                                              param.getOpenType()),
+                                                             oldA[a].isReadable(),
+                                                             oldA[a].isWritable(),
+                                                             oldA[a].isIs(),
+                                                             param.getDefaultValue(),
+                                                             ((Comparable<Object>)
+                                                               param.getMinValue()),
+                                                             ((Comparable<Object>)
+                                                               param.getMaxValue()));
+          }
+        MBeanConstructorInfo[] oldC = info.getConstructors();
+        OpenMBeanConstructorInfo[] cons = new OpenMBeanConstructorInfoSupport[oldC.length];
+        for (int a = 0; a < oldC.length; ++a)
+          cons[a] =
+            new OpenMBeanConstructorInfoSupport(oldC[a].getName(),
+                                                oldC[a].getDescription(),
+                                                translateSignature(oldC[a].getSignature()));
+        MBeanOperationInfo[] oldO = info.getOperations();
+        OpenMBeanOperationInfo[] ops = new OpenMBeanOperationInfoSupport[oldO.length];
+        for (int a = 0; a < oldO.length; ++a)
+          ops[a] =
+        new OpenMBeanOperationInfoSupport(oldO[a].getName(),
+                                          oldO[a].getDescription(),
+                                          translateSignature(oldO[a].getSignature()),
+                                          Translator.translate(oldO[a].getReturnType()).getOpenType(),
+                                          oldO[a].getImpact());
+        openInfo = new OpenMBeanInfoSupport(info.getClassName(), info.getDescription(),
+                                            attribs, cons, ops, info.getNotifications());
       }
     catch (OpenDataException e)
       {
-	throw (InternalError) (new InternalError("A problem occurred creating the open type " +
-						 "descriptors.").initCause(e));
+        throw (InternalError) (new InternalError("A problem occurred creating the open type " +
+                                                 "descriptors.").initCause(e));
       }
   }
 
@@ -195,7 +195,7 @@ public class BeanImpl
 
   public Object getAttribute(String attribute)
     throws AttributeNotFoundException, MBeanException,
-	   ReflectionException
+           ReflectionException
   {
     Object value = super.getAttribute(attribute);
     if (value instanceof Enum)
@@ -207,60 +207,60 @@ public class BeanImpl
     String[] allowedTypes = OpenType.ALLOWED_CLASSNAMES;
     for (int a = 0; a < allowedTypes.length; ++a)
       if (cName.equals(allowedTypes[a]))
-	return value;
+        return value;
     OpenMBeanInfo info = (OpenMBeanInfo) getMBeanInfo();
     MBeanAttributeInfo[] attribs =
       (MBeanAttributeInfo[]) info.getAttributes();
     OpenType type = null;
     for (int a = 0; a < attribs.length; ++a)
       if (attribs[a].getName().equals(attribute))
-	type = ((OpenMBeanAttributeInfo) attribs[a]).getOpenType();
+        type = ((OpenMBeanAttributeInfo) attribs[a]).getOpenType();
     if (value instanceof List)
       {
-	try
-	  {
-	    Class e =
-	      Class.forName(((ArrayType) type).getElementOpenType().getClassName());
-	    List l = (List) value;
-	    Object[] array = (Object[]) Array.newInstance(e, l.size());
-	    return l.toArray(array);
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	    throw (InternalError) (new InternalError("The class of the list " +
-						     "element type could not " +
-						     "be created").initCause(e));
-	  }
+        try
+          {
+            Class e =
+              Class.forName(((ArrayType) type).getElementOpenType().getClassName());
+            List l = (List) value;
+            Object[] array = (Object[]) Array.newInstance(e, l.size());
+            return l.toArray(array);
+          }
+        catch (ClassNotFoundException e)
+          {
+            throw (InternalError) (new InternalError("The class of the list " +
+                                                     "element type could not " +
+                                                     "be created").initCause(e));
+          }
       }
     if (value instanceof Map)
       {
-	TabularType ttype = (TabularType) type;
-	TabularData data = new TabularDataSupport(ttype);
-	Iterator it = ((Map) value).entrySet().iterator();
-	while (it.hasNext())
-	  {
-	    Map.Entry entry = (Map.Entry) it.next();
-	    try 
-	      {
-		data.put(new CompositeDataSupport(ttype.getRowType(),
-						  new String[] { 
-						    "key", 
-						    "value" 
-						  },
-						  new Object[] { 
-						    entry.getKey(),
-						    entry.getValue()
-						  }));
-	      }
-	    catch (OpenDataException e)
-	      {
-		throw (InternalError) (new InternalError("A problem occurred " +
-							 "converting the map " +
-							 "to a composite data " +
-							 "structure.").initCause(e));
-	      }
-	  }
-	return data;
+        TabularType ttype = (TabularType) type;
+        TabularData data = new TabularDataSupport(ttype);
+        Iterator it = ((Map) value).entrySet().iterator();
+        while (it.hasNext())
+          {
+            Map.Entry entry = (Map.Entry) it.next();
+            try
+              {
+                data.put(new CompositeDataSupport(ttype.getRowType(),
+                                                  new String[] {
+                                                    "key",
+                                                    "value"
+                                                  },
+                                                  new Object[] {
+                                                    entry.getKey(),
+                                                    entry.getValue()
+                                                  }));
+              }
+            catch (OpenDataException e)
+              {
+                throw (InternalError) (new InternalError("A problem occurred " +
+                                                         "converting the map " +
+                                                         "to a composite data " +
+                                                         "structure.").initCause(e));
+              }
+          }
+        return data;
       }
     CompositeType cType = (CompositeType) type;
     Set names = cType.keySet();
@@ -268,51 +268,51 @@ public class BeanImpl
     List values = new ArrayList(names.size());
     while (it.hasNext())
       {
-	String field = (String) it.next();
-	Method getter = null;
-	try 
-	  {
-	    getter = vClass.getMethod("get" + field);
-	  }
-	catch (NoSuchMethodException e)
-	  {
-	    /* Ignored; the type tells us it's there. */
-	  }
-	try
-	  {
-	    values.add(getter.invoke(value));
-	  }
-	catch (IllegalAccessException e)
-	  {
-	    throw new ReflectionException(e, "Failed to retrieve " + field);
-	  }
-	catch (IllegalArgumentException e)
-	  {
-	    throw new ReflectionException(e, "Failed to retrieve " + field);
-	  }
-	catch (InvocationTargetException e)
-	  {
-	    throw new MBeanException((Exception) e.getCause(),
-				     "The getter of " + field +
-				     " threw an exception");
-	  }
+        String field = (String) it.next();
+        Method getter = null;
+        try
+          {
+            getter = vClass.getMethod("get" + field);
+          }
+        catch (NoSuchMethodException e)
+          {
+            /* Ignored; the type tells us it's there. */
+          }
+        try
+          {
+            values.add(getter.invoke(value));
+          }
+        catch (IllegalAccessException e)
+          {
+            throw new ReflectionException(e, "Failed to retrieve " + field);
+          }
+        catch (IllegalArgumentException e)
+          {
+            throw new ReflectionException(e, "Failed to retrieve " + field);
+          }
+        catch (InvocationTargetException e)
+          {
+            throw new MBeanException((Exception) e.getCause(),
+                                     "The getter of " + field +
+                                     " threw an exception");
+          }
       }
     try
       {
-	return new CompositeDataSupport(cType, 
-					(String[]) 
-					names.toArray(new String[names.size()]),
-					values.toArray());
+        return new CompositeDataSupport(cType,
+                                        (String[])
+                                        names.toArray(new String[names.size()]),
+                                        values.toArray());
       }
     catch (OpenDataException e)
       {
-	throw (InternalError) (new InternalError("A problem occurred " +
-						 "converting the value " +
-						 "to a composite data " +
-						 "structure.").initCause(e));
+        throw (InternalError) (new InternalError("A problem occurred " +
+                                                 "converting the value " +
+                                                 "to a composite data " +
+                                                 "structure.").initCause(e));
       }
   }
-  
+
   protected MBeanInfo getCachedMBeanInfo()
   {
     return (MBeanInfo) openInfo;
@@ -322,15 +322,15 @@ public class BeanImpl
    * Override this method so as to prevent the description of a constructor's
    * parameter being @code{null}.  Open MBeans can not have @code{null} descriptions,
    * but one will occur as the names of parameters aren't stored for reflection.
-   * 
+   *
    * @param constructor the constructor whose parameter needs describing.
    * @param parameter the parameter to be described.
    * @param sequenceNo the number of the parameter to describe.
    * @return a description of the constructor's parameter.
    */
   protected String getDescription(MBeanConstructorInfo constructor,
-				  MBeanParameterInfo parameter,
-				  int sequenceNo)
+                                  MBeanParameterInfo parameter,
+                                  int sequenceNo)
   {
     String desc = parameter.getDescription();
     if (desc == null)
@@ -343,15 +343,15 @@ public class BeanImpl
    * Override this method so as to prevent the description of an operation's
    * parameter being @code{null}.  Open MBeans can not have @code{null} descriptions,
    * but one will occur as the names of parameters aren't stored for reflection.
-   * 
+   *
    * @param operation the operation whose parameter needs describing.
    * @param parameter the parameter to be described.
    * @param sequenceNo the number of the parameter to describe.
    * @return a description of the operation's parameter.
    */
   protected String getDescription(MBeanOperationInfo operation,
-				  MBeanParameterInfo parameter,
-				  int sequenceNo)
+                                  MBeanParameterInfo parameter,
+                                  int sequenceNo)
   {
     String desc = parameter.getDescription();
     if (desc == null)
@@ -364,15 +364,15 @@ public class BeanImpl
    * Override this method so as to prevent the name of a constructor's
    * parameter being @code{null}.  Open MBeans can not have @code{null} names,
    * but one will occur as the names of parameters aren't stored for reflection.
-   * 
+   *
    * @param constructor the constructor whose parameter needs a name.
    * @param parameter the parameter to be named.
    * @param sequenceNo the number of the parameter to name.
    * @return a description of the constructor's parameter.
    */
   protected String getParameterName(MBeanConstructorInfo constructor,
-				    MBeanParameterInfo parameter,
-				    int sequenceNo)
+                                    MBeanParameterInfo parameter,
+                                    int sequenceNo)
   {
     String name = parameter.getName();
     if (name == null)
@@ -385,15 +385,15 @@ public class BeanImpl
    * Override this method so as to prevent the name of an operation's
    * parameter being @code{null}.  Open MBeans can not have @code{null} names,
    * but one will occur as the names of parameters aren't stored for reflection.
-   * 
+   *
    * @param operation the operation whose parameter needs a name.
    * @param parameter the parameter to be named.
    * @param sequenceNo the number of the parameter to name.
    * @return a description of the operation's parameter.
    */
   protected String getParameterName(MBeanOperationInfo operation,
-				    MBeanParameterInfo parameter,
-				    int sequenceNo)
+                                    MBeanParameterInfo parameter,
+                                    int sequenceNo)
   {
     String name = parameter.getName();
     if (name == null)
@@ -414,31 +414,31 @@ public class BeanImpl
     OpenMBeanParameterInfo[] sig = new OpenMBeanParameterInfoSupport[oldS.length];
     for (int a = 0; a < oldS.length; ++a)
       {
-	OpenMBeanParameterInfo param = Translator.translate(oldS[a].getType());
-	if (param.getMinValue() == null)
-	  {
-	    Object[] lv;
-	    if (param.getLegalValues() == null)
-	      lv = null;
-	    else
-	      lv = param.getLegalValues().toArray();
-	    sig[a] = new OpenMBeanParameterInfoSupport(oldS[a].getName(),
-						       oldS[a].getDescription(),
-						       ((OpenType<Object>)
-							param.getOpenType()),
-						       param.getDefaultValue(),
-						       lv);
-	  }
-	else
-	  sig[a] = new OpenMBeanParameterInfoSupport(oldS[a].getName(),
-						     oldS[a].getDescription(),
-						     ((OpenType<Object>)
-						      param.getOpenType()),
-						     param.getDefaultValue(),
-						     ((Comparable<Object>)
-						      param.getMinValue()),
-						     ((Comparable<Object>)
-						      param.getMaxValue()));
+        OpenMBeanParameterInfo param = Translator.translate(oldS[a].getType());
+        if (param.getMinValue() == null)
+          {
+            Object[] lv;
+            if (param.getLegalValues() == null)
+              lv = null;
+            else
+              lv = param.getLegalValues().toArray();
+            sig[a] = new OpenMBeanParameterInfoSupport(oldS[a].getName(),
+                                                       oldS[a].getDescription(),
+                                                       ((OpenType<Object>)
+                                                        param.getOpenType()),
+                                                       param.getDefaultValue(),
+                                                       lv);
+          }
+        else
+          sig[a] = new OpenMBeanParameterInfoSupport(oldS[a].getName(),
+                                                     oldS[a].getDescription(),
+                                                     ((OpenType<Object>)
+                                                      param.getOpenType()),
+                                                     param.getDefaultValue(),
+                                                     ((Comparable<Object>)
+                                                      param.getMinValue()),
+                                                     ((Comparable<Object>)
+                                                      param.getMaxValue()));
       }
     return sig;
   }

@@ -55,10 +55,10 @@ final class VMTimeZone
   {
     if (Configuration.INIT_LOAD_LIBRARY)
       {
-	System.loadLibrary("javautil");
+        System.loadLibrary("javautil");
       }
   }
-		
+
   /**
    * This method returns a time zone id string which is in the form
    * (standard zone name) or (standard zone name)(GMT offset) or
@@ -104,67 +104,67 @@ final class VMTimeZone
     // Try to parse /etc/timezone.
     if (zone == null)
       {
-	tzid = readTimeZoneFile("/etc/timezone");
-	if (tzid != null && !tzid.equals(""))
-	  zone = TimeZone.getDefaultTimeZone(tzid);
+        tzid = readTimeZoneFile("/etc/timezone");
+        if (tzid != null && !tzid.equals(""))
+          zone = TimeZone.getDefaultTimeZone(tzid);
       }
-    
+
     // Try to parse /etc/localtime
     if (zone == null)
       {
-	zone = ZoneInfo.readTZFile((String) null, "/etc/localtime");
-	if (zone != null)
-	  {
-	    // Try to find a more suitable ID for the /etc/localtime
-	    // timezone.
-	    // Sometimes /etc/localtime is a symlink to some
-	    // /usr/share/zoneinfo/ file.
-	    String id = null;
-	    try
-	      {
-		id = new File("/etc/localtime").getCanonicalPath();
-		if (id != null)
-		  {
-		    String zoneinfo_dir
-		      = SystemProperties.getProperty("gnu.java.util.zoneinfo.dir");
-		    if (zoneinfo_dir != null)
-		      zoneinfo_dir
-			= new File(zoneinfo_dir
-				   + File.separatorChar).getCanonicalPath();
-		    if (zoneinfo_dir != null && id.startsWith(zoneinfo_dir))
-		      {
-			int pos = zoneinfo_dir.length();
-			while (pos < id.length()
-			       && id.charAt(pos) == File.separatorChar)
-			  pos++;
-			if (pos < id.length())
-			  id = id.substring(pos);
-			else
-			  id = null;
-		      }
-		    else
-		      id = null;
-		  }
-	      }
-	    catch (IOException ioe)
-	      {
-		id = null;
-	      }
+        zone = ZoneInfo.readTZFile((String) null, "/etc/localtime");
+        if (zone != null)
+          {
+            // Try to find a more suitable ID for the /etc/localtime
+            // timezone.
+            // Sometimes /etc/localtime is a symlink to some
+            // /usr/share/zoneinfo/ file.
+            String id = null;
+            try
+              {
+                id = new File("/etc/localtime").getCanonicalPath();
+                if (id != null)
+                  {
+                    String zoneinfo_dir
+                      = SystemProperties.getProperty("gnu.java.util.zoneinfo.dir");
+                    if (zoneinfo_dir != null)
+                      zoneinfo_dir
+                        = new File(zoneinfo_dir
+                                   + File.separatorChar).getCanonicalPath();
+                    if (zoneinfo_dir != null && id.startsWith(zoneinfo_dir))
+                      {
+                        int pos = zoneinfo_dir.length();
+                        while (pos < id.length()
+                               && id.charAt(pos) == File.separatorChar)
+                          pos++;
+                        if (pos < id.length())
+                          id = id.substring(pos);
+                        else
+                          id = null;
+                      }
+                    else
+                      id = null;
+                  }
+              }
+            catch (IOException ioe)
+              {
+                id = null;
+              }
 
-	    if (id == null)
-	      id = readSysconfigClockFile("/etc/sysconfig/clock");
+            if (id == null)
+              id = readSysconfigClockFile("/etc/sysconfig/clock");
 
-	    if (id != null)
-	      zone.setID(id);
-	  }
+            if (id != null)
+              zone.setID(id);
+          }
       }
 
     // Try some system specific way
     if (zone == null)
       {
-	tzid = getSystemTimeZoneId();
-	if (tzid != null && !tzid.equals(""))
-	  zone = TimeZone.getDefaultTimeZone(tzid);
+        tzid = getSystemTimeZoneId();
+        if (tzid != null && !tzid.equals(""))
+          zone = TimeZone.getDefaultTimeZone(tzid);
       }
 
     return zone;
@@ -192,42 +192,42 @@ final class VMTimeZone
     InputStreamReader isr = null;
     try
       {
-	FileInputStream fis = new FileInputStream(f);
-	BufferedInputStream bis = new BufferedInputStream(fis);
-	isr = new InputStreamReader(bis);
-	
-	StringBuffer sb = new StringBuffer();
-	int i = isr.read();
-	while (i != -1)
-	  {
-	    char c = (char) i;
-	    if (Character.isLetter(c) || Character.isDigit(c)
-		|| c == '/' || c == '-' || c == '_')
-	      {
-		sb.append(c);
-		i = isr.read();
-	      }
-	    else
-	      break;
-	  }
-	return sb.toString();
+        FileInputStream fis = new FileInputStream(f);
+        BufferedInputStream bis = new BufferedInputStream(fis);
+        isr = new InputStreamReader(bis);
+
+        StringBuffer sb = new StringBuffer();
+        int i = isr.read();
+        while (i != -1)
+          {
+            char c = (char) i;
+            if (Character.isLetter(c) || Character.isDigit(c)
+                || c == '/' || c == '-' || c == '_')
+              {
+                sb.append(c);
+                i = isr.read();
+              }
+            else
+              break;
+          }
+        return sb.toString();
       }
     catch (IOException ioe)
       {
-	// Parse error, not a proper tzfile.
-	return null;
+        // Parse error, not a proper tzfile.
+        return null;
       }
     finally
       {
-	try
-	  {
-	    if (isr != null)
-	      isr.close();
-	  }
-	catch (IOException ioe)
-	  {
-	    // Error while close, nothing we can do.
-	  }
+        try
+          {
+            if (isr != null)
+              isr.close();
+          }
+        catch (IOException ioe)
+          {
+            // Error while close, nothing we can do.
+          }
       }
   }
 
@@ -248,48 +248,48 @@ final class VMTimeZone
     BufferedReader br = null;
     try
       {
-	FileInputStream fis = new FileInputStream(file);
-	BufferedInputStream bis = new BufferedInputStream(fis);
-	br = new BufferedReader(new InputStreamReader(bis));
+        FileInputStream fis = new FileInputStream(file);
+        BufferedInputStream bis = new BufferedInputStream(fis);
+        br = new BufferedReader(new InputStreamReader(bis));
 
-	for (String line = br.readLine(); line != null; line = br.readLine())
-	  {
-	    line = line.trim();
-	    if (line.length() < 8 || !line.startsWith("ZONE="))
-	      continue;
-	    int posstart = 6;
-	    int posend;
-	    if (line.charAt(5) == '"')
-	      posend = line.indexOf('"', 6);
-	    else if (line.charAt(5) == '\'')
-	      posend = line.indexOf('\'', 6);
-	    else
-	      {
-		posstart = 5;
-		posend = line.length();
-	      }
-	    if (posend < 0)
-	      return null;
-	    return line.substring(posstart, posend);
-	  }
-	return null;
+        for (String line = br.readLine(); line != null; line = br.readLine())
+          {
+            line = line.trim();
+            if (line.length() < 8 || !line.startsWith("ZONE="))
+              continue;
+            int posstart = 6;
+            int posend;
+            if (line.charAt(5) == '"')
+              posend = line.indexOf('"', 6);
+            else if (line.charAt(5) == '\'')
+              posend = line.indexOf('\'', 6);
+            else
+              {
+                posstart = 5;
+                posend = line.length();
+              }
+            if (posend < 0)
+              return null;
+            return line.substring(posstart, posend);
+          }
+        return null;
       }
     catch (IOException ioe)
       {
-	// Parse error, not a proper tzfile.
-	return null;
+        // Parse error, not a proper tzfile.
+        return null;
       }
     finally
       {
-	try
-	  {
-	    if (br != null)
-	      br.close();
-	  }
-	catch (IOException ioe)
-	  {
-	    // Error while close, nothing we can do.
-	  }
+        try
+          {
+            if (br != null)
+              br.close();
+          }
+        catch (IOException ioe)
+          {
+            // Error while close, nothing we can do.
+          }
       }
   }
 

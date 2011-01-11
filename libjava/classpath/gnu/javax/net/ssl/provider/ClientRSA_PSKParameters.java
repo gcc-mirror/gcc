@@ -1,4 +1,4 @@
-/* ClientRSA_PSKParameters.java -- 
+/* ClientRSA_PSKParameters.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -72,14 +72,14 @@ public class ClientRSA_PSKParameters extends ExchangeKeys implements Builder, Co
   {
     return (ByteBuffer) buffer.duplicate().rewind().limit(length());
   }
-  
+
   public String identity()
   {
     Charset utf8 = Charset.forName("UTF-8");
     return utf8.decode((ByteBuffer) buffer.duplicate().position(2).limit
                        (identityLength())).toString();
   }
-  
+
   private int identityLength()
   {
     return (buffer.getShort(0) & 0xFFFF) + 2;
@@ -92,7 +92,7 @@ public class ClientRSA_PSKParameters extends ExchangeKeys implements Builder, Co
   {
     return identityLength() + secret().length();
   }
-  
+
   public EncryptedPreMasterSecret secret()
   {
     return new EncryptedPreMasterSecret

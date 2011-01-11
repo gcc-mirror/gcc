@@ -1,7 +1,7 @@
 /* VirtualMachineCommandSet.java -- class to implement the VirtualMachine
    Command Set
    Copyright (C) 2005, 2006, 2007 Free Software Foundation
- 
+
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -60,7 +60,7 @@ import java.util.Properties;
 
 /**
  * A class representing the VirtualMachine Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class VirtualMachineCommandSet
@@ -103,7 +103,7 @@ public class VirtualMachineCommandSet
             executeResume(bb, os);
             break;
           case JdwpConstants.CommandSet.VirtualMachine.EXIT:
-	    shutdown = true;
+            shutdown = true;
             executeExit(bb, os);
             break;
           case JdwpConstants.CommandSet.VirtualMachine.CREATE_STRING:
@@ -321,7 +321,7 @@ public class VirtualMachineCommandSet
   {
     String string = JdwpString.readString(bb);
     ObjectId stringId = idMan.getObjectId(string);
-    
+
     // Since this string isn't referenced anywhere we'll disable garbage
     // collection on it so it's still around when the debugger gets back to it.
     stringId.disableCollection();
@@ -404,8 +404,8 @@ public class VirtualMachineCommandSet
     os.writeBoolean(VMVirtualMachine.canSetDefaultStratum);
     for (int i = 15; i < CAPABILITIES_NEW_SIZE; i++)
       {
-	// Future capabilities (currently unused)
-	os.writeBoolean(false);
+        // Future capabilities (currently unused)
+        os.writeBoolean(false);
       }
   }
 
@@ -414,8 +414,8 @@ public class VirtualMachineCommandSet
   {
     if (!VMVirtualMachine.canRedefineClasses)
       {
-	String msg = "redefinition of classes is not supported";
-	throw new NotImplementedException(msg);
+        String msg = "redefinition of classes is not supported";
+        throw new NotImplementedException(msg);
       }
 
     int classes = bb.getInt();
@@ -423,12 +423,12 @@ public class VirtualMachineCommandSet
     byte[][] bytecodes = new byte[classes][];
     for (int i = 0; i < classes; ++i)
       {
-	ReferenceTypeId id = idMan.readReferenceTypeId(bb);
-	int classfile = bb.getInt();
-	byte[] bytecode = new byte[classfile];
-	bb.get(bytecode);
-	types[i] = id.getType();
-	bytecodes[i] = bytecode;
+        ReferenceTypeId id = idMan.readReferenceTypeId(bb);
+        int classfile = bb.getInt();
+        byte[] bytecode = new byte[classfile];
+        bb.get(bytecode);
+        types[i] = id.getType();
+        bytecodes[i] = bytecode;
       }
 
     VMVirtualMachine.redefineClasses (types, bytecodes);
@@ -439,8 +439,8 @@ public class VirtualMachineCommandSet
   {
     if (!VMVirtualMachine.canSetDefaultStratum)
       {
-	String msg = "setting the default stratum is not supported";
-	throw new NotImplementedException(msg);
+        String msg = "setting the default stratum is not supported";
+        throw new NotImplementedException(msg);
       }
 
     String stratum = JdwpString.readString(bb);

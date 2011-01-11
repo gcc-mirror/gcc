@@ -1,4 +1,4 @@
-/* ChannelOutputStream.java -- 
+/* ChannelOutputStream.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,11 +49,11 @@ import java.nio.channels.WritableByteChannel;
 public final class ChannelOutputStream extends OutputStream
 {
   private WritableByteChannel ch;
-  
+
   public ChannelOutputStream (WritableByteChannel ch)
   {
     super();
-    
+
     this.ch = ch;
   }
 

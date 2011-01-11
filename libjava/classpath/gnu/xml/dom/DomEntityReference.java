@@ -1,4 +1,4 @@
-/* DomEntityReference.java -- 
+/* DomEntityReference.java --
    Copyright (C) 1999,2000,2001,2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -71,7 +71,7 @@ import org.w3c.dom.EntityReference;
  * @see DomDoctype
  * @see DomEntity
  *
- * @author David Brownell 
+ * @author David Brownell
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 public class DomEntityReference
@@ -80,7 +80,7 @@ public class DomEntityReference
 {
 
   private String name;
-  
+
   /**
    * Constructs an EntityReference node associated with the specified
    * document.  The creator should populate this with whatever contents
@@ -97,7 +97,7 @@ public class DomEntityReference
     super(ENTITY_REFERENCE_NODE, owner);
     this.name = name;
   }
-  
+
   /**
    * Returns the name of the referenced entity.
    * @since DOM Level 1 Core

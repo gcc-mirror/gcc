@@ -70,7 +70,7 @@ import java.util.Arrays;
  * A local delegate, transferring all object requests to the locally available
  * servant. This class is involved in handling the method invocations on the
  * local object, obtained by POA.create_reference_with_id.
- * 
+ *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class LocalDelegate
@@ -98,7 +98,7 @@ public class LocalDelegate
     poa = a_poa;
     Id = an_id;
   }
-  
+
   /**
    * Get the IOR of the connected object.
    */
@@ -171,9 +171,9 @@ public class LocalDelegate
 
   /**
    * Check if this object could be named by the given repository id.
-   * 
+   *
    * @param idl_id the repository id to check.
-   * 
+   *
    * @return true if it is one of the possible repository ids of this object.
    */
   public boolean is_a(org.omg.CORBA.Object a_servant, String idl_id)
@@ -238,11 +238,11 @@ public class LocalDelegate
 
   /**
    * Create a request to invoke the method of this CORBA object.
-   * 
+   *
    * @param operation the name of the method to invoke.
    * @param response_expected specifies if this is one way message or the
    * response to the message is expected.
-   * 
+   *
    * @return the stream where the method arguments should be written.
    */
   public org.omg.CORBA.portable.OutputStream request(
@@ -289,7 +289,7 @@ public class LocalDelegate
 
   /**
    * Make an invocation.
-   * 
+   *
    * @param target not in use.
    * @param output the stream request that should be returned by
    * {@link #m_request} in this method.

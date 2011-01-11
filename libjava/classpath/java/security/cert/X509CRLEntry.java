@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -42,8 +42,8 @@ import java.math.BigInteger;
 import java.util.Date;
 
 /**
-	Abstract class for entries in the CRL (Certificate Revocation 
-	List). The ASN.1 definition for <I>revokedCertificates</I> is
+        Abstract class for entries in the CRL (Certificate Revocation
+        List). The ASN.1 definition for <I>revokedCertificates</I> is
 
         revokedCertificates     SEQUENCE OF SEQUENCE  {
              userCertificate         CertificateSerialNumber,
@@ -52,24 +52,24 @@ import java.util.Date;
                                            -- if present, shall be v2
                                   }  OPTIONAL,
 
-	CertificateSerialNumber  ::=  INTEGER
+        CertificateSerialNumber  ::=  INTEGER
 
-	Time ::= CHOICE {
+        Time ::= CHOICE {
              utcTime        UTCTime,
-	     generalTime    GeneralizedTime }
+             generalTime    GeneralizedTime }
 
-	Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
+        Extensions  ::=  SEQUENCE SIZE (1..MAX) OF Extension
 
-	Extension  ::=  SEQUENCE  {
-	     extnID      OBJECT IDENTIFIER,
+        Extension  ::=  SEQUENCE  {
+             extnID      OBJECT IDENTIFIER,
              critical    BOOLEAN DEFAULT FALSE,
              extnValue   OCTET STRING  }
- 
-	For more information consult rfc2459.
 
-	@author Mark Benvenuto
+        For more information consult rfc2459.
 
-	@since JDK 1.2
+        @author Mark Benvenuto
+
+        @since JDK 1.2
 */
 public abstract class X509CRLEntry implements X509Extension
 {
@@ -93,19 +93,19 @@ public abstract class X509CRLEntry implements X509Extension
   {
     if( other instanceof X509CRLEntry ) {
       try {
-	X509CRLEntry xe = (X509CRLEntry) other;
-	if( getEncoded().length != xe.getEncoded().length )
-	  return false;
+        X509CRLEntry xe = (X509CRLEntry) other;
+        if( getEncoded().length != xe.getEncoded().length )
+          return false;
 
-	byte[] b1 = getEncoded();
-	byte[] b2 = xe.getEncoded();
+        byte[] b1 = getEncoded();
+        byte[] b2 = xe.getEncoded();
 
-	for( int i = 0; i < b1.length; i++ )
-	  if( b1[i] != b2[i] )
-	    return false;
+        for( int i = 0; i < b1.length; i++ )
+          if( b1[i] != b2[i] )
+            return false;
 
-      } catch( CRLException crle ) { 
-	return false;
+      } catch( CRLException crle ) {
+        return false;
       }
       return true;
     }

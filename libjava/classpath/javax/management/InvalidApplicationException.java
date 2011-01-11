@@ -84,9 +84,8 @@ public class InvalidApplicationException
   public String toString()
   {
     return getClass().getName()
-      + "[val=" + val 
+      + "[val=" + val
       + "]";
   }
 
 }
-

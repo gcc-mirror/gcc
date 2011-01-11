@@ -162,7 +162,7 @@ public class NameCallback implements Callback, Serializable
   {
     if ((prompt == null) || (prompt.length() == 0))
       {
-	throw new IllegalArgumentException("invalid prompt");
+        throw new IllegalArgumentException("invalid prompt");
       }
     this.prompt = prompt;
   }
@@ -171,7 +171,7 @@ public class NameCallback implements Callback, Serializable
   {
     if ((defaultName == null) || (defaultName.length() == 0))
       {
-	throw new IllegalArgumentException("invalid default name");
+        throw new IllegalArgumentException("invalid default name");
       }
     this.defaultName = defaultName;
   }

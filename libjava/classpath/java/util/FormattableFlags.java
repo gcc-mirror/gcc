@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.util;
 
-/** 
+/**
  * This class contains a set of flags used
  * by the {@link Formattable#formatTo()} method.
  * They are used to modify the output of the
@@ -48,7 +48,7 @@ package java.util;
  *
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
- * @since 1.5 
+ * @since 1.5
  */
 public class FormattableFlags
 {

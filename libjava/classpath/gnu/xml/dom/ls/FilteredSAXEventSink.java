@@ -1,4 +1,4 @@
-/* FilteredSAXEventSink.java -- 
+/* FilteredSAXEventSink.java --
    Copyright (C) 1999,2000,2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ class FilteredSAXEventSink
    * Stack of elements to insert.
    */
   LinkedList nodes;
-  
+
   /**
    * Corresponding stack of filter decisions about the nodes.
    */
@@ -90,7 +90,7 @@ class FilteredSAXEventSink
       }
     nodes = new LinkedList();
     decisions = new LinkedList();
-    
+
     super.startDocument();
   }
 
@@ -110,7 +110,7 @@ class FilteredSAXEventSink
         doc = null;
         break;
       }
-    
+
     nodes = null;
     decisions = null;
   }
@@ -125,7 +125,7 @@ class FilteredSAXEventSink
       }
     Element element = createElement(uri, localName, qName, atts);
     ctx = element;
-    
+
     short decision = getDecision(element, true);
     nodes.addLast(element);
     decisions.addLast(new Short(decision));
@@ -164,7 +164,7 @@ class FilteredSAXEventSink
         return;
       }
     super.endElement(uri, localName, qName);
-    
+
     Element element = (Element) nodes.removeLast();
     Node parent = nodes.isEmpty() ? doc : (Node) nodes.getLast();
     ctx = parent;
@@ -303,40 +303,40 @@ class FilteredSAXEventSink
           {
           case Node.ATTRIBUTE_NODE:
             show = ((whatToShow & NodeFilter.SHOW_ATTRIBUTE) != 0);
-            break;     
+            break;
           case Node.TEXT_NODE:
             show = ((whatToShow & NodeFilter.SHOW_TEXT) != 0);
-            break;     
+            break;
           case Node.CDATA_SECTION_NODE:
             show = ((whatToShow & NodeFilter.SHOW_CDATA_SECTION) != 0);
-            break;     
+            break;
           case Node.ELEMENT_NODE:
             show = ((whatToShow & NodeFilter.SHOW_ELEMENT) != 0);
-            break;     
+            break;
           case Node.COMMENT_NODE:
             show = ((whatToShow & NodeFilter.SHOW_COMMENT) != 0);
-            break;     
+            break;
           case Node.DOCUMENT_NODE:
             show = ((whatToShow & NodeFilter.SHOW_DOCUMENT) != 0);
-            break;     
+            break;
           case Node.PROCESSING_INSTRUCTION_NODE:
             show = ((whatToShow & NodeFilter.SHOW_PROCESSING_INSTRUCTION) != 0);
-            break;     
+            break;
           case Node.DOCUMENT_FRAGMENT_NODE:
             show = ((whatToShow & NodeFilter.SHOW_DOCUMENT_FRAGMENT) != 0);
-            break;     
+            break;
           case Node.DOCUMENT_TYPE_NODE:
             show = ((whatToShow & NodeFilter.SHOW_DOCUMENT_TYPE) != 0);
-            break;     
+            break;
           case Node.ENTITY_REFERENCE_NODE:
             show = ((whatToShow & NodeFilter.SHOW_ENTITY_REFERENCE) != 0);
-            break;     
+            break;
           case Node.ENTITY_NODE:
             show = ((whatToShow & NodeFilter.SHOW_ENTITY) != 0);
-            break;     
+            break;
           case Node.NOTATION_NODE:
             show = ((whatToShow & NodeFilter.SHOW_NOTATION) != 0);
-            break;     
+            break;
           }
       }
     if (!show)
@@ -351,4 +351,3 @@ class FilteredSAXEventSink
   }
 
 }
-

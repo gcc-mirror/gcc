@@ -1,5 +1,5 @@
 /* MarshalledObject.java --
-   Copyright (c) 1996, 1997, 1998, 1999, 2004, 2006 
+   Copyright (c) 1996, 1997, 1998, 1999, 2004, 2006
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -8,7 +8,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -51,8 +51,8 @@ import java.io.Serializable;
  * marshalled according to the RMI specification.
  * <p>
  * An object passed to the constructor is serialized and tagged with the needed
- * URL to retrieve its class definition for remote usage. If the object is a 
- * remote reference its stub is serialized instead. The instance of this 
+ * URL to retrieve its class definition for remote usage. If the object is a
+ * remote reference its stub is serialized instead. The instance of this
  * marshalled object can be later retrieved by its <code>get()</code> method.
  * </p>
  *
@@ -70,14 +70,14 @@ public final class MarshalledObject<T>
 
   /**
    * Constructs a <code>MarshalledObject</code> from the given object.
-   * 
+   *
    * @param obj the object to marshal
    * @throws IOException if an I/O error during serialization occurs.
    */
   public MarshalledObject(T obj) throws IOException
   {
     ByteArrayOutputStream objStream = new ByteArrayOutputStream();
-    RMIMarshalledObjectOutputStream stream = 
+    RMIMarshalledObjectOutputStream stream =
       new RMIMarshalledObjectOutputStream(objStream);
     stream.writeObject(obj);
     stream.flush();
@@ -88,7 +88,7 @@ public final class MarshalledObject<T>
     hash = 0;
     for (int i = 0; i < objBytes.length; i++)
       hash = hash * 31 + objBytes[i];
-    
+
     if (locBytes != null)
       for (int i = 0; i < locBytes.length; i++)
         hash = hash * 31 + locBytes[i];
@@ -96,12 +96,12 @@ public final class MarshalledObject<T>
 
   /**
    * Checks if the given object is equal to this marshalled object.
-   * 
+   *
    * <p>Marshalled objects are considered equal if they contain the
-   * same serialized object. Codebase annotations where the class 
+   * same serialized object. Codebase annotations where the class
    * definition can be downloaded are ignored in the equals test.</p>
    *
-   * @param obj the object to compare.   
+   * @param obj the object to compare.
    * @return <code>true</code> if equal, <code>false</code> otherwise.
    */
   public boolean equals(Object obj)
@@ -129,19 +129,19 @@ public final class MarshalledObject<T>
 
   /**
    * Constructs and returns a copy of the internal serialized object.
-   * 
+   *
    * @return The deserialized object.
-   * 
+   *
    * @throws IOException if an I/O exception occurs during deserialization.
-   * @throws ClassNotFoundException if the class of the deserialized object 
+   * @throws ClassNotFoundException if the class of the deserialized object
    * cannot be found.
    */
   public T get() throws IOException, ClassNotFoundException
   {
     if (objBytes == null)
       return null;
-    
-    RMIMarshalledObjectInputStream stream = 
+
+    RMIMarshalledObjectInputStream stream =
       new RMIMarshalledObjectInputStream(objBytes, locBytes);
     return (T) stream.readObject();
   }

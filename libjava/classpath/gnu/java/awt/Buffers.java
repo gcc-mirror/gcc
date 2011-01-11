@@ -46,7 +46,7 @@ import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferShort;
 import java.awt.image.DataBufferUShort;
 
-/** 
+/**
  * Utility class for creating and accessing data buffers of arbitrary
  * data types.
  */
@@ -60,7 +60,7 @@ public final class Buffers
    * @param size the size of the data buffer bank
    */
   public static DataBuffer createBuffer(int dataType, Object data,
-					int size)
+                                        int size)
   {
     if (data == null) return createBuffer(dataType, size, 1);
 
@@ -90,22 +90,22 @@ public final class Buffers
     switch (dataType)
       {
       case DataBuffer.TYPE_BYTE:
-	return new DataBufferByte(size, numBanks);
+        return new DataBufferByte(size, numBanks);
       case DataBuffer.TYPE_SHORT:
-	return new DataBufferShort(size, numBanks);
+        return new DataBufferShort(size, numBanks);
       case DataBuffer.TYPE_USHORT:
-	return new DataBufferUShort(size, numBanks);
+        return new DataBufferUShort(size, numBanks);
       case DataBuffer.TYPE_INT:
-	return new DataBufferInt(size, numBanks);
+        return new DataBufferInt(size, numBanks);
       case DataBuffer.TYPE_FLOAT:
-	return new DataBufferFloat(size, numBanks);
+        return new DataBufferFloat(size, numBanks);
       case DataBuffer.TYPE_DOUBLE:
-	return new DataBufferDouble(size, numBanks);
+        return new DataBufferDouble(size, numBanks);
       default:
-	throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
       }
   }
-  
+
   /**
    * Create a data buffer of a particular type.
    *
@@ -114,28 +114,28 @@ public final class Buffers
    * @param size the size of the data buffer bank
    */
   public static DataBuffer createBufferFromData(int dataType, Object data,
-						int size)
+                                                int size)
   {
     switch (dataType)
       {
       case DataBuffer.TYPE_BYTE:
-	return new DataBufferByte((byte[]) data, size);
+        return new DataBufferByte((byte[]) data, size);
       case DataBuffer.TYPE_SHORT:
-	return new DataBufferShort((short[]) data, size);
+        return new DataBufferShort((short[]) data, size);
       case DataBuffer.TYPE_USHORT:
-	return new DataBufferUShort((short[]) data, size);
+        return new DataBufferUShort((short[]) data, size);
       case DataBuffer.TYPE_INT:
-	return new DataBufferInt((int[]) data, size);
+        return new DataBufferInt((int[]) data, size);
       case DataBuffer.TYPE_FLOAT:
-	return new DataBufferFloat((float[]) data, size);
+        return new DataBufferFloat((float[]) data, size);
       case DataBuffer.TYPE_DOUBLE:
-	return new DataBufferDouble((double[]) data, size);
+        return new DataBufferDouble((double[]) data, size);
       default:
-	throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
       }
   }
 
-  /** 
+  /**
    * Return the data array of a data buffer, regardless of the data
    * type.
    *
@@ -147,56 +147,56 @@ public final class Buffers
     return getData(buffer, 0, null, 0, buffer.getSize());
   }
 
-    
+
   /**
    * Copy data from array contained in data buffer, much like
    * System.arraycopy. Create a suitable destination array if the
    * given destination array is null.
    */
   public static Object getData(DataBuffer src, int srcOffset,
-			       Object dest,  int dstOffset,
-			       int length)
+                               Object dest,  int dstOffset,
+                               int length)
   {
     Object from;
     switch(src.getDataType())
       {
       case DataBuffer.TYPE_BYTE:
-	if (dest == null) dest = new byte[length+dstOffset];
-	for(int i = 0; i < length; i++)
-	  ((byte[])dest)[i + dstOffset] = (byte)src.getElem(i + srcOffset);
-	break;
+        if (dest == null) dest = new byte[length+dstOffset];
+        for(int i = 0; i < length; i++)
+          ((byte[])dest)[i + dstOffset] = (byte)src.getElem(i + srcOffset);
+        break;
 
       case DataBuffer.TYPE_DOUBLE:
-	if (dest == null) dest = new double[length+dstOffset];
-	for(int i = 0; i < length; i++)
-	  ((double[])dest)[i + dstOffset] = src.getElemDouble(i + srcOffset);
-	break;
+        if (dest == null) dest = new double[length+dstOffset];
+        for(int i = 0; i < length; i++)
+          ((double[])dest)[i + dstOffset] = src.getElemDouble(i + srcOffset);
+        break;
 
       case DataBuffer.TYPE_FLOAT:
-	if (dest == null) dest = new float[length+dstOffset];
-	for(int i = 0; i < length; i++)
-	  ((float[])dest)[i + dstOffset] = src.getElemFloat(i + srcOffset);
-	break;
+        if (dest == null) dest = new float[length+dstOffset];
+        for(int i = 0; i < length; i++)
+          ((float[])dest)[i + dstOffset] = src.getElemFloat(i + srcOffset);
+        break;
 
       case DataBuffer.TYPE_INT:
-	if (dest == null) dest = new int[length+dstOffset];
-	for(int i = 0; i < length; i++)
-	  ((int[])dest)[i + dstOffset] = src.getElem(i + srcOffset);
-	break;
+        if (dest == null) dest = new int[length+dstOffset];
+        for(int i = 0; i < length; i++)
+          ((int[])dest)[i + dstOffset] = src.getElem(i + srcOffset);
+        break;
 
       case DataBuffer.TYPE_SHORT:
       case DataBuffer.TYPE_USHORT:
-	if (dest == null) dest = new short[length+dstOffset];
-	for(int i = 0; i < length; i++)
-	  ((short[])dest)[i + dstOffset] = (short)src.getElem(i + srcOffset);
-	break;
+        if (dest == null) dest = new short[length+dstOffset];
+        for(int i = 0; i < length; i++)
+          ((short[])dest)[i + dstOffset] = (short)src.getElem(i + srcOffset);
+        break;
 
       case DataBuffer.TYPE_UNDEFINED:
-	throw new ClassCastException("Unknown data buffer type");
+        throw new ClassCastException("Unknown data buffer type");
       }
     return dest;
   }
-  
+
   /**
    * @param bits the width of a data element measured in bits
    *
@@ -207,19 +207,19 @@ public final class Buffers
   {
     if (bits <= 8)
       {
-	return DataBuffer.TYPE_BYTE;
+        return DataBuffer.TYPE_BYTE;
       }
     else if (bits <= 16)
       {
-	return DataBuffer.TYPE_USHORT;
-      } 
+        return DataBuffer.TYPE_USHORT;
+      }
     else if (bits <= 32)
       {
-	return DataBuffer.TYPE_INT;
+        return DataBuffer.TYPE_INT;
       }
     else
       {
-	return DataBuffer.TYPE_UNDEFINED;
+        return DataBuffer.TYPE_UNDEFINED;
       }
   }
 }

@@ -85,7 +85,7 @@ public class StandardMBean
    * Constructs a new {@link StandardMBean} using the specified
    * interface and <code>this</code> as the instance.  This should
    * be used to create an instance via subclassing.
-   * 
+   *
    * @param iface the interface this bean implements, or <code>null</code>
    *              if the interface should be determined using the naming
    *              convention (class X has interface XMBean).
@@ -99,31 +99,31 @@ public class StandardMBean
   {
     if (iface == null)
       {
-	String className = getClass().getName();
-	try
-	  {
-	    iface = Class.forName(className + "MBean");
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	    for (Class<?> nextIface : getClass().getInterfaces())
-	    {
-	      if (JMX.isMXBeanInterface(nextIface))
-		{
-		  iface = nextIface;
-		  break;
-		}
-	    }
-	    if (iface == null)  
-	      throw (NotCompliantMBeanException) 
-		(new NotCompliantMBeanException("An interface for the class " 
-						+ className +
-						" was not found.").initCause(e));
-	  }
+        String className = getClass().getName();
+        try
+          {
+            iface = Class.forName(className + "MBean");
+          }
+        catch (ClassNotFoundException e)
+          {
+            for (Class<?> nextIface : getClass().getInterfaces())
+            {
+              if (JMX.isMXBeanInterface(nextIface))
+                {
+                  iface = nextIface;
+                  break;
+                }
+            }
+            if (iface == null)
+              throw (NotCompliantMBeanException)
+                (new NotCompliantMBeanException("An interface for the class "
+                                                + className +
+                                                " was not found.").initCause(e));
+          }
       }
     if (!(iface.isInstance(this)))
-      throw new NotCompliantMBeanException("The instance, " + impl + 
-					   ", is not an instance of " + iface);
+      throw new NotCompliantMBeanException("The instance, " + impl +
+                                           ", is not an instance of " + iface);
     impl = this;
     this.iface = iface;
   }
@@ -131,7 +131,7 @@ public class StandardMBean
   /**
    * Constructs a new {@link StandardMBean} using the specified
    * interface and the supplied instance as the implementation.
-   * 
+   *
    * @param impl the implementation.
    * @param iface the interface the bean implements, or <code>null</code>
    *              if the interface should be determined using the naming
@@ -149,35 +149,35 @@ public class StandardMBean
       throw new IllegalArgumentException("The specified implementation is null.");
     if (iface == null)
       {
-	Class<?> implClass = impl.getClass();
-	String className = implClass.getName();
-	try
-	  {
-	    this.iface = Class.forName(className + "MBean", true,
-				       implClass.getClassLoader());
-	  }
-	catch (ClassNotFoundException e)
-	  {
-	    for (Class<?> nextIface : implClass.getInterfaces())
-	    {
-	      if (JMX.isMXBeanInterface(nextIface))
-		{
-		  this.iface = nextIface;
-		  break;
-		}
-	    }
-	    if (this.iface == null)  
-	      throw (NotCompliantMBeanException) 
-		(new NotCompliantMBeanException("An interface for the class " +
-						className +
-						" was not found.").initCause(e));
-	  }
+        Class<?> implClass = impl.getClass();
+        String className = implClass.getName();
+        try
+          {
+            this.iface = Class.forName(className + "MBean", true,
+                                       implClass.getClassLoader());
+          }
+        catch (ClassNotFoundException e)
+          {
+            for (Class<?> nextIface : implClass.getInterfaces())
+            {
+              if (JMX.isMXBeanInterface(nextIface))
+                {
+                  this.iface = nextIface;
+                  break;
+                }
+            }
+            if (this.iface == null)
+              throw (NotCompliantMBeanException)
+                (new NotCompliantMBeanException("An interface for the class " +
+                                                className +
+                                                " was not found.").initCause(e));
+          }
       }
     else
       this.iface = iface;
     if (!(this.iface.isInstance(impl)))
-      throw new NotCompliantMBeanException("The instance, " + impl + 
-					   ", is not an instance of " + iface);
+      throw new NotCompliantMBeanException("The instance, " + impl +
+                                           ", is not an instance of " + iface);
     this.impl = impl;
   }
 
@@ -223,44 +223,44 @@ public class StandardMBean
    */
   public Object getAttribute(String name)
     throws AttributeNotFoundException, MBeanException,
-	   ReflectionException
+           ReflectionException
   {
     Method getter;
-    try 
+    try
       {
-	getter = iface.getMethod("get" + name);
+        getter = iface.getMethod("get" + name);
       }
     catch (NoSuchMethodException e)
       {
-	try 
-	  {
-	    getter = iface.getMethod("is" + name);
-	  }
-	catch (NoSuchMethodException ex)
-	  {
-	    throw ((AttributeNotFoundException) 
-		   new AttributeNotFoundException("The attribute, " + name +
-						  ", was not found.").initCause(ex));
-	  }
+        try
+          {
+            getter = iface.getMethod("is" + name);
+          }
+        catch (NoSuchMethodException ex)
+          {
+            throw ((AttributeNotFoundException)
+                   new AttributeNotFoundException("The attribute, " + name +
+                                                  ", was not found.").initCause(ex));
+          }
       }
     Object result;
     try
       {
-	result = getter.invoke(impl);
+        result = getter.invoke(impl);
       }
     catch (IllegalAccessException e)
       {
-	throw new ReflectionException(e, "Failed to retrieve " + name);
+        throw new ReflectionException(e, "Failed to retrieve " + name);
       }
     catch (IllegalArgumentException e)
       {
-	throw new ReflectionException(e, "Failed to retrieve " + name);
+        throw new ReflectionException(e, "Failed to retrieve " + name);
       }
     catch (InvocationTargetException e)
       {
-	throw new MBeanException((Exception) e.getCause(),
-				 "The getter of " + name +
-				 " threw an exception");
+        throw new MBeanException((Exception) e.getCause(),
+                                 "The getter of " + name +
+                                 " threw an exception");
       }
     return result;
   }
@@ -280,23 +280,23 @@ public class StandardMBean
     AttributeList list = new AttributeList(names.length);
     for (int a = 0; a < names.length; ++a)
       {
-	try
-	  {
-	    Object value = getAttribute(names[a]);
-	    list.add(new Attribute(names[a], value));
-	  }
-	catch (AttributeNotFoundException e)
-	  {
-	    /* Ignored */
-	  }
-	catch (ReflectionException e)
-	  {
-	    /* Ignored */
-	  }
-	catch (MBeanException e)
-	  {
-	    /* Ignored */
-	  }
+        try
+          {
+            Object value = getAttribute(names[a]);
+            list.add(new Attribute(names[a], value));
+          }
+        catch (AttributeNotFoundException e)
+          {
+            /* Ignored */
+          }
+        catch (ReflectionException e)
+          {
+            /* Ignored */
+          }
+        catch (MBeanException e)
+          {
+            /* Ignored */
+          }
       }
     return list;
   }
@@ -349,7 +349,7 @@ public class StandardMBean
    * @return the constructor information to use.
    */
   protected MBeanConstructorInfo[] getConstructors(MBeanConstructorInfo[]
-						   constructors, Object impl)
+                                                   constructors, Object impl)
   {
     if (impl == null || impl == this)
       return constructors;
@@ -406,7 +406,7 @@ public class StandardMBean
    * @return the description to use in the instance.
    */
   protected String getDescription(MBeanConstructorInfo info,
-				  MBeanParameterInfo param, int n)
+                                  MBeanParameterInfo param, int n)
   {
     return param.getDescription();
   }
@@ -477,7 +477,7 @@ public class StandardMBean
    * @return the description to use in the instance.
    */
   protected String getDescription(MBeanOperationInfo info,
-				  MBeanParameterInfo param, int n)
+                                  MBeanParameterInfo param, int n)
   {
     return param.getDescription();
   }
@@ -533,7 +533,7 @@ public class StandardMBean
    * detailed in this class are called to allow the values used
    * to be overrided:
    * <ul>
-   * <li>For each attribute, 
+   * <li>For each attribute,
    * {@link #getDescription(MBeanAttributeInfo)} is called.</li>
    * <li>For each constructor,
    * {@link #getDescription(MBeanConstructorInfo)} is called,
@@ -573,117 +573,117 @@ public class StandardMBean
     List<MBeanOperationInfo> operations = new ArrayList<MBeanOperationInfo>();
     for (int a = 0; a < methods.length; ++a)
       {
-	String name = methods[a].getName();
-	if (((name.startsWith("get") &&
-	      methods[a].getReturnType() != Void.TYPE) ||
-	     (name.startsWith("is") &&
-	      methods[a].getReturnType() == Boolean.TYPE)) &&
-	    methods[a].getParameterTypes().length == 0)
-	  {
-	    Method[] amethods;
-	    String attrib;
-	    if (name.startsWith("is"))
-	      attrib = name.substring(2);
-	    else
-	      attrib = name.substring(3);
-	    if (attributes.containsKey(attrib))
-	      amethods = (Method[]) attributes.get(attrib);
-	    else
-	      {
-		amethods = new Method[2];
-		attributes.put(attrib, amethods);
-	      }
-	    amethods[0] = methods[a];
-	  }
-	else if (name.startsWith("set") &&
-		 methods[a].getReturnType() == Void.TYPE &&
-		 methods[a].getParameterTypes().length == 1)
-	  {
-	    Method[] amethods;
-	    String attrib = name.substring(3);
-	    if (attributes.containsKey(attrib))
-	      amethods = (Method[]) attributes.get(attrib);
-	    else
-	      {
-		amethods = new Method[2];
-		attributes.put(attrib, amethods);
-	      }
-	    amethods[1] = methods[a];
-	  }
-	else
-	  operations.add(new MBeanOperationInfo(methods[a].getName(),
-						methods[a]));
+        String name = methods[a].getName();
+        if (((name.startsWith("get") &&
+              methods[a].getReturnType() != Void.TYPE) ||
+             (name.startsWith("is") &&
+              methods[a].getReturnType() == Boolean.TYPE)) &&
+            methods[a].getParameterTypes().length == 0)
+          {
+            Method[] amethods;
+            String attrib;
+            if (name.startsWith("is"))
+              attrib = name.substring(2);
+            else
+              attrib = name.substring(3);
+            if (attributes.containsKey(attrib))
+              amethods = (Method[]) attributes.get(attrib);
+            else
+              {
+                amethods = new Method[2];
+                attributes.put(attrib, amethods);
+              }
+            amethods[0] = methods[a];
+          }
+        else if (name.startsWith("set") &&
+                 methods[a].getReturnType() == Void.TYPE &&
+                 methods[a].getParameterTypes().length == 1)
+          {
+            Method[] amethods;
+            String attrib = name.substring(3);
+            if (attributes.containsKey(attrib))
+              amethods = (Method[]) attributes.get(attrib);
+            else
+              {
+                amethods = new Method[2];
+                attributes.put(attrib, amethods);
+              }
+            amethods[1] = methods[a];
+          }
+        else
+          operations.add(new MBeanOperationInfo(methods[a].getName(),
+                                                methods[a]));
       }
     List<MBeanAttributeInfo> attribs = new ArrayList<MBeanAttributeInfo>(attributes.size());
     for (Map.Entry<String,Method[]> entry : attributes.entrySet())
       {
-	Method[] amethods = entry.getValue();
-	try
-	  {
-	    attribs.add(new MBeanAttributeInfo(entry.getKey(),
-					       entry.getKey(),
-					       amethods[0], amethods[1]));
-	  }
-	catch (IntrospectionException e)
-	  {
-	    /* Shouldn't happen; both shouldn't be null */
-	    throw new IllegalStateException("The two methods passed to " +
-					    "the MBeanAttributeInfo " +
-					    "constructor for " + entry +
-					    "were null.", e);
-	  }
+        Method[] amethods = entry.getValue();
+        try
+          {
+            attribs.add(new MBeanAttributeInfo(entry.getKey(),
+                                               entry.getKey(),
+                                               amethods[0], amethods[1]));
+          }
+        catch (IntrospectionException e)
+          {
+            /* Shouldn't happen; both shouldn't be null */
+            throw new IllegalStateException("The two methods passed to " +
+                                            "the MBeanAttributeInfo " +
+                                            "constructor for " + entry +
+                                            "were null.", e);
+          }
       }
     MBeanAttributeInfo[] ainfo = new MBeanAttributeInfo[attribs.size()];
     for (int a = 0; a < ainfo.length; ++a)
       {
-	MBeanAttributeInfo oldInfo = (MBeanAttributeInfo) attribs.get(a);
-	String desc = getDescription(oldInfo);
-	ainfo[a] = new MBeanAttributeInfo(oldInfo.getName(),
-					  oldInfo.getType(), desc,
-					  oldInfo.isReadable(),
-					  oldInfo.isWritable(),
-					  oldInfo.isIs());
+        MBeanAttributeInfo oldInfo = (MBeanAttributeInfo) attribs.get(a);
+        String desc = getDescription(oldInfo);
+        ainfo[a] = new MBeanAttributeInfo(oldInfo.getName(),
+                                          oldInfo.getType(), desc,
+                                          oldInfo.isReadable(),
+                                          oldInfo.isWritable(),
+                                          oldInfo.isIs());
       }
     Constructor<?>[] cons = impl.getClass().getConstructors();
     MBeanConstructorInfo[] cinfo = new MBeanConstructorInfo[cons.length];
     for (int a = 0; a < cinfo.length; ++a)
       {
-	MBeanConstructorInfo oldInfo = new MBeanConstructorInfo(cons[a].getName(),
-								cons[a]);
-	String desc = getDescription(oldInfo);
-	MBeanParameterInfo[] params = oldInfo.getSignature();
-	MBeanParameterInfo[] pinfo = new MBeanParameterInfo[params.length];
-	for (int b = 0; b < pinfo.length; ++b)
-	  {
-	    String pdesc = getDescription(oldInfo, params[b], b);
-	    String pname = getParameterName(oldInfo, params[b], b);
-	    pinfo[b] = new MBeanParameterInfo(pname, params[b].getType(),
-					      pdesc);
-	  }
-	cinfo[a] = new MBeanConstructorInfo(oldInfo.getName(), desc,
-					    pinfo);
+        MBeanConstructorInfo oldInfo = new MBeanConstructorInfo(cons[a].getName(),
+                                                                cons[a]);
+        String desc = getDescription(oldInfo);
+        MBeanParameterInfo[] params = oldInfo.getSignature();
+        MBeanParameterInfo[] pinfo = new MBeanParameterInfo[params.length];
+        for (int b = 0; b < pinfo.length; ++b)
+          {
+            String pdesc = getDescription(oldInfo, params[b], b);
+            String pname = getParameterName(oldInfo, params[b], b);
+            pinfo[b] = new MBeanParameterInfo(pname, params[b].getType(),
+                                              pdesc);
+          }
+        cinfo[a] = new MBeanConstructorInfo(oldInfo.getName(), desc,
+                                            pinfo);
       }
     cinfo = getConstructors(cinfo, impl);
     MBeanOperationInfo[] oinfo = new MBeanOperationInfo[operations.size()];
     for (int a = 0; a < oinfo.length; ++a)
       {
-	MBeanOperationInfo oldInfo = (MBeanOperationInfo) operations.get(a);
-	String desc = getDescription(oldInfo);
-	int impact = getImpact(oldInfo);
-	MBeanParameterInfo[] params = oldInfo.getSignature();
-	MBeanParameterInfo[] pinfo = new MBeanParameterInfo[params.length];
-	for (int b = 0; b < pinfo.length; ++b)
-	  {
-	    String pdesc = getDescription(oldInfo, params[b], b);
-	    String pname = getParameterName(oldInfo, params[b], b);
-	    pinfo[b] = new MBeanParameterInfo(pname, params[b].getType(),
-					      pdesc);
-	  }
-	oinfo[a] = new MBeanOperationInfo(oldInfo.getName(), desc, pinfo,
-					  oldInfo.getReturnType(), impact);
+        MBeanOperationInfo oldInfo = (MBeanOperationInfo) operations.get(a);
+        String desc = getDescription(oldInfo);
+        int impact = getImpact(oldInfo);
+        MBeanParameterInfo[] params = oldInfo.getSignature();
+        MBeanParameterInfo[] pinfo = new MBeanParameterInfo[params.length];
+        for (int b = 0; b < pinfo.length; ++b)
+          {
+            String pdesc = getDescription(oldInfo, params[b], b);
+            String pname = getParameterName(oldInfo, params[b], b);
+            pinfo[b] = new MBeanParameterInfo(pname, params[b].getType(),
+                                              pdesc);
+          }
+        oinfo[a] = new MBeanOperationInfo(oldInfo.getName(), desc, pinfo,
+                                          oldInfo.getReturnType(), impact);
       }
     info = new MBeanInfo(impl.getClass().getName(), impl.getClass().getName(),
-			 ainfo, cinfo, oinfo, null);
+                         ainfo, cinfo, oinfo, null);
     String cname = getClassName(info);
     String desc = getDescription(info);
     MBeanNotificationInfo[] ninfo = null;
@@ -720,7 +720,7 @@ public class StandardMBean
    * @return the name to use in the instance.
    */
   protected String getParameterName(MBeanConstructorInfo info,
-				    MBeanParameterInfo param, int n)
+                                    MBeanParameterInfo param, int n)
   {
     return param.getName();
   }
@@ -741,7 +741,7 @@ public class StandardMBean
    * @return the name to use in the instance.
    */
   protected String getParameterName(MBeanOperationInfo info,
-				    MBeanParameterInfo param, int n)
+                                    MBeanParameterInfo param, int n)
   {
     return param.getName();
   }
@@ -753,7 +753,7 @@ public class StandardMBean
    * corresponding to each parameter.  The class loader used to
    * load these classes is the same as that used for loading the
    * management bean itself.
-   * 
+   *
    * @param name the name of the action to invoke.
    * @param params the parameters used to call the action.
    * @param signature the signature of the action.
@@ -771,56 +771,56 @@ public class StandardMBean
     throws MBeanException, ReflectionException
   {
     if (name.startsWith("get") || name.startsWith("is") ||
-	name.startsWith("set"))
+        name.startsWith("set"))
       throw new ReflectionException(new NoSuchMethodException(),
-				    "Invocation of an attribute " +
-				    "method is disallowed.");
+                                    "Invocation of an attribute " +
+                                    "method is disallowed.");
     ClassLoader loader = getClass().getClassLoader();
     Class<?>[] sigTypes;
     if (signature != null)
       {
-	sigTypes = new Class<?>[signature.length];
-	for (int a = 0; a < signature.length; ++a)
-	  try 
-	    {
-	      sigTypes[a] = Class.forName(signature[a], true, loader);
-	    }
-	  catch (ClassNotFoundException e)
-	    {
-	      throw new ReflectionException(e, "The class, " + signature[a] + 
-					    ", in the method signature " +
-					    "could not be loaded.");
-	    }
+        sigTypes = new Class<?>[signature.length];
+        for (int a = 0; a < signature.length; ++a)
+          try
+            {
+              sigTypes[a] = Class.forName(signature[a], true, loader);
+            }
+          catch (ClassNotFoundException e)
+            {
+              throw new ReflectionException(e, "The class, " + signature[a] +
+                                            ", in the method signature " +
+                                            "could not be loaded.");
+            }
       }
     else
       sigTypes = null;
     Method method;
     try
       {
-	method = iface.getMethod(name, sigTypes);
+        method = iface.getMethod(name, sigTypes);
       }
     catch (NoSuchMethodException e)
       {
-	throw new ReflectionException(e, "The method, " + name +
-				      ", could not be found.");
+        throw new ReflectionException(e, "The method, " + name +
+                                      ", could not be found.");
       }
     Object result;
     try
       {
-	result = method.invoke(impl, params);
+        result = method.invoke(impl, params);
       }
     catch (IllegalAccessException e)
       {
-	throw new ReflectionException(e, "Failed to call " + name);
+        throw new ReflectionException(e, "Failed to call " + name);
       }
     catch (IllegalArgumentException e)
       {
-	throw new ReflectionException(e, "Failed to call " + name);
+        throw new ReflectionException(e, "Failed to call " + name);
       }
     catch (InvocationTargetException e)
       {
-	throw new MBeanException((Exception) e.getCause(), "The method "
-				 + name + " threw an exception");
+        throw new MBeanException((Exception) e.getCause(), "The method "
+                                 + name + " threw an exception");
       }
     return result;
   }
@@ -850,30 +850,30 @@ public class StandardMBean
    */
   public void setAttribute(Attribute attribute)
     throws AttributeNotFoundException, InvalidAttributeValueException,
-	   MBeanException, ReflectionException
+           MBeanException, ReflectionException
   {
     String name = attribute.getName();
     String attName = name.substring(0, 1).toUpperCase() + name.substring(1);
-    Object val = attribute.getValue();   
+    Object val = attribute.getValue();
     try
       {
-	getMutator(attName, val.getClass()).invoke(impl, new Object[] { val });
+        getMutator(attName, val.getClass()).invoke(impl, new Object[] { val });
       }
     catch (IllegalAccessException e)
       {
-	throw new ReflectionException(e, "Failed to set " + name);
+        throw new ReflectionException(e, "Failed to set " + name);
       }
     catch (IllegalArgumentException e)
       {
-	throw ((InvalidAttributeValueException)
-	       new InvalidAttributeValueException(attribute.getValue() +
-						  " is an invalid value for " +
-						  name).initCause(e));
+        throw ((InvalidAttributeValueException)
+               new InvalidAttributeValueException(attribute.getValue() +
+                                                  " is an invalid value for " +
+                                                  name).initCause(e));
       }
     catch (InvocationTargetException e)
       {
-	throw new MBeanException(e, "The getter of " + name +
-				 " threw an exception");
+        throw new MBeanException(e, "The getter of " + name +
+                                 " threw an exception");
       }
   }
 
@@ -893,28 +893,28 @@ public class StandardMBean
     Iterator<Object> it = attributes.iterator();
     while (it.hasNext())
       {
-	try
-	  {
-	    Attribute attrib = (Attribute) it.next();
-	    setAttribute(attrib);
-	    list.add(attrib);
-	  }
-	catch (AttributeNotFoundException e)
-	  {
-	    /* Ignored */
-	  }
-	catch (InvalidAttributeValueException e)
-	  {
-	    /* Ignored */
-	  }
-	catch (ReflectionException e)
-	  {
-	    /* Ignored */
-	  }
-	catch (MBeanException e)
-	  {
-	    /* Ignored */
-	  }
+        try
+          {
+            Attribute attrib = (Attribute) it.next();
+            setAttribute(attrib);
+            list.add(attrib);
+          }
+        catch (AttributeNotFoundException e)
+          {
+            /* Ignored */
+          }
+        catch (InvalidAttributeValueException e)
+          {
+            /* Ignored */
+          }
+        catch (ReflectionException e)
+          {
+            /* Ignored */
+          }
+        catch (MBeanException e)
+          {
+            /* Ignored */
+          }
       }
     return list;
   }
@@ -937,8 +937,8 @@ public class StandardMBean
     if (impl == null)
       throw new IllegalArgumentException("The specified implementation is null.");
     if (!(iface.isInstance(impl)))
-      throw new NotCompliantMBeanException("The instance, " + impl + 
-					   ", is not an instance of " + iface);
+      throw new NotCompliantMBeanException("The instance, " + impl +
+                                           ", is not an instance of " + iface);
     this.impl = impl;
   }
 
@@ -956,128 +956,128 @@ public class StandardMBean
   {
     String mutator = "set" + name;
     Exception ex = null;
-    try 
+    try
       {
-	return iface.getMethod(mutator, type);
+        return iface.getMethod(mutator, type);
       }
     catch (NoSuchMethodException e)
       {
-	/* Ignored; we'll try harder instead */
-	ex = e;
+        /* Ignored; we'll try harder instead */
+        ex = e;
       }
     /* Special cases */
     if (type == Boolean.class)
       try
-	{
-	  return iface.getMethod(mutator, Boolean.TYPE);
-	}
+        {
+          return iface.getMethod(mutator, Boolean.TYPE);
+        }
       catch (NoSuchMethodException e)
-	{
-	  throw ((AttributeNotFoundException) 
-		 new AttributeNotFoundException("The attribute, " + name +
-						", was not found.").initCause(e));
-	}
+        {
+          throw ((AttributeNotFoundException)
+                 new AttributeNotFoundException("The attribute, " + name +
+                                                ", was not found.").initCause(e));
+        }
     if (type == Byte.class)
       try
-	{
-	  return iface.getMethod(mutator, Byte.TYPE);
-	}
+        {
+          return iface.getMethod(mutator, Byte.TYPE);
+        }
       catch (NoSuchMethodException e)
-	{
-	  throw ((AttributeNotFoundException) 
-		 new AttributeNotFoundException("The attribute, " + name +
-						", was not found.").initCause(e));
-	}
+        {
+          throw ((AttributeNotFoundException)
+                 new AttributeNotFoundException("The attribute, " + name +
+                                                ", was not found.").initCause(e));
+        }
     if (type == Character.class)
       try
-	{
-	  return iface.getMethod(mutator, Character.TYPE);
-	}
+        {
+          return iface.getMethod(mutator, Character.TYPE);
+        }
       catch (NoSuchMethodException e)
-	{
-	  throw ((AttributeNotFoundException) 
-		 new AttributeNotFoundException("The attribute, " + name +
-						", was not found.").initCause(e));
-	}
+        {
+          throw ((AttributeNotFoundException)
+                 new AttributeNotFoundException("The attribute, " + name +
+                                                ", was not found.").initCause(e));
+        }
     if (type == Double.class)
       try
-	{
-	  return iface.getMethod(mutator, Double.TYPE);
-	}
+        {
+          return iface.getMethod(mutator, Double.TYPE);
+        }
       catch (NoSuchMethodException e)
-	{
-	  throw ((AttributeNotFoundException) 
-		 new AttributeNotFoundException("The attribute, " + name +
-						", was not found.").initCause(e));
-	}
+        {
+          throw ((AttributeNotFoundException)
+                 new AttributeNotFoundException("The attribute, " + name +
+                                                ", was not found.").initCause(e));
+        }
     if (type == Float.class)
       try
-	{
-	  return iface.getMethod(mutator, Float.TYPE);
-	}
+        {
+          return iface.getMethod(mutator, Float.TYPE);
+        }
       catch (NoSuchMethodException e)
-	{
-	  throw ((AttributeNotFoundException) 
-		 new AttributeNotFoundException("The attribute, " + name +
-						", was not found.").initCause(e));
-	}
+        {
+          throw ((AttributeNotFoundException)
+                 new AttributeNotFoundException("The attribute, " + name +
+                                                ", was not found.").initCause(e));
+        }
     if (type == Integer.class)
       try
-	{
-	  return iface.getMethod(mutator, Integer.TYPE);
-	}
+        {
+          return iface.getMethod(mutator, Integer.TYPE);
+        }
       catch (NoSuchMethodException e)
-	{
-	  throw ((AttributeNotFoundException) 
-		 new AttributeNotFoundException("The attribute, " + name +
-						", was not found.").initCause(e));
-	}
+        {
+          throw ((AttributeNotFoundException)
+                 new AttributeNotFoundException("The attribute, " + name +
+                                                ", was not found.").initCause(e));
+        }
     if (type == Long.class)
       try
-	{
-	  return iface.getMethod(mutator, Long.TYPE);
-	}
+        {
+          return iface.getMethod(mutator, Long.TYPE);
+        }
       catch (NoSuchMethodException e)
-	{
-	  throw ((AttributeNotFoundException) 
-		 new AttributeNotFoundException("The attribute, " + name +
-						", was not found.").initCause(e));
-	}
+        {
+          throw ((AttributeNotFoundException)
+                 new AttributeNotFoundException("The attribute, " + name +
+                                                ", was not found.").initCause(e));
+        }
     if (type == Short.class)
       try
-	{
-	  return iface.getMethod(mutator, Short.TYPE);
-	}
+        {
+          return iface.getMethod(mutator, Short.TYPE);
+        }
       catch (NoSuchMethodException e)
-	{
-	  throw ((AttributeNotFoundException) 
-		 new AttributeNotFoundException("The attribute, " + name +
-						", was not found.").initCause(e));
-	}
+        {
+          throw ((AttributeNotFoundException)
+                 new AttributeNotFoundException("The attribute, " + name +
+                                                ", was not found.").initCause(e));
+        }
     /* Superclasses and interfaces */
     for (Class<?> i : type.getInterfaces())
       try
-	{
-	  return getMutator(name, i);
-	}
+        {
+          return getMutator(name, i);
+        }
       catch (AttributeNotFoundException e)
-	{
-	  ex = e;
-	}
+        {
+          ex = e;
+        }
     Class<?> sclass = type.getSuperclass();
     if (sclass != null && sclass != Object.class)
       try
-	{
-	  return getMutator(name, sclass);
-	}
+        {
+          return getMutator(name, sclass);
+        }
       catch (AttributeNotFoundException e)
-	{
-	  ex = e;
-	}
+        {
+          ex = e;
+        }
     /* If we get this far, give up */
-    throw ((AttributeNotFoundException) 
-	   new AttributeNotFoundException("The attribute, " + name +
-					  ", was not found.").initCause(ex)); 
+    throw ((AttributeNotFoundException)
+           new AttributeNotFoundException("The attribute, " + name +
+                                          ", was not found.").initCause(ex));
   }
 
 }

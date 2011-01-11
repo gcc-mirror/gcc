@@ -172,7 +172,7 @@ public class TransferHandler implements Serializable
       super(command);
       this.command = command;
     }
-    
+
     public void actionPerformed(ActionEvent event)
     {
       JComponent component = (JComponent) event.getSource();
@@ -180,42 +180,42 @@ public class TransferHandler implements Serializable
       Clipboard clipboard = getClipboard(component);
 
       if (clipboard == null)
-	{
-	  // Access denied!
-	  Toolkit.getDefaultToolkit().beep();
-	  return;
-	}
+        {
+          // Access denied!
+          Toolkit.getDefaultToolkit().beep();
+          return;
+        }
 
       if (command.equals(COMMAND_COPY))
-	transferHandler.exportToClipboard(component, clipboard, COPY);
+        transferHandler.exportToClipboard(component, clipboard, COPY);
       else if (command.equals(COMMAND_CUT))
-	transferHandler.exportToClipboard(component, clipboard, MOVE);
+        transferHandler.exportToClipboard(component, clipboard, MOVE);
       else if (command.equals(COMMAND_PASTE))
-	{
-	  Transferable transferable = clipboard.getContents(null);
+        {
+          Transferable transferable = clipboard.getContents(null);
 
-	  if (transferable != null)
-	    transferHandler.importData(component, transferable);
-	}
+          if (transferable != null)
+            transferHandler.importData(component, transferable);
+        }
     }
-  
+
     /**
      * Get the system cliboard or null if the caller isn't allowed to
      * access the system clipboard.
-     * 
+     *
      * @param component a component, used to get the toolkit.
      * @return the clipboard
      */
     private static Clipboard getClipboard(JComponent component)
     {
       try
-	{
-	  return component.getToolkit().getSystemClipboard();
-	}
+        {
+          return component.getToolkit().getSystemClipboard();
+        }
       catch (SecurityException se)
-	{
-	  return null;
-	}
+        {
+          return null;
+        }
     }
   }
 
@@ -244,7 +244,7 @@ public class TransferHandler implements Serializable
     {
       // Nothing to do here.
     }
-    
+
   }
 
   private static class SwingDragHandler
@@ -310,7 +310,7 @@ public class TransferHandler implements Serializable
     {
       // Nothing to do here.
     }
-    
+
   }
 
   private static final long serialVersionUID = -967749805571669910L;
@@ -318,7 +318,7 @@ public class TransferHandler implements Serializable
   private static final String COMMAND_COPY = "copy";
   private static final String COMMAND_CUT = "cut";
   private static final String COMMAND_PASTE = "paste";
-  
+
   public static final int NONE = 0;
   public static final int COPY = 1;
   public static final int MOVE = 2;
@@ -327,13 +327,13 @@ public class TransferHandler implements Serializable
   private static Action copyAction = new TransferAction(COMMAND_COPY);
   private static Action cutAction = new TransferAction(COMMAND_CUT);
   private static Action pasteAction = new TransferAction(COMMAND_PASTE);
-  
+
   private int sourceActions;
   private Icon visualRepresentation;
 
   /**
    * The name of the property into/from which this TransferHandler
-   * imports/exports. 
+   * imports/exports.
    */
   private String propertyName;
 
@@ -426,7 +426,7 @@ public class TransferHandler implements Serializable
    *         from the specified component, or null if the component doesn't
    *         have a readable property like the transfer handler
    */
-  protected Transferable createTransferable(JComponent c) 
+  protected Transferable createTransferable(JComponent c)
   {
     Transferable transferable = null;
     if (propertyName != null)
@@ -499,7 +499,7 @@ public class TransferHandler implements Serializable
    *
    * @throws IllegalStateException when the clipboard is not available
    */
-  public void exportToClipboard(JComponent c, Clipboard clip, int action) 
+  public void exportToClipboard(JComponent c, Clipboard clip, int action)
     throws IllegalStateException
   {
     action &= getSourceActions(c);
@@ -519,7 +519,7 @@ public class TransferHandler implements Serializable
       }
     else
       exportDone(c, null, NONE);
-  } 
+  }
 
   public int getSourceActions(JComponent c)
   {
@@ -536,7 +536,7 @@ public class TransferHandler implements Serializable
    * component <code>c</code> by setting the property of this TransferHandler
    * on that component. If this succeeds, this method returns
    * <code>true</code>, otherwise <code>false</code>.
-   * 
+   *
    *
    * @param c the component to import into
    * @param t the transfer data to import
@@ -544,7 +544,7 @@ public class TransferHandler implements Serializable
    * @return <code>true</code> if the transfer succeeds, <code>false</code>
    *         otherwise
    */
-  public boolean importData(JComponent c, Transferable t) 
+  public boolean importData(JComponent c, Transferable t)
   {
     boolean ok = false;
     PropertyDescriptor prop = getPropertyDescriptor(c);

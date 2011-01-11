@@ -1,4 +1,4 @@
-/* PasswordProtectedEntry.java -- 
+/* PasswordProtectedEntry.java --
    Copyright (C) 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -48,7 +48,7 @@ public interface PasswordProtectedEntry
 
   /**
    * Encodes this entry, protected by a password.
-   * 
+   *
    * @param out The output stream to encode to.
    * @param password The password.
    * @throws IOException If an I/O error occurs.

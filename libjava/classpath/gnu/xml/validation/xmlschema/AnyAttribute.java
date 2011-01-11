@@ -1,4 +1,4 @@
-/* AnyAttribute.java -- 
+/* AnyAttribute.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -62,6 +62,5 @@ final class AnyAttribute
     this.namespace = namespace;
     this.processContents = processContents;
   }
-  
-}
 
+}

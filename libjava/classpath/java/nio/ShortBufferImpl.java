@@ -1,4 +1,4 @@
-/* ShortBufferImpl.java -- 
+/* ShortBufferImpl.java --
    Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,37 +49,37 @@ final class ShortBufferImpl extends ShortBuffer
   {
     this (new short [capacity], 0, capacity, capacity, 0, -1, false);
   }
-  
+
   ShortBufferImpl (short[] buffer, int offset, int capacity,
-		   int limit, int position, int mark, boolean readOnly)
+                   int limit, int position, int mark, boolean readOnly)
   {
     super (capacity, limit, position, mark, null, buffer, offset);
     this.readOnly = readOnly;
   }
-  
+
   public boolean isReadOnly ()
   {
     return readOnly;
   }
-  
+
   public ShortBuffer slice ()
   {
     return new ShortBufferImpl (backing_buffer, array_offset + position (),
-				remaining (), remaining (), 0, -1, isReadOnly ());
+                                remaining (), remaining (), 0, -1, isReadOnly ());
   }
-  
+
   public ShortBuffer duplicate ()
   {
     return new ShortBufferImpl (backing_buffer, array_offset, capacity (),
-				limit (), position (), mark, isReadOnly ());
+                                limit (), position (), mark, isReadOnly ());
   }
-  
+
   public ShortBuffer asReadOnlyBuffer ()
   {
     return new ShortBufferImpl (backing_buffer, array_offset, capacity (), limit (),
-				position (), mark, true);
+                                position (), mark, true);
   }
-  
+
   public ShortBuffer compact ()
   {
     checkIfReadOnly();
@@ -95,7 +95,7 @@ final class ShortBufferImpl extends ShortBuffer
     limit(capacity());
     return this;
   }
-  
+
   public boolean isDirect ()
   {
     return false;
@@ -116,12 +116,12 @@ final class ShortBufferImpl extends ShortBuffer
     position (position () + 1);
     return result;
   }
-  
+
   /**
    * Relative put method. Writes <code>value</code> to the next position
    * in the buffer.
    *
-   * @exception BufferOverflowException If there no remaining 
+   * @exception BufferOverflowException If there no remaining
    * space in this buffer.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
@@ -134,7 +134,7 @@ final class ShortBufferImpl extends ShortBuffer
     position (position () + 1);
     return this;
   }
-  
+
   /**
    * Absolute get method. Reads the <code>short</code> at position
    * <code>index</code>.
@@ -148,7 +148,7 @@ final class ShortBufferImpl extends ShortBuffer
 
     return backing_buffer [index];
   }
-  
+
   /**
    * Absolute put method. Writes <code>value</code> to position
    * <code>index</code> in the buffer.
@@ -165,7 +165,7 @@ final class ShortBufferImpl extends ShortBuffer
     backing_buffer [index] = value;
     return this;
   }
-  
+
   public ByteOrder order ()
   {
     return ByteOrder.nativeOrder ();

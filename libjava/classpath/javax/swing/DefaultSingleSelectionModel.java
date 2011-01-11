@@ -82,9 +82,9 @@ public class DefaultSingleSelectionModel
 
   /**
    * Returns the selected index or <code>-1</code> if there is no selection.
-   * 
+   *
    * @return The selected index.
-   * 
+   *
    * @see #setSelectedIndex(int)
    */
   public int getSelectedIndex()
@@ -93,11 +93,11 @@ public class DefaultSingleSelectionModel
   }
 
   /**
-   * Sets the selected index and, if this is different to the previous 
+   * Sets the selected index and, if this is different to the previous
    * selection, sends a {@link ChangeEvent} to all registered listeners.
-   * 
+   *
    * @param index  the index (use <code>-1</code> to represent no selection).
-   * 
+   *
    * @see #getSelectedIndex()
    * @see #clearSelection
    */
@@ -113,7 +113,7 @@ public class DefaultSingleSelectionModel
   /**
    * Clears the selection by setting the selected index to <code>-1</code> and
    * sends a {@link ChangeEvent} to all registered listeners.  If the selected
-   * index is already <code>-1</code>, this method does nothing.  
+   * index is already <code>-1</code>, this method does nothing.
    */
   public void clearSelection()
   {
@@ -122,8 +122,8 @@ public class DefaultSingleSelectionModel
 
   /**
    * Returns <code>true</code> if there is a selection, and <code>false</code>
-   * otherwise.  
-   * 
+   * otherwise.
+   *
    * @return A boolean.
    */
   public boolean isSelected()

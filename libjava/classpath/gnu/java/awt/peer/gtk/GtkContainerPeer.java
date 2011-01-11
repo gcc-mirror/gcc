@@ -64,12 +64,12 @@ public class GtkContainerPeer extends GtkComponentPeer
   {
   }
 
-  public Insets getInsets() 
+  public Insets getInsets()
   {
     return insets;
   }
 
-  public Insets insets() 
+  public Insets insets()
   {
     return getInsets ();
   }
@@ -103,7 +103,7 @@ public class GtkContainerPeer extends GtkComponentPeer
   public void setBackground (Color c)
   {
     super.setBackground(c);
-  
+
     Object components[] = ((Container) awtComponent).getComponents();
     for (int i = 0; i < components.length; i++)
       {
@@ -133,6 +133,6 @@ public class GtkContainerPeer extends GtkComponentPeer
   public void restack()
   {
       //FIXME: implement
-    
+
   }
 }

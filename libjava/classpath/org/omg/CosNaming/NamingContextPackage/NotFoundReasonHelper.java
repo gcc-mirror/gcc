@@ -111,8 +111,8 @@ public abstract class NotFoundReasonHelper
     OrbRestricted.Singleton.create_enum_tc(id(), "NotFoundReason",
                               new String[]
                                          {
-                                          "missing_node", 
-                                          "not_context", 
+                                          "missing_node",
+                                          "not_context",
                                           "not_object"
                                          }
     );

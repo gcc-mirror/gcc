@@ -162,9 +162,9 @@ public class AOM
   /**
    * Get the record of the stored object. If the object is mapped several times
    * under the different keys, one of the mappings is used.
-   * 
+   *
    * @param stored_object the stored object
-   * 
+   *
    * @return the record about the stored object, null if this object is not
    * stored here.
    */
@@ -214,9 +214,9 @@ public class AOM
   /**
    * Find the reference info for the given servant. If the servant is mapped to
    * several objects, this returns the first found occurence.
-   * 
+   *
    * @param servant a servant to find.
-   * 
+   *
    * @return the servant/object/POA binding or null if no such found.
    */
   public Obj findServant(Servant servant)

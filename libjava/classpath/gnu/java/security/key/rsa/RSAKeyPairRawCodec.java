@@ -1,4 +1,4 @@
-/* RSAKeyPairRawCodec.java -- 
+/* RSAKeyPairRawCodec.java --
    Copyright 2001, 2002, 2003, 2006 Free Software Foundation, Inc.
 
 This file is a part of GNU Classpath.
@@ -190,7 +190,7 @@ public class RSAKeyPairRawCodec
    * the <code>toByteArray()</code> method on the RSA parameter <code>d</code>,
    * </li>
    * </ol>
-   * 
+   *
    * @param key the key to encode.
    * @return the <i>Raw</i> format encoding of the designated key.
    */

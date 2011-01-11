@@ -46,7 +46,7 @@ import javax.swing.event.TreeSelectionListener;
  * TreeSelectionModel public interface
  * @author Andrew Selkirk
  */
-public interface TreeSelectionModel 
+public interface TreeSelectionModel
 {
 
   int SINGLE_TREE_SELECTION = 1;

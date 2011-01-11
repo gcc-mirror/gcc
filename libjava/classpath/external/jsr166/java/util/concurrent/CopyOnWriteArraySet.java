@@ -89,7 +89,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @return the number of elements in this set
      */
     public int size() {
-	return al.size();
+        return al.size();
     }
 
     /**
@@ -98,7 +98,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @return <tt>true</tt> if this set contains no elements
      */
     public boolean isEmpty() {
-	return al.isEmpty();
+        return al.isEmpty();
     }
 
     /**
@@ -111,7 +111,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @return <tt>true</tt> if this set contains the specified element
      */
     public boolean contains(Object o) {
-	return al.contains(o);
+        return al.contains(o);
     }
 
     /**
@@ -131,7 +131,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @return an array containing all the elements in this set
      */
     public Object[] toArray() {
-	return al.toArray();
+        return al.toArray();
     }
 
     /**
@@ -177,7 +177,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @throws NullPointerException if the specified array is null
      */
     public <T> T[] toArray(T[] a) {
-	return al.toArray(a);
+        return al.toArray(a);
     }
 
     /**
@@ -201,7 +201,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @return <tt>true</tt> if this set contained the specified element
      */
     public boolean remove(Object o) {
-	return al.remove(o);
+        return al.remove(o);
     }
 
     /**
@@ -217,7 +217,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      *         element
      */
     public boolean add(E e) {
-	return al.addIfAbsent(e);
+        return al.addIfAbsent(e);
     }
 
     /**
@@ -227,12 +227,12 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      *
      * @param  c collection to be checked for containment in this set
      * @return <tt>true</tt> if this set contains all of the elements of the
-     * 	       specified collection
+     *         specified collection
      * @throws NullPointerException if the specified collection is null
      * @see #contains(Object)
      */
     public boolean containsAll(Collection<?> c) {
-	return al.containsAll(c);
+        return al.containsAll(c);
     }
 
     /**
@@ -249,7 +249,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @see #add(Object)
      */
     public boolean addAll(Collection<? extends E> c) {
-	return al.addAllAbsent(c) > 0;
+        return al.addAllAbsent(c) > 0;
     }
 
     /**
@@ -268,7 +268,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @see #remove(Object)
      */
     public boolean removeAll(Collection<?> c) {
-	return al.removeAll(c);
+        return al.removeAll(c);
     }
 
     /**
@@ -289,7 +289,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @see #remove(Object)
      */
     public boolean retainAll(Collection<?> c) {
-	return al.retainAll(c);
+        return al.retainAll(c);
     }
 
     /**
@@ -304,7 +304,7 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
      * @return an iterator over the elements in this set
      */
     public Iterator<E> iterator() {
-	return al.iterator();
+        return al.iterator();
     }
 
     /**
@@ -329,14 +329,14 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
         if (!(o instanceof Set))
             return false;
         Set<?> set = (Set<?>)(o);
-	Iterator<?> it = set.iterator();
+        Iterator<?> it = set.iterator();
 
         // Uses O(n^2) algorithm that is only appropriate
         // for small sets, which CopyOnWriteArraySets should be.
 
         //  Use a single snapshot of underlying array
-	Object[] elements = al.getArray();
-	int len = elements.length;
+        Object[] elements = al.getArray();
+        int len = elements.length;
         // Mark matched elements to avoid re-checking
         boolean[] matched = new boolean[len];
         int k = 0;
@@ -347,10 +347,10 @@ public class CopyOnWriteArraySet<E> extends AbstractSet<E>
             for (int i = 0; i < len; ++i) {
                 if (!matched[i] && eq(x, elements[i])) {
                     matched[i] = true;
-		    continue outer;
+                    continue outer;
                 }
             }
-	    return false;
+            return false;
         }
         return k == len;
     }

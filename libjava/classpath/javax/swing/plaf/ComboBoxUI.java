@@ -55,7 +55,7 @@ public abstract class ComboBoxUI extends ComponentUI
   {
     // Nothing to do here.
   }
-    
+
   /**
    * Sets the visibility of the popup button.
    *
@@ -77,7 +77,7 @@ public abstract class ComboBoxUI extends ComponentUI
    *         visible, <code>false</code> otherwise.
    */
   public abstract boolean isPopupVisible(JComboBox c);
-  
+
   /**
    * Determines whether the combo box can receive input focus.
    *
@@ -88,5 +88,5 @@ public abstract class ComboBoxUI extends ComponentUI
    *          input focus, <code>false</code> otherwise.
    */
   public abstract boolean isFocusTraversable(JComboBox c);
-  
+
 }

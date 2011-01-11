@@ -46,7 +46,7 @@ import java.lang.management.MemoryUsage;
 import javax.management.NotCompliantMBeanException;
 
 /**
- * Provides access to information about one of the memory 
+ * Provides access to information about one of the memory
  * resources or pools used by the current invocation of the
  * virtual machine.  An instance of this bean for each memory
  * pool is obtained by calling
@@ -68,13 +68,13 @@ public final class MemoryPoolMXBeanImpl
   /**
    * Constant for collection usage threshold.
    */
-  private static final String COLLECTION_USAGE_THRESHOLD = 
+  private static final String COLLECTION_USAGE_THRESHOLD =
     "gnu.java.lang.management.CollectionUsageThresholdSupport";
 
   /**
    * Constant for thread time support.
    */
-  private static final String USAGE_THRESHOLD = 
+  private static final String USAGE_THRESHOLD =
     "gnu.java.lang.management.UsageThresholdSupport";
 
   /**
@@ -104,7 +104,7 @@ public final class MemoryPoolMXBeanImpl
       return VMMemoryPoolMXBeanImpl.getCollectionUsageThreshold(name);
     else
       throw new UnsupportedOperationException("A collection usage "+
-					      "threshold is not supported.");
+                                              "threshold is not supported.");
   }
 
   public long getCollectionUsageThresholdCount()
@@ -113,7 +113,7 @@ public final class MemoryPoolMXBeanImpl
       return VMMemoryPoolMXBeanImpl.getCollectionUsageThresholdCount(name);
     else
       throw new UnsupportedOperationException("A collection usage "+
-					      "threshold is not supported.");
+                                              "threshold is not supported.");
   }
 
   public String[] getMemoryManagerNames()
@@ -136,7 +136,7 @@ public final class MemoryPoolMXBeanImpl
 
   public MemoryType getType()
   {
-    return 
+    return
       MemoryType.valueOf(VMMemoryPoolMXBeanImpl.getType(name));
   }
 
@@ -154,7 +154,7 @@ public final class MemoryPoolMXBeanImpl
       return VMMemoryPoolMXBeanImpl.getUsageThreshold(name);
     else
       throw new UnsupportedOperationException("A usage threshold " +
-					      "is not supported.");
+                                              "is not supported.");
   }
 
   public long getUsageThresholdCount()
@@ -163,7 +163,7 @@ public final class MemoryPoolMXBeanImpl
       return VMMemoryPoolMXBeanImpl.getUsageThresholdCount(name);
     else
       throw new UnsupportedOperationException("A usage threshold " +
-					      "is not supported.");
+                                              "is not supported.");
   }
 
   public boolean isCollectionUsageThresholdExceeded()
@@ -202,12 +202,12 @@ public final class MemoryPoolMXBeanImpl
     checkControlPermissions();
     if (threshold < 0)
       throw new IllegalArgumentException("Threshold of " + threshold +
-					 "is less than zero.");
+                                         "is less than zero.");
     if (isCollectionUsageThresholdSupported())
       VMMemoryPoolMXBeanImpl.setCollectionUsageThreshold(name, threshold);
     else
       throw new UnsupportedOperationException("A collection usage "+
-					      "threshold is not supported.");
+                                              "threshold is not supported.");
   }
 
   public void setUsageThreshold(long threshold)
@@ -215,13 +215,12 @@ public final class MemoryPoolMXBeanImpl
     checkControlPermissions();
     if (threshold < 0)
       throw new IllegalArgumentException("Threshold of " + threshold +
-					 "is less than zero.");
+                                         "is less than zero.");
     if (isUsageThresholdSupported())
       VMMemoryPoolMXBeanImpl.setUsageThreshold(name, threshold);
     else
       throw new UnsupportedOperationException("A usage threshold " +
-					      "is not supported.");
+                                              "is not supported.");
   }
 
 }
-

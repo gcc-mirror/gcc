@@ -61,7 +61,7 @@ public abstract class TextUI extends ComponentUI
 {
   /**
    * Constructs a new <code>TextUI</code>.
-   */  
+   */
   public TextUI()
   {
     // Nothing to do here.
@@ -155,7 +155,7 @@ public abstract class TextUI extends ComponentUI
    */
   public abstract int viewToModel(JTextComponent tc, Point loc,
                                   Position.Bias[] outBias);
- 
+
 
 
   /**
@@ -235,7 +235,7 @@ public abstract class TextUI extends ComponentUI
                                    Position.Bias startBias,
                                    Position.Bias endBias);
 
-  
+
   /**
    * Retrieves the <code>EditorKit</code> managing policies and
    * persistent state.
@@ -246,8 +246,8 @@ public abstract class TextUI extends ComponentUI
    * @return the <code>EditorKit</code> used by <code>tc</code>.
    */
   public abstract EditorKit getEditorKit(JTextComponent tc);
-  
-  
+
+
   /**
    * Retrieves the root of the view tree that visually presents
    * the text.

@@ -1,4 +1,4 @@
-/* XMLEvent.java -- 
+/* XMLEvent.java --
    Copyright (C) 2005,2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -125,12 +125,11 @@ public interface XMLEvent
    * not available.
    */
   QName getSchemaType();
-  
+
   /**
    * Writes this event to the specified writer.
    */
   void writeAsEncodedUnicode(Writer writer)
     throws XMLStreamException;
-  
-}
 
+}

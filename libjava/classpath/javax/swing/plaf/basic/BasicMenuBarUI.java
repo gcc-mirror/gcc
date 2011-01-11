@@ -109,20 +109,20 @@ public class BasicMenuBarUI extends MenuBarUI
           defaultManager.setSelectedPath(me);
         }
     }
-    
+
   }
 
   protected ChangeListener changeListener;
 
   /*ContainerListener that listens to the ContainerEvents fired from menu bar*/
   protected ContainerListener containerListener;
-  
+
   /*Property change listeners that listener to PropertyChangeEvent from menu bar*/
   private PropertyChangeListener propertyChangeListener;
 
   /* menu bar for which this UI delegate is for*/
   protected JMenuBar menuBar;
-  
+
   /* MouseListener that listens to the mouseEvents fired from menu bar*/
   private MouseInputListener mouseListener;
 
@@ -398,7 +398,7 @@ public class BasicMenuBarUI extends MenuBarUI
         menuBar.repaint();
     }
   }
-  
+
   private class MouseInputHandler implements MouseInputListener
   {
     /**
@@ -409,7 +409,7 @@ public class BasicMenuBarUI extends MenuBarUI
     public void mouseClicked(MouseEvent e)
     {
       MenuElement[] me = menuBar.getSubElements();
-      
+
       for (int i = 0; i < me.length; i++)
         {
           JMenu menu = menuBar.getMenu(i);
@@ -417,7 +417,7 @@ public class BasicMenuBarUI extends MenuBarUI
             menu.setSelected(false);
         }
     }
-    
+
     /**
      * Handles mouse pressed event
      *
@@ -427,7 +427,7 @@ public class BasicMenuBarUI extends MenuBarUI
     {
       // TODO: What should be done here, if anything?
     }
-    
+
     /**
      * Handles mouse released event
      *
@@ -437,7 +437,7 @@ public class BasicMenuBarUI extends MenuBarUI
     {
       // TODO: What should be done here, if anything?
     }
-    
+
     /**
      * Handles mouse exited event
      *
@@ -447,7 +447,7 @@ public class BasicMenuBarUI extends MenuBarUI
     {
       // TODO: What should be done here, if anything?
     }
-    
+
     /**
      * Handles mouse dragged event
      *
@@ -457,7 +457,7 @@ public class BasicMenuBarUI extends MenuBarUI
     {
       // TODO: What should be done here, if anything?
     }
-    
+
     /**
      * Handles mouse moved event
      *
@@ -467,7 +467,7 @@ public class BasicMenuBarUI extends MenuBarUI
     {
       // TODO: What should be done here, if anything?
     }
-    
+
     /**
      * Handles mouse entered event
      *

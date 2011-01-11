@@ -52,15 +52,15 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * A simple demo to show the use of the Java Sound API.
  * It plays the given file (up to the end, so don't pass the 26 minutes long
  * Pink Floyd's Echoes unless you really want!!).
- * 
+ *
  * See: http://jsresources.org/examples/SimpleAudioPlayer.java.html
- * 
+ *
  * @author Mario Torre <neugens@limasoftware.net>
  */
 public class AudioPlayerSample
 {
   private static final int EXTERNAL_BUFFER_SIZE = 128000;
-  
+
   /**
    * @param args
    */
@@ -72,12 +72,12 @@ public class AudioPlayerSample
                            "AudioPlayerSample [file]");
         return;
       }
-    
+
     String file = args[0];
-    
+
     System.out.println("Welcome to Radio Classpath, only great music for you!");
     System.out.println("Today's DJ Tap The WaterDroplet");
-    
+
     // now create the AudioInputStream
     AudioInputStream audioInputStream = null;
     try
@@ -98,15 +98,15 @@ public class AudioPlayerSample
         e.printStackTrace();
         return;
       }
-    
+
     // get informations about the kind of file we are about to play
     AudioFormat audioFormat = audioInputStream.getFormat();
-    
+
     System.out.println("Playing file: " + file);
     System.out.println("format: " + audioFormat.toString());
-    
+
     System.out.print("Additional properties: ");
-    
+
     // now, we try to get all the properties we have in this AudioFormat
     // and display them
     Map<String, Object> properties = audioFormat.properties();
@@ -122,18 +122,18 @@ public class AudioPlayerSample
             System.out.println(key + ": " + properties.get(key));
           }
       }
-    
+
     // let's setup things for playing
     // first, we require a Line. As we are doing playing, we will ask for a
     // SourceDataLine
     SourceDataLine line = null;
-    
+
     // To get the source line, we first need to build an Info object
     // this is done in one line:
     DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
-    
+
     System.out.println("searching line...");
-    
+
     // usually, if a backend can parse a file type, it can also
     // create a line to handle it, but that's not guaranteed
     // so we need to take care and to handle a possible
@@ -141,9 +141,9 @@ public class AudioPlayerSample
     try
       {
         line = (SourceDataLine) AudioSystem.getLine(info);
-      
+
         System.out.println("line found, opening...");
-        
+
         // once created, a line must be opened to let data flow
         // though it.
         line.open(audioFormat);
@@ -160,24 +160,24 @@ public class AudioPlayerSample
         e.printStackTrace();
         return;
       }
-  
+
     // an open line pass data to the backend only when it is in
     // a state called "started" ("playing" or "play" in some other
     // framework)
     System.out.print("starting line... ");
-    
+
     line.start();
     System.out.println("done");
-    
+
     // now we can start reading data from the AudioStream and writing
     // data to the pipeline. The Java Sound API is rather low level
     // so let you pass up to one byte of data at a time
     // (with some constraints, refer to the API documentation to know more)
     // We will do some buffering. You may want to check the frame size
     // to allow a better buffering, also.
-    
+
     System.out.println("now playing...");
-    
+
     int nBytesRead = 0;
     byte[] abData = new byte[EXTERNAL_BUFFER_SIZE];
     while (nBytesRead != - 1)
@@ -190,7 +190,7 @@ public class AudioPlayerSample
           {
             e.printStackTrace();
           }
-        
+
         if (nBytesRead >= 0)
           {
             // this method returns the number of bytes actuall written
@@ -200,9 +200,9 @@ public class AudioPlayerSample
             line.write(abData, 0, nBytesRead);
           }
       }
-    
+
     System.out.print("stream finished, draining line... ");
-    
+
     // call this method to ensure that all the data in the internal buffer
     // reach the audio backend, otherwise your application will
     // cut the last frames of audio data (and users will not enjoy the last
@@ -212,10 +212,10 @@ public class AudioPlayerSample
     // Once done, we can close the line. Note that a line, once closed
     // may not be reopened (depends on the backend, in some cases a "reopen",
     // if allowed, really opens a new line, reallocating all the resources)
-    
+
     System.out.println("line drained, now exiting");
     line.close();
-    
+
     System.out.println("We hope you enjoyed Radio Classpath!");
   }
 

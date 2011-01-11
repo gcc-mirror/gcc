@@ -1,4 +1,4 @@
-/* MinInclusiveFacet.java -- 
+/* MinInclusiveFacet.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -49,7 +49,7 @@ import java.util.Date;
 public final class MinInclusiveFacet
   extends Facet
 {
-  
+
   public final Object value;
 
   public final boolean fixed;
@@ -60,7 +60,7 @@ public final class MinInclusiveFacet
     this.value = value;
     this.fixed = fixed;
   }
-  
+
   public int hashCode()
   {
     return value.hashCode();
@@ -71,7 +71,7 @@ public final class MinInclusiveFacet
     return (other instanceof MinInclusiveFacet &&
             ((MinInclusiveFacet) other).value.equals(value));
   }
-  
+
   boolean matches(Object test)
   {
     if (value instanceof Date)
@@ -107,6 +107,5 @@ public final class MinInclusiveFacet
       return false;
     return ((Number) test).doubleValue() >= nvalue.doubleValue();
   }
-  
-}
 
+}

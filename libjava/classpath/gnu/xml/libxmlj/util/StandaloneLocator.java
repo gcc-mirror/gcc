@@ -1,4 +1,4 @@
-/* StandaloneLocator.java - 
+/* StandaloneLocator.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -65,12 +65,12 @@ implements Locator, SourceLocator
     this.publicId = publicId;
     this.systemId = systemId;
   }
-  
+
   public String getPublicId ()
   {
     return publicId;
   }
-  
+
   public String getSystemId ()
   {
     return systemId;

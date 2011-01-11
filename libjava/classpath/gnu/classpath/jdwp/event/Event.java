@@ -58,22 +58,22 @@ public abstract class Event
    * The class of the object in which the event occurred
    */
   public static final int EVENT_CLASS = 1;
-  
+
   /**
    * The thread where the event occurred
    */
   public static final int EVENT_THREAD = 2;
-  
+
   /**
    * The location where an event occurred
    */
   public static final int EVENT_LOCATION = 3;
-  
+
   /**
    * The instance of the class where the event occurred
    */
   public static final int EVENT_INSTANCE = 4;
-  
+
   /**
    * The field acted on by an event
    */
@@ -88,7 +88,7 @@ public abstract class Event
    * Whether this exception was caught (only valid for ExceptionEvents)
    */
   public static final int EVENT_EXCEPTION_CAUGHT = 7;
-  
+
   // The kind of event represented by this event
   private byte _eventKind;
 
@@ -144,25 +144,25 @@ public abstract class Event
    * @returns a <code>JdwpPacket</code> of the events
    */
   public static JdwpPacket toPacket (DataOutputStream dos,
-				     Event[] events,
-				     EventRequest[] requests,
-				     byte suspendPolicy)
+                                     Event[] events,
+                                     EventRequest[] requests,
+                                     byte suspendPolicy)
   {
     JdwpPacket pkt;
     try
       {
-	dos.writeByte (suspendPolicy);
-	dos.writeInt (events.length);
-	for (int i = 0; i < events.length; ++i)
-	  _toData (dos, events[i], requests[i]);
+        dos.writeByte (suspendPolicy);
+        dos.writeInt (events.length);
+        for (int i = 0; i < events.length; ++i)
+          _toData (dos, events[i], requests[i]);
 
-	pkt
-	  = new JdwpCommandPacket (JdwpConstants.CommandSet.Event.CS_VALUE,
-				   JdwpConstants.CommandSet.Event.COMPOSITE);
+        pkt
+          = new JdwpCommandPacket (JdwpConstants.CommandSet.Event.CS_VALUE,
+                                   JdwpConstants.CommandSet.Event.COMPOSITE);
       }
     catch (IOException ioe)
       {
-	pkt = null;
+        pkt = null;
       }
 
     return pkt;
@@ -170,7 +170,7 @@ public abstract class Event
 
   // Helper function for toPacket
   private static void _toData (DataOutputStream dos, Event event,
-			       EventRequest request)
+                               EventRequest request)
     throws IOException
   {
     dos.writeByte (event._eventKind);

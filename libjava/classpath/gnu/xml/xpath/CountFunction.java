@@ -1,4 +1,4 @@
-/* CountFunction.java -- 
+/* CountFunction.java --
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -64,7 +64,7 @@ final class CountFunction
     this.arg = arg;
   }
 
-  @Override 
+  @Override
   public Object evaluate(Node context, int pos, int len)
   {
     Object val = arg.evaluate(context, pos, len);
@@ -85,5 +85,5 @@ final class CountFunction
   {
     return "count(" + arg + ")";
   }
-  
+
 }

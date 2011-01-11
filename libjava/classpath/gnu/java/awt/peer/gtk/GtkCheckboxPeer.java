@@ -66,7 +66,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
   public native void addToGroup (long groupPointer);
   public native void removeFromGroup ();
   public native void switchToGroup (long groupPointer);
-  
+
   public native void connectSignals ();
 
   /**
@@ -101,7 +101,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
         {
           groupPointer = groupMap.get(current_group);
         }
-        
+
         if (groupPointer == null)
           {
             // We don't know about this group.  Create a new native
@@ -118,7 +118,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
       }
     currentState = checkbox.getState();
     gtkToggleButtonSetActive(currentState);
-    
+
     String label = checkbox.getLabel();
     if (label != null)
       gtkButtonSetLabel(label);
@@ -161,7 +161,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
         {
           groupPointer = groupMap.get(current_group);
         }
-        
+
         if (groupPointer == null)
           {
             // We don't know about this group.  Create a new native
@@ -199,14 +199,14 @@ public class GtkCheckboxPeer extends GtkComponentPeer
         // to the other group.
 
         current_group = group;
-        
+
         // See if the new group is already stored in our map.
         Long groupPointer = null;
         synchronized (groupMap)
         {
           groupPointer = groupMap.get(current_group);
         }
-        
+
         if (groupPointer == null)
           {
             // We don't know about this group.  Create a new native
@@ -236,7 +236,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
                             state ? ItemEvent.SELECTED : ItemEvent.DESELECTED);
       }
   }
-  
+
   public void addToGroupMap(long groupPointer)
   {
     synchronized (groupMap)

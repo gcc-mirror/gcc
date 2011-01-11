@@ -128,12 +128,12 @@ public class ConcurrentSkipListSet<E>
      */
     public ConcurrentSkipListSet<E> clone() {
         ConcurrentSkipListSet<E> clone = null;
-	try {
-	    clone = (ConcurrentSkipListSet<E>) super.clone();
+        try {
+            clone = (ConcurrentSkipListSet<E>) super.clone();
             clone.setMap(new ConcurrentSkipListMap(m));
-	} catch (CloneNotSupportedException e) {
-	    throw new InternalError();
-	}
+        } catch (CloneNotSupportedException e) {
+            throw new InternalError();
+        }
 
         return clone;
     }
@@ -157,7 +157,7 @@ public class ConcurrentSkipListSet<E>
      * @return the number of elements in this set
      */
     public int size() {
-	return m.size();
+        return m.size();
     }
 
     /**
@@ -165,7 +165,7 @@ public class ConcurrentSkipListSet<E>
      * @return <tt>true</tt> if this set contains no elements
      */
     public boolean isEmpty() {
-	return m.isEmpty();
+        return m.isEmpty();
     }
 
     /**
@@ -180,7 +180,7 @@ public class ConcurrentSkipListSet<E>
      * @throws NullPointerException if the specified element is null
      */
     public boolean contains(Object o) {
-	return m.containsKey(o);
+        return m.containsKey(o);
     }
 
     /**
@@ -198,7 +198,7 @@ public class ConcurrentSkipListSet<E>
      * @throws NullPointerException if the specified element is null
      */
     public boolean add(E e) {
-	return m.putIfAbsent(e, Boolean.TRUE) == null;
+        return m.putIfAbsent(e, Boolean.TRUE) == null;
     }
 
     /**
@@ -216,14 +216,14 @@ public class ConcurrentSkipListSet<E>
      * @throws NullPointerException if the specified element is null
      */
     public boolean remove(Object o) {
-	return m.remove(o, Boolean.TRUE);
+        return m.remove(o, Boolean.TRUE);
     }
 
     /**
      * Removes all of the elements from this set.
      */
     public void clear() {
-	m.clear();
+        m.clear();
     }
 
     /**
@@ -241,7 +241,7 @@ public class ConcurrentSkipListSet<E>
      * @return an iterator over the elements in this set in descending order
      */
     public Iterator<E> descendingIterator() {
-	return m.descendingKeySet().iterator();
+        return m.descendingKeySet().iterator();
     }
 
 
@@ -261,11 +261,11 @@ public class ConcurrentSkipListSet<E>
      */
     public boolean equals(Object o) {
         // Override AbstractSet version to avoid calling size()
-	if (o == this)
-	    return true;
-	if (!(o instanceof Set))
-	    return false;
-	Collection<?> c = (Collection<?>) o;
+        if (o == this)
+            return true;
+        if (!(o instanceof Set))
+            return false;
+        Collection<?> c = (Collection<?>) o;
         try {
             return containsAll(c) && c.containsAll(this);
         } catch (ClassCastException unused)   {
@@ -373,7 +373,7 @@ public class ConcurrentSkipListSet<E>
                                   boolean fromInclusive,
                                   E toElement,
                                   boolean toInclusive) {
-	return new ConcurrentSkipListSet<E>
+        return new ConcurrentSkipListSet<E>
             (m.subMap(fromElement, fromInclusive,
                       toElement,   toInclusive));
     }
@@ -384,7 +384,7 @@ public class ConcurrentSkipListSet<E>
      * @throws IllegalArgumentException {@inheritDoc}
      */
     public NavigableSet<E> headSet(E toElement, boolean inclusive) {
-	return new ConcurrentSkipListSet<E>(m.headMap(toElement, inclusive));
+        return new ConcurrentSkipListSet<E>(m.headMap(toElement, inclusive));
     }
 
     /**
@@ -393,7 +393,7 @@ public class ConcurrentSkipListSet<E>
      * @throws IllegalArgumentException {@inheritDoc}
      */
     public NavigableSet<E> tailSet(E fromElement, boolean inclusive) {
-	return new ConcurrentSkipListSet<E>(m.tailMap(fromElement, inclusive));
+        return new ConcurrentSkipListSet<E>(m.tailMap(fromElement, inclusive));
     }
 
     /**
@@ -403,7 +403,7 @@ public class ConcurrentSkipListSet<E>
      * @throws IllegalArgumentException {@inheritDoc}
      */
     public NavigableSet<E> subSet(E fromElement, E toElement) {
-	return subSet(fromElement, true, toElement, false);
+        return subSet(fromElement, true, toElement, false);
     }
 
     /**
@@ -412,7 +412,7 @@ public class ConcurrentSkipListSet<E>
      * @throws IllegalArgumentException {@inheritDoc}
      */
     public NavigableSet<E> headSet(E toElement) {
-	return headSet(toElement, false);
+        return headSet(toElement, false);
     }
 
     /**
@@ -421,7 +421,7 @@ public class ConcurrentSkipListSet<E>
      * @throws IllegalArgumentException {@inheritDoc}
      */
     public NavigableSet<E> tailSet(E fromElement) {
-	return tailSet(fromElement, true);
+        return tailSet(fromElement, true);
     }
 
     /**
@@ -437,7 +437,7 @@ public class ConcurrentSkipListSet<E>
      * @return a reverse order view of this set
      */
     public NavigableSet<E> descendingSet() {
-	return new ConcurrentSkipListSet(m.descendingMap());
+        return new ConcurrentSkipListSet(m.descendingMap());
     }
 
     // Support for resetting map in clone

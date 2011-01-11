@@ -47,8 +47,8 @@ import java.util.ArrayList;
 
 /**
  * Generates the ordinary stubs (not GIOP based) for java.rmi.*  package.
- * 
- * @author Audrius Meskauskas (AudriusA@Bioinformatics.org) 
+ *
+ * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class Main
 {

@@ -1,4 +1,4 @@
-/* Namespaces.java - 
+/* Namespaces.java -
    Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -44,14 +44,14 @@ import java.util.Iterator;
 
 /**
  * Helper class for managing namespaces.
- * 
+ *
  * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
  */
 class Namespaces
 {
 
   ArrayList stack = new ArrayList ();
-  
+
   /**
    * Increments the tree depth.
    * This allocates a new potential namespace entry.

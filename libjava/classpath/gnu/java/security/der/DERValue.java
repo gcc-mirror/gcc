@@ -173,11 +173,11 @@ public class DERValue implements DER
   public String toString()
   {
     String start = "DERValue ( [";
-    if (tagClass == DER.UNIVERSAL) 
+    if (tagClass == DER.UNIVERSAL)
       start = start + "UNIVERSAL ";
-    else if (tagClass == DER.PRIVATE) 
+    else if (tagClass == DER.PRIVATE)
       start = start + "PRIVATE ";
-    else if (tagClass == DER.APPLICATION) 
+    else if (tagClass == DER.APPLICATION)
       start = start + "APPLICATION ";
     start = start + tag + "] constructed=" + constructed + ", value=";
     if (constructed)

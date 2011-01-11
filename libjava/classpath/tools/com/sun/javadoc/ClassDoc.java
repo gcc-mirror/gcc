@@ -319,4 +319,3 @@ TypeVariable[]
 typeParameters();
 
 } // interface ClassDoc
-

@@ -90,11 +90,11 @@ import java.util.zip.Adler32;
 public class gnuAny
   extends Any
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The value, returned by {@link #type()} if the value has been
    * not intialized.
@@ -209,7 +209,7 @@ public class gnuAny
 
     return Arrays.equals(ba, bb);
   }
-  
+
   /**
    * Get the content - dependent hashcode.
    */
@@ -224,10 +224,10 @@ public class gnuAny
         BufferedCdrOutput a = new BufferedCdrOutput();
         a.setOrb(orb);
         write_value(a);
-        
+
         adler.update(a.buffer.toByteArray());
         adler.update(type().kind().value());
-        
+
         return (int) adler.getValue() & Integer.MAX_VALUE;
       }
   }
@@ -856,7 +856,7 @@ public class gnuAny
 
   /**
    * Check if the current value if the value of the given kind.
-   * 
+   *
    * @param kind a kind to check.
    * @throws BAD_OPERATION if the value is not set of is different kind.
    */

@@ -1,4 +1,4 @@
-/* FloatType.java -- 
+/* FloatType.java --
    Copyright (C) 2006  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -95,7 +95,7 @@ final class FloatType
         throw e2;
       }
   }
-  
+
   public Object createValue(String literal, ValidationContext context) {
     try
       {
@@ -106,6 +106,5 @@ final class FloatType
         return null;
       }
   }
-  
-}
 
+}

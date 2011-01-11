@@ -364,8 +364,8 @@ public class StyledEditorKit extends DefaultEditorKit
     {
       Document doc = editor.getDocument();
       if (!(doc instanceof StyledDocument))
-	throw new AssertionError("The Document for StyledEditorKits is "
-				 + "expected to be a StyledDocument.");
+        throw new AssertionError("The Document for StyledEditorKits is "
+                                 + "expected to be a StyledDocument.");
 
       return (StyledDocument) doc;
     }
@@ -382,8 +382,8 @@ public class StyledEditorKit extends DefaultEditorKit
     {
       EditorKit kit = editor.getEditorKit();
       if (!(kit instanceof StyledEditorKit))
-	throw new AssertionError("The EditorKit for StyledDocuments is "
-				 + "expected to be a StyledEditorKit.");
+        throw new AssertionError("The EditorKit for StyledDocuments is "
+                                 + "expected to be a StyledEditorKit.");
 
       return (StyledEditorKit) kit;
     }
@@ -406,33 +406,33 @@ public class StyledEditorKit extends DefaultEditorKit
     {
       Document doc = editor.getDocument();
       if (doc instanceof StyledDocument)
-	{
-	  StyledDocument styleDoc = (StyledDocument) editor.getDocument();
-	  EditorKit kit = editor.getEditorKit();
-	  if (!(kit instanceof StyledEditorKit))
-	    {
-	      StyledEditorKit styleKit = (StyledEditorKit) kit;
-	      int start = editor.getSelectionStart();
-	      int end = editor.getSelectionEnd();
-	      int dot = editor.getCaret().getDot();
-	      if (start == dot && end == dot)
-		{
-		  // If there is no selection, then we only update the
-		  // input attributes.
-		  MutableAttributeSet inputAttributes =
-		    styleKit.getInputAttributes();
-		  inputAttributes.addAttributes(atts);
-		}
-	      else
-		styleDoc.setParagraphAttributes(start, end, atts, replace);
-	    }
-	  else
-	    throw new AssertionError("The EditorKit for StyledTextActions "
-				     + "is expected to be a StyledEditorKit");
-	}
+        {
+          StyledDocument styleDoc = (StyledDocument) editor.getDocument();
+          EditorKit kit = editor.getEditorKit();
+          if (!(kit instanceof StyledEditorKit))
+            {
+              StyledEditorKit styleKit = (StyledEditorKit) kit;
+              int start = editor.getSelectionStart();
+              int end = editor.getSelectionEnd();
+              int dot = editor.getCaret().getDot();
+              if (start == dot && end == dot)
+                {
+                  // If there is no selection, then we only update the
+                  // input attributes.
+                  MutableAttributeSet inputAttributes =
+                    styleKit.getInputAttributes();
+                  inputAttributes.addAttributes(atts);
+                }
+              else
+                styleDoc.setParagraphAttributes(start, end, atts, replace);
+            }
+          else
+            throw new AssertionError("The EditorKit for StyledTextActions "
+                                     + "is expected to be a StyledEditorKit");
+        }
       else
-	throw new AssertionError("The Document for StyledTextActions is "
-				 + "expected to be a StyledDocument.");
+        throw new AssertionError("The Document for StyledTextActions is "
+                                 + "expected to be a StyledDocument.");
     }
   }
 
@@ -466,15 +466,15 @@ public class StyledEditorKit extends DefaultEditorKit
       String name = element.getName();
       View view = null;
       if (name.equals(AbstractDocument.ContentElementName))
-	view = new LabelView(element);
+        view = new LabelView(element);
       else if (name.equals(AbstractDocument.ParagraphElementName))
-	view = new ParagraphView(element);
+        view = new ParagraphView(element);
       else if (name.equals(AbstractDocument.SectionElementName))
-	view = new BoxView(element, View.Y_AXIS);
+        view = new BoxView(element, View.Y_AXIS);
       else if (name.equals(StyleConstants.ComponentElementName))
-	view = new ComponentView(element);
+        view = new ComponentView(element);
       else if (name.equals(StyleConstants.IconElementName))
-	view = new IconView(element);
+        view = new IconView(element);
       else
         throw new AssertionError("Unknown Element type: "
                                  + element.getClass().getName() + " : "
@@ -499,14 +499,14 @@ public class StyledEditorKit extends DefaultEditorKit
     {
       Object source = ev.getSource();
       if (!(source instanceof JTextComponent))
-	throw new AssertionError("CaretEvents are expected to come from a"
-				 + "JTextComponent.");
+        throw new AssertionError("CaretEvents are expected to come from a"
+                                 + "JTextComponent.");
 
       JTextComponent text = (JTextComponent) source;
       Document doc = text.getDocument();
       if (!(doc instanceof StyledDocument))
-	throw new AssertionError("The Document used by StyledEditorKits is"
-				 + "expected to be a StyledDocument");
+        throw new AssertionError("The Document used by StyledEditorKits is"
+                                 + "expected to be a StyledDocument");
 
       StyledDocument styleDoc = (StyledDocument) doc;
       currentRun = styleDoc.getCharacterElement(ev.getDot());
@@ -571,7 +571,7 @@ public class StyledEditorKit extends DefaultEditorKit
   public Action[] getActions()
   {
     Action[] actions1 = super.getActions();
-    Action[] myActions = new Action[] { 
+    Action[] myActions = new Action[] {
       new FontSizeAction("font-size-8", 8),
       new FontSizeAction("font-size-10", 10),
       new FontSizeAction("font-size-12", 12),
@@ -698,7 +698,7 @@ public class StyledEditorKit extends DefaultEditorKit
    * @param set the inputAttributes to copy the attributes to
    */
   protected void createInputAttributes(Element element,
-				       MutableAttributeSet set)
+                                       MutableAttributeSet set)
   {
     // FIXME: Filter out component, icon and element name attributes.
     set.removeAttributes(set);

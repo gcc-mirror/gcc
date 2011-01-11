@@ -594,7 +594,7 @@ public class J2dBenchmark
 
   /**
    * Executes the test methods.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -658,7 +658,7 @@ public class J2dBenchmark
 
   /**
    * Reset all graphics settings to the standard, default values
-   * 
+   *
    * @param g the object to apply settings to
    */
   private void resetGraphics(Graphics2D g)
@@ -670,7 +670,7 @@ public class J2dBenchmark
 
   /**
    * Sets initial user graphics options
-   * 
+   *
    * @param g the object to apply settings to
    */
   private void prepareGraphics(Graphics2D g)
@@ -712,7 +712,7 @@ public class J2dBenchmark
 
   /**
    * Gets new random settings
-   * 
+   *
    * @param g the object to set parameters for
    * @param size the screen size
    */
@@ -776,7 +776,7 @@ public class J2dBenchmark
 
   /**
    * Draws random arcs within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -809,7 +809,7 @@ public class J2dBenchmark
 
   /**
    * Draws random filled arcs within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -842,7 +842,7 @@ public class J2dBenchmark
 
   /**
    * Draws random cubic curves within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -874,7 +874,7 @@ public class J2dBenchmark
 
   /**
    * Draws random ellipses within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -900,7 +900,7 @@ public class J2dBenchmark
 
   /**
    * Draws random ellipses within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -927,7 +927,7 @@ public class J2dBenchmark
   // TODO: fix the GeneralPath methods.
   /**
    * Draws random polygons within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -957,7 +957,7 @@ public class J2dBenchmark
 
   /**
    * Draws random filled polygons within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -988,7 +988,7 @@ public class J2dBenchmark
 
   /**
    * Draws random lines within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -1014,7 +1014,7 @@ public class J2dBenchmark
 
   /**
    * Draws random quadratic curves within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -1043,7 +1043,7 @@ public class J2dBenchmark
 
   /**
    * Draws random rectangles within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -1069,7 +1069,7 @@ public class J2dBenchmark
 
   /**
    * Draws random rectangles within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -1095,7 +1095,7 @@ public class J2dBenchmark
 
   /**
    * Draws random rounded rectangles within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -1128,7 +1128,7 @@ public class J2dBenchmark
 
   /**
    * Draws random filled rounded rectangles within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -1161,7 +1161,7 @@ public class J2dBenchmark
 
   /**
    * Draws random images within the given dimensions.
-   * 
+   *
    * @param g The Graphics2D object that is used to paint.
    * @param size The size of the canvas.
    */
@@ -1193,7 +1193,7 @@ public class J2dBenchmark
 
   /**
    * Draws random transparent images within the given dimensions.
-   * 
+   *
    * @param g The Graphics object that is used to paint.
    * @param size The size of the canvas.
    */

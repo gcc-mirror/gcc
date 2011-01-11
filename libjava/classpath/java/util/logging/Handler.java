@@ -179,7 +179,7 @@ h.setFormatter(h.getFormatter());</pre>
     throws SecurityException
   {
     LogManager.getLogManager().checkAccess();
-    
+
     /* Throws a NullPointerException if formatter is null. */
     formatter.getClass();
 
@@ -377,7 +377,7 @@ h.setFormatter(h.getFormatter());</pre>
   {
     if (record.getLevel().intValue() < level.intValue())
       return false;
-    
+
     if (filter != null)
       return filter.isLoggable(record);
     else

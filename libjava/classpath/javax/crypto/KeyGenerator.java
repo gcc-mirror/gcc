@@ -96,7 +96,7 @@ public class KeyGenerator
 
   /**
    * Create a new key generator, returning the first available implementation.
-   * 
+   *
    * @param algorithm The generator algorithm name.
    * @throws NoSuchAlgorithmException If the specified algorithm does not exist.
    * @throws IllegalArgumentException if <code>algorithm</code> is
@@ -123,7 +123,7 @@ public class KeyGenerator
 
   /**
    * Create a new key generator from the named provider.
-   * 
+   *
    * @param algorithm The generator algorithm name.
    * @param provider The name of the provider to use.
    * @return An appropriate key generator, if found.
@@ -147,7 +147,7 @@ public class KeyGenerator
 
   /**
    * Create a new key generator from the supplied provider.
-   * 
+   *
    * @param algorithm The generator algorithm name.
    * @param provider The provider to use.
    * @return An appropriate key generator, if found.

@@ -1,7 +1,7 @@
-/* ThreadGroupReferenceCommandSet.java -- class to implement the 
+/* ThreadGroupReferenceCommandSet.java -- class to implement the
    ThreadGroupReference Command Set
    Copyright (C) 2005 Free Software Foundation
- 
+
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -52,7 +52,7 @@ import java.nio.ByteBuffer;
 
 /**
  * A class representing the ThreadGroupReference Command Set.
- * 
+ *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
 public class ThreadGroupReferenceCommandSet
@@ -104,10 +104,10 @@ public class ThreadGroupReferenceCommandSet
     ThreadGroup group = (ThreadGroup) oid.getObject();
     ThreadGroup parent = group.getParent();
     if (parent == null) {
-    	os.writeLong(0L);
+        os.writeLong(0L);
     } else {
-    	ObjectId parentId = idMan.getObjectId(parent);
-    	parentId.write(os);   	
+        ObjectId parentId = idMan.getObjectId(parent);
+        parentId.write(os);
     }
   }
 

@@ -40,7 +40,7 @@ package javax.security.auth.login;
 
 /**
  * An exception indicating that an account was not found.
- * @since 1.5 
+ * @since 1.5
  */
 public class AccountNotFoundException extends AccountException
 {

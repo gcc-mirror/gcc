@@ -1,4 +1,4 @@
-/* InputStreamChannel.java -- 
+/* InputStreamChannel.java --
    Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -51,7 +51,7 @@ public final class InputStreamChannel implements ReadableByteChannel
 {
   private boolean closed = false;
   private InputStream in;
-  
+
   public InputStreamChannel (InputStream in)
   {
     super();
@@ -76,7 +76,7 @@ public final class InputStreamChannel implements ReadableByteChannel
   {
     if (!isOpen())
       throw new ClosedChannelException();
-    
+
     byte[] buffer = new byte [dst.remaining()];
     int readBytes = in.read (buffer);
 

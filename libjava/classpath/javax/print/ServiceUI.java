@@ -1,4 +1,4 @@
-/* ServiceUI.java -- 
+/* ServiceUI.java --
    Copyright (C) 2006 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -48,19 +48,19 @@ import java.util.Arrays;
 import javax.print.attribute.PrintRequestAttributeSet;
 
 /**
- * <code>ServiceUI</code> provides a method to create a graphical 
+ * <code>ServiceUI</code> provides a method to create a graphical
  * print dialog.
  * <p>
  * The graphical print dialog enables the user to browse the available
- * print services on the system. It provides user interfaces to interact 
- * with the most common printing attributes likes specifying the number of 
+ * print services on the system. It provides user interfaces to interact
+ * with the most common printing attributes likes specifying the number of
  * copies to print or the page ranges.
  * </p><p>
- * The initial appearance of the print dialog as shown to the user may be 
- * specified by providing the default selected print service as well as 
+ * The initial appearance of the print dialog as shown to the user may be
+ * specified by providing the default selected print service as well as
  * initial values for the printing attributes in the user interface.
  * </p>
- * 
+ *
  * @author Wolfgang Baer (WBaer@gmx.de)
  */
 public class ServiceUI
@@ -73,65 +73,65 @@ public class ServiceUI
   {
     // nothing to do here - only one static method
   }
-  
+
   /**
-   * Creates a modal graphical printing dialog at the specified location on 
+   * Creates a modal graphical printing dialog at the specified location on
    * the screen.
    * <p>
-   * The dialog will return the user selected print service and the given 
-   * attributes set will contain the modified printing attributes. If the 
-   * user cancels the printing dialog <code>null</code> will be returned and 
+   * The dialog will return the user selected print service and the given
+   * attributes set will contain the modified printing attributes. If the
+   * user cancels the printing dialog <code>null</code> will be returned and
    * the printing attributes set will be unmodified.
    * </p><p>
    * The values of the given attributes set (if not empty) will be displayed
-   * initially unless the are unsupported by the print service. If a print 
+   * initially unless the are unsupported by the print service. If a print
    * service does not support a particular value it is substituted with the
    * default value of the print service.
-   * </p> 
-   * 
+   * </p>
+   *
    * @param gc the screen to use. <code>null</code> is default screen.
-   * @param x the coordinate of the upper left edge of the dialog in screen 
+   * @param x the coordinate of the upper left edge of the dialog in screen
    *   coordinates (not relative to the parent frame).
-   * @param y the coordinate of the upper left edge of the dialog in screen 
+   * @param y the coordinate of the upper left edge of the dialog in screen
    *   coordinates (not relative to the parent frame).
    * @param services the print services to browse (not null).
    * @param defaultService the default service. If <code>null</code>
    * the first of the print services in the services array will be used.
    * @param flavor the flavours to be printed.
-   * @param attributes the attributes requested. Will be updated 
-   * by selections done by the user in the dialog. 
-   * 
+   * @param attributes the attributes requested. Will be updated
+   * by selections done by the user in the dialog.
+   *
    * @return The selected print service or <code>null</code> if user
    * has cancelled the printer dialog.
-   * 
+   *
    * @throws HeadlessException if GraphicsEnvironment is headless
-   * @throws IllegalArgumentException if services is <code>null</code> or an 
-   * empty array, attributes are <code>null</code> or the given default 
+   * @throws IllegalArgumentException if services is <code>null</code> or an
+   * empty array, attributes are <code>null</code> or the given default
    * <code>PrintService<code> is not part of the print service array.
    */
-  public static PrintService printDialog(GraphicsConfiguration gc, int x, 
+  public static PrintService printDialog(GraphicsConfiguration gc, int x,
       int y, PrintService[] services, PrintService defaultService,
       DocFlavor flavor, PrintRequestAttributeSet attributes)
     throws HeadlessException
-    {       
+    {
       if (GraphicsEnvironment.isHeadless())
         throw new HeadlessException("GraphicsEnvironment is headless.");
-      
+
       if (services == null || services.length == 0 || attributes == null)
-        throw new IllegalArgumentException("Given print service array / " 
+        throw new IllegalArgumentException("Given print service array / "
                                            + "attributes may not be null");
-      
-      if (defaultService != null && 
+
+      if (defaultService != null &&
           ! Arrays.asList(services).contains(defaultService))
-        throw new IllegalArgumentException("defaultService is not contained " 
+        throw new IllegalArgumentException("defaultService is not contained "
                                            + " in the print service array");
-      
-      PrinterDialog dialog = new PrinterDialog(gc, services, defaultService, 
+
+      PrinterDialog dialog = new PrinterDialog(gc, services, defaultService,
                                                flavor, attributes);
-      
+
       dialog.setLocation(x, y);
       dialog.show();
-      
+
       return dialog.getSelectedPrintService();
     }
 }

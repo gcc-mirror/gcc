@@ -40,8 +40,8 @@ package gnu.javax.imageio.png;
 /**
  * A PNG Header chunk.
  */
-public class PNGHeader extends PNGChunk 
-{ 
+public class PNGHeader extends PNGChunk
+{
   private int width, height, depth;
   private int colorType, compression, filter, interlace;
 
@@ -68,11 +68,11 @@ public class PNGHeader extends PNGChunk
     super( type, data, crc );
     if( data.length < 13 )
       throw new PNGException("Unexpectedly short header chunk. (" + data.length
-			     + " bytes)");
+                             + " bytes)");
 
-    width = ((data[0] & 0xFF) << 24) | ( (data[1] & 0xFF) << 16 ) | 
+    width = ((data[0] & 0xFF) << 24) | ( (data[1] & 0xFF) << 16 ) |
       ((data[2] & 0xFF) << 8) | (data[3] & 0xFF);
-    height = ((data[4] & 0xFF) << 24) | ( (data[5] & 0xFF) << 16 ) | 
+    height = ((data[4] & 0xFF) << 24) | ( (data[5] & 0xFF) << 16 ) |
       ((data[6] & 0xFF) << 8) | (data[7] & 0xFF);
     depth = (data[8] & 0xFF);
     colorType = (data[9] & 0xFF);
@@ -85,8 +85,8 @@ public class PNGHeader extends PNGChunk
    * Create a PNG header chunk.
    * Warning: This trusts that the parameters are valid.
    */
-  public PNGHeader(int width, int height, int depth, 
-		   int colorType, boolean interlace)
+  public PNGHeader(int width, int height, int depth,
+                   int colorType, boolean interlace)
   {
     super( TYPE_HEADER );
     data = new byte[ 13 ];
@@ -101,8 +101,8 @@ public class PNGHeader extends PNGChunk
     // Build the data chunk.
     byte[] a = getInt( width );
     byte[] b = getInt( height );
-    data[0] = a[0]; data[1] = a[1]; data[2] = a[2]; data[3] = a[3]; 
-    data[4] = b[0]; data[5] = b[1]; data[6] = b[2]; data[7] = b[3]; 
+    data[0] = a[0]; data[1] = a[1]; data[2] = a[2]; data[3] = a[3];
+    data[4] = b[0]; data[5] = b[1]; data[6] = b[2]; data[7] = b[3];
     data[8] = (byte)depth;
     data[9] = (byte)colorType;
     data[10] = (byte)compression;
@@ -125,14 +125,14 @@ public class PNGHeader extends PNGChunk
     if( (colorType & 0xFFFFFFF8) != 0 || colorType == 5 || colorType == 1)
       return false;
     // Possible valid depths are 1,2,4,8,16
-    if( !((depth == 1) || (depth == 2) || (depth == 4) || 
-	(depth == 8) || (depth == 16)) )
+    if( !((depth == 1) || (depth == 2) || (depth == 4) ||
+        (depth == 8) || (depth == 16)) )
       return false;
     if( colorType == INDEXED && depth == 16 )
       return false;
-    if( ( colorType == RGB || colorType == GRAYSCALE_WITH_ALPHA || 
-	  colorType == RGB_WITH_ALPHA ) &&
-	depth < 8 )
+    if( ( colorType == RGB || colorType == GRAYSCALE_WITH_ALPHA ||
+          colorType == RGB_WITH_ALPHA ) &&
+        depth < 8 )
       return false;
     // Only compression and filter methods zero are defined
     if( compression != 0 || filter != 0 )
@@ -153,7 +153,7 @@ public class PNGHeader extends PNGChunk
   }
 
   /**
-   * Returns <code>true</code> if this PNG is grayscale 
+   * Returns <code>true</code> if this PNG is grayscale
    */
   public boolean isGrayscale()
   {
@@ -176,7 +176,7 @@ public class PNGHeader extends PNGChunk
     return (interlace != 0);
   }
 
-  /** 
+  /**
    * Returns the number of bytes per pixel.
    */
   public int bytesPerPixel()
@@ -184,18 +184,18 @@ public class PNGHeader extends PNGChunk
     switch( colorType )
       {
       case GRAYSCALE_WITH_ALPHA:
-	return ((depth * 2) >> 3);
+        return ((depth * 2) >> 3);
       case RGB:
-	return ((depth * 3) >> 3);
+        return ((depth * 3) >> 3);
       case RGB_WITH_ALPHA:
-	return ((depth * 4) >> 3);
+        return ((depth * 4) >> 3);
 
       default:
       case GRAYSCALE:
       case INDEXED:
-	int i = (depth >> 3);
-	if( i > 0 ) return i;
-	return 1; // if bytes per pixel < 1, return 1 anyway.
+        int i = (depth >> 3);
+        if( i > 0 ) return i;
+        return 1; // if bytes per pixel < 1, return 1 anyway.
       }
   }
 
@@ -208,20 +208,20 @@ public class PNGHeader extends PNGChunk
     switch( colorType )
       {
       case GRAYSCALE:
-	nBits = width * depth;
-	break;
+        nBits = width * depth;
+        break;
       case RGB:
-	nBits = width * depth * 3;
-	break;
+        nBits = width * depth * 3;
+        break;
       case INDEXED:
-	nBits = depth * width;
-	break;
+        nBits = depth * width;
+        break;
       case GRAYSCALE_WITH_ALPHA:
-	nBits = depth * width * 2;
-	break;
+        nBits = depth * width * 2;
+        break;
       case RGB_WITH_ALPHA:
-	nBits = depth * width * 4;
-	break;
+        nBits = depth * width * 4;
+        break;
       }
     // Round up number of bits to the nearest byte
     if( (nBits & 0x07) != 0 )
@@ -232,17 +232,17 @@ public class PNGHeader extends PNGChunk
 
   public int getWidth()
   {
-    return width; 
+    return width;
   }
-  
+
   public int getHeight()
-  { 
-    return height; 
+  {
+    return height;
   }
 
   public int getDepth()
-  { 
-    return depth; 
+  {
+    return depth;
   }
 
   /**

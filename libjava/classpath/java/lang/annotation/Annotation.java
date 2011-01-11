@@ -67,13 +67,13 @@ public interface Annotation
    * annotation, according to the following:
    * <ul>
    * <li>If the members are <code>float</code>s, then, for floats
-   * <code>x</code> and <code>y</code>, 
+   * <code>x</code> and <code>y</code>,
    * <code>Float.valueOf(x).equals(Float.valueOf(y)</code> must return
    * true.  This differs from the usual (<code>==</code>) comparison
    * in that <code>NaN</code> is considered equal to itself and positive
    * and negative zero are seen as different.</li>
    * <li>Likewise, if the members are <code>double</code>s, then, for doubles
-   * <code>x</code> and <code>y</code>, 
+   * <code>x</code> and <code>y</code>,
    * <code>Double.valueOf(x).equals(Double.valueOf(y)</code> must return
    * true.  This differs from the usual (<code>==</code>) comparison
    * in that <code>NaN</code> is considered equal to itself and positive

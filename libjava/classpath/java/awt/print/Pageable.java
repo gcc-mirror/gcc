@@ -40,7 +40,7 @@ package java.awt.print;
 
 /**
  * This interface represents pages that are to be printed.
- * 
+ *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public interface Pageable
@@ -53,9 +53,9 @@ public interface Pageable
 
   /**
    * This method returns the number of pages this object contains, or
-   * <code>UNKNOWN_NUMBER_OF_PAGES</code> if it cannot determine the number 
+   * <code>UNKNOWN_NUMBER_OF_PAGES</code> if it cannot determine the number
    * of pages to be printed.
-   * 
+   *
    * @return The number of pages to be printed, or
    *         <code>UNKNOWN_NUMBER_OF_PAGES</code> if this is unknown.
    */
@@ -65,11 +65,11 @@ public interface Pageable
    * This method returns the <code>PageFormat</code> instance for the
    * specified page. Page numbers start at zero. An exception is thrown if the
    * requested page does not exist.
-   * 
+   *
    * @param pageIndex The index of the page to return the
    *          <code>PageFormat</code> for.
    * @return The <code>PageFormat</code> for the requested page.
-   * @exception IndexOutOfBoundsException If the requested page number does 
+   * @exception IndexOutOfBoundsException If the requested page number does
    *            not exist.
    */
   PageFormat getPageFormat(int pageIndex) throws IndexOutOfBoundsException;
@@ -78,11 +78,11 @@ public interface Pageable
    * This method returns the <code>Printable</code> instance for the specified
    * page. Page numbers start at zero. An exception is thrown if the requested
    * page does not exist.
-   * 
-   * @param pageIndex The index of the page to return the 
+   *
+   * @param pageIndex The index of the page to return the
    *        <code>Printable</code> for.
    * @return The <code>Printable</code> for the requested page.
-   * @exception IndexOutOfBoundsException If the requested page number does 
+   * @exception IndexOutOfBoundsException If the requested page number does
    *            not exist.
    */
   Printable getPrintable(int pageIndex) throws IndexOutOfBoundsException;

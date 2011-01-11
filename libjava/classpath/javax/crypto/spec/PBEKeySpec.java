@@ -78,7 +78,7 @@ public class PBEKeySpec implements KeySpec
 
   /** The password state */
   private boolean passwordValid = true;
-  
+
   // Constructors.
   // ------------------------------------------------------------------------
 
@@ -86,13 +86,13 @@ public class PBEKeySpec implements KeySpec
    * Create a new PBE key spec with just a password.
    * <p>
    * A copy of the password argument is stored instead of the argument itself.
-   * 
+   *
    * @param password The password char array.
    */
   public PBEKeySpec(char[] password)
   {
     setPassword(password);
-    
+
     // load the default values for unspecified variables.
     salt = null;
     iterationCount = 0;
@@ -104,7 +104,7 @@ public class PBEKeySpec implements KeySpec
    * <p>
    * A copy of the password and salt arguments are stored instead of the
    * arguments themselves.
-   * 
+   *
    * @param password The password char array.
    * @param salt The salt bytes.
    * @param iterationCount The iteration count.
@@ -128,7 +128,7 @@ public class PBEKeySpec implements KeySpec
    * <p>
    * A copy of the password and salt arguments are stored instead of the
    * arguments themselves.
-   * 
+   *
    * @param password The password char array.
    * @param salt The salt bytes.
    * @param iterationCount The iteration count.
@@ -161,7 +161,7 @@ public class PBEKeySpec implements KeySpec
       return;
     for (int i = 0; i < password.length; i++)
       password[i] = '\u0000';
-    
+
     // since the password is cleared, it is no longer valid
     passwordValid = false;
   }
@@ -190,7 +190,7 @@ public class PBEKeySpec implements KeySpec
    * Get the password character array copy.
    * <p>
    * This returns a copy of the password, not the password itself.
-   * 
+   *
    * @return a clone of the password.
    * @throws IllegalStateException If {@link #clearPassword()} has already been
    *           called.
@@ -207,7 +207,7 @@ public class PBEKeySpec implements KeySpec
    * Get the salt bytes array copy.
    * <p>
    * This returns a copy of the salt, not the salt itself.
-   * 
+   *
    * @return The salt.
    */
   public final byte[] getSalt()
@@ -221,7 +221,7 @@ public class PBEKeySpec implements KeySpec
    * Set the password char array.
    * <p>
    * A copy of the password argument is stored instead of the argument itself.
-   * 
+   *
    * @param password The password to be set
    */
   private void setPassword(char[] password)
@@ -238,7 +238,7 @@ public class PBEKeySpec implements KeySpec
    * Set the salt byte array.
    * <p>
    * A copy of the salt arguments is stored instead of the argument itself.
-   * 
+   *
    * @param salt The salt to be set.
    * @throws NullPointerException If the salt is null.
    * @throws IllegalArgumentException If the salt is an empty array.
@@ -253,7 +253,7 @@ public class PBEKeySpec implements KeySpec
 
   /**
    * Set the iterationCount.
-   * 
+   *
    * @param iterationCount The iteration count to be set.
    * @throws IllegalArgumentException If the iterationCount is negative.
    */
@@ -267,7 +267,7 @@ public class PBEKeySpec implements KeySpec
 
   /**
    * Set the keyLength.
-   * 
+   *
    * @param keyLength The keyLength to be set.
    * @throws IllegalArgumentException if the keyLength is negative.
    */

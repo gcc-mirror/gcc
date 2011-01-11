@@ -39,7 +39,7 @@ exception statement from your version. */
 package javax.naming.directory;
 
 import javax.naming.Binding;
- 
+
 /**
  * @author Warren Levy (warrenl@redhat.com)
  * @date June 13, 2001
@@ -58,21 +58,21 @@ public class SearchResult extends Binding
   }
 
   public SearchResult(String name, Object obj, Attributes attrs,
-  		      boolean isRelative)
+                      boolean isRelative)
   {
     super(name, obj, isRelative);
     this.attrs = attrs;
   }
 
   public SearchResult(String name, String className, Object obj,
-  		      Attributes attrs)
+                      Attributes attrs)
   {
     super(name, className, obj);
     this.attrs = attrs;
   }
 
   public SearchResult(String name, String className, Object obj,
-  		      Attributes attrs, boolean isRelative)
+                      Attributes attrs, boolean isRelative)
   {
     super(name, className, obj, isRelative);
     this.attrs = attrs;

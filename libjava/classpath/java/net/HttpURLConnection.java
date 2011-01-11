@@ -380,7 +380,7 @@ public abstract class HttpURLConnection extends URLConnection
   /**
    * Returns the value of this HttpURLConnection's instanceFollowRedirects
    * field
-   * 
+   *
    * @return true if following redirects is enabled, false otherwise
    */
   public boolean getInstanceFollowRedirects()
@@ -474,33 +474,33 @@ public abstract class HttpURLConnection extends URLConnection
     // If responseCode not yet explicitly set by subclass
     if (responseCode == -1)
       {
-	// Response is the first header received from the connection.
-	String respField = getHeaderField(0);
+        // Response is the first header received from the connection.
+        String respField = getHeaderField(0);
 
-	if (respField == null || ! respField.startsWith("HTTP/"))
-	  {
-	    // Set to default values on failure.
-	    responseCode = -1;
-	    responseMessage = null;
-	    return;
-	  }
+        if (respField == null || ! respField.startsWith("HTTP/"))
+          {
+            // Set to default values on failure.
+            responseCode = -1;
+            responseMessage = null;
+            return;
+          }
 
-	int firstSpc;
-	int nextSpc;
-	firstSpc = respField.indexOf(' ');
-	nextSpc = respField.indexOf(' ', firstSpc + 1);
-	responseMessage = respField.substring(nextSpc + 1);
-	String codeStr = respField.substring(firstSpc + 1, nextSpc);
-	try
-	  {
-	    responseCode = Integer.parseInt(codeStr);
-	  }
-	catch (NumberFormatException e)
-	  {
-	    // Set to default values on failure.
-	    responseCode = -1;
-	    responseMessage = null;
-	  }
+        int firstSpc;
+        int nextSpc;
+        firstSpc = respField.indexOf(' ');
+        nextSpc = respField.indexOf(' ', firstSpc + 1);
+        responseMessage = respField.substring(nextSpc + 1);
+        String codeStr = respField.substring(firstSpc + 1, nextSpc);
+        try
+          {
+            responseCode = Integer.parseInt(codeStr);
+          }
+        catch (NumberFormatException e)
+          {
+            // Set to default values on failure.
+            responseCode = -1;
+            responseMessage = null;
+          }
       }
   }
 
@@ -542,11 +542,11 @@ public abstract class HttpURLConnection extends URLConnection
     int code;
     try
       {
-	code = getResponseCode();
+        code = getResponseCode();
       }
     catch (IOException e)
       {
-	code = -1;
+        code = -1;
       }
 
     if (code == -1)
@@ -557,18 +557,18 @@ public abstract class HttpURLConnection extends URLConnection
 
     try
       {
-	PushbackInputStream pbis = new PushbackInputStream(getInputStream());
+        PushbackInputStream pbis = new PushbackInputStream(getInputStream());
 
-	int i = pbis.read();
-	if (i == -1)
-	  return null;
+        int i = pbis.read();
+        if (i == -1)
+          return null;
 
-	pbis.unread(i);
-	return pbis;
+        pbis.unread(i);
+        return pbis;
       }
     catch (IOException e)
       {
-	return null;
+        return null;
       }
   }
 

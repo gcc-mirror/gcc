@@ -71,7 +71,7 @@ public class RSASignatureFactory
    * hyphen chanaracter <code>-</code> followed by the canonical message digest
    * algorithm name. When no message digest algorithm name is given, SHA-160 is
    * used.
-   *  
+   *
    * @param name the composite RSA signature name.
    * @return a new instance of an RSA Signature algorithm implementation.
    * Returns <code>null</code> if the given name does not correspond to any
@@ -102,7 +102,7 @@ public class RSASignatureFactory
   /**
    * Returns a {@link Set} of names of <i>RSA</i> signatures supported by this
    * <i>Factory</i>.
-   * 
+   *
    * @return a {@link Set} of RSA Signature algorithm names (Strings).
    */
   public static synchronized final Set getNames()

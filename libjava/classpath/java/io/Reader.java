@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -36,7 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.io;
- 
+
 import java.nio.CharBuffer;
 
 /* Written using "Java Class Libraries", 2nd edition, plus online
@@ -52,18 +52,18 @@ import java.nio.CharBuffer;
  * or network connection.
  *
  * @author Per Bothner (bothner@cygnus.com)
- * @date April 21, 1998.  
- * @author Aaron M. Renn (arenn@urbanophile.com) 
+ * @date April 21, 1998.
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public abstract class Reader implements Closeable, Readable
 {
   /**
    * This is the <code>Object</code> used for synchronizing critical code
-   * sections.  Subclasses should use this variable instead of a 
+   * sections.  Subclasses should use this variable instead of a
    * synchronized method or an explicit synchronization on <code>this</code>
    */
   protected Object lock;
-  
+
   /**
     * Unitializes a <code>Reader</code> that will use the object
     * itself for synchronization of critical code sections.
@@ -86,10 +86,10 @@ public abstract class Reader implements Closeable, Readable
 
   /**
    * Read chars from a stream and stores them into a caller
-   * supplied buffer.  It starts storing the data at index <code>offset</code> 
-   * into the buffer and attempts to read <code>len</code> chars.  This method 
-   * can return before reading the number of chars requested.  The actual 
-   * number of chars read is returned as an int.  A -1 is returned to indicate 
+   * supplied buffer.  It starts storing the data at index <code>offset</code>
+   * into the buffer and attempts to read <code>len</code> chars.  This method
+   * can return before reading the number of chars requested.  The actual
+   * number of chars read is returned as an int.  A -1 is returned to indicate
    * the end of the stream.
    * <p>
    * This method will block until some data can be read.
@@ -113,7 +113,7 @@ public abstract class Reader implements Closeable, Readable
    */
   public abstract int read(char buf[], int offset, int count)
     throws IOException;
-    
+
   /**
    * Reads chars from a stream and stores them into a caller
    * supplied buffer.  This method attempts to completely fill the buffer,
@@ -182,10 +182,10 @@ public abstract class Reader implements Closeable, Readable
    * point.
    * <p>
    * This method always returns <code>false</code> in this class, but
-   * subclasses can override this method to return <code>true</code> if they 
+   * subclasses can override this method to return <code>true</code> if they
    * support mark/reset functionality.
    *
-   * @return <code>true</code> if mark/reset functionality is supported, 
+   * @return <code>true</code> if mark/reset functionality is supported,
    *         <code>false</code> otherwise
    *
    */
@@ -197,17 +197,17 @@ public abstract class Reader implements Closeable, Readable
   /**
     * Marks a position in the input to which the stream can be
     * "reset" by calling the <code>reset()</code> method.  The parameter
-    * <code>readlimit</code> is the number of chars that can be read from the 
+    * <code>readlimit</code> is the number of chars that can be read from the
     * stream after setting the mark before the mark becomes invalid.  For
-    * example, if <code>mark()</code> is called with a read limit of 10, then 
-    * when 11 chars of data are read from the stream before the 
-    * <code>reset()</code> method is called, then the mark is invalid and the 
+    * example, if <code>mark()</code> is called with a read limit of 10, then
+    * when 11 chars of data are read from the stream before the
+    * <code>reset()</code> method is called, then the mark is invalid and the
     * stream object instance is not required to remember the mark.
     *
-    * @param readLimit The number of chars that can be read before the mark 
+    * @param readLimit The number of chars that can be read before the mark
     *        becomes invalid
     *
-    * @exception IOException If an error occurs such as mark not being 
+    * @exception IOException If an error occurs such as mark not being
     *            supported for this class
     */
   public void mark(int readLimit) throws IOException
@@ -216,8 +216,8 @@ public abstract class Reader implements Closeable, Readable
   }
 
   /**
-    * Resets a stream to the point where the <code>mark()</code> 
-    * method was called.  Any chars that were read after the mark point was 
+    * Resets a stream to the point where the <code>mark()</code>
+    * method was called.  Any chars that were read after the mark point was
     * set will be re-read during subsequent reads.
     * <p>
     * This method always throws an IOException in this class, but subclasses
@@ -237,7 +237,7 @@ public abstract class Reader implements Closeable, Readable
     * <p>
     * This method always returns <code>false</code> in this class
     *
-    * @return <code>true</code> if the stream is ready to be read, 
+    * @return <code>true</code> if the stream is ready to be read,
     * <code>false</code> otherwise.
     *
     * @exception IOException If an error occurs
@@ -274,12 +274,12 @@ public abstract class Reader implements Closeable, Readable
     synchronized (lock)
     {
       while (todo > 0)
-	{
-	  int skipped = read(buffer, 0, bsize > todo ? (int) todo : bsize);
-	  if (skipped <= 0)
-	    break;
-	  todo -= skipped;
-	}
+        {
+          int skipped = read(buffer, 0, bsize > todo ? (int) todo : bsize);
+          if (skipped <= 0)
+            break;
+          todo -= skipped;
+        }
     }
     return count - todo;
   }

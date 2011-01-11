@@ -54,13 +54,13 @@ public class BasicPanelUI extends PanelUI
    * stateless).
    */
   static BasicPanelUI sharedUI;
-  
+
   /**
    * Returns a UI delegate for the specified component.
-   * 
+   *
    * @param panel  the panel.
    */
-  public static ComponentUI createUI(JComponent panel) 
+  public static ComponentUI createUI(JComponent panel)
   {
     if (sharedUI == null)
       sharedUI = new BasicPanelUI();
@@ -69,7 +69,7 @@ public class BasicPanelUI extends PanelUI
 
   /**
    * Installs this UI delegate in the specified component.
-   * 
+   *
    * @param c  the component (should be a {@link JPanel}, <code>null</code> not
    *     permitted).
    */
@@ -85,19 +85,19 @@ public class BasicPanelUI extends PanelUI
 
   /**
    * Installs the defaults for this UI delegate in the specified panel.
-   * 
+   *
    * @param p  the panel (<code>null</code> not permitted).
    */
   protected void installDefaults(JPanel p)
   {
     LookAndFeel.installColorsAndFont(p, "Panel.background", "Panel.foreground",
                                      "Panel.font");
-    
+
     // A test against the reference implementation shows that this method will
     // install a border if one is defined in the UIDefaults table (even though
     // the BasicLookAndFeel doesn't actually define a "Panel.border").  This
-    // test was written after discovering that a null argument to 
-    // uninstallDefaults throws a NullPointerException in 
+    // test was written after discovering that a null argument to
+    // uninstallDefaults throws a NullPointerException in
     // LookAndFeel.uninstallBorder()...
     LookAndFeel.installBorder(p, "Panel.border");
   }
@@ -123,10 +123,10 @@ public class BasicPanelUI extends PanelUI
     // (1) doesn't actually remove the installed colors and font installed
     //     by installDefaults(), it isn't necessary;
     // (2) throws a NullPointerException in LookAndFeel.uninstallBorder() if
-    //     p is null.  Strangely, no border is installed by the 
+    //     p is null.  Strangely, no border is installed by the
     //     BasicLookAndFeel - perhaps this is needed by another LAF?
-    
+
     LookAndFeel.uninstallBorder(p);
   }
-  
+
 }

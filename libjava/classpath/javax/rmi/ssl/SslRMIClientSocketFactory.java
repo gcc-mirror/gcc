@@ -1,4 +1,4 @@
-/* SslRMIClientSocketFactory.java -- 
+/* SslRMIClientSocketFactory.java --
    Copyright (C) 2006 Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -52,19 +52,19 @@ import java.rmi.server.RMIClientSocketFactory;
  * This class implements an RMIClientSocketFactory for SSL sockets.
  * it uses the default SSLClientSocketFactory.
  *
- * This class can optionally use the following system properties, if set: 
+ * This class can optionally use the following system properties, if set:
  * <code>javax.rmi.ssl.client.enabledCipherSuites</code>
  * <code>javax.rmi.ssl.client.enabledProtocols</code>
  *
  * These properties will specify a list of SSL/TLS cipher suites and protocols,
- * respectively, to enable on the created sockets. 
+ * respectively, to enable on the created sockets.
  *
  * Both properties should consist of a comma-separated list.
  *
  * @author Sven de Marothy
  * @since 1.5
  */
-public class SslRMIClientSocketFactory 
+public class SslRMIClientSocketFactory
   implements RMIClientSocketFactory, Serializable
 {
 
@@ -78,11 +78,11 @@ public class SslRMIClientSocketFactory
   /**
    * The SSL Socket factory.
    */
-  private static SSLSocketFactory socketFactory = 
+  private static SSLSocketFactory socketFactory =
     (SSLSocketFactory)SSLSocketFactory.getDefault();
 
   /**
-   * Creates a new SslRMIClientSocketFactory 
+   * Creates a new SslRMIClientSocketFactory
    */
   public SslRMIClientSocketFactory()
   {
@@ -95,11 +95,11 @@ public class SslRMIClientSocketFactory
     String o;
     try
       {
-	o = System.getProperty(p);
+        o = System.getProperty(p);
       }
     catch(SecurityException se)
       {
-	return null;
+        return null;
       }
 
     if (o == null)
@@ -116,7 +116,7 @@ public class SslRMIClientSocketFactory
   }
 
   /**
-   * Creates an SSLSocket on a given port 
+   * Creates an SSLSocket on a given port
    *
    * @throws IOException if an error occurs on socket creation.
    */
@@ -133,13 +133,13 @@ public class SslRMIClientSocketFactory
 
   /**
    * Compare two SslRMIServerSocketFactor instances
-   */ 
+   */
   public boolean equals(Object obj)
   {
     if( !(obj instanceof SslRMIClientSocketFactory) )
       return false;
     SslRMIClientSocketFactory s = (SslRMIClientSocketFactory)obj;
-    
+
     if(!SslRMIServerSocketFactory.
        cmpStrArray(enabledCipherSuites, s.enabledCipherSuites))
       return false;
@@ -159,10 +159,10 @@ public class SslRMIClientSocketFactory
     int hash = 0;
     if( enabledCipherSuites != null )
       for(int i = 0; i < enabledCipherSuites.length; i++ )
-	hash = hash ^ enabledCipherSuites[i].hashCode();
+        hash = hash ^ enabledCipherSuites[i].hashCode();
     if( enabledProtocols != null )
       for(int i = 0; i < enabledProtocols.length; i++ )
-	hash = hash ^ enabledProtocols[i].hashCode();
+        hash = hash ^ enabledProtocols[i].hashCode();
     return hash;
  }
 }

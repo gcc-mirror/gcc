@@ -81,7 +81,7 @@ public class MouseInfo
 
     GraphicsDevice[] gds = GraphicsEnvironment.getLocalGraphicsEnvironment().
       getScreenDevices();
-    
+
     return new PointerInfo( gds[ screen ], p );
   }
 
@@ -99,4 +99,4 @@ public class MouseInfo
     return ((ClasspathToolkit)Toolkit.getDefaultToolkit()).
       getMouseNumberOfButtons();
   }
-} 
+}

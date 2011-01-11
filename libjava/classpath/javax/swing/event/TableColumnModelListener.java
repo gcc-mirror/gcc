@@ -44,25 +44,25 @@ import javax.swing.table.TableColumnModel;
 /**
  * A <code>TableColumnModelListener</code> can register with a
  * {@link TableColumnModel} to receive notification of changes to the model.
- * 
+ *
  * @author Andrew Selkirk
  */
-public interface TableColumnModelListener 
-  extends EventListener 
+public interface TableColumnModelListener
+  extends EventListener
 {
 
   /**
    * Called by the {@link TableColumnModel} to indicate that a column has been
    * added to the model.
-   * 
+   *
    * @param event  information about the column addition.
    */
   void columnAdded(TableColumnModelEvent event);
 
   /**
-   * Called by the {@link TableColumnModel} to indicate that the model's 
+   * Called by the {@link TableColumnModel} to indicate that the model's
    * column margin has changed.
-   * 
+   *
    * @param event  the event (identifies the source).
    */
   void columnMarginChanged(ChangeEvent event);
@@ -70,7 +70,7 @@ public interface TableColumnModelListener
   /**
    * Called by the {@link TableColumnModel} to indicate that a column has been
    * moved.
-   * 
+   *
    * @param event  information about the column move.
    */
   void columnMoved(TableColumnModelEvent event);
@@ -78,15 +78,15 @@ public interface TableColumnModelListener
   /**
    * Called by the {@link TableColumnModel} to indicate that a column has been
    * removed from the model.
-   * 
+   *
    * @param event  information about the column removal.
    */
   void columnRemoved(TableColumnModelEvent event);
 
   /**
-   * Called by the {@link TableColumnModel} to indicate that the column 
+   * Called by the {@link TableColumnModel} to indicate that the column
    * selection state has changed.
-   * 
+   *
    * @param event  information about the column selection state.
    */
   void columnSelectionChanged(ListSelectionEvent event);

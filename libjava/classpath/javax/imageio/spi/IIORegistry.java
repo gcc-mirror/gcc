@@ -54,7 +54,7 @@ import gnu.javax.imageio.png.PNGImageReaderSpi;
 public final class IIORegistry extends ServiceRegistry
 {
   private static final HashSet defaultCategories = new HashSet();
-  
+
   private static HashMap instances = new HashMap();
 
   static
@@ -65,19 +65,19 @@ public final class IIORegistry extends ServiceRegistry
     defaultCategories.add(ImageInputStreamSpi.class);
     defaultCategories.add(ImageOutputStreamSpi.class);
   }
-  
+
   public static synchronized IIORegistry getDefaultInstance()
   {
     // XXX: This leaks memory if a ThreadGroup isn't available anymore.
     ThreadGroup group = Thread.currentThread().getThreadGroup();
     IIORegistry registry = (IIORegistry) instances.get(group);
-    
+
     if (registry == null)
       {
         registry = new IIORegistry();
         instances.put(group, registry);
       }
-    
+
     return registry;
   }
 
@@ -94,7 +94,7 @@ public final class IIORegistry extends ServiceRegistry
     Toolkit toolkit = Toolkit.getDefaultToolkit();
     if (toolkit instanceof ClasspathToolkit)
       ((ClasspathToolkit)toolkit).registerImageIOSpis(this);
-    
+
     registerApplicationClasspathSpis();
   }
 
@@ -109,11 +109,11 @@ public final class IIORegistry extends ServiceRegistry
 
     while (categories.hasNext())
       {
-	Class category = (Class) categories.next();
-	Iterator providers = ServiceFactory.lookupProviders(category, loader);
+        Class category = (Class) categories.next();
+        Iterator providers = ServiceFactory.lookupProviders(category, loader);
 
-	while (providers.hasNext())
-	  registerServiceProvider((IIOServiceProvider) providers.next());
+        while (providers.hasNext())
+          registerServiceProvider((IIOServiceProvider) providers.next());
       }
   }
 }

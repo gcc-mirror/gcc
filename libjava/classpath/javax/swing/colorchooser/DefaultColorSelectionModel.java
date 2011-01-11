@@ -113,8 +113,8 @@ public class DefaultColorSelectionModel implements ColorSelectionModel,
       throw new Error("ColorSelectionModel cannot be set to have null color.");
     if (color != selectedColor)
       {
-	this.selectedColor = color;
-	fireStateChanged();
+        this.selectedColor = color;
+        fireStateChanged();
       }
   }
 

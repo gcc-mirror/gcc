@@ -92,11 +92,11 @@ public class PNGDecoder
   {
     try
       {
-	return inflater.inflate( buf, offset, buf.length - offset);
+        return inflater.inflate( buf, offset, buf.length - offset);
       }
     catch(DataFormatException dfe)
       {
-	throw new PNGException("Error inflating data.");
+        throw new PNGException("Error inflating data.");
       }
   }
 
@@ -111,29 +111,29 @@ public class PNGDecoder
     chunk.feedToInflater( inflater );
     do
       {
-	if( readFilter )
-	  if( getBytes( filterType, 0 ) < 1 )
-	    return;
+        if( readFilter )
+          if( getBytes( filterType, 0 ) < 1 )
+            return;
 
-	n = getBytes( scanline, offset );
+        n = getBytes( scanline, offset );
 
-	if( offset + n < stride )
-	  {
-	    offset += n;
-	    readFilter = false;
-	  }
-	else
-	  {
-	    scanline = PNGFilter.unFilterScanline( filterType[0], scanline,
-						   lastScanline, bpp );
-	    System.arraycopy( scanline, 0,
-			      raster, currentScanline * stride, stride );
-	    lastScanline = scanline;
-	    scanline = new byte[scanline.length];
-	    currentScanline++;
-	    readFilter = true;
-	    offset = 0;
-	  }
+        if( offset + n < stride )
+          {
+            offset += n;
+            readFilter = false;
+          }
+        else
+          {
+            scanline = PNGFilter.unFilterScanline( filterType[0], scanline,
+                                                   lastScanline, bpp );
+            System.arraycopy( scanline, 0,
+                              raster, currentScanline * stride, stride );
+            lastScanline = scanline;
+            scanline = new byte[scanline.length];
+            currentScanline++;
+            readFilter = true;
+            offset = 0;
+          }
       }
     while( n > 0 && currentScanline < header.getHeight() );
   }
@@ -154,86 +154,86 @@ public class PNGDecoder
     switch( header.getColorType() )
       {
       case PNGHeader.GRAYSCALE_WITH_ALPHA:
-	if( depth == 8 )
-	  {
-	    t = DataBuffer.TYPE_BYTE;
-	    db = getByteBuffer();
-	  }
-	else
-	  { 
-	    t = DataBuffer.TYPE_USHORT;
-	    db = getShortBuffer();
-	  }
-	sm = new ComponentSampleModel(t, width, height, 2, width * 2,
-				      new int[]{0, 1});
-	break;
+        if( depth == 8 )
+          {
+            t = DataBuffer.TYPE_BYTE;
+            db = getByteBuffer();
+          }
+        else
+          {
+            t = DataBuffer.TYPE_USHORT;
+            db = getShortBuffer();
+          }
+        sm = new ComponentSampleModel(t, width, height, 2, width * 2,
+                                      new int[]{0, 1});
+        break;
 
       case PNGHeader.GRAYSCALE:
-	switch( depth )
-	  {
-	  case 16:
-	    sm = new ComponentSampleModel(DataBuffer.TYPE_USHORT, 
-					  width, height, 1, width,
-					  new int[]{ 0 });
-	    db = getShortBuffer();
-	    break;
-	    
-	  case 8:
-	    sm = new ComponentSampleModel(DataBuffer.TYPE_BYTE, 
-					  width, height, 1, width,
-					  new int[]{ 0 });
-	    db = getByteBuffer();
-	    break;
-	    
-	  default:
-	    sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-						 width, height, depth);
-	    db = getByteBuffer();
-	    break;
-	  }
-	break;
+        switch( depth )
+          {
+          case 16:
+            sm = new ComponentSampleModel(DataBuffer.TYPE_USHORT,
+                                          width, height, 1, width,
+                                          new int[]{ 0 });
+            db = getShortBuffer();
+            break;
+
+          case 8:
+            sm = new ComponentSampleModel(DataBuffer.TYPE_BYTE,
+                                          width, height, 1, width,
+                                          new int[]{ 0 });
+            db = getByteBuffer();
+            break;
+
+          default:
+            sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                                 width, height, depth);
+            db = getByteBuffer();
+            break;
+          }
+        break;
 
       case PNGHeader.RGB:
-	if( depth == 8 )
-	  {
-	    t = DataBuffer.TYPE_BYTE;
-	    db = getByteBuffer();
-	  }
-	else
-	  { 
-	    t = DataBuffer.TYPE_USHORT;
-	    db = getShortBuffer();
-	  }
-	sm = new ComponentSampleModel(t, width, height, 3, 3 * width,
-				      new int[]{0, 1, 2});
-	break;
+        if( depth == 8 )
+          {
+            t = DataBuffer.TYPE_BYTE;
+            db = getByteBuffer();
+          }
+        else
+          {
+            t = DataBuffer.TYPE_USHORT;
+            db = getShortBuffer();
+          }
+        sm = new ComponentSampleModel(t, width, height, 3, 3 * width,
+                                      new int[]{0, 1, 2});
+        break;
 
       case PNGHeader.RGB_WITH_ALPHA:
-	if( depth == 8 )
-	  {
-	    t = DataBuffer.TYPE_BYTE;
-	    db = getByteBuffer();
-	  }
-	else
-	  { 
-	    t = DataBuffer.TYPE_USHORT;
-	    db = getShortBuffer();
-	  }
-	
-	sm = new ComponentSampleModel(t, width, height, 4, width * 4,
-				      new int[]{0, 1, 2, 3});
-	break;
-	
+        if( depth == 8 )
+          {
+            t = DataBuffer.TYPE_BYTE;
+            db = getByteBuffer();
+          }
+        else
+          {
+            t = DataBuffer.TYPE_USHORT;
+            db = getShortBuffer();
+          }
+
+        sm = new ComponentSampleModel(t, width, height, 4, width * 4,
+                                      new int[]{0, 1, 2, 3});
+        break;
+
       case PNGHeader.INDEXED:
-	if( depth == 8 )
-	  sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-						width, height, 
-						new int[] {0xFF});
-	else
-	  sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, 
-					       width, height, depth);
-	db = getByteBuffer();
-	break;
+        if( depth == 8 )
+          sm = new SinglePixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                                width, height,
+                                                new int[] {0xFF});
+        else
+          sm = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE,
+                                               width, height, depth);
+        db = getByteBuffer();
+        break;
       }
 
     return Raster.createWritableRaster(sm, db, null);
@@ -247,8 +247,8 @@ public class PNGDecoder
   {
     short[] data = new short[(raster.length >> 1)];
     for( int i = 0; i < data.length; i++ )
-      data[i] = (short)(((raster[i * 2] & 0xFF) << 8) | 
-			(raster[i * 2 + 1] & 0xFF));
+      data[i] = (short)(((raster[i * 2] & 0xFF) << 8) |
+                        (raster[i * 2 + 1] & 0xFF));
     return new DataBufferUShort( data, data.length );
   }
 
@@ -260,8 +260,8 @@ public class PNGDecoder
     return new DataBufferByte( raster, raster.length );
   }
 
-  public ColorModel getColorModel( ColorSpace cs, 
-				   int colorType, int depth )
+  public ColorModel getColorModel( ColorSpace cs,
+                                   int colorType, int depth )
   {
     int[] bits;
     boolean hasAlpha = false;
@@ -270,49 +270,49 @@ public class PNGDecoder
     switch( colorType )
       {
       case PNGHeader.GRAYSCALE_WITH_ALPHA:
-	if( cs == null )
-	  cs = ColorSpace.getInstance( ColorSpace.CS_GRAY );
-	hasAlpha = true;
-	bits = new int[]{ depth, depth };
-	break;
-	
+        if( cs == null )
+          cs = ColorSpace.getInstance( ColorSpace.CS_GRAY );
+        hasAlpha = true;
+        bits = new int[]{ depth, depth };
+        break;
+
       case PNGHeader.RGB:
-	bits = new int[]{ depth, depth, depth };
-	break;
+        bits = new int[]{ depth, depth, depth };
+        break;
 
       case PNGHeader.RGB_WITH_ALPHA:
-	hasAlpha = true;
-	bits = new int[]{ depth, depth, depth, depth };
-	break;
+        hasAlpha = true;
+        bits = new int[]{ depth, depth, depth, depth };
+        break;
 
       case PNGHeader.GRAYSCALE:
-	if( depth < 8 )
-	  return grayPalette( depth );
+        if( depth < 8 )
+          return grayPalette( depth );
 
-	if( cs == null )
-	  cs = ColorSpace.getInstance( ColorSpace.CS_GRAY );
-	bits = new int[]{ depth };
-	break;
+        if( cs == null )
+          cs = ColorSpace.getInstance( ColorSpace.CS_GRAY );
+        bits = new int[]{ depth };
+        break;
 
       default:
       case PNGHeader.INDEXED:
-	return null; // Handled by the palette chunk.
+        return null; // Handled by the palette chunk.
       }
 
     if( cs == null )
       cs = ColorSpace.getInstance( ColorSpace.CS_sRGB );
 
 
-    return new ComponentColorModel(cs, bits, hasAlpha, false, 
-				   (hasAlpha ? 
-				    ComponentColorModel.TRANSLUCENT : 
-				    ComponentColorModel.OPAQUE), 
-				   ((depth == 16) ? DataBuffer.TYPE_USHORT : 
-				    DataBuffer.TYPE_BYTE));
+    return new ComponentColorModel(cs, bits, hasAlpha, false,
+                                   (hasAlpha ?
+                                    ComponentColorModel.TRANSLUCENT :
+                                    ComponentColorModel.OPAQUE),
+                                   ((depth == 16) ? DataBuffer.TYPE_USHORT :
+                                    DataBuffer.TYPE_BYTE));
   }
 
   private IndexColorModel grayPalette(int depth)
-  { 
+  {
     byte[] c = new byte[ (1 << depth) ];
     for(int i = 0; i < c.length; i++)
       c[i] = (byte)(255.0 * (((double)i) / ((double)c.length - 1.0)));

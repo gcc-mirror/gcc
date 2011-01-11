@@ -58,11 +58,11 @@ import java.io.OutputStream;
 public class CloseMessage
   extends MessageHeader
 {
-  /** 
-   * Use serialVersionUID for interoperability. 
+  /**
+   * Use serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1;
-  
+
   /**
    * The singleton close message is typically enough, despite new
    * instances may be instantiated if the specific version field

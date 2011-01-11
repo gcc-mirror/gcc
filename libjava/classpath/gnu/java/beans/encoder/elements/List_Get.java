@@ -41,7 +41,7 @@ package gnu.java.beans.encoder.elements;
 import gnu.java.beans.encoder.Writer;
 
 /** Generates an XML element denoting the retrieval of a list's element.
- * 
+ *
  * @author Robert Schuster (robertschuster@fsfe.org)
  *
  */
@@ -52,5 +52,5 @@ public class List_Get extends Element
   {
     writer.write("object", "get");
   }
-  
+
 }

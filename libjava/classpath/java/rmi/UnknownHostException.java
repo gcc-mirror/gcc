@@ -45,7 +45,7 @@ package java.rmi;
  * @since 1.1
  * @status updated to 1.4
  */
-public class UnknownHostException extends RemoteException 
+public class UnknownHostException extends RemoteException
 {
   /**
    * Compatible with JDK 1.1+.
