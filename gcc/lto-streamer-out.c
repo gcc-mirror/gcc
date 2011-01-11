@@ -2007,6 +2007,13 @@ output_function (struct cgraph_node *node)
 }
 
 
+/* Used to pass data to trivally_defined_alias callback.  */
+struct sets {
+  cgraph_node_set set;
+  varpool_node_set vset;
+};
+
+
 /* Return true if alias pair P belongs to the set of cgraph nodes in
    SET.  If P is a an alias for a VAR_DECL, it can always be emitted.
    However, for FUNCTION_DECL aliases, we should only output the pair
@@ -2016,16 +2023,51 @@ output_function (struct cgraph_node *node)
    the file processed by LTRANS.  */
 
 static bool
-output_alias_pair_p (alias_pair *p, cgraph_node_set set, varpool_node_set vset)
+trivally_defined_alias (tree decl ATTRIBUTE_UNUSED,
+			tree target, void *data)
 {
-  if (TREE_CODE (p->decl) == VAR_DECL)
-    return varpool_node_in_set_p (varpool_node_for_asm (p->target), vset);
+  struct sets *set = (struct sets *) data;
+  struct cgraph_node *fnode = NULL;
+  struct varpool_node *vnode = NULL;
 
-  /* Check if the assembler name for P->TARGET has its cgraph node in SET.  */
-  gcc_assert (TREE_CODE (p->decl) == FUNCTION_DECL);
-  return cgraph_node_in_set_p (cgraph_node_for_asm (p->target), set);
+  fnode = cgraph_node_for_asm (target);
+  if (fnode)
+    return cgraph_node_in_set_p (fnode, set->set);
+  vnode = varpool_node_for_asm (target);
+  return vnode && varpool_node_in_set_p (vnode, set->vset);
 }
 
+/* Return true if alias pair P should be output in the current
+   partition contains cgrpah nodes SET and varpool nodes VSET.
+   DEFINED is set of all aliases whose targets are defined in
+   the partition.
+
+   Normal aliases are output when they are defined, while WEAKREF
+   aliases are output when they are used.  */
+
+static bool
+output_alias_pair_p (alias_pair *p, symbol_alias_set_t *defined,
+		     cgraph_node_set set, varpool_node_set vset)
+{
+  struct cgraph_node *node;
+  struct varpool_node *vnode;
+
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
+    {
+      if (TREE_CODE (p->decl) == VAR_DECL)
+	{
+	  vnode = varpool_get_node (p->decl);
+	  return (vnode
+		  && referenced_from_this_partition_p (&vnode->ref_list, set, vset));
+	}
+      node = cgraph_get_node (p->decl);
+      return (node
+	      && (referenced_from_this_partition_p (&node->ref_list, set, vset)
+		  || reachable_from_this_partition_p (node, set)));
+    }
+  else
+    return symbol_alias_set_contains (defined, p->decl);
+}
 
 /* Output any unreferenced global symbol defined in SET, alias pairs
    and labels.  */
@@ -2037,6 +2079,11 @@ output_unreferenced_globals (cgraph_node_set set, varpool_node_set vset)
   alias_pair *p;
   unsigned i;
   struct varpool_node *vnode;
+  symbol_alias_set_t *defined;
+  struct sets setdata;
+
+  setdata.set = set;
+  setdata.vset = vset;
 
   ob = create_output_block (LTO_section_static_initializer);
   ob->cgraph_node = NULL;
@@ -2070,15 +2117,20 @@ output_unreferenced_globals (cgraph_node_set set, varpool_node_set vset)
 
   output_zero (ob);
 
+  /* We really need to propagate in both directoins:
+     for normal aliases we propagate from first defined alias to
+     all aliases defined based on it.  For weakrefs we propagate in
+     the oposite direction.  */
+  defined = propagate_aliases_backward (trivally_defined_alias, &setdata);
+
   /* Emit the alias pairs for the nodes in SET.  */
   FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
-    {
-      if (output_alias_pair_p (p, set, vset))
-	{
-	  lto_output_tree_ref (ob, p->decl);
-	  lto_output_tree_ref (ob, p->target);
-	}
-    }
+    if (output_alias_pair_p (p, defined, set, vset))
+      {
+	lto_output_tree_ref (ob, p->decl);
+	lto_output_tree_ref (ob, p->target);
+      }
+  symbol_alias_set_destroy (defined);
 
   output_zero (ob);
 
@@ -2476,6 +2528,11 @@ produce_symtab (struct output_block *ob,
   lto_cgraph_encoder_t encoder = ob->decl_state->cgraph_node_encoder;
   int i;
   alias_pair *p;
+  struct sets setdata;
+  symbol_alias_set_t *defined;
+
+  setdata.set = set;
+  setdata.vset = vset;
 
   lto_begin_section (section_name, false);
   free (section_name);
@@ -2553,9 +2610,11 @@ produce_symtab (struct output_block *ob,
     }
 
   /* Write all aliases.  */
+  defined = propagate_aliases_backward (trivally_defined_alias, &setdata);
   FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
-    if (output_alias_pair_p (p, set, vset))
+    if (output_alias_pair_p (p, defined, set, vset))
       write_symbol (cache, &stream, p->decl, seen, true);
+  symbol_alias_set_destroy (defined);
 
   lto_write_stream (&stream);
   pointer_set_destroy (seen);

@@ -144,6 +144,7 @@ rest_of_decl_compilation (tree decl,
 {
   /* We deferred calling assemble_alias so that we could collect
      other attributes such as visibility.  Emit the alias now.  */
+  if (!in_lto_p)
   {
     tree alias;
     alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl));

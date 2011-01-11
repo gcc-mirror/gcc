@@ -1,3 +1,29 @@
+2011-01-11  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/45721
+	PR lto/45375
+	* tree.h (symbol_alias_set_t): Move typedef here from varasm.c
+	(symbol_alias_set_destroy, symbol_alias_set_contains,
+	propagate_aliases_backward): Declare.
+	* lto-streamer-out.c (struct sets): New sturcture.
+	(trivally_defined_alias): New function.
+	(output_alias_pair_p): Rewrite.
+	(output_unreferenced_globals): Fix output of alias pairs.
+	(produce_symtab): Likewise.
+	* ipa.c (function_and_variable_visibility): Set weak alias destination
+	as needed in lto.
+	* varasm.c (symbol_alias_set_t): Remove.
+	(symbol_alias_set_destroy): Export.
+	(propagate_aliases_forward, propagate_aliases_backward): New functions
+	based on ...
+	(compute_visible_aliases): ... this one; remove.
+	(trivially_visible_alias): New
+	(trivially_defined_alias): New.
+	(remove_unreachable_alias_pairs): Rewrite.
+	(finish_aliases_1): Reorganize code checking if alias is defined.
+	* passes.c (rest_of_decl_compilation): Do not call assemble_alias when
+	in LTO mode.
+
 2011-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46076

@@ -1,3 +1,10 @@
+2011-01-11  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/45721
+	PR lto/45375
+	* testsuite/gcc.dg/lto/pr45721_1.c: New file.
+	* testsuite/gcc.dg/lto/pr45721_0.c: New file.
+
 2011-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/46076

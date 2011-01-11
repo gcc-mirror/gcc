@@ -837,6 +837,8 @@ partition_cgraph_node_p (struct cgraph_node *node)
       || (DECL_COMDAT (node->decl)
 	  && !cgraph_used_from_object_file_p (node)))
     return false;
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (node->decl)))
+    return false;
   return true;
 }
 
@@ -853,6 +855,8 @@ partition_varpool_node_p (struct varpool_node *vnode)
       || (DECL_COMDAT (vnode->decl)
 	  && !vnode->force_output
 	  && !varpool_used_from_object_file_p (vnode)))
+    return false;
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->decl)))
     return false;
   return true;
 }
