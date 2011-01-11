@@ -1,5 +1,10 @@
 2011-01-11  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.md (absdf2, negdf2): Remove.
+	(abssf2, negsf2): Define only for hardware fp.
+	(sqrtsf2): Reformat.
+	(addsf3, subsf3, mulsf3): Merge expander and insn.
+
 	* config/mn10300/mn10300.h (ARG_PIONTER_CFA_OFFSET): New.
 	(DEBUGGER_AUTO_OFFSET): Remove.
 	(DEBUGGER_ARG_OFFSET): Remove.
