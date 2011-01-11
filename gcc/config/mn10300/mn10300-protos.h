@@ -39,7 +39,6 @@ extern Rclas mn10300_secondary_reload_class (Rclas, Mmode, rtx);
 extern Mmode mn10300_select_cc_mode (rtx);
 extern int   mn10300_store_multiple_operation (rtx, Mmode);
 extern int   mn10300_symbolic_operand (rtx, Mmode);
-extern bool  mn10300_wide_const_load_uses_clr (rtx operands[2]);
 #endif /* RTX_CODE */
 
 extern int   mn10300_can_use_return_insn (void);

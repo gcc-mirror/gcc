@@ -600,19 +600,6 @@ struct cum_arg
 #define SELECT_CC_MODE(OP, X, Y)  mn10300_select_cc_mode (X)
 #define REVERSIBLE_CC_MODE(MODE)  0
 
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
-  ((CLASS1 == CLASS2 && (CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS)) ? 2 :\
-   ((CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS) && \
-    (CLASS2 == ADDRESS_REGS || CLASS2 == DATA_REGS)) ? 4 : \
-   (CLASS1 == SP_REGS && CLASS2 == ADDRESS_REGS) ? 2 : \
-   (CLASS1 == ADDRESS_REGS && CLASS2 == SP_REGS) ? 4 : \
-   ! TARGET_AM33 ? 6 : \
-   (CLASS1 == SP_REGS || CLASS2 == SP_REGS) ? 6 : \
-   (CLASS1 == CLASS2 && CLASS1 == EXTENDED_REGS) ? 6 : \
-   (CLASS1 == FP_REGS || CLASS2 == FP_REGS) ? 6 : \
-   (CLASS1 == EXTENDED_REGS || CLASS2 == EXTENDED_REGS) ? 4 : \
-   4)
-
 /* Nonzero if access to memory by bytes or half words is no faster
    than accessing full words.  */
 #define SLOW_BYTE_ACCESS 1

@@ -1,5 +1,19 @@
 2011-01-11  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.c (mn10300_address_cost): Remove forward
+	declaration.  Rewrite for both speed and size.
+	(mn10300_address_cost_1): Remove.
+	(mn10300_register_move_cost): New.
+	(mn10300_memory_move_cost): New.
+	(mn10300_rtx_costs): Rewrite for both speed and size.  Don't handle
+	ZERO_EXTRACT.  Do handle UNSPEC, arithmetic, logicals, compare,
+	extensions, shifts, BSWAP, CLZ.
+	(mn10300_wide_const_load_uses_clr): Remove.
+	(TARGET_REGISTER_MOVE_COST): New.
+	(TARGET_MEMORY_MOVE_COST): New.
+	* config/mn10300/mn10300-protos.h: Update.
+	* config/mn10300/mn10300.h (REGISTER_MOVE_COST): Remove.
+
 	* config/mn10300/constraints.md ("R", "T"): Remove constraints.
 	* config/mn10300/mn10300.c (mn10300_mask_ok_for_mem_btst): Remove.
 	* config/mn10300/mn10300-protos.h: Update.
