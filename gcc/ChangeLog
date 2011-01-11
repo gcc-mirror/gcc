@@ -1,5 +1,7 @@
 2011-01-11  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.h (ASM_PN_FORMAT): Delete.
+
 	* config/mn10300/mn10300.h (INCOMING_RETURN_ADDR_RTX): Define
 	in terms of the value on the stack, not the MDR register.
 
