@@ -1,3 +1,15 @@
+2011-01-11  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/46955
+	* cp-lang.c (get_template_innermost_arguments_folded)
+	(get_template_argument_pack_elems_folded)
+	(template_arg_needs_folding, fold_cplus_constants): New static
+	functions.
+	(LANG_HOOKS_GET_INNERMOST_GENERIC_ARGS): Set this hook to
+	get_template_innermost_arguments_folded.
+	(LANG_HOOKS_GET_ARGUMENT_PACK_ELEMS): Set this hook to
+	get_template_argument_pack_elems_folded.
+
 2011-01-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46658
