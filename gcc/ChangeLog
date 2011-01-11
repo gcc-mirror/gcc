@@ -1,5 +1,11 @@
 2011-01-11  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/46076
+	* tree-ssa.c (useless_type_conversion_p): Conversions from
+	unprototyped to empty argument list function types are useless.
+
+2011-01-11  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45235
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Do not mark
 	volatile MEMs as MEM_READONLY_P.

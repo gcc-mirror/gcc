@@ -1,3 +1,8 @@
+2011-01-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46076
+	* gcc.dg/tree-ssa/pr46076.c: New testcase.
+
 2011-01-11  Jeff Law <law@redhat.com>
 
 	* PR tree-optimization/47086
