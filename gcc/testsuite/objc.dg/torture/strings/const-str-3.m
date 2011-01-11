@@ -4,28 +4,27 @@
 /* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 /* { dg-options "-fconstant-string-class=Foo" } */
 /* { dg-options "-mno-constant-cfstrings -fconstant-string-class=Foo" { target *-*-darwin* } } */
-/* { dg-additional-sources "../../../objc-obj-c++-shared/Object1.m" } */
 
-#include "../../../objc-obj-c++-shared/Object1.h"
-#include "../../../objc-obj-c++-shared/next-mapping.h"
+#include "../../../objc-obj-c++-shared/objc-test-suite-types.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-@interface Foo: Object {
+@interface Foo {
+  void *dummy_class_ref;
   char *cString;
   unsigned int len;
 }
++ initialize;
 - (char *)customString;
 @end
 
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-struct fudge_objc_class _FooClassReference;
-#else
-struct objc_class _FooClassReference;
-#endif
+TNS_STRING_REF_T _FooClassReference; /* Only used by NeXT.  */
 
-@implementation Foo : Object
+@implementation Foo
++ initialize {return self;}
+
 - (char *)customString {
   return cString;
 }
@@ -39,11 +38,13 @@ int main () {
     abort();
   printf("Strings are being uniqued properly\n");
 
+#ifdef __NEXT_RUNTIME__
   /* This memcpy has to be done before the first message is sent to a
      constant string object. Can't be moved to +initialize since _that_
-     is already a message. */
+     is already a message.  */
 
-  memcpy(&_FooClassReference, objc_get_class("Foo"), sizeof(_FooClassReference));
+  memcpy(&_FooClassReference, objc_getClass("Foo"), sizeof(_FooClassReference));
+#endif
   if (strcmp ([string customString], "bla")) {
     abort ();
   }

@@ -1,42 +1,79 @@
+/* Compatibility header between runtimes and APIs.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+
+   Original Authors: Ziemowit Laski <zlaski@apple.com>
+		     David Ayers <d.ayers@inode.at>
+		     
+   re-work for ObjC2 by Iain Sandoe <iains@gcc.gnu.org>
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
 #ifndef _OBJC_NEXT_MAPPING_H_
 #define _OBJC_NEXT_MAPPING_H_
 
-/* This file "renames" various ObjC GNU runtime entry points
-   (and fakes the existence of several others)
-   if the NeXT runtime is being used.  */
-/* Authors: Ziemowit Laski <zlaski@apple.com>  */
-/*	    David Ayers <d.ayers@inode.at>  */
-/* Darwin 64bit/OBJC2 modifications Iain Sandoe */ 
+/* This file provides a two-way mapping of API names for the original 
+   GNU & NeXT APIs. 
+   
+   It is being expanded to provide mapping (where possible) between between the
+   older API and API-2.
+*/
+
+#include "objc-test-suite-types.h"
 
 #ifndef __NEXT_RUNTIME__
 
-#define CLASSPTRFIELD(x) (x)->class_pointer
+# define CLASSFIELD class_pointer
+# define CLASSPTRFIELD(x) (x)->class_pointer
+# define SUPERCLASS superClass
+# define OBJC_GETCLASS objc_get_class
 
-#else
-/* Includes next-abi.h to set NEXT_OBJC_USE_NEW_INTERFACE etc.*/
-#ifndef _OBJC_OBJECT1_H_
-#include "Object1.h"
-#endif
-#include <objc/objc-class.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
+# ifdef __objc_api_INCLUDE_GNU
+#  define class_createInstance(C, S) class_create_instance(C)
+# endif
+# define method_get_types(M) (M)->method_types
 
-/* Force a definition of nil that is compatible with GNU runtime.  */
-#undef  nil
-#define nil ((id)0)
+#else /* NeXT */
 
-#define objc_get_class(C) objc_getClass(C)
-#define objc_get_meta_class(C) objc_getMetaClass(C)
-#define class_get_class_method(C, S) class_getClassMethod(C, S)
-#define class_get_instance_method(C, S) class_getInstanceMethod(C, S)
-#define sel_get_name(S) sel_getName(S)
-#define class_create_instance(C) class_createInstance(C, 0)
-#define	class_get_class_name(C) object_getClassName(C)
+/* Include next-abi.h to set NEXT_OBJC_USE_NEW_INTERFACE etc.*/
+# include "next-abi.h"
 
-#define CLASSPTRFIELD(x) (x)->isa
+# ifdef NEXT_OBJC_USE_NEW_INTERFACE
+   /* API=2. */
+#  include <objc/runtime.h>
+# else
+   /* API=0. */
+#  include <objc/objc-class.h>
+# endif
 
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
+# define CLASSPTRFIELD(x) (x)->isa
+# define SUPERCLASS superclass
+# define OBJC_GETCLASS objc_getClass
+
+# define objc_get_class(C) objc_getClass(C)
+# define objc_get_meta_class(C) objc_getMetaClass(C)
+# define class_get_class_method(C, S) class_getClassMethod(C, S)
+# define class_get_instance_method(C, S) class_getInstanceMethod(C, S)
+# define sel_get_name(S) sel_getName(S)
+# define class_create_instance(C) class_createInstance(C, 0)
+# define class_get_class_name(C) object_getClassName(C)
+# define objc_lookup_class(N) objc_lookUpClass(N)
+
+# ifdef NEXT_OBJC_USE_NEW_INTERFACE
+
 #  define object_class_name(O) (object_getClassName(O)) 
 #  define object_get_class(O) (object_getClass((id)O))
 #  define object_get_super_class(O) class_get_super_class(object_get_class(O))
@@ -51,7 +88,8 @@
 #  define class_is_meta_class(C) (class_isMetaClass((Class)C) ? YES: NO)
 #  define class_is_class(C) (class_is_meta_class(C) == NO)
 
-#else
+# else /* OLD API */
+
 #  define object_class_name(O) (O->name) 
 #  define object_get_super_class(O) class_get_super_class(*(struct objc_class **)O)
 #  define object_get_class(O) (*(struct objc_class **)O)
@@ -64,94 +102,8 @@
 #  define class_get_super_class(C) (((struct objc_class *)C)->super_class)
 #  define class_is_meta_class(C) (CLS_GETINFO((struct objc_class *)C, CLS_META)? YES: NO)
 #  define class_is_class(C) (CLS_GETINFO((struct objc_class *)C, CLS_CLASS)? YES: NO)
-#endif
 
-#define objc_lookup_class(N) objc_lookUpClass(N)
+# endif /* NEXT_OBJC_USE_NEW_INTERFACE */
 
-/* You need either an empty +initialize method or an empty -forward:: method. 
-   The NeXT runtime unconditionally sends +initialize to classes when they are 
-   first used, and unconditionally tries to forward methods that the class 
-   doesn't understand (including +initialize). If you have neither +initialize 
-   nor -forward::, the runtime complains.  
-
-   The simplest workaround is to add
-
-      + initialize { return self; }
-
-   to every root class @implementation.  */
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-
-/* A small, portable NSConstantString implementation for use with the NeXT
-   runtime.
-   
-   On full-fledged Mac OS X systems, NSConstantString is provided
-   as part of the Foundation framework.  However, on bare Darwin systems,
-   Foundation is not included, and hence there is no NSConstantString 
-   implementation to link against.
-
-   This code is derived from the GNU runtime's NXConstantString implementation.
-*/
-
-/* This definition cut out of <objc/Object.h> with the OBJC2 deprecation
-   messages removed. 
-*/
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
-struct fudge_objc_class {
-    Class isa;
-#if NEXT_OBJC_ABI_VERSION < 2
-    Class super_class ;
-    const char *name ;
-    long version  ;
-    long info ;
-    long instance_size ;
-    struct anon *ivars ; /* objc_ivar_list */
-    struct anon1 **methodLists ; /* objc_method_list */
-    struct objc_cache *cache  ;
-    struct objc_protocol_list *protocols ;
-#endif
-} _NSConstantStringClassReference ;
-#else
-struct objc_class _NSConstantStringClassReference ;
-#endif
-
-@interface NSConstantString : Object
-{
-  char *c_string;
-  unsigned int len;
-}
-
--(const char *) cString;
--(unsigned int) length;
-
-@end
-
-@implementation NSConstantString
-
--(const char *) cString
-{
-  return (c_string);
-}
-
--(unsigned int) length
-{
-  return (len);
-}
-
-@end
-
-/* The NSConstantString metaclass will need to be initialized before we can
-   send messages to strings.  */
-
-void objc_constant_string_init (void) __attribute__((constructor));
-void objc_constant_string_init (void) {
-  memcpy (&_NSConstantStringClassReference,
-	  objc_getClass ("NSConstantString"),
-	  sizeof (_NSConstantStringClassReference));
-}
-
-#endif  /*__NEXT_RUNTIME__ */
+# endif  /*__NEXT_RUNTIME__ */
 #endif /* _OBJC_NEXT_MAPPING_H_ */

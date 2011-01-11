@@ -1,3 +1,23 @@
+/* Check which version of the API and ABI are appropriate for the target.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+
+   Contributed by Iain Sandoe <iains@gcc.gnu.org>
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 #ifndef _OBJC_NEXT_ABI_H_
 #define _OBJC_NEXT_ABI_H_
@@ -6,9 +26,8 @@
 */
 
 /* By default we do nothing - therefore ifdef NEXT_OBJC_USE_NEW_INTERFACE
- * is reliable for detecting 
- *  (a) versions of the compiler that are transitional to the new next ABI
- *  (b) versions of the target that require the new ABI.
+ * is reliable for detecting versions of the target that require either
+ * API=2, or both API & ABI = 2 (m64 code).
  *
  * This applies for versions of OSX >= 10.5 (darwin9).
  *
