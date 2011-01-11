@@ -1,5 +1,14 @@
 2011-01-11  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/constraints.md ("R", "T"): Remove constraints.
+	* config/mn10300/mn10300.c (mn10300_mask_ok_for_mem_btst): Remove.
+	* config/mn10300/mn10300-protos.h: Update.
+	* config/mn10300/mn10300.md (movsi_internal): Don't use "R".
+	(*byte_clear, *byte_set, *bit_clear1, *bit_clear2, *bit_set): Remove.
+	(iorqi3, *am33_iorqi3, *mn10300_iorqi3): Remove.
+	(*test_int_bitfield, *test_byte_bitfield): Remove.
+	(*bit_test, *subreg_bit_test): Remove.
+
 	* config/mn10300/constraints.md ("c"): Rename from "A".
 	("A", "D"): New constraint letters.
 	* config/mn10300/mn10300.md (fmasf4): Use the "c" constraint.
