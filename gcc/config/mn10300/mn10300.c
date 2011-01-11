@@ -75,8 +75,6 @@ enum processor_type mn10300_tune_cpu = PROCESSOR_DEFAULT;
 				|| df_regs_ever_live_p (16)	\
 				|| df_regs_ever_live_p (17)))
 
-static int mn10300_address_cost (rtx, bool);
-
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options mn10300_option_optimization_table[] =
   {
@@ -2034,180 +2032,340 @@ mn10300_legitimate_constant_p (rtx x)
   return true;
 }
 
+/* For addresses, costs are relative to "MOV (Rm),Rn".  For AM33 this is
+   the 3-byte fully general instruction; for MN103 this is the 2-byte form
+   with an address register.  */
+
 static int
-mn10300_address_cost_1 (rtx x, int *unsig)
+mn10300_address_cost (rtx x, bool speed)
 {
+  HOST_WIDE_INT i;
+  rtx base, index;
+
   switch (GET_CODE (x))
     {
-    case REG:
-      switch (REGNO_REG_CLASS (REGNO (x)))
-	{
-	case SP_REGS:
-	  *unsig = 1;
-	  return 0;
-
-	case ADDRESS_REGS:
-	  return 1;
-
-	case DATA_REGS:
-	case EXTENDED_REGS:
-	case FP_REGS:
-	  return 3;
-
-	case NO_REGS:
-	  return 5;
-
-	default:
-	  gcc_unreachable ();
-	}
-
-    case PLUS:
-    case MINUS:
-    case ASHIFT:
-    case AND:
-    case IOR:
-      return (mn10300_address_cost_1 (XEXP (x, 0), unsig)
-	      + mn10300_address_cost_1 (XEXP (x, 1), unsig));
-
-    case EXPR_LIST:
-    case SUBREG:
-    case MEM:
-      return mn10300_address_cost (XEXP (x, 0), !optimize_size);
-
-    case ZERO_EXTEND:
-      *unsig = 1;
-      return mn10300_address_cost_1 (XEXP (x, 0), unsig);
-
-    case CONST_INT:
-      if (INTVAL (x) == 0)
-	return 0;
-      if (INTVAL (x) + (*unsig ? 0 : 0x80) < 0x100)
-	return 1;
-      if (INTVAL (x) + (*unsig ? 0 : 0x8000) < 0x10000)
-	return 3;
-      if (INTVAL (x) + (*unsig ? 0 : 0x800000) < 0x1000000)
-	return 5;
-      return 7;
-
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
-      return 8;
+      /* We assume all of these require a 32-bit constant, even though
+	 some symbol and label references can be relaxed.  */
+      return speed ? 1 : 4;
+
+    case REG:
+    case SUBREG:
+    case POST_INC:
+      return 0;
+
+    case POST_MODIFY:
+      /* Assume any symbolic offset is a 32-bit constant.  */
+      i = (CONST_INT_P (XEXP (x, 1)) ? INTVAL (XEXP (x, 1)) : 0x12345678);
+      if (IN_RANGE (i, -128, 127))
+	return speed ? 0 : 1;
+      if (speed)
+	return 1;
+      if (IN_RANGE (i, -0x800000, 0x7fffff))
+	return 3;
+      return 4;
+
+    case PLUS:
+      base = XEXP (x, 0);
+      index = XEXP (x, 1);
+      if (register_operand (index, SImode))
+	{
+	  /* Attempt to minimize the number of registers in the address.
+	     This is similar to what other ports do.  */
+	  if (register_operand (base, SImode))
+	    return 1;
+
+	  base = XEXP (x, 1);
+	  index = XEXP (x, 0);
+	}
+
+      /* Assume any symbolic offset is a 32-bit constant.  */
+      i = (CONST_INT_P (XEXP (x, 1)) ? INTVAL (XEXP (x, 1)) : 0x12345678);
+      if (IN_RANGE (i, -128, 127))
+	return speed ? 0 : 1;
+      if (IN_RANGE (i, -32768, 32767))
+	return speed ? 0 : 2;
+      return speed ? 2 : 6;
 
     default:
-      gcc_unreachable ();
-
+      return rtx_cost (x, MEM, speed);
     }
 }
 
+/* Implement the TARGET_REGISTER_MOVE_COST hook.
+
+   Recall that the base value of 2 is required by assumptions elsewhere
+   in the body of the compiler, and that cost 2 is special-cased as an
+   early exit from reload meaning no work is required.  */
+
 static int
-mn10300_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
+mn10300_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			    reg_class_t ifrom, reg_class_t ito)
 {
-  int s = 0;
-  return mn10300_address_cost_1 (x, &s);
+  enum reg_class from = (enum reg_class) ifrom;
+  enum reg_class to = (enum reg_class) ito;
+  enum reg_class scratch, test;
+
+  /* Simplify the following code by unifying the fp register classes.  */
+  if (to == FP_ACC_REGS)
+    to = FP_REGS;
+  if (from == FP_ACC_REGS)
+    from = FP_REGS;
+
+  /* Diagnose invalid moves by costing them as two moves.  */
+
+  scratch = NO_REGS;
+  test = from;
+  if (to == SP_REGS)
+    scratch = (TARGET_AM33 ? GENERAL_REGS : ADDRESS_REGS);
+  else if (to == FP_REGS && to != from)
+    scratch = GENERAL_REGS;
+  else
+    {
+      test = to;
+      if (from == SP_REGS)
+	scratch = (TARGET_AM33 ? GENERAL_REGS : ADDRESS_REGS);
+      else if (from == FP_REGS && to != from)
+	scratch = GENERAL_REGS;
+    }
+  if (scratch != NO_REGS && !reg_class_subset_p (test, scratch))
+    return (mn10300_register_move_cost (VOIDmode, from, scratch)
+	    + mn10300_register_move_cost (VOIDmode, scratch, to));
+
+  /* From here on, all we need consider are legal combinations.  */
+
+  if (optimize_size)
+    {
+      /* The scale here is bytes * 2.  */
+
+      if (from == to && (to == ADDRESS_REGS || to == DATA_REGS))
+	return 2;
+
+      if (from == SP_REGS)
+	return (to == ADDRESS_REGS ? 2 : 6);
+
+      /* For MN103, all remaining legal moves are two bytes.  */
+      if (TARGET_AM33)
+	return 4;
+
+      if (to == SP_REGS)
+	return (from == ADDRESS_REGS ? 4 : 6);
+
+      if ((from == ADDRESS_REGS || from == DATA_REGS)
+	   && (to == ADDRESS_REGS || to == DATA_REGS))
+	return 4;
+
+      if (to == EXTENDED_REGS)
+	return (to == from ? 6 : 4);
+
+      /* What's left are SP_REGS, FP_REGS, or combinations of the above.  */
+      return 6;
+    }
+  else
+    {
+      /* The scale here is cycles * 2.  */
+
+      if (to == FP_REGS)
+	return 8;
+      if (from == FP_REGS)
+	return 4;
+
+      /* All legal moves between integral registers are single cycle.  */
+      return 2;
+    }
 }
 
-static bool
-mn10300_rtx_costs (rtx x, int code, int outer_code, int *total,
-		   bool speed ATTRIBUTE_UNUSED)
+/* Implement the TARGET_MEMORY_MOVE_COST hook.
+
+   Given lack of the form of the address, this must be speed-relative,
+   though we should never be less expensive than a size-relative register
+   move cost above.  This is not a problem.  */
+
+static int
+mn10300_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED, 
+			  reg_class_t iclass, bool in ATTRIBUTE_UNUSED)
 {
+  enum reg_class rclass = (enum reg_class) iclass;
+
+  if (rclass == FP_REGS)
+    return 8;
+  return 6;
+}
+
+/* Implement the TARGET_RTX_COSTS hook.
+
+   Speed-relative costs are relative to COSTS_N_INSNS, which is intended
+   to represent cycles.  Size-relative costs are in bytes.  */
+
+static bool
+mn10300_rtx_costs (rtx x, int code, int outer_code, int *ptotal, bool speed)
+{
+  /* This value is used for SYMBOL_REF etc where we want to pretend
+     we have a full 32-bit constant.  */
+  HOST_WIDE_INT i = 0x12345678;
+  int total;
+
   switch (code)
     {
     case CONST_INT:
-      /* Zeros are extremely cheap.  */
-      if (INTVAL (x) == 0 && (outer_code == SET || outer_code == COMPARE))
-	*total = 0;
-      /* If it fits in 8 bits, then it's still relatively cheap.  */
-      else if (INT_8_BITS (INTVAL (x)))
-	*total = 1;
-      /* This is the "base" cost, includes constants where either the
-	 upper or lower 16bits are all zeros.  */
-      else if (INT_16_BITS (INTVAL (x))
-	       || (INTVAL (x) & 0xffff) == 0
-	       || (INTVAL (x) & 0xffff0000) == 0)
-	*total = 2;
+      i = INTVAL (x);
+    do_int_costs:
+      if (speed)
+	{
+	  if (outer_code == SET)
+	    {
+	      /* 16-bit integer loads have latency 1, 32-bit loads 2.  */
+	      if (IN_RANGE (i, -32768, 32767))
+		total = COSTS_N_INSNS (1);
+	      else
+		total = COSTS_N_INSNS (2);
+	    }
+	  else
+	    {
+	      /* 16-bit integer operands don't affect latency;
+		 24-bit and 32-bit operands add a cycle.  */
+	      if (IN_RANGE (i, -32768, 32767))
+		total = 0;
+	      else
+		total = COSTS_N_INSNS (1);
+	    }
+	}
       else
-	*total = 4;
-      return true;
+	{
+	  if (outer_code == SET)
+	    {
+	      if (i == 0)
+		total = 1;
+	      else if (IN_RANGE (i, -128, 127))
+		total = 2;
+	      else if (IN_RANGE (i, -32768, 32767))
+		total = 3;
+	      else
+		total = 6;
+	    }
+	  else
+	    {
+	      /* Reference here is ADD An,Dn, vs ADD imm,Dn.  */
+	      if (IN_RANGE (i, -128, 127))
+		total = 0;
+	      else if (IN_RANGE (i, -32768, 32767))
+		total = 2;
+	      else if (TARGET_AM33 && IN_RANGE (i, -0x01000000, 0x00ffffff))
+		total = 3;
+	      else
+		total = 4;
+	    }
+	}
+      goto alldone;
 
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      /* These are more costly than a CONST_INT, but we can relax them,
-	 so they're less costly than a CONST_DOUBLE.  */
-      *total = 6;
-      return true;
-
     case CONST_DOUBLE:
-      /* We don't optimize CONST_DOUBLEs well nor do we relax them well,
-	 so their cost is very high.  */
-      *total = 8;
-      return true;
+      /* We assume all of these require a 32-bit constant, even though
+	 some symbol and label references can be relaxed.  */
+      goto do_int_costs;
 
-    case ZERO_EXTRACT:
-      /* This is cheap, we can use btst.  */
-      if (outer_code == COMPARE)
-	*total = 0;
-      return false;
+    case UNSPEC:
+      switch (XINT (x, 1))
+	{
+	case UNSPEC_PIC:
+	case UNSPEC_GOT:
+	case UNSPEC_GOTOFF:
+	case UNSPEC_PLT:
+	case UNSPEC_GOTSYM_OFF:
+	  /* The PIC unspecs also resolve to a 32-bit constant.  */
+	  goto do_int_costs;
 
-   /* ??? This probably needs more work.  */
-    case MOD:
-    case DIV:
+	default:
+	  /* Assume any non-listed unspec is some sort of arithmetic.  */
+	  goto do_arith_costs;
+	}
+
+    case PLUS:
+      /* Notice the size difference of INC and INC4.  */
+      if (!speed && outer_code == SET && CONST_INT_P (XEXP (x, 1)))
+	{
+	  i = INTVAL (XEXP (x, 1));
+	  if (i == 1 || i == 4)
+	    {
+	      total = 1 + rtx_cost (XEXP (x, 0), PLUS, speed);
+	      goto alldone;
+	    }
+	}
+      goto do_arith_costs;
+	
+    case MINUS:
+    case AND:
+    case IOR:
+    case XOR:
+    case NOT:
+    case NEG:
+    case ZERO_EXTEND:
+    case SIGN_EXTEND:
+    case COMPARE:
+    case BSWAP:
+    case CLZ:
+    do_arith_costs:
+      total = (speed ? COSTS_N_INSNS (1) : 2);
+      break;
+
+    case ASHIFT:
+      /* Notice the size difference of ASL2 and variants.  */
+      if (!speed && CONST_INT_P (XEXP (x, 1)))
+	switch (INTVAL (XEXP (x, 1)))
+	  {
+	  case 1:
+	  case 2:
+	    total = 1;
+	    goto alldone;
+	  case 3:
+	  case 4:
+	    total = 2;
+	    goto alldone;
+	  }
+      /* FALLTHRU */
+
+    case ASHIFTRT:
+    case LSHIFTRT:
+      total = (speed ? COSTS_N_INSNS (1) : 3);
+      goto alldone;
+
     case MULT:
-      *total = 8;
-      return true;
-
-    default:
-      return false;
-    }
-}
-
-/* Check whether a constant used to initialize a DImode or DFmode can
-   use a clr instruction.  The code here must be kept in sync with
-   movdf and movdi.  */
-
-bool
-mn10300_wide_const_load_uses_clr (rtx operands[2])
-{
-  long val[2] = {0, 0};
-
-  if ((! REG_P (operands[0]))
-      || REGNO_REG_CLASS (REGNO (operands[0])) != DATA_REGS)
-    return false;
-
-  switch (GET_CODE (operands[1]))
-    {
-    case CONST_INT:
-      {
-	rtx low, high;
-	split_double (operands[1], &low, &high);
-	val[0] = INTVAL (low);
-	val[1] = INTVAL (high);
-      }
+      total = (speed ? COSTS_N_INSNS (3) : 2);
       break;
 
-    case CONST_DOUBLE:
-      if (GET_MODE (operands[1]) == DFmode)
-	{
-	  REAL_VALUE_TYPE rv;
-
-	  REAL_VALUE_FROM_CONST_DOUBLE (rv, operands[1]);
-	  REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
-	}
-      else if (GET_MODE (operands[1]) == VOIDmode
-	       || GET_MODE (operands[1]) == DImode)
-	{
-	  val[0] = CONST_DOUBLE_LOW (operands[1]);
-	  val[1] = CONST_DOUBLE_HIGH (operands[1]);
-	}
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      total = (speed ? COSTS_N_INSNS (39)
+		/* Include space to load+retrieve MDR.  */
+		: code == MOD || code == UMOD ? 6 : 4);
       break;
 
+    case MEM:
+      total = mn10300_address_cost (XEXP (x, 0), speed);
+      if (speed)
+	total = COSTS_N_INSNS (2 + total);
+      goto alldone;
+
     default:
-      return false;
+      /* Probably not implemented.  Assume external call.  */
+      total = (speed ? COSTS_N_INSNS (10) : 7);
+      break;
     }
 
-  return val[0] == 0 || val[1] == 0;
+  *ptotal = total;
+  return false;
+
+ alldone:
+  *ptotal = total;
+  return true;
 }
+
 /* If using PIC, mark a SYMBOL_REF for a non-global symbol so that we
    may access it using GOTOFF instead of GOT.  */
 
@@ -2502,10 +2660,14 @@ mn10300_conditional_register_usage (void)
 #undef  TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS mn10300_legitimize_address
 
+#undef  TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST  mn10300_address_cost
+#undef  TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST  mn10300_register_move_cost
+#undef  TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST  mn10300_memory_move_cost
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mn10300_rtx_costs
-#undef  TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST mn10300_address_cost
 
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START mn10300_file_start
