@@ -312,6 +312,7 @@ runtime_files = \
 	runtime/go-breakpoint.c \
 	runtime/go-caller.c \
 	runtime/go-can-convert-interface.c \
+	runtime/go-cgo.c \
 	runtime/go-chan-cap.c \
 	runtime/go-chan-len.c \
 	runtime/go-check-interface.c \
