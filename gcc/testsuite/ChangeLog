@@ -1,3 +1,9 @@
+2011-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47051
+	* gfortran.dg/realloc_on_assign_2.f03 : Modify 'test1' to be
+	standard compliant and comment.
+
 2011-01-10  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/46083

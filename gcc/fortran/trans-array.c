@@ -1,5 +1,6 @@
 /* Array translation routines
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -6877,6 +6878,69 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
   desc = lss->data.info.descriptor;
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)));
   array1 = gfc_conv_descriptor_data_get (desc);
+
+  /* 7.4.1.3 "If variable is an allocated allocatable variable, it is
+     deallocated if expr is an array of different shape or any of the
+     corresponding length type parameter values of variable and expr
+     differ."  This assures F95 compatibility.  */
+  jump_label1 = gfc_build_label_decl (NULL_TREE);
+  jump_label2 = gfc_build_label_decl (NULL_TREE);
+
+  /* Allocate if data is NULL.  */
+  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+			 array1, build_int_cst (TREE_TYPE (array1), 0));
+  tmp = build3_v (COND_EXPR, cond,
+		  build1_v (GOTO_EXPR, jump_label1),
+		  build_empty_stmt (input_location));
+  gfc_add_expr_to_block (&fblock, tmp);
+
+  /* Get arrayspec if expr is a full array.  */
+  if (expr2 && expr2->expr_type == EXPR_FUNCTION
+	&& expr2->value.function.isym
+	&& expr2->value.function.isym->conversion)
+    {
+      /* For conversion functions, take the arg.  */
+      gfc_expr *arg = expr2->value.function.actual->expr;
+      as = gfc_get_full_arrayspec_from_expr (arg);
+    }
+  else if (expr2)
+    as = gfc_get_full_arrayspec_from_expr (expr2);
+  else
+    as = NULL;
+
+  /* If the lhs shape is not the same as the rhs jump to setting the
+     bounds and doing the reallocation.......  */ 
+  for (n = 0; n < expr1->rank; n++)
+    {
+      /* Check the shape.  */
+      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]);
+      ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]);
+      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			     gfc_array_index_type,
+			     loop->to[n], loop->from[n]);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR,
+			     gfc_array_index_type,
+			     tmp, lbound);
+      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+			     gfc_array_index_type,
+			     tmp, ubound);
+      cond = fold_build2_loc (input_location, NE_EXPR,
+			      boolean_type_node,
+			      tmp, gfc_index_zero_node);
+      tmp = build3_v (COND_EXPR, cond,
+		      build1_v (GOTO_EXPR, jump_label1),
+		      build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&fblock, tmp);	  
+    }
+
+  /* ....else jump past the (re)alloc code.  */
+  tmp = build1_v (GOTO_EXPR, jump_label2);
+  gfc_add_expr_to_block (&fblock, tmp);
+    
+  /* Add the label to start automatic (re)allocation.  */
+  tmp = build1_v (LABEL_EXPR, jump_label1);
+  gfc_add_expr_to_block (&fblock, tmp);
+
   size1 = gfc_conv_descriptor_size (desc, expr1->rank);
 
   /* Get the rhs size.  Fix both sizes.  */
@@ -6897,98 +6961,23 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 			       gfc_array_index_type,
 			       tmp, size2);
     }
+
   size1 = gfc_evaluate_now (size1, &fblock);
   size2 = gfc_evaluate_now (size2, &fblock);
+
   cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
 			  size1, size2);
   neq_size = gfc_evaluate_now (cond, &fblock);
 
-  /* If the lhs is allocated and the lhs and rhs are equal length, jump
-     past the realloc/malloc.  This allows F95 compliant expressions
-     to escape allocation on assignment.  */
-  jump_label1 = gfc_build_label_decl (NULL_TREE);
-  jump_label2 = gfc_build_label_decl (NULL_TREE);
-
-  /* Allocate if data is NULL.  */
-  cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
-			 array1, build_int_cst (TREE_TYPE (array1), 0));
-  tmp = build3_v (COND_EXPR, cond,
-		  build1_v (GOTO_EXPR, jump_label1),
-		  build_empty_stmt (input_location));
-  gfc_add_expr_to_block (&fblock, tmp);
-
-  /* Reallocate if sizes are different.  */
-  tmp = build3_v (COND_EXPR, neq_size,
-		  build1_v (GOTO_EXPR, jump_label1),
-		  build_empty_stmt (input_location));
-  gfc_add_expr_to_block (&fblock, tmp);
-
-  if (expr2 && expr2->expr_type == EXPR_FUNCTION
-	&& expr2->value.function.isym
-	&& expr2->value.function.isym->conversion)
-    {
-      /* For conversion functions, take the arg.  */
-      gfc_expr *arg = expr2->value.function.actual->expr;
-      as = gfc_get_full_arrayspec_from_expr (arg);
-    }
-  else if (expr2)
-    as = gfc_get_full_arrayspec_from_expr (expr2);
-  else
-    as = NULL;
-
-  /* Reset the lhs bounds if any are different from the rhs.  */ 
-  if (as && expr2->expr_type == EXPR_VARIABLE)
-    {
-      for (n = 0; n < expr1->rank; n++)
-	{
-	  /* First check the lbounds.  */
-	  dim = rss->data.info.dim[n];
-	  lbd = get_std_lbound (expr2, desc2, dim,
-				as->type == AS_ASSUMED_SIZE);
-	  lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]);
-	  cond = fold_build2_loc (input_location, NE_EXPR,
-				  boolean_type_node, lbd, lbound);
-	  tmp = build3_v (COND_EXPR, cond,
-			  build1_v (GOTO_EXPR, jump_label1),
-			  build_empty_stmt (input_location));
-	  gfc_add_expr_to_block (&fblock, tmp);
-
-	  /* Now check the shape.  */
-	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				 gfc_array_index_type,
-				 loop->to[n], loop->from[n]);
-	  tmp = fold_build2_loc (input_location, PLUS_EXPR,
-				 gfc_array_index_type,
-				 tmp, lbound);
-	  ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]);
-	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				 gfc_array_index_type,
-				 tmp, ubound);
-	  cond = fold_build2_loc (input_location, NE_EXPR,
-				  boolean_type_node,
-				  tmp, gfc_index_zero_node);
-	  tmp = build3_v (COND_EXPR, cond,
-			  build1_v (GOTO_EXPR, jump_label1),
-			  build_empty_stmt (input_location));
-	  gfc_add_expr_to_block (&fblock, tmp);	  
-	}
-    }
-
-    /* Otherwise jump past the (re)alloc code.  */
-    tmp = build1_v (GOTO_EXPR, jump_label2);
-    gfc_add_expr_to_block (&fblock, tmp);
-    
-    /* Add the label to start automatic (re)allocation.  */
-    tmp = build1_v (LABEL_EXPR, jump_label1);
-    gfc_add_expr_to_block (&fblock, tmp);
 
   /* Now modify the lhs descriptor and the associated scalarizer
-     variables.
-     7.4.1.3: If variable is or becomes an unallocated allocatable
-     variable, then it is allocated with each deferred type parameter
-     equal to the corresponding type parameters of expr , with the
-     shape of expr , and with each lower bound equal to the
-     corresponding element of LBOUND(expr).  */
+     variables. F2003 7.4.1.3: "If variable is or becomes an
+     unallocated allocatable variable, then it is allocated with each
+     deferred type parameter equal to the corresponding type parameters
+     of expr , with the shape of expr , and with each lower bound equal
+     to the corresponding element of LBOUND(expr)."  
+     Reuse size1 to keep a dimension-by-dimension track of the
+     stride of the new array.  */
   size1 = gfc_index_one_node;
   offset = gfc_index_zero_node;
 

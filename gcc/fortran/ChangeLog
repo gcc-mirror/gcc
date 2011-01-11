@@ -1,3 +1,10 @@
+2011-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47051
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Change
+	to be standard compliant by testing for shape rather than size
+	before skipping reallocation. Improve comments.
+
 2011-01-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47224
