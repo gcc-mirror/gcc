@@ -49,29 +49,6 @@
   (and (match_code "mem")
        (match_test "!CONSTANT_ADDRESS_P (XEXP (op, 0))")))
 
-(define_memory_constraint "R"
-  "@internal"
-  (and (match_code "mem")
-       (match_test "mode == QImode")
-       (ior (match_test "CONSTANT_ADDRESS_P (XEXP (op, 0))")
-	    (and (match_test "GET_CODE (XEXP (op, 0)) == REG")
-		 (match_test "REG_OK_FOR_BIT_BASE_P (XEXP (op, 0))")
-		 (match_test "XEXP (op, 0) != stack_pointer_rtx"))
-	    (and (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
-		 (match_test "GET_CODE (XEXP (XEXP (op, 0), 0)) == REG")
-		 (match_test "REG_OK_FOR_BIT_BASE_P (XEXP (XEXP (op, 0), 0))")
-		 (match_test "XEXP (XEXP (op, 0), 0) != stack_pointer_rtx")
-		 (match_test "GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT")
-		 (match_test "INT_8_BITS (INTVAL (XEXP (XEXP (op, 0), 1)))")))))
-
-(define_memory_constraint "T"
-  "@internal"
-  (and (match_code "mem")
-       (match_test "mode == QImode")
-       (and (match_test "GET_CODE (XEXP (op, 0)) == REG")
-	    (match_test "REG_OK_FOR_BIT_BASE_P (XEXP (op, 0))")
-	    (match_test "XEXP (op, 0) != stack_pointer_rtx"))))
-
 (define_constraint "S"
   "@internal"
   (if_then_else (match_test "flag_pic")

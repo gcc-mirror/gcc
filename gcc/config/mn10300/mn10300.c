@@ -1768,27 +1768,6 @@ mn10300_output_cmp (rtx operand, rtx insn)
   return "cmp 0,%0";
 }
 
-/* Similarly, but when using a zero_extract pattern for a btst where
-   the source operand might end up in memory.  */
-int
-mn10300_mask_ok_for_mem_btst (int len, int bit)
-{
-  unsigned int mask = 0;
-
-  while (len > 0)
-    {
-      mask |= (1 << bit);
-      bit++;
-      len--;
-    }
-
-  /* MASK must bit into an 8bit value.  */
-  return (((mask & 0xff) == mask)
-	  || ((mask & 0xff00) == mask)
-	  || ((mask & 0xff0000) == mask)
-	  || ((mask & 0xff000000) == mask));
-}
-
 /* Return 1 if X contains a symbolic expression.  We know these
    expressions will have one of a few well defined forms, so
    we need only check those forms.  */

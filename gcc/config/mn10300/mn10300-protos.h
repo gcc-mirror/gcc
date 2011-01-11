@@ -46,7 +46,6 @@ extern int   mn10300_can_use_return_insn (void);
 extern void  mn10300_expand_prologue (void);
 extern void  mn10300_expand_epilogue (void);
 extern int   mn10300_initial_offset (int, int);
-extern int   mn10300_mask_ok_for_mem_btst (int, int);
 
 #undef Mmode
 #undef Cstar
