@@ -1155,6 +1155,8 @@ java_init_decl_processing (void)
 			    0, NOT_BUILT_IN, NULL, NULL_TREE);
   /* Initialize va_list_type_node.  */
   unsigned_type_node = make_unsigned_type (INT_TYPE_SIZE);
+  long_integer_type_node = make_signed_type (LONG_TYPE_SIZE);
+
   t = targetm.build_builtin_va_list ();
 
   /* Many back-ends define record types without setting TYPE_NAME.
