@@ -548,7 +548,10 @@ struct cum_arg
    ? gen_rtx_MEM (Pmode, arg_pointer_rtx) \
    : (rtx) 0)
 
-#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, MDR_REGNUM)
+/* The return address is saved both in the stack and in MDR.  Using
+   the stack location is handiest for what unwinding needs.  */
+#define INCOMING_RETURN_ADDR_RTX \
+  gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
