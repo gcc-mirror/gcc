@@ -23,6 +23,15 @@
 (define_register_constraint "a" "ADDRESS_REGS"
   "An address register.")
 
+;; This can be used for QI/HImode memory operations, and most arithmetic.
+;; AM33 supports these on all registers, where MN103 needs DATA_REGS.
+(define_register_constraint "D" "TARGET_AM33 ? GENERAL_REGS : DATA_REGS"
+  "A general register for AM33, and a data register otherwise.")
+
+;; Similarly for ADDRESS_REGS vs GENERAL_REGS.
+(define_register_constraint "A" "TARGET_AM33 ? GENERAL_REGS : ADDRESS_REGS"
+  "A general register for AM33, and an address register otherwise.")
+
 (define_register_constraint "y" "SP_REGS"
   "An SP register (if available).")
 
@@ -32,7 +41,7 @@
 (define_register_constraint "f" "TARGET_AM33_2 ? FP_REGS : NO_REGS"
   "A floating point register.")
 
-(define_register_constraint "A" "TARGET_AM33_2 ? FP_ACC_REGS : NO_REGS"
+(define_register_constraint "c" "TARGET_AM33_2 ? FP_ACC_REGS : NO_REGS"
   "A floating point accumulator register.")
 
 (define_memory_constraint "Q"

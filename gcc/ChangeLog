@@ -1,5 +1,10 @@
 2011-01-11  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/constraints.md ("c"): Rename from "A".
+	("A", "D"): New constraint letters.
+	* config/mn10300/mn10300.md (fmasf4): Use the "c" constraint.
+	(fmssf4, fnmasf4, fnmssf4): Likewise.
+
 	* config/mn10300/mn10300.md (isa): New attribute.
 	(enabled): New attribute.
 
