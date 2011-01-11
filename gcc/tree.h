@@ -5389,6 +5389,18 @@ extern void remove_unreachable_alias_pairs (void);
 extern bool decl_replaceable_p (tree);
 extern bool decl_binds_to_current_def_p (tree);
 
+/* Derived type for use by compute_visible_aliases and callers.  A symbol
+   alias set is a pointer set into which we enter IDENTIFIER_NODES bearing
+   the canonicalised assembler-level symbol names corresponding to decls
+   and their aliases.  */
+typedef struct pointer_set_t symbol_alias_set_t;
+
+extern void symbol_alias_set_destroy (symbol_alias_set_t *);
+extern int symbol_alias_set_contains (const symbol_alias_set_t *, tree);
+extern symbol_alias_set_t * propagate_aliases_backward (bool (*)
+							 (tree, tree, void *),
+							void *);
+
 /* In stmt.c */
 extern void expand_computed_goto (tree);
 extern bool parse_output_constraint (const char **, int, int, int,
