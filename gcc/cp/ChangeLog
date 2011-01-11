@@ -1,5 +1,8 @@
 2011-01-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46658
+	* init.c (build_new_1): Handle value-init in templates differently.
+
 	PR c++/45520
 	* tree.c (maybe_dummy_object): Check current_class_ref against
 	context, not current_class_type.
