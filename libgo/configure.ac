@@ -116,40 +116,47 @@ is_darwin=no
 is_freebsd=no
 is_linux=no
 is_rtems=no
+GOOS=unknown
 case ${host} in
-  *-*-darwin*) is_darwin=yes ;;
-  *-*-freebsd*) is_freebsd=yes ;;
-  *-*-linux*)  is_linux=yes  ;;
-  *-*-rtems*)  is_rtems=yes  ;;
+  *-*-darwin*) is_darwin=yes; GOOS=darwin ;;
+  *-*-freebsd*) is_freebsd=yes; GOOS=freebsd ;;
+  *-*-linux*)  is_linux=yes; GOOS=linux  ;;
+  *-*-rtems*)  is_rtems=yes; GOOS=rtems  ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_DARWIN, test $is_darwin = yes)
 AM_CONDITIONAL(LIBGO_IS_FREEBSD, test $is_freebsd = yes)
 AM_CONDITIONAL(LIBGO_IS_LINUX, test $is_linux = yes)
 AM_CONDITIONAL(LIBGO_IS_RTEMS, test $is_rtems = yes)
+AC_SUBST(GOOS)
 
 is_386=no
 is_x86_64=no
 is_arm=no
+GOARCH=unknown
 case ${host} in
 changequote(,)dnl
-  i[34567]86-*-*)
+  i[34567]86-*-* | x86_64-*-*)
 changequote([,])dnl
-    is_386=yes
-    ;;
-  x86_64-*-*)
-    if test "$with_multisubdir" = "32"; then
-      is_386=yes
+    AC_PREPROC_IFELSE([
+#ifdef __x86_64__
+#error 64-bit
+#endif],
+[is_386=yes], [is_x86_64=yes])
+    if test "$is_386" = "yes"; then
+      GOARCH=386
     else
-      is_x86_64=yes
+      GOARCH=amd64
     fi
     ;;
   arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
     is_arm=yes
+    GOARCH=arm
     ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_386, test $is_386 = yes)
 AM_CONDITIONAL(LIBGO_IS_X86_64, test $is_x86_64 = yes)
 AM_CONDITIONAL(LIBGO_IS_ARM, test $is_arm = yes)
+AC_SUBST(GOARCH)
 
 dnl Use -fsplit-stack when compiling C code if available.
 AC_CACHE_CHECK([whether -fsplit-stack is supported],
