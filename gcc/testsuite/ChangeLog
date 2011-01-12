@@ -1,3 +1,10 @@
+2011-01-12  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	* g++.dg/cpp0x/range-for4.C: Delete useless include and duplicated
+	comment.
+	* g++.dg/cpp0x/range-for8.C: New.
+	* g++.dg/cpp0x/range-for9.C: New.
+
 2011-01-12  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR debug/47209

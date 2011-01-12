@@ -1,3 +1,25 @@
+2011-01-12  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	* cp-tree.h (begin_for_scope): New prototype.
+	(begin_for_stmt): Update prototype.
+	(begin_range_for_stmt): Update prototype.
+	* init.c (build_vec_init): Update call to begin_for_stmt.
+	* parser.c (cp_parser_for): New.
+	(cp_parser_c_for): Add three new parameters.
+	(cp_parser_range_for): Likewise. Most parsing code removed.
+	(cp_parser_iteration_statement): Call cp_parser_for instead of
+	cp_parser_c_for and cp_parser_range_for.
+	(cp_parser_for_init_statement): Add new parameter and return type.
+	(cp_parser_block_declaration): Update call to
+	cp_parser_simple_declaration.
+	(cp_parser_simple_declaration): Add new parameter.
+	Update call to cp_parser_init_declarator.
+	(cp_parser_init_declarator): Add new parameter.
+	* pt.c (tsubst_expr): Update call to begin_for_stmt.
+	* semantics.c (begin_for_scope): New.
+	(begin_for_stmt): Add two new parameters.
+	(begin_range_for_stmt): Likewise.
+
 2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* parser.c (cp_parser_objc_at_property_declaration): Improved
