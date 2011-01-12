@@ -682,38 +682,6 @@ go_runtime_files = \
 	go/runtime/type.go \
 	version.go
 
-if LIBGO_IS_386
-GOARCH = 386
-else
-if LIBGO_IS_X86_64
-GOARCH = amd64
-else
-if LIBGO_IS_ARM
-GOARCH = arm
-else
-GOARCH = unknown
-endif
-endif
-endif
-
-if LIBGO_IS_LINUX
-GOOS = linux
-else
-if LIBGO_IS_DARWIN
-GOOS = darwin
-else
-if LIBGO_IS_FREEBSD
-GOOS = freebsd
-else
-if LIBGO_IS_RTEMS
-GOOS = rtems
-else
-GOOS = unknown
-endif
-endif
-endif
-endif
-
 version.go: s-version; @true
 s-version: Makefile
 	rm -f version.go.tmp
@@ -930,52 +898,10 @@ go_debug_pe_files = \
 	go/debug/pe/file.go \
 	go/debug/pe/pe.go
 
-if LIBGO_IS_LINUX
-proc_file = go/debug/proc/proc_linux.go
-if LIBGO_IS_386
-regs_file = go/debug/proc/regs_linux_386.go
-else
-if LIBGO_IS_X86_64
-regs_file = go/debug/proc/regs_linux_amd64.go
-else
-regs_file =
-endif
-endif
-else
-if LIBGO_IS_DARWIN
-proc_file = go/debug/proc/proc_darwin.go
-if LIBGO_IS_386
-regs_file = go/debug/proc/regs_darwin_386.go
-else
-if LIBGO_IS_X86_64
-regs_file = go/debug/proc/regs_darwin_amd64.go
-else
-regs_file =
-endif
-endif
-else
-if LIBGO_IS_FREEBSD
-proc_file = go/debug/proc/proc_freebsd.go
-if LIBGO_IS_386
-regs_file = go/debug/proc/regs_freebsd_386.go
-else
-if LIBGO_IS_X86_64
-regs_file = go/debug/proc/regs_freebsd_amd64.go
-else
-regs_file =
-endif
-endif
-else
-proc_file =
-regs_file =
-endif
-endif
-endif
-
 go_debug_proc_files = \
 	go/debug/proc/proc.go \
-	$(proc_file) \
-	$(regs_file)
+	go/debug/proc/proc_$(GOOS).go \
+	go/debug/proc/regs_$(GOOS)_$(GOARCH).go
 
 go_encoding_ascii85_files = \
 	go/encoding/ascii85/ascii85.go
@@ -1093,26 +1019,10 @@ go_testing_quick_files = \
 go_testing_script_files = \
 	go/testing/script/script.go
 
-if LIBGO_IS_LINUX
-syscall_os_file = syscalls/syscall_linux.go
-if LIBGO_IS_386
-syscall_arch_file = syscalls/syscall_linux_386.go
-else
-if LIBGO_IS_X86_64
-syscall_arch_file = syscalls/syscall_linux_amd64.go
-else
-syscall_arch_file =
-endif
-endif
-else
-syscall_os_file =
-syscall_arch_file =
-endif
-
 if LIBGO_IS_RTEMS
 syscall_exec_os_file = syscalls/exec_stubs.go
 syscall_socket_os_file = syscalls/socket_bsd.go
-syscall_socket_epoll_file=
+syscall_socket_epoll_file =
 syscall_sysfile_os_file = syscalls/sysfile_rtems.go
 syscall_syscall_file = syscalls/syscall_stubs.go
 syscall_errstr_file = syscalls/errstr_rtems.go
@@ -1131,6 +1041,14 @@ syscall_errstr_decl_file = syscalls/errstr_decl.go
 endif
 endif
 
+syscall_arch.go: s-syscall_arch; @true
+s-syscall_arch: Makefile
+	rm -f syscall_arch.go.tmp
+	echo "package syscall" > syscall_arch.go.tmp
+	echo 'const ARCH = "'$(GOARCH)'"' >> syscall_arch.go.tmp
+	$(SHELL) $(srcdir)/../move-if-change syscall_arch.go.tmp syscall_arch.go
+	$(STAMP) $@
+
 go_syscall_files = \
 	$(syscall_errstr_file) \
 	$(syscall_errstr_decl_file) \
@@ -1142,11 +1060,12 @@ go_syscall_files = \
 	$(syscall_syscall_file) \
 	syscalls/syscall_unix.go \
 	syscalls/stringbyte.go \
-	$(syscall_os_file) \
-	$(syscall_arch_file) \
+	syscalls/syscall_$(GOOS).go \
+	syscalls/syscall_$(GOOS)_$(GOARCH).go \
 	syscalls/sysfile_posix.go \
 	$(syscall_sysfile_os_file) \
-	sysinfo.go
+	sysinfo.go \
+	syscall_arch.go
 go_syscall_c_files = \
 	syscalls/errno.c
 
