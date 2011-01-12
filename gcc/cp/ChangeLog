@@ -1,3 +1,8 @@
+2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* parser.c (cp_parser_objc_at_property_declaration): Improved
+	error message.
+
 2011-01-11  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/46955

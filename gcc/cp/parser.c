@@ -23087,8 +23087,12 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
 	    case RID_SETTER:
 	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_EQ))
 		{
-		  cp_parser_error (parser,
-				   "getter/setter/ivar attribute must be followed by %<=%>");
+		  if (keyword == RID_GETTER)
+		    cp_parser_error (parser,
+				     "missing %<=%> (after %<getter%> attribute)");
+		  else
+		    cp_parser_error (parser,
+				     "missing %<=%> (after %<setter%> attribute)");
 		  syntax_error = true;
 		  break;
 		}
@@ -23128,13 +23132,17 @@ cp_parser_objc_at_property_declaration (cp_parser *parser)
 
 	  if (syntax_error)
 	    break;
-	  
+
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	    cp_lexer_consume_token (parser->lexer);
 	  else
 	    break;
 	}
 
+      /* FIXME: "@property (setter, assign);" will generate a spurious
+	 "error: expected ‘)’ before ‘,’ token".  This is because
+	 cp_parser_require, unlike the C counterpart, will produce an
+	 error even if we are in error recovery.  */
       if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
 	{
 	  cp_parser_skip_to_closing_parenthesis (parser,
