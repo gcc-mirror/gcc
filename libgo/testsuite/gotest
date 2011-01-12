@@ -19,6 +19,8 @@ GL=${GL:-${GC-gccgo}}
 GOLIBS=
 export GC GL GOLIBS
 
+NM=${NM:-nm}
+
 # srcdir is where the source files are found.  basedir is where the
 # source file paths are relative to.
 # gofiles are the test files.  pkgfiles are the source files.
@@ -272,7 +274,7 @@ fi
 	# the grep -v eliminates methods and other special names
 	# that have multiple dots.
 	pattern='Test([^a-z].*)?'
-	tests=$(nm -s _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+	tests=$($NM -p _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
 	if [ "x$tests" = x ]; then
 		echo 'gotest: warning: no tests matching '$pattern in _gotest_.o $xofile 1>&2
 		exit 2
