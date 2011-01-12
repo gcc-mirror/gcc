@@ -7792,10 +7792,10 @@ Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations},
 
 This option causes the preprocessor macro @code{__FAST_MATH__} to be defined.
 
-This option is not turned on by any @option{-O} option since
-it can result in incorrect output for programs which depend on
-an exact implementation of IEEE or ISO rules/specifications for
-math functions. It may, however, yield faster code for programs
+This option is not turned on by any @option{-O} option besides
+@option{-Ofast} since it can result in incorrect output for programs
+which depend on an exact implementation of IEEE or ISO rules/specifications
+for math functions. It may, however, yield faster code for programs
 that do not require the guarantees of these specifications.
 
 @item -fno-math-errno
