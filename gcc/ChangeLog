@@ -1,5 +1,8 @@
 2011-01-12  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.c (mn10300_delegitimize_address): New.
+	(TARGET_DELEGITIMIZE_ADDRESS): New.
+
 	* config/mn10300/mn10300.md (UNSPEC_BSCH): New.
 	(clzsi2, *bsch): New patterns.
 
