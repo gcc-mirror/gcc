@@ -2038,6 +2038,66 @@ mn10300_legitimate_constant_p (rtx x)
   return true;
 }
 
+/* Undo pic address legitimization for the benefit of debug info.  */
+
+static rtx
+mn10300_delegitimize_address (rtx orig_x)
+{
+  rtx x = orig_x, ret, addend = NULL;
+  bool need_mem;
+
+  if (MEM_P (x))
+    x = XEXP (x, 0);
+  if (GET_CODE (x) != PLUS || GET_MODE (x) != Pmode)
+    return orig_x;
+
+  if (XEXP (x, 0) == pic_offset_table_rtx)
+    ;
+  /* With the REG+REG addressing of AM33, var-tracking can re-assemble
+     some odd-looking "addresses" that were never valid in the first place.
+     We need to look harder to avoid warnings being emitted.  */
+  else if (GET_CODE (XEXP (x, 0)) == PLUS)
+    {
+      rtx x0 = XEXP (x, 0);
+      rtx x00 = XEXP (x0, 0);
+      rtx x01 = XEXP (x0, 1);
+
+      if (x00 == pic_offset_table_rtx)
+	addend = x01;
+      else if (x01 == pic_offset_table_rtx)
+	addend = x00;
+      else
+	return orig_x;
+
+    }
+  else
+    return orig_x;
+  x = XEXP (x, 1);
+
+  if (GET_CODE (x) != CONST)
+    return orig_x;
+  x = XEXP (x, 0);
+  if (GET_CODE (x) != UNSPEC)
+    return orig_x;
+
+  ret = XVECEXP (x, 0, 0);
+  if (XINT (x, 1) == UNSPEC_GOTOFF)
+    need_mem = false;
+  else if (XINT (x, 1) == UNSPEC_GOT)
+    need_mem = true;
+  else
+    return orig_x;
+
+  gcc_assert (GET_CODE (ret) == SYMBOL_REF);
+  if (need_mem != MEM_P (orig_x))
+    return orig_x;
+  if (need_mem && addend)
+    return orig_x;
+  if (addend)
+    ret = gen_rtx_PLUS (Pmode, addend, ret);
+  return ret;
+}
+
 /* For addresses, costs are relative to "MOV (Rm),Rn".  For AM33 this is
    the 3-byte fully general instruction; for MN103 this is the 2-byte form
    with an address register.  */
@@ -2722,6 +2782,8 @@ mn10300_conditional_register_usage (void)
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P	mn10300_legitimate_address_p
+#undef  TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS	mn10300_delegitimize_address
 
 #undef  TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS mn10300_preferred_reload_class
