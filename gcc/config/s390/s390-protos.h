@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
@@ -99,7 +99,6 @@ extern bool s390_logical_operator_ok_p (rtx *);
 extern void s390_narrow_logical_operator (enum rtx_code, rtx *, rtx *);
 extern void s390_split_access_reg (rtx, rtx *, rtx *);
 
-extern bool s390_output_addr_const_extra (FILE*, rtx);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void s390_output_pool_entry (rtx, enum machine_mode, unsigned int);

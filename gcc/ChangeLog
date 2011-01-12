@@ -1,3 +1,10 @@
+2011-01-12  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/s390/s390.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
+	* config/s390/s390-protos.h (s390_output_addr_const_extra): Remove.
+	* config/s390/s390.c (s390_output_addr_const_extra): Make static.
+	(TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
+
 2011-01-12  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR debug/47209
