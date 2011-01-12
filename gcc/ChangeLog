@@ -1,5 +1,8 @@
 2011-01-12  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.c (mn10300_option_override): Force enable
+	flag_split_wide_types.
+
 	* config/mn10300/mn10300.c (mn10300_asm_trampoline_template): Remove.
 	(mn10300_trampoline_init): Rewrite without a template, an immediate
 	load and a direct branch.
