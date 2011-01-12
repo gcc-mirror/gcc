@@ -789,7 +789,7 @@ arm*-*-netbsd*)
 	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
-	tm_file="dbxelf.h elfos.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
 	case $target in
 	arm*b-*)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
@@ -910,12 +910,12 @@ bfin*-elf*)
 	use_collect2=no
 	;;
 bfin*-uclinux*)
-	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h linux.h glibc-stdint.h bfin/uclinux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h gnu-user.h linux.h glibc-stdint.h bfin/uclinux.h"
 	tmake_file=bfin/t-bfin-uclinux
 	use_collect2=no
 	;;
 bfin*-linux-uclibc*)
-	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h linux.h glibc-stdint.h bfin/linux.h ./linux-sysroot-suffix.h"
+	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h gnu-user.h linux.h glibc-stdint.h bfin/linux.h ./linux-sysroot-suffix.h"
 	tmake_file="t-slibgcc-elf-ver bfin/t-bfin-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	use_collect2=no
@@ -946,7 +946,7 @@ cris-*-elf | cris-*-none)
 	use_gcc_stdint=wrap
 	;;
 crisv32-*-linux* | cris-*-linux*)
-	tm_file="dbxelf.h elfos.h ${tm_file} linux.h glibc-stdint.h cris/linux.h"
+	tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h cris/linux.h"
 	# We need to avoid using t-linux, so override default tmake_file
 	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
 	extra_options="${extra_options} cris/linux.opt"
@@ -976,7 +976,7 @@ frv-*-elf)
 	;;
 frv-*-*linux*)
 	tm_file="dbxelf.h elfos.h ${tm_file} \
-	         linux.h glibc-stdint.h frv/linux.h"
+	         gnu-user.h linux.h glibc-stdint.h frv/linux.h"
 	tm_file="${tm_file} ../../libgcc/config/frv/frv-abi.h"
 	tmake_file="${tmake_file} frv/t-frv frv/t-linux"
 	;;
@@ -990,7 +990,7 @@ moxie-*-elf)
 moxie-*-uclinux*)
 	gas=yes
 	gnu_ld=yes
-	tm_file="dbxelf.h elfos.h ${tm_file} linux.h glibc-stdint.h moxie/uclinux.h"
+	tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h moxie/uclinux.h"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp"
 	;;
@@ -1008,7 +1008,7 @@ h8300-*-elf*)
 	;;
 hppa*64*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_PA_20"
-	tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h linux.h \
+	tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h gnu-user.h linux.h \
 		 glibc-stdint.h pa/pa-linux.h pa/pa64-regs.h pa/pa-64.h \
 		 pa/pa64-linux.h"
 	tmake_file="${tmake_file} pa/t-linux64"
@@ -1017,7 +1017,7 @@ hppa*64*-*-linux*)
 	;;
 hppa*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_NO_SPACE_REGS"
-	tm_file="${tm_file} dbxelf.h elfos.h linux.h glibc-stdint.h pa/pa-linux.h \
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h pa/pa-linux.h \
 		 pa/pa32-regs.h pa/pa32-linux.h"
 	tmake_file="${tmake_file} pa/t-linux t-slibgcc-libgcc"
 	# Set the libgcc version number
@@ -1225,7 +1225,7 @@ i[34567]86-*-openbsd*)
 i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
 			# Intel 80386's running GNU/*
 			# with ELF format using glibc 2
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h linux.h glibc-stdint.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h"
 	case ${target} in
 	i[34567]86-*-linux*)
 		# Assume modern glibc
@@ -1262,7 +1262,7 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i
 	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
 	;;
 x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h linux.h glibc-stdint.h \
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h \
 		 i386/x86-64.h i386/linux64.h"
 	case ${target} in
 	x86_64-*-linux*)
@@ -1560,7 +1560,7 @@ ia64*-*-freebsd*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
 	;;
 ia64*-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h linux.h glibc-stdint.h ia64/sysv4.h ia64/linux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ia64/sysv4.h ia64/linux.h"
 	tmake_file="${tmake_file} ia64/t-ia64 t-libunwind ia64/t-glibc"
 	if test x$with_system_libunwind != xyes ; then
 		tmake_file="${tmake_file} t-libunwind-elf ia64/t-glibc-libunwind"
@@ -1614,7 +1614,7 @@ lm32-*-rtems*)
 	tmake_file="${tmake_file} t-rtems"
          ;;
 lm32-*-uclinux*)
-        tm_file="dbxelf.h elfos.h ${tm_file} linux.h lm32/uclinux-elf.h"
+        tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h lm32/uclinux-elf.h"
 	tmake_file="${tmake_file} lm32/t-lm32 lm32/t-fprules-softfp soft-fp/t-softfp"
         ;;
 m32r-*-elf*)
@@ -1631,7 +1631,7 @@ m32r-*-rtems*)
 	extra_parts="crtinit.o crtfini.o"
  	;;
 m32r-*-linux*)
-	tm_file="dbxelf.h elfos.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
 	# We override the tmake_file for linux -- why?
 	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
 	gnu_ld=yes
@@ -1640,7 +1640,7 @@ m32r-*-linux*)
 	fi
  	;;
 m32rle-*-linux*)
-	tm_file="dbxelf.h elfos.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
 	# We override the tmake_file for linux -- why?
 	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
 	gnu_ld=yes
@@ -1730,7 +1730,7 @@ m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux
 				# ABI.
 	default_m68k_cpu=68020
 	default_cf_cpu=5206
-	tm_file="${tm_file} dbxelf.h elfos.h linux.h glibc-stdint.h flat.h m68k/linux.h m68k/uclinux.h ./sysroot-suffix.h"
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h flat.h m68k/linux.h m68k/uclinux.h ./sysroot-suffix.h"
  	tm_defines="${tm_defines} MOTOROLA=1"
 	tmake_file="m68k/t-floatlib m68k/t-uclinux m68k/t-mlibs"
 	;;
@@ -1740,7 +1740,7 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 	default_m68k_cpu=68020
 	default_cf_cpu=5475
 	with_arch=${with_arch:-m68k}
-	tm_file="${tm_file} dbxelf.h elfos.h linux.h glibc-stdint.h m68k/linux.h ./sysroot-suffix.h"
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h m68k/linux.h ./sysroot-suffix.h"
 	extra_options="${extra_options} m68k/ieee.opt"
 	tm_defines="${tm_defines} MOTOROLA=1"
 	tmake_file="${tmake_file} m68k/t-floatlib m68k/t-linux m68k/t-mlibs"
@@ -1782,7 +1782,7 @@ mep-*-*)
 	use_gcc_stdint=wrap
 	;;
 microblaze*-linux*)
-	tm_file="${tm_file} dbxelf.h linux.h microblaze/linux.h"
+	tm_file="${tm_file} dbxelf.h gnu-user.h linux.h microblaze/linux.h"
 	c_target_objs="${c_target_objs} microblaze-c.o"
 	cxx_target_objs="${cxx_target_objs} microblaze-c.o"
 	tmake_file="${tmake_file} t-slibgcc-elf-ver t-slibgcc-nolc-override t-linux microblaze/t-microblaze"
@@ -1820,7 +1820,7 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)
-	tm_file="dbxelf.h elfos.h linux.h glibc-stdint.h ${tm_file} mips/linux.h mips/linux64.h"
+	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/linux.h mips/linux64.h"
 	tmake_file="${tmake_file} mips/t-linux64 mips/t-libgcc-mips16"
 	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 	case ${target} in
@@ -1842,7 +1842,7 @@ mips64*-*-linux* | mipsisa64*-*-linux*)
 	test x$with_llsc != x || with_llsc=yes
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
-        tm_file="dbxelf.h elfos.h linux.h glibc-stdint.h ${tm_file} mips/linux.h"
+        tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/linux.h"
 	tmake_file="${tmake_file} mips/t-libgcc-mips16"
 	case ${target} in
         mipsisa32r2*)
@@ -2244,10 +2244,10 @@ rx-*-elf*)
 	tmake_file="${tmake_file} rx/t-rx"
 	;;
 s390-*-linux*)
-	tm_file="s390/s390.h dbxelf.h elfos.h linux.h glibc-stdint.h s390/linux.h"
+	tm_file="s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
 	;;
 s390x-*-linux*)
-	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h linux.h glibc-stdint.h s390/linux.h"
+	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
 	tm_p_file=s390/s390-protos.h
 	md_file=s390/s390.md
 	extra_modes=s390/s390-modes.def
@@ -2302,7 +2302,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h"
 	case ${target} in
 	sh*-*-linux*)	tmake_file="${tmake_file} sh/t-linux"
-			tm_file="${tm_file} linux.h glibc-stdint.h sh/linux.h" ;;
+			tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h sh/linux.h" ;;
 	sh*-*-netbsd*)
 			tm_file="${tm_file} netbsd.h netbsd-elf.h sh/netbsd-elf.h"
 			extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
@@ -2485,7 +2485,7 @@ sparc-*-rtems*)
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h linux.h glibc-stdint.h"
+	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	case ${target} in
 	    *-leon-*)
@@ -2579,7 +2579,7 @@ sparc64-*-rtems*)
 	extra_parts="crtbegin.o crtend.o"
 	;;
 sparc64-*-linux*)
-	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h linux.h glibc-stdint.h sparc/linux64.h"
+	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h sparc/sysv4.h gnu-user.h linux.h glibc-stdint.h sparc/linux64.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-linux sparc/t-linux64 sparc/t-crtfm"
 	;;
@@ -2666,7 +2666,7 @@ v850-*-*)
 	use_gcc_stdint=wrap
 	;;
 vax-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h linux.h vax/elf.h vax/linux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h vax/elf.h vax/linux.h"
 	tmake_file="${tmake_file} vax/t-linux"
 	;;
 vax-*-netbsdelf*)
@@ -2700,11 +2700,11 @@ xtensa*-*-elf*)
 	tmake_file="xtensa/t-xtensa xtensa/t-elf"
 	;;
 xtensa*-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h linux.h glibc-stdint.h xtensa/linux.h"
+	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h xtensa/linux.h"
 	tmake_file="${tmake_file} xtensa/t-xtensa xtensa/t-linux"
 	;;
 am33_2.0-*-linux*)
-	tm_file="mn10300/mn10300.h dbxelf.h elfos.h linux.h glibc-stdint.h mn10300/linux.h"
+	tm_file="mn10300/mn10300.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h mn10300/linux.h"
 	tmake_file="${tmake_file} mn10300/t-linux"
 	gas=yes gnu_ld=yes
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"

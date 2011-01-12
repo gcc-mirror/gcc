@@ -1,3 +1,43 @@
+2011-01-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (arm*-*-linux*, bfin*-uclinux*, bfin*-linux-uclibc*,
+	crisv32-*-linux* | cris-*-linux*, frv-*-*linux*, moxie-*-uclinux*,
+	hppa*64*-*-linux*, hppa*-*-linux*, i[34567]86-*-linux* |
+	i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu |
+	i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu,
+	x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-knetbsd*-gnu,
+	ia64*-*-linux*, lm32-*-uclinux*, m32r-*-linux*, m32rle-*-linux*,
+	m68k-*-uclinux*, m68k-*-linux*, microblaze*-linux*,
+	mips64*-*-linux* | mipsisa64*-*-linux*, mips*-*-linux*,
+	s390-*-linux*, s390x-*-linux*, sh*-*-linux*, sparc-*-linux*,
+	sparc64-*-linux*, vax-*-linux*, xtensa*-*-linux*,
+	am33_2.0-*-linux*): Use gnu-user.h before linux.h.
+	* config/gnu-user.h: New.  Copied from linux.h.
+	(LINUX_TARGET_STARTFILE_SPEC): Rename to
+	GNU_USER_TARGET_STARTFILE_SPEC.
+	(LINUX_TARGET_ENDFILE_SPEC): Rename to
+	GNU_USER_TARGET_ENDFILE_SPEC.
+	(LINUX_TARGET_CC1_SPEC): Rename to GNU_USER_TARGET_CC1_SPEC.
+	(LINUX_TARGET_LIB_SPEC): Rename to GNU_USER_TARGET_LIB_SPEC.
+	(OPTION_GLIBC, OPTION_UCLIBC, OPTION_BIONIC,
+	LINUX_TARGET_OS_CPP_BUILTINS, CHOOSE_DYNAMIC_LINKER1,
+	CHOOSE_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER,
+	UCLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER64,
+	BIONIC_DYNAMIC_LINKER, BIONIC_DYNAMIC_LINKER32,
+	BIONIC_DYNAMIC_LINKER64, LINUX_DYNAMIC_LINKER,
+	LINUX_DYNAMIC_LINKER32, LINUX_DYNAMIC_LINKER64,
+	TARGET_C99_FUNCTIONS, TARGET_HAS_SINCOS): Remove.
+	* config/arm/linux-eabi.h (CC1_SPEC): Use
+	GNU_USER_TARGET_CC1_SPEC.
+	(LIB_SPEC): Use GNU_USER_TARGET_LIB_SPEC.
+	(STARTFILE_SPEC): Use GNU_USER_TARGET_STARTFILE_SPEC.
+	(ENDFILE_SPEC): Use GNU_USER_TARGET_ENDFILE_SPEC
+	* config/linux.h (NO_IMPLICIT_EXTERN_C, ASM_APP_ON, ASM_APP_OFF,
+	LINUX_TARGET_STARTFILE_SPEC, STARTFILE_SPEC,
+	LINUX_TARGET_ENDFILE_SPEC, ENDFILE_SPEC, LINUX_TARGET_CC1_SPEC,
+	CC1_SPEC, CPLUSPLUS_CPP_SPEC, LINUX_TARGET_LIB_SPEC, LIB_SPEC,
+	LINK_EH_SPEC, LINK_GCC_C_SEQUENCE_SPEC, USE_LD_AS_NEEDED): Remove.
+
 2011-01-12  Richard Guenther  <rguenther@suse.de>
 
 	PR other/46946
