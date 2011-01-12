@@ -827,21 +827,44 @@ finish_return_stmt (tree expr)
   return r;
 }
 
-/* Begin a for-statement.  Returns a new FOR_STMT if appropriate.  */
+/* Begin the scope of a for-statement or a range-for-statement.
+   Both the returned trees are to be used in a call to
+   begin_for_stmt or begin_range_for_stmt.  */
 
 tree
-begin_for_stmt (void)
+begin_for_scope (tree *init)
+{
+  tree scope = NULL_TREE;
+  if (flag_new_for_scope > 0)
+    scope = do_pushlevel (sk_for);
+
+  if (processing_template_decl)
+    *init = push_stmt_list ();
+  else
+    *init = NULL_TREE;
+
+  return scope;
+}
+
+/* Begin a for-statement.  Returns a new FOR_STMT.
+   SCOPE and INIT should be the return of begin_for_scope,
+   or both NULL_TREE  */
+
+tree
+begin_for_stmt (tree scope, tree init)
 {
   tree r;
 
   r = build_stmt (input_location, FOR_STMT, NULL_TREE, NULL_TREE,
 		  NULL_TREE, NULL_TREE);
 
-  if (flag_new_for_scope > 0)
-    TREE_CHAIN (r) = do_pushlevel (sk_for);
-
-  if (processing_template_decl)
-    FOR_INIT_STMT (r) = push_stmt_list ();
+  if (scope == NULL_TREE)
+    {
+      gcc_assert (!init);
+      scope = begin_for_scope (&init);
+    }
+  FOR_INIT_STMT (r) = init;
+  TREE_CHAIN (r) = scope;
 
   return r;
 }
@@ -925,18 +948,29 @@ finish_for_stmt (tree for_stmt)
 }
 
 /* Begin a range-for-statement.  Returns a new RANGE_FOR_STMT.
+   SCOPE and INIT should be the return of begin_for_scope,
+   or both NULL_TREE  .
    To finish it call finish_for_stmt(). */
 
 tree
-begin_range_for_stmt (void)
+begin_range_for_stmt (tree scope, tree init)
 {
   tree r;
 
   r = build_stmt (input_location, RANGE_FOR_STMT,
 		  NULL_TREE, NULL_TREE, NULL_TREE);
 
-  if (flag_new_for_scope > 0)
-    TREE_CHAIN (r) = do_pushlevel (sk_for);
+  if (scope == NULL_TREE)
+    {
+      gcc_assert (!init);
+      scope = begin_for_scope (&init);
+    }
+
+  /* RANGE_FOR_STMTs do not use nor save the init tree, so we
+     pop it now.  */
+  if (init)
+    pop_stmt_list (init);
+  TREE_CHAIN (r) = scope;
 
   return r;
 }
