@@ -1769,7 +1769,8 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 	      while (handled_component_p (*basep))
 		basep = &TREE_OPERAND (*basep, 0);
 	      if (TREE_CODE (*basep) == VAR_DECL
-		  && !auto_var_in_fn_p (*basep, current_function_decl))
+		  && !auto_var_in_fn_p (*basep, current_function_decl)
+		  && !DECL_REGISTER (*basep))
 		{
 		  bool volatilep = TREE_THIS_VOLATILE (*basep);
 		  *basep = build2 (MEM_REF, TREE_TYPE (*basep),
