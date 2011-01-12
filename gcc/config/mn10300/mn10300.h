@@ -533,9 +533,8 @@ struct cum_arg
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE 0x1b
-
-#define TRAMPOLINE_ALIGNMENT 32
+#define TRAMPOLINE_SIZE		16
+#define TRAMPOLINE_ALIGNMENT	32
 
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.

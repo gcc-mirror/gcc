@@ -1,3 +1,10 @@
+2011-01-12  Richard Henderson  <rth@redhat.com>
+
+	* config/mn10300/mn10300.c (mn10300_asm_trampoline_template): Remove.
+	(mn10300_trampoline_init): Rewrite without a template, an immediate
+	load and a direct branch.
+	* config/mn10300/mn10300.h (TRAMPOLINE_SIZE): Reduce to 16.
+
 2011-01-12  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/s390/s390.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
