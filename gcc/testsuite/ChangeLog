@@ -1,3 +1,8 @@
+2011-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/33033
+	* gcc.dg/20061124-1.c: Pass -mcpu=v9 on the SPARC.
+
 2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Fixed the Objective-C++ testsuite and updated all tests.
