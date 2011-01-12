@@ -16,10 +16,10 @@ struct A {
 
 typedef void (A::*pmf)();
 
-static int mememe = &A::foo - &A::bar;  // { dg-warning "" } 
-pmf b = &A::foo-1;      // { dg-warning "" } 
+static int mememe = &A::foo - &A::bar;  // { dg-error "" } 
+pmf b = &A::foo-1;      // { dg-error "" } 
 
 int main() {
     double y;
-    y=X(Y-Z);   // { dg-warning "" } 
+    y=X(Y-Z);   // { dg-error "" } 
 }

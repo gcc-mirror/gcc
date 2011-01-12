@@ -10,5 +10,5 @@
 @implementation  Person
 @dynamic firstName;
 @synthesize firstName; /* { dg-error "property .firstName. already specified in .@dynamic." } */
-                       /* { dg-warning "originally specified here" "" { target *-*-* } 11 } */
+                       /* { dg-message "originally specified here" "" { target *-*-* } 11 } */
 @end

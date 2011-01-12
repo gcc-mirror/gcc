@@ -10,16 +10,15 @@
 {
   Class isa;
 }
-@property (assign) id a;                  /* { dg-warning "originally specified here" } */
-@property (retain) id b;                  /* { dg-warning "originally specified here" } */
-@property int c;                          /* { dg-warning "originally specified here" } */
-@property (nonatomic) int d;              /* { dg-warning "originally specified here" } */
-/* FIXME: Mysteriously the next 3 need to be 'dg-message' instead of 'dg-warning' for the testcase to work.  */
+@property (assign) id a;                  /* { dg-message "originally specified here" } */
+@property (retain) id b;                  /* { dg-message "originally specified here" } */
+@property int c;                          /* { dg-message "originally specified here" } */
+@property (nonatomic) int d;              /* { dg-message "originally specified here" } */
 @property int e;                          /* { dg-message "originally specified here" } */
 @property int f;                          /* { dg-message "originally specified here" } */
 @property int g;                          /* { dg-message "originally specified here" } */
 @property (readonly) int h;               /* Ok */
-@property (readonly,getter=getMe) int i;  /* { dg-warning "originally specified here" } */
+@property (readonly,getter=getMe) int i;  /* { dg-message "originally specified here" } */
 @end
 
 @interface MyClass : MyRootClass

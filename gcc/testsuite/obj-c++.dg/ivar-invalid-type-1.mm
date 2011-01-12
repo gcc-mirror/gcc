@@ -14,6 +14,6 @@
   static int c;    /* { dg-error "invalid type" } */
   inline int d;    /* { dg-error "declared as an .inline." } */
   typedef int e;   /* { dg-error "invalid type" } */
-  __thread int f;  /* dg-error "invalid type" */ /* FIXME: The compiler generates this message, but the testsuite does not match it.  */
+  __thread int f;  /* { dg-error "invalid type" } */
 }
 @end

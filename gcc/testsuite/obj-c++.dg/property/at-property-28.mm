@@ -10,11 +10,11 @@
 {
   Class isa;
 }
-@property (readonly, retain)    id property1; /* { dg-warning "originally specified here" } */
-@property (readonly)           int property2; /* { dg-warning "originally specified here" } */
-@property (readonly, getter=y) int property3; /* { dg-warning "originally specified here" } */
+@property (readonly, retain)    id property1; /* { dg-message "originally specified here" } */
+@property (readonly)           int property2; /* { dg-message "originally specified here" } */
+@property (readonly, getter=y) int property3; /* { dg-message "originally specified here" } */
 @property (readonly)           int property4; /* Ok */
-@property (readonly)           int property5; /* { dg-warning "originally specified here" } */
+@property (readonly)           int property5; /* { dg-message "originally specified here" } */
 @end
 
 @interface MyRootClass ()

@@ -11,8 +11,8 @@
 @protocol MyProtocol
 
 @optional
-+ (void) method1: (id)x; /* { dg-error "previous declaration" } */
-- (id) method2: (long)x; /* { dg-error "previous declaration" } */
++ (void) method1: (id)x; /* { dg-message "previous declaration" } */
+- (id) method2: (long)x; /* { dg-message "previous declaration" } */
 
 @required
 + (void) method1: (id)x; /* { dg-error "declared .@optional. and .@required. at the same time" } */
@@ -24,8 +24,8 @@
 @protocol MyProtocol2
 
 @required
-+ (void) method3: (Class)x; /* { dg-error "previous declaration" } */
-- (id *) method4: (long)x;  /* { dg-error "previous declaration" } */
++ (void) method3: (Class)x; /* { dg-message "previous declaration" } */
+- (id *) method4: (long)x;  /* { dg-message "previous declaration" } */
 
 @optional
 + (void) method3: (Class)x; /* { dg-error "declared .@optional. and .@required. at the same time" } */

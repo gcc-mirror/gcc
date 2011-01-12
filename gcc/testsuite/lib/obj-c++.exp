@@ -211,6 +211,8 @@ proc obj-c++_init { args } {
     global OBJCXX_UNDER_TEST
     global TESTING_IN_BUILD_TREE
     global target_triplet
+    global gcc_warning_prefix
+    global gcc_error_prefix
 
     if ![info exists OBJCXX_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
@@ -264,6 +266,9 @@ proc obj-c++_init { args } {
     # Make sure that lines are not wrapped.  That can confuse the
     # error-message parsing machinery.
     lappend ALWAYS_OBJCXXFLAGS "additional_flags=-fmessage-length=0"
+
+    set gcc_warning_prefix "warning:"
+    set gcc_error_prefix "error:"
 
     if { [string match "*-*-darwin*" $target_triplet] } {
 	lappend ALWAYS_OBJCXXFLAGS "ldflags=-multiply_defined suppress"
