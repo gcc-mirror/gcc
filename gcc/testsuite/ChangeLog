@@ -1,3 +1,8 @@
+2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/property/at-property-29.m: New.
+	* obj-c++.dg/property/at-property-29.mm: New.	
+	
 2011-01-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* go.test/go-test.exp (go-set-goarch): New proc.

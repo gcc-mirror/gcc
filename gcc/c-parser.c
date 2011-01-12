@@ -253,8 +253,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
 		/* We found an Objective-C "pq" keyword (in, out,
 		   inout, bycopy, byref, oneway).  They need special
 		   care because the interpretation depends on the
-		   context.
-		 */
+		   context.  */
 		if (parser->objc_pq_context)
 		  {
 		    token->type = CPP_KEYWORD;
@@ -275,21 +274,19 @@ c_lex_one_token (c_parser *parser, c_token *token)
 		       you can't use 'in' as the name of the running
 		       variable in a C for loop.  We could potentially
 		       try to add code here to disambiguate, but it
-		       seems a reasonable limitation.
-		    */
+		       seems a reasonable limitation.  */
 		    token->type = CPP_KEYWORD;
 		    token->keyword = rid_code;
 		    break;
 		  }
 		/* Else, "pq" keywords outside of the "pq" context are
 		   not keywords, and we fall through to the code for
-		   normal tokens.
-		*/
+		   normal tokens.  */
 	      }
 	    else if (c_dialect_objc () && OBJC_IS_PATTR_KEYWORD (rid_code))
 	      {
-		/* We found an Objective-C "property attribute" keyword 
-		   (readonly, copies, getter, setter, ivar). These are 
+		/* We found an Objective-C "property attribute"
+		   keyword (getter, setter, readonly, etc). These are
 		   only valid in the property context.  */
 		if (parser->objc_property_attr_context)
 		  {
@@ -310,8 +307,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
 		   protected, public, try, catch, throw) without a
 		   preceding '@' sign.  Do nothing and fall through to
 		   the code for normal tokens (in C++ we would still
-		   consider the CXX ones keywords, but not in C).
-		*/
+		   consider the CXX ones keywords, but not in C).  */
 		;
 	      }
 	    else
@@ -7961,8 +7957,12 @@ c_parser_objc_at_property_declaration (c_parser *parser)
 	    case RID_SETTER:
 	      if (c_parser_next_token_is_not (parser, CPP_EQ))
 		{
-		  c_parser_error (parser,
-				  "getter/setter attribute must be followed by %<=%>");
+		  if (keyword == RID_GETTER)
+		    c_parser_error (parser,
+				    "missing %<=%> (after %<getter%> attribute)");
+		  else
+		    c_parser_error (parser,
+				    "missing %<=%> (after %<setter%> attribute)");
 		  syntax_error = true;
 		  break;
 		}

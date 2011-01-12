@@ -1,3 +1,13 @@
+2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>	
+
+	* c-parser.c (c_parser_objc_at_property_declaration): Improved
+	error message.	
+	
+2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-parser.c (c_lex_one_token): Updated and reindented some
+	comments.  No changes in code.
+
 2011-01-11  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_output_var): Don't output the variable if there is
