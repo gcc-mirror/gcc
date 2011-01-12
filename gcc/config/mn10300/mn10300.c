@@ -2397,37 +2397,39 @@ mn10300_case_values_threshold (void)
   return 6;
 }
 
-/* Worker function for TARGET_ASM_TRAMPOLINE_TEMPLATE.  */
-
-static void
-mn10300_asm_trampoline_template (FILE *f)
-{
-  fprintf (f, "\tadd -4,sp\n");
-  fprintf (f, "\t.long 0x0004fffa\n");
-  fprintf (f, "\tmov (0,sp),a0\n");
-  fprintf (f, "\tadd 4,sp\n");
-  fprintf (f, "\tmov (13,a0),a1\n");	
-  fprintf (f, "\tmov (17,a0),a0\n");
-  fprintf (f, "\tjmp (a0)\n");
-  fprintf (f, "\t.long 0\n");
-  fprintf (f, "\t.long 0\n");
-}
-
 /* Worker function for TARGET_TRAMPOLINE_INIT.  */
 
 static void
 mn10300_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 {
-  rtx fnaddr = XEXP (DECL_RTL (fndecl), 0);
-  rtx mem;
+  rtx mem, disp, fnaddr = XEXP (DECL_RTL (fndecl), 0);
 
-  emit_block_move (m_tramp, assemble_trampoline_template (),
-		   GEN_INT (TRAMPOLINE_SIZE), BLOCK_OP_NORMAL);
+  /* This is a strict alignment target, which means that we play
+     some games to make sure that the locations at which we need
+     to store <chain> and <disp> wind up at aligned addresses.
 
-  mem = adjust_address (m_tramp, SImode, 0x14);
+	0x28 0x00			add 0,d0
+	          0xfc 0xdd		mov chain,a1
+        <chain>
+	0xf8 0xed 0x00			btst 0,d1
+	               0xdc		jmp fnaddr
+	<disp>
+
+     Note that the two extra insns are effectively nops; they 
+     clobber the flags but do not affect the contents of D0 or D1.  */
+
+  disp = expand_binop (SImode, sub_optab, fnaddr,
+		       plus_constant (XEXP (m_tramp, 0), 11),
+		       NULL_RTX, 1, OPTAB_DIRECT);
+
+  mem = adjust_address (m_tramp, SImode, 0);
+  emit_move_insn (mem, gen_int_mode (0xddfc0028, SImode));
+  mem = adjust_address (m_tramp, SImode, 4);
   emit_move_insn (mem, chain_value);
-  mem = adjust_address (m_tramp, SImode, 0x18);
-  emit_move_insn (mem, fnaddr);
+  mem = adjust_address (m_tramp, SImode, 8);
+  emit_move_insn (mem, gen_int_mode (0xdc00edf8, SImode));
+  mem = adjust_address (m_tramp, SImode, 12);
+  emit_move_insn (mem, disp);
 }
 
 /* Output the assembler code for a C++ thunk function.
@@ -2720,8 +2722,6 @@ mn10300_conditional_register_usage (void)
 #undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS mn10300_preferred_output_reload_class
 
-#undef  TARGET_ASM_TRAMPOLINE_TEMPLATE
-#define TARGET_ASM_TRAMPOLINE_TEMPLATE mn10300_asm_trampoline_template
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT mn10300_trampoline_init
 
