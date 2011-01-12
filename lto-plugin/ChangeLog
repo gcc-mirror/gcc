@@ -1,3 +1,9 @@
+2011-01-12  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47264
+	* lto-plugin.c (parse_table_entry): Use memcpy to access
+	unaligned fields.
+
 2010-12-20  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* Makefile.am (AM_LIBTOOLFLAGS): Define, adding disable-static tag.
