@@ -1,3 +1,20 @@
+2011-01-12  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/Object1.h: Add copyright header, update
+	comments.  Add a TEST_SUITE_ADDITIONS category for GNU runtime.
+	Amend NeXT version to declare a TEST_SUITE_ADDITIONS carrying the
+	methods missing from the OBJC2 Object.
+	* objc-obj-c++-shared/Object1-implementation.h: Add copyright header.
+	Amend implementation to use a TEST_SUITE_ADDITIONS category for both GNU
+	and NeXT runtimes.
+	* objc-obj-c++-shared/Object1.mm: Remove redundant header, update 
+	comments.
+	* objc-obj-c++-shared/Object1.m: Likewise.
+	* objc.dg/encode-3.m: Update header use.  Amend to be API2 compatible.
+	* objc.dg/proto-qual-1.m: Likewise.
+	* obj-c++.dg/proto-lossage-3.mm: Likewise.
+	* obj-c++.dg/proto-qual-1.mm: Likewise.
+
 2011-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR testsuite/33033

@@ -1,56 +1,88 @@
-/* Object definition taken from <objc/Object.h>
+/* Compatibility code between APIs and ABIs for the objc test suite.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
+   Contributed by Iain Sandoe 
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* 
+ * Compatibility header.
+ *
+ * Four cases:
+ *   GNU 
+ *      Uses the 'old' Object with API and ABI = 0.
+ *      Compatibility methods are added.
+ *   NeXT pre-Darwin9
+ *      Uses the 'old' Object with API and ABI = 0.
+ *   NeXT Darwin >= 9 with no implementation of ABI 2
+ *      Uses API 2 and ABI 0 for m32, uses the 'old' Object'
+ *      Uses API 2 for m64 but only compile tests can be expected to work.
+ *   NeXT Darwin >= 9 with __OBJC2__
+ *      Uses API 2 and ABI 0 for m32, uses the 'old' Object'
+ *      Uses API 2 and ABI 2 - the libobjc implementation of Object is very
+ *      basic, and we add a category to expand this for test-suite use.
  */
 #ifndef _OBJC_OBJECT1_H_
 #define _OBJC_OBJECT1_H_
 
-#undef DO_NEXT_M64_OBJECT_IMPLEMENTATION
-
-#ifndef __NEXT_RUNTIME__
+#ifndef __NEXT_RUNTIME__ 
+/* Case 1 = GNU. */
 #  include <objc/Object.h>
-#else
+/* NeXT requires a +initialize (or forward:) method, and it makes testcases more
+   readable if the conditional code can be reduced, so we add one to the GNU tests 
+   too.  This saves us from having to introduce it every time.  */
+@interface Object (TEST_SUITE_ADDITIONS)
++ initialize;
+@end
+
+#else /* NeXT */
+
 #  include "next-abi.h"
-#  ifndef NEXT_OBJC_USE_NEW_INTERFACE
-/* We are on a next system, or version, that is happy to compile V0 ABI */
+#  if !defined(NEXT_OBJC_ABI_VERSION) || (NEXT_OBJC_ABI_VERSION < 2)
+/* Cases 2, Case 3/m32 and 4/m32 are handled as default.  */
 #    include <objc/Object.h>
 #  else
-#    if (NEXT_OBJC_ABI_VERSION==0)
-/* We are on a system that has V0 ABI implementation in libobjc.dylib.
- * However, we need to use the new accessors and pretend that the 
- * structures are opaque to avoid 'deprecated' warnings
- */
-#      include <objc/Object.h>
-#    else
-/* We are on a system that includes a V2 ABI Object in libobjc.dylib.
-*/
-#      ifdef __OBJC2__
-/* ... and we have a V2 ABI compiler ..  */
-#        include <objc/Object.h>
-#      else
-/* We can't access the Object definition in libobjc.dylib because
- * we can't yet generate OBJC2 code.
- *
- * So we'll roll our own Object - purely for the sake of compile
- * checks - the code is unlikely to run...
-*/
-#        ifndef _OBJC_OBJECT_H_
-#        define _OBJC_OBJECT_H_
-
-#include <stdarg.h>
-#import <objc/objc-runtime.h>
+#    include <objc/objc.h>
 
 /* This is a cut-down Object with only the methods currently required
-   by the testsuite declared.
-   
-   For those executables that require an implementation (to link) this
-   can be provided in a given test by placing:
-   #include "path/to/objc-c++shared/Object1-implementation.h"
-   at the end of the source for the test.
+   by the testsuite declared.  The implementation is provided in 
+   Object1-implementation.h
 */
 
-@interface Object 
+/* The m64 libobjc implementation of Object provides only the 'class' and
+   isEqual: methods.  
+   
+   We add the others required as a test-suite category. 
+   
+   Please leave the unimplemented methods as comments - so that they can
+   be inserted as required by future tests.  */
+
+@interface Object
 {
-	Class isa; /* A pointer to the instance's class structure */
+  Class isa;
 }
++ (Class) class;
+- (BOOL)isEqual: (id)anObject;
+@end
+
+/* Dummy definition.  */
+typedef void * marg_list;
+
+@interface Object (TEST_SUITE_ADDITIONS)
+
 + initialize;
 - init;
 
@@ -63,16 +95,14 @@
 //- copyFromZone:(void *)zone;
 //- (void *)zone;
 
-+ class;
-//+ superclass;
+- (Class) class;
++ (Class) superclass;
 //+ (const char *) name;
-- class;
-- superclass;
+//- superclass;
 - (const char *) name;
 
 //- self;
 //- (unsigned int) hash;
-//-(BOOL) isEqual:anObject;
 
 /* Testing inheritance relationships */
 
@@ -135,16 +165,11 @@
 
 /* Forwarding */
 
-//- forward: (SEL)sel : (marg_list)args;
+- forward: (SEL)sel : (marg_list)args;
 //- performv: (SEL)sel : (marg_list)args;
 
 @end
 
-#define DO_NEXT_M64_OBJECT_IMPLEMENTATION
-
-#        endif /* _OBJC_OBJECT_H_ */
-#      endif /* __OBJC2__ */
-#      endif /* ABI=0 */
-#    endif /* NEXT_OBJC_USE_NEW_INTERFACE */
-#   endif /* __NEXT_RUNTIME__ */
+#    endif /* NeXT case 3 & 4 m64 */
+#  endif /* NEXT */
 #endif /* _OBJC_OBJECT1_H_ */
