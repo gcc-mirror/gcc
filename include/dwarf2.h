@@ -377,7 +377,7 @@ enum dwarf_attribute
     DW_AT_linkage_name    = 0x6e,
 
     DW_AT_lo_user = 0x2000,	/* Implementation-defined range start.  */
-    DW_AT_hi_user = 0x3ff0,	/* Implementation-defined range end.  */
+    DW_AT_hi_user = 0x3fff,	/* Implementation-defined range end.  */
 
     /* SGI/MIPS extensions.  */
     DW_AT_MIPS_fde = 0x2001,
