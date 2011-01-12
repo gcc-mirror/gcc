@@ -1,3 +1,7 @@
+2011-01-12  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* dwarf2.h: Update value for DW_AT_hi_user.
+
 2010-11-16  Ian Lance Taylor  <iant@google.com>
 
 	* simple-object.h (simple_object_attributes_merge): Declare,
