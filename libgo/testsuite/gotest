@@ -314,16 +314,26 @@ xno)
 	./a.out "$@"
 	;;
 xyes)
-	# This is the only file which is optionally made.
-	# All others are overwritten on copying/building,
-	# but this may remain and cause conflicts if not
-	# deleted.
-	rm -rf ../testsuite/_xtest_.o
-	cp *.o _testmain.go ../testsuite
+	rm -rf ../testsuite/*.o
+	files=`echo *`
+	for f in $files; do
+		if test "$f" = "_obj" || test "$f" = "_test"; then
+			continue
+		fi
+		rm -rf ../testsuite/$f
+		if test -f $f; then
+			cp $f ../testsuite/
+		else
+			ln -s ../$DIR/$f ../testsuite/
+		fi
+	done
 	cd ../testsuite
+	rm -rf _obj _test
+	mkdir _obj _test
 	$MAKE check RUNTESTFLAGS="$RUNTESTFLAGS GOTEST_TMPDIR=$DIR"
 	# Useful when using make check-target-libgo
 	cat libgo.log >> libgo-all.log
 	cat libgo.sum >> libgo-all.sum
+	rm -rf $files
 	;;
 esac
