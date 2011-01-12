@@ -1,3 +1,8 @@
+2011-01-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/33033
+	* gcc.dg/20061124-1.c: Pass -mcpu=v9 on the SPARC.
+
 2010-12-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/45081
