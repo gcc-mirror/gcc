@@ -249,10 +249,10 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry,
   entry->visibility = translate_visibility[t];
   p++;
 
-  entry->size = *(uint64_t *) p;
+  memcpy (&entry->size, p, sizeof (uint64_t));
   p += 8;
 
-  aux->slot = *(uint32_t *) p;
+  memcpy (&aux->slot, p, sizeof (uint32_t));
   p += 4;
 
   entry->resolution = LDPR_UNKNOWN;
