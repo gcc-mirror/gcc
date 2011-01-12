@@ -1,3 +1,9 @@
+2011-01-12  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47259
+	* gcc.dg/lto/pr47259_0.c: New testcase.
+	* gcc.dg/lto/pr47259_1.c: Likewise.
+
 2011-01-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc-obj-c++-shared/Object1.h: Add copyright header, update
