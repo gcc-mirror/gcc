@@ -21,10 +21,10 @@
 @end
 
 @interface MyClass2
-- (void) aMethod: (id <A>)x;  /* { dg-error "previous declaration" } */
+- (void) aMethod: (id <A>)x;  /* { dg-message "previous declaration" } */
 - (void) aMethod: (id <B>)x;  /* { dg-error "duplicate declaration" } */
 
-- (void) bMethod: (id <B>)x;  /* { dg-error "previous declaration" } */
+- (void) bMethod: (id <B>)x;  /* { dg-message "previous declaration" } */
 - (void) bMethod: (id <A>)x;  /* { dg-error "duplicate declaration" } */
 
 - (void) cMethod: (id <A, B>)x;
@@ -33,16 +33,15 @@
 - (void) dMethod: (id <A, B>)x;
 - (void) dMethod: (id <B, A>)x; /* Ok */
 
-/* FIXME: The compiler works, but the testsuite produces errors anyway.  */
-/* - (void) eMethod: (id <A>)x;   dg-error "previous declaration"  */
-/* - (void) eMethod: (id <B, C>)x;   dg-error "duplicate declaration"  */
+- (void) eMethod: (id <A>)x;    /* { dg-message "previous declaration" } */
+- (void) eMethod: (id <B, C>)x; /* { dg-error "duplicate declaration" } */
 
-/*- (void) fMethod: (id <B, C>)x;   dg-error "previous declaration"  */
-/*- (void) fMethod: (id <A>)x;   dg-error "duplicate declaration"  */
+- (void) fMethod: (id <B, C>)x;    /* { dg-message "previous declaration" } */
+- (void) fMethod: (id <A>)x;       /* { dg-error "duplicate declaration" } */
 
-/* - (void) gMethod: (id <A>)x;   dg-error "previous declaration" */
-/* - (void) gMethod: (id <A, B, C>)x;   dg-error "duplicate declaration" */
+- (void) gMethod: (id <A>)x;       /* { dg-message "previous declaration" } */
+- (void) gMethod: (id <A, B, C>)x; /* { dg-error "duplicate declaration" } */
 
-/* - (void) hMethod: (id <A, B, C>)x;   dg-error "previous declaration" */
-/* - (void) hMethod: (id <A>)x;   dg-error "duplicate declaration" */
+- (void) hMethod: (id <A, B, C>)x; /* { dg-message "previous declaration" } */
+- (void) hMethod: (id <A>)x;       /* { dg-error "duplicate declaration" } */
 @end

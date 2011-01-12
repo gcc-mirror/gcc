@@ -71,9 +71,9 @@ int test (id object)
   @try { @throw object; }
   @catch (MyObject)     /* { dg-error "@catch parameter is not a known Objective-C class type" } */
     {                     /* { dg-error "no matching function" "" { target *-*-* } 72 } */
-      dummy++;            /* { dg-warning "MyObject" "" { target *-*-* } 13 } */
-    }                     /* { dg-warning "candidate" "" { target *-*-* } 13 } */
-                          /* { dg-warning "candidate" "" { target *-*-* } 72 } */
+      dummy++;            /* { dg-message "MyObject" "" { target *-*-* } 13 } */
+    }                     /* { dg-message "candidate" "" { target *-*-* } 13 } */
+                          /* { dg-message "candidate" "" { target *-*-* } 72 } */
 
   @try { @throw object; }
   @catch (static MyObject *) /* { dg-error "storage class" } */

@@ -20,7 +20,7 @@ __attribute__ ((deprecated("no dep_categ")))
 @end
 
 __attribute__ ((deprecated)) 
-@implementation obj (dep_categ) /* { dg-error "prefix attributes are ignored before" } */
+@implementation obj (dep_categ) /* { dg-warning "prefix attributes are ignored before" } */
 - (int) depmth { return var + 1; }
 @end
 

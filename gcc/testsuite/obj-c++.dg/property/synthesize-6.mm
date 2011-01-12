@@ -15,7 +15,7 @@
 @property int v2;
 @end
 @implementation Test
-@synthesize v1 = v;  /* { dg-warning "originally specified here" } */
+@synthesize v1 = v;  /* { dg-message "originally specified here" } */
 @synthesize v2 = v;  /* { dg-error "property .v2. is using the same instance variable as property .v1." } */
 @end
 @interface Test2 : Test
@@ -26,5 +26,5 @@
 @synthesize w1;      /* { dg-error "ivar .w1. used by .@synthesize. declaration must be an existing ivar" } */
 @end
 /* { dg-warning "incomplete implementation" "" { target *-*-* } 27 } */
-/* { dg-warning "method definition for .-setW1:. not found" "" { target *-*-* } 27 } */
-/* { dg-warning "method definition for .-w1. not found" "" { target *-*-* } 27 } */
+/* { dg-message "method definition for .-setW1:. not found" "" { target *-*-* } 27 } */
+/* { dg-message "method definition for .-w1. not found" "" { target *-*-* } 27 } */

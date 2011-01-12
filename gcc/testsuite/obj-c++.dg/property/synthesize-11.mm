@@ -10,8 +10,8 @@
 @interface MyRootClass
 {
   Class isa;
-  int countA : 2;                  /* { dg-warning "originally specified here" } */
-  int countB : 3;                  /* { dg-warning "originally specified here" } */
+  int countA : 2;                  /* { dg-message "originally specified here" } */
+  int countB : 3;                  /* { dg-message "originally specified here" } */
 }
 + (id) initialize;
 + (id) alloc;
@@ -27,5 +27,5 @@
 @synthesize countA; /* { dg-error ".atomic. property .countA. is using bit-field instance variable .countA." } */
 @synthesize countB; /* { dg-error "property .countB. is using instance variable .countB. of incompatible type" } */
 @end /* { dg-warning "incomplete implementation of class" } */
-/* { dg-warning "method definition for ..setCountA.. not found" "" { target *-*-* } 29 } */
-/* { dg-warning "method definition for ..countA. not found" "" { target *-*-* } 29 } */
+/* { dg-message "method definition for ..setCountA.. not found" "" { target *-*-* } 29 } */
+/* { dg-message "method definition for ..countA. not found" "" { target *-*-* } 29 } */

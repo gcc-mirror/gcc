@@ -9,5 +9,5 @@
 -(void) someMethod /* { dg-error "expected before .-." } */
 {
 }
-@end /* { dg-error "incomplete implementation of class" } */
-/* { dg-error "method definition for ..someMethod. not found" "" { target *-*-* } 12 } */
+@end /* { dg-warning "incomplete implementation of class" } */
+/* { dg-warning "method definition for ..someMethod. not found" "" { target *-*-* } 12 } */

@@ -27,39 +27,37 @@
 - (void) method6: (id <A, A, B, B, C, C>)x;
 - (void) method6: (id <C, A, B>)x; /* Ok */
 
-- (void) method7: (id)x; /* { dg-warning "previous declaration" } */
+- (void) method7: (id)x; /* { dg-message "previous declaration" } */
 - (void) method7: (id <A>)x; /* { dg-error "duplicate declaration" } */
 
-- (void) method8: (id <A>)x; /* { dg-warning "previous declaration" } */
+- (void) method8: (id <A>)x; /* { dg-message "previous declaration" } */
 - (void) method8: (id)x; /* { dg-error "duplicate declaration" } */
 
-- (void) method9: (id <A>)x; /* { dg-warning "previous declaration" } */
+- (void) method9: (id <A>)x; /* { dg-message "previous declaration" } */
 - (void) method9: (id <B>)x; /* { dg-error "duplicate declaration" } */
 
-- (void) methodA: (id <A>)x; /* { dg-warning "previous declaration" } */
+- (void) methodA: (id <A>)x; /* { dg-message "previous declaration" } */
 - (void) methodA: (id <A, B>)x; /* { dg-error "duplicate declaration" } */
 
-/* FIXME: Bug in the testsuite - the following are done Ok by the compiler, but
-   the testsuite barfs so we have to comment out the tests.  */
-/* - (void) methodB: (id <A, B>)x; dg-warning "previous declaration" */
-/* - (void) methodB: (id <A>)x; dg-error "duplicate declaration" */
+- (void) methodB: (id <A, B>)x; /* { dg-message "previous declaration" } */
+- (void) methodB: (id <A>)x; /* { dg-error "duplicate declaration" } */
 
-/* - (void) methodC: (id <A, B, C>)x;  dg-warning "previous declaration"  */
-/* - (void) methodC: (id <A, B>)x;  dg-error "duplicate declaration"  */
+- (void) methodC: (id <A, B, C>)x; /* { dg-message "previous declaration" } */
+- (void) methodC: (id <A, B>)x;  /* { dg-error "duplicate declaration" } */
 
-/* - (void) methodD: (id <A, B, C>)x;  dg-warning "previous declaration"  */
-/* - (void) methodD: (id <A, B, A>)x;  dg-error "duplicate declaration"  */
+- (void) methodD: (id <A, B, C>)x;  /* { dg-message "previous declaration" } */
+- (void) methodD: (id <A, B, A>)x;  /* { dg-error "duplicate declaration" } */
 
-/* - (void) methodE: (MyClass <A, B, C> *)x;  dg-warning "previous declaration"  */
-/* - (void) methodE: (MyClass <A, B, A> *)x;  dg-error "duplicate declaration"  */
+- (void) methodE: (MyClass <A, B, C> *)x; /* { dg-message "previous declaration" } */
+- (void) methodE: (MyClass <A, B, A> *)x; /* { dg-error "duplicate declaration" } */
 
 - (void) methodF: (MyClass <A, B, A> *)x;
 - (void) methodF: (MyClass <A, B, A> *)x; /* Ok */
 
-/* - (void) methodG: (MyClass *)x;   dg-warning "previous declaration"  */
-/* - (void) methodG: (MyClass <A, B, C> *)x;  dg-error "duplicate declaration"  */
+- (void) methodG: (MyClass *)x; /* { dg-message "previous declaration" } */
+- (void) methodG: (MyClass <A, B, C> *)x; /* { dg-error "duplicate declaration" } */
 
-/* - (void) methodH: (MyClass <A, C>*)x;  dg-warning "previous declaration"  */
-/* - (void) methodH: (MyClass *)x;  dg-error "duplicate declaration"  */
+- (void) methodH: (MyClass <A, C>*)x; /* { dg-message "previous declaration" } */
+- (void) methodH: (MyClass *)x; /* { dg-error "duplicate declaration" } */
 
 @end
