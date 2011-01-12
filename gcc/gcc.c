@@ -621,11 +621,18 @@ proper position among the other output files.  */
 # endif
 #endif
 
-/* Conditional to test whether plugin is used or not.  */
+/* Conditional to test whether plugin is used or not.
+   FIXME: For slim LTO we will need to enable plugin unconditionally.  This
+   still cause problems with PLUGIN_LD != LD and when plugin is built but
+   not useable.  For GCC 4.6 we don't support slim LTO and thus we can enable
+   plugin only when LTO is enabled.  We still honor explicit
+   -fuse-linker-plugin.  */
 #ifdef HAVE_LTO_PLUGIN
-#define PLUGIN_COND "!fno-use-linker-plugin"
+#define PLUGIN_COND "!fno-use-linker-plugin:%{flto|flto=*|fuse-linker-plugin"
+#define PLUGIN_COND_CLOSE "}"
 #else
 #define PLUGIN_COND "fuse-linker-plugin"
+#define PLUGIN_COND_CLOSE ""
 #endif
 
 
@@ -646,9 +653,9 @@ proper position among the other output files.  */
     -plugin-opt=%(lto_wrapper) \
     -plugin-opt=-fresolution=%u.res \
     %{!nostdlib:%{!nodefaultlibs:%:pass-through-libs(%(link_gcc_c_sequence))}} \
-    } \
-    %{flto*:%<fcompare-debug*} \
-    %{flto*} %l " LINK_PIE_SPEC \
+    }"PLUGIN_COND_CLOSE" \
+    %{flto|flto=*:%<fcompare-debug*} \
+    %{flto} %{flto=*} %l " LINK_PIE_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\

@@ -1,3 +1,10 @@
+2011-01-12  Jan Hubicka  <jh@suse.cz>
+
+	PR driver/47244
+	* gcc.c (PLUGIN_COND): Update to disable plugin unless -flto is used.
+	(PLUGIN_COND_CLOSE): New macro.
+	(LINK_COMMAND_SPEC): Update to use PLUGIN_COND_CLOSE.
+
 2011-01-12  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/47259
