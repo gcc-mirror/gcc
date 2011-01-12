@@ -1,5 +1,8 @@
 2011-01-12  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.md (INT): New mode iterator.
+	(*mov<INT>_clr): New pattern, and peep2 to generate it.
+
 	* config/mn10300/mn10300.c (mn10300_option_override): Force enable
 	flag_split_wide_types.
 
