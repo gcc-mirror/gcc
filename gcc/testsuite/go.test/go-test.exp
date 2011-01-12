@@ -1,4 +1,4 @@
-#   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+#   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 #   Written by Ian Lance Taylor <iant@google.com>.
 
 # This program is free software; you can redistribute it and/or modify
@@ -106,6 +106,41 @@ proc go-execute-xfail { test } {
     file delete $filename
 }
 
+# N.B. Keep in sync with libgo/configure.ac.
+proc go-set-goarch { } {
+    global target_triplet
+
+    switch -glob $target_triplet {
+	"arm*-*-*" -
+	"ep9312*-*-*" -
+	"strongarm*-*-*" -
+	"xscale-*-*" {
+	    set goarch "arm"
+	}
+	"i?86-*-*" -
+	"x86_64-*-*" {
+	    if [check_effective_target_ilp32] {
+		set goarch "386"
+	    } else {
+		set goarch "amd64"
+	    }
+	}
+	"sparc*-*-*" {
+	    if [check_effective_target_ilp32] {
+		set goarch "sparc"
+	    } else {
+		set goarch "sparcv9"
+	    }
+	}
+	default {
+	    perror "$target_triplet: unhandled architecture"
+	    return ""
+	}	
+    }
+    verbose -log "Setting GOARCH=$goarch" 1
+    setenv GOARCH $goarch
+}
+
 proc go-gc-tests { } {
     global srcdir subdir
     global runtests
@@ -121,6 +156,9 @@ proc go-gc-tests { } {
     if ![info exists DEFAULT_GOCFLAGS] {
 	set DEFAULT_GOCFLAGS " -pedantic-errors"
     }
+
+    # Set GOARCH for tests that need it.
+    go-set-goarch
 
     # Running all the torture options takes too long and, since the
     # frontend ignores the standard options, it doesn't significantly
