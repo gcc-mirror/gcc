@@ -1,3 +1,9 @@
+2011-01-12  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR debug/47209
+	* dwarfout2.c (should_emit_struct_debug): Use TYPE_MAIN_VARIANT
+	of type.
+
 2011-01-12  Jan Hubicka  <jh@suse.cz>
 
 	PR driver/47244

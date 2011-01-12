@@ -619,7 +619,7 @@ should_emit_struct_debug (tree type, enum debug_info_usage usage)
   if (criterion == DINFO_STRUCT_FILE_ANY)
     return DUMP_GSTRUCT (type, usage, criterion, generic, false, true);
 
-  type_decl = TYPE_STUB_DECL (type);
+  type_decl = TYPE_STUB_DECL (TYPE_MAIN_VARIANT (type));
 
   if (criterion == DINFO_STRUCT_FILE_SYS && DECL_IN_SYSTEM_HEADER (type_decl))
     return DUMP_GSTRUCT (type, usage, criterion, generic, false, true);
