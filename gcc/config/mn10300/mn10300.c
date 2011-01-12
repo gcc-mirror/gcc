@@ -127,6 +127,12 @@ mn10300_option_override (void)
 	 not have timing information available for it.  */
       flag_schedule_insns = 0;
       flag_schedule_insns_after_reload = 0;
+
+      /* Force enable splitting of wide types, as otherwise it is trivial
+	 to run out of registers.  Indeed, this works so well that register
+	 allocation problems are now more common *without* optimization,
+	 when this flag is not enabled by default.  */
+      flag_split_wide_types = 1;
     }
   
   if (mn10300_tune_string)
