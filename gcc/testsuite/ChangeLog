@@ -1,3 +1,8 @@
+2011-01-12  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR debug/47209
+	* g++.dg/debug/pr47209.C: New.
+
 2011-01-12  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/47259
