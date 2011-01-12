@@ -1,3 +1,9 @@
+2011-01-12  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47259
+	* lto-streamer-out.c (output_gimple_stmt): Do not wrap
+	register variables in a MEM_REF.
+
 2011-01-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (arm*-*-linux*, bfin*-uclinux*, bfin*-linux-uclibc*,
