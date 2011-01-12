@@ -1,13 +1,14 @@
 2011-01-12  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/47233
-	* opts.c (common_handle_option): Disable ipa-reference with profile feedback.
+	* opts.c (common_handle_option): Disable ipa-reference with profile
+	feedback.
 
 2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>	
 
 	* c-parser.c (c_parser_objc_at_property_declaration): Improved
-	error message.	
-	
+	error message.
+
 2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_lex_one_token): Updated and reindented some
