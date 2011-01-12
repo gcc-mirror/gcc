@@ -2716,6 +2716,20 @@ mn10300_conditional_register_usage (void)
     fixed_regs[PIC_OFFSET_TABLE_REGNUM] =
     call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
 }
+
+/* Worker function for TARGET_MD_ASM_CLOBBERS.
+   We do this in the mn10300 backend to maintain source compatibility
+   with the old cc0-based compiler.  */
+
+static tree
+mn10300_md_asm_clobbers (tree outputs ATTRIBUTE_UNUSED,
+                         tree inputs ATTRIBUTE_UNUSED,
+                         tree clobbers)
+{
+  clobbers = tree_cons (NULL_TREE, build_string (5, "EPSW"),
+                        clobbers);
+  return clobbers;
+}
 
 /* Initialize the GCC target structure.  */
 
@@ -2808,5 +2822,8 @@ mn10300_conditional_register_usage (void)
 
 #undef  TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE mn10300_conditional_register_usage
+
+#undef TARGET_MD_ASM_CLOBBERS
+#define TARGET_MD_ASM_CLOBBERS  mn10300_md_asm_clobbers
 
 struct gcc_target targetm = TARGET_INITIALIZER;
