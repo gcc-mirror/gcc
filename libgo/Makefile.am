@@ -1237,12 +1237,16 @@ CHECK = \
 	rm -f $@-log; \
 	prefix=`if test "$(@D)" = "regexp"; then echo regexp-test; else dirname $(@D); fi`; \
 	test "$${prefix}" != "." || prefix="$(@D)"; \
-	if $(srcdir)/testsuite/gotest --dejagnu=$(use_dejagnu) --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" >>$@-log 2>&1; then \
-	  echo "PASS: $(@D)"; \
+	if test "$(use_dejagnu)" = "yes"; then \
+	  $(srcdir)/testsuite/gotest --dejagnu=yes --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)"; \
 	else \
-	  echo "FAIL: $(@D)"; \
-	  cat $@-log; \
-	  exit 1; \
+	  if $(srcdir)/testsuite/gotest --basedir=$(srcdir) --srcdir=$(srcdir)/go/$(@D) --prefix="libgo_$${prefix}" --pkgfiles="$(go_$(subst /,_,$(@D))_files)" >>$@-log 2>&1; then \
+	    echo "PASS: $(@D)"; \
+	  else \
+	    echo "FAIL: $(@D)"; \
+	    cat $@-log; \
+	    exit 1; \
+	  fi; \
 	fi
 
 # Build all packages before checking any.
