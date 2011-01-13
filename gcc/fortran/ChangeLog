@@ -1,3 +1,9 @@
+2011-01-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47268
+	* intrinsic.texi (get_command_argument, get_environment_variable):
+	Mark arguments as optional in the Arguments section.
+
 2011-01-13  Kai Tietz  <kai.tietz@onevision.com>
 	    Tobias Burnus  <burnus@net-b.de>
 
