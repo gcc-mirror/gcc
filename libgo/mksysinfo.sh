@@ -8,8 +8,8 @@
 
 # This shell script creates the sysinfo.go file which holds types and
 # constants extracted from the system header files.  This relies on a
-# hook in gcc: the -ggo option will generate debugging information in
-# Go syntax.
+# hook in gcc: the -fdump-go-spec option will generate debugging
+# information in Go syntax.
 
 # We currently #include all the files at once, which works, but leads
 # to exposing some names which ideally should not be exposed, as they
@@ -69,11 +69,13 @@ grep -v '^// ' gen-sysinfo.go | \
   grep -v '^func' | \
   grep -v '^type _timeval ' | \
   grep -v '^type _timespec ' | \
+  grep -v '^type _timestruc_t ' | \
   grep -v '^type _epoll_' | \
   grep -v 'in6_addr' | \
   grep -v 'sockaddr_in6' | \
   sed -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
       -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
+      -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
     >> ${OUT}
 
 # The errno constants.
@@ -83,6 +85,9 @@ grep '^const _E' gen-sysinfo.go | \
 # The O_xxx flags.
 grep '^const _\(O\|F\|FD\)_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\([^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
+if ! grep '^const O_ASYNC' ${OUT} >/dev/null 2>&1; then
+  echo "const O_ASYNC = 0" >> ${OUT}
+fi
 if ! grep '^const O_CLOEXEC' ${OUT} >/dev/null 2>&1; then
   echo "const O_CLOEXEC = 0" >> ${OUT}
 fi
@@ -195,9 +200,13 @@ fi
 if ! grep '^const PTRACE_EVENT_EXIT' ${OUT} > /dev/null 2>&1; then
   echo "const PTRACE_EVENT_EXIT = 6" >> ${OUT}
 fi
+if ! grep '^const _PTRACE_TRACEME' ${OUT} > /dev/null 2>&1; then
+  echo "const _PTRACE_TRACEME = 0" >> ${OUT}
+fi
 
 # The registers returned by PTRACE_GETREGS.  This is probably
-# GNU/Linux specific.
+# GNU/Linux specific; it should do no harm if there is no
+# _user_regs_struct.
 regs=`grep '^type _user_regs_struct struct' gen-sysinfo.go`
 if test "$regs" != ""; then
   regs=`echo $regs | sed -e 's/type _user_regs_struct struct //' -e 's/[{}]//g'`
@@ -263,6 +272,18 @@ echo $timespec | \
       -e 's/tv_sec *[a-zA-Z0-9_]*/Sec Timespec_sec_t/' \
       -e 's/tv_nsec *[a-zA-Z0-9_]*/Nsec Timespec_nsec_t/' >> ${OUT}
 
+timestruc=`grep '^type _timestruc_t ' gen-sysinfo.go || true`
+if test "$timestruc" != ""; then
+  timestruc_sec=`echo $timestruc | sed -n -e 's/^.*tv_sec \([^ ]*\);.*$/\1/p'`
+  timestruc_nsec=`echo $timestruc | sed -n -e 's/^.*tv_nsec \([^ ]*\);.*$/\1/p'`
+  echo "type Timestruc_sec_t $timestruc_sec" >> ${OUT}
+  echo "type Timestruc_nsec_t $timestruc_nsec" >> ${OUT}
+  echo $timestruc | \
+    sed -e 's/^type _timestruc_t /type Timestruc /' \
+        -e 's/tv_sec *[a-zA-Z0-9_]*/Sec Timestruc_sec_t/' \
+        -e 's/tv_nsec *[a-zA-Z0-9_]*/Nsec Timestruc_nsec_t/' >> ${OUT}
+fi
+
 # The stat type.
 grep 'type _stat ' gen-sysinfo.go | \
   sed -e 's/type _stat/type Stat_t/' \
@@ -281,6 +302,7 @@ grep 'type _stat ' gen-sysinfo.go | \
       -e 's/st_ctim/Ctime/' \
       -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
       -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
+      -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
     >> ${OUT}
 
 # The directory searching types.
@@ -309,9 +331,10 @@ if test "$rusage" != ""; then
     f=`echo $field | sed -e 's/^\(.\).*$/\1/'`
     r=`echo $field | sed -e 's/^.\(.*\)$/\1/'`
     f=`echo $f | tr abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ`
-    # Fix _timeval and _timespec.
+    # Fix _timeval _timespec, and _timestruc_t.
     r=`echo $r | sed -e s'/ _timeval$/ Timeval/'`
     r=`echo $r | sed -e s'/ _timespec$/ Timespec/'`
+    r=`echo $r | sed -e s'/ _timestruc_t$/ Timestruc/'`
     field="$f$r"
     nrusage="$nrusage $field;"
   done
