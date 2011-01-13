@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-@c 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@c 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -8226,6 +8226,11 @@ The approximate maximum amount of memory that will be allocated in
 order to perform the global common subexpression elimination
 optimization.  If more memory than specified is required, the
 optimization will not be done.
+
+@item max-gcse-insertion-ratio
+If the ratio of expression insertions to deletions is larger than this value
+for any expression, then RTL PRE will insert or remove the expression and thus
+leave partially redundant computations in the instruction stream.  The default value is 20.
 
 @item max-pending-list-length
 The maximum number of pending dependencies scheduling will allow

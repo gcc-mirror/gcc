@@ -1,5 +1,5 @@
 /* params.h - Run-time parameters.
-   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
@@ -142,6 +142,8 @@ extern void init_param_values (int *params);
   PARAM_VALUE (PARAM_MAX_PENDING_LIST_LENGTH)
 #define MAX_GCSE_MEMORY \
   ((size_t) PARAM_VALUE (PARAM_MAX_GCSE_MEMORY))
+#define MAX_GCSE_INSERTION_RATIO \
+  ((size_t) PARAM_VALUE (PARAM_MAX_GCSE_INSERTION_RATIO))
 #define GCSE_AFTER_RELOAD_PARTIAL_FRACTION \
   PARAM_VALUE (PARAM_GCSE_AFTER_RELOAD_PARTIAL_FRACTION)
 #define GCSE_AFTER_RELOAD_CRITICAL_FRACTION \

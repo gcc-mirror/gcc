@@ -1,3 +1,13 @@
+2011-01-13  Jeff Law  <law@redhat.com>
+
+	* PR rtl-optimization/39077
+	* doc/invoke.texi (max-gcse-insertion-ratio): Document.
+	* params.h (MAX_GCSE_INSERTION_RATIO): Define.
+	* params.def (PARAM_MAX_GCSE_INSERTION_RATIO): Define.
+	* lcm.c (pre_edge_lcm): Properly initialize output sbitmaps.
+	* gcse.c (prune_insertions_deletions): New function.
+	(compute_pre_data): Use it.
+
 2011-01-13  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/PR46973
