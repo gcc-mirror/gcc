@@ -8,8 +8,6 @@ package syscall
 
 import "unsafe"
 
-const ARCH = "amd64"
-
 // FIXME: ptrace(3C) has this, but exec.go expects the next.
 //func libc_ptrace(request int, pid Pid_t, addr int, data int) int __asm__ ("ptrace")
 
