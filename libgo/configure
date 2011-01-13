@@ -615,8 +615,8 @@ SPLIT_STACK
 GOARCH
 LIBGO_IS_X86_64_FALSE
 LIBGO_IS_X86_64_TRUE
-LIBGO_IS_SPARCV9_FALSE
-LIBGO_IS_SPARCV9_TRUE
+LIBGO_IS_SPARC64_FALSE
+LIBGO_IS_SPARC64_TRUE
 LIBGO_IS_SPARC_FALSE
 LIBGO_IS_SPARC_TRUE
 LIBGO_IS_ARM_FALSE
@@ -13253,7 +13253,7 @@ fi
 is_386=no
 is_arm=no
 is_sparc=no
-is_sparcv9=no
+is_sparc64=no
 is_x86_64=no
 GOARCH=unknown
 case ${host} in
@@ -13294,15 +13294,15 @@ _ACEOF
 if ac_fn_c_try_cpp "$LINENO"; then :
   is_sparc=yes
 else
-  is_sparcv9=yes
+  is_sparc64=yes
 fi
 rm -f conftest.err conftest.$ac_ext
     if test "$is_sparc" = "yes"; then
       is_sparc=yes
       GOARCH=sparc
     else
-      is_sparcv9=yes
-      GOARCH=sparcv9
+      is_sparc64=yes
+      GOARCH=sparc64
     fi
     ;;
 esac
@@ -13330,12 +13330,12 @@ else
   LIBGO_IS_SPARC_FALSE=
 fi
 
- if test $isv_sparcv9 = yes; then
-  LIBGO_IS_SPARCV9_TRUE=
-  LIBGO_IS_SPARCV9_FALSE='#'
+ if test $is_sparc64 = yes; then
+  LIBGO_IS_SPARC64_TRUE=
+  LIBGO_IS_SPARC64_FALSE='#'
 else
-  LIBGO_IS_SPARCV9_TRUE='#'
-  LIBGO_IS_SPARCV9_FALSE=
+  LIBGO_IS_SPARC64_TRUE='#'
+  LIBGO_IS_SPARC64_FALSE=
 fi
 
  if test $is_x86_64 = yes; then
@@ -14210,8 +14210,8 @@ if test -z "${LIBGO_IS_SPARC_TRUE}" && test -z "${LIBGO_IS_SPARC_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_SPARC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${LIBGO_IS_SPARCV9_TRUE}" && test -z "${LIBGO_IS_SPARCV9_FALSE}"; then
-  as_fn_error "conditional \"LIBGO_IS_SPARCV9\" was never defined.
+if test -z "${LIBGO_IS_SPARC64_TRUE}" && test -z "${LIBGO_IS_SPARC64_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_SPARC64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_X86_64_TRUE}" && test -z "${LIBGO_IS_X86_64_FALSE}"; then

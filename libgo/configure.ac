@@ -136,7 +136,7 @@ dnl N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
 is_386=no
 is_arm=no
 is_sparc=no
-is_sparcv9=no
+is_sparc64=no
 is_x86_64=no
 GOARCH=unknown
 case ${host} in
@@ -165,20 +165,20 @@ changequote([,])dnl
 #if defined(__sparcv9) || defined(__arch64__)
 #error 64-bit
 #endif],
-[is_sparc=yes], [is_sparcv9=yes])
+[is_sparc=yes], [is_sparc64=yes])
     if test "$is_sparc" = "yes"; then
       is_sparc=yes
       GOARCH=sparc
     else
-      is_sparcv9=yes
-      GOARCH=sparcv9
+      is_sparc64=yes
+      GOARCH=sparc64
     fi
     ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_386, test $is_386 = yes)
 AM_CONDITIONAL(LIBGO_IS_ARM, test $is_arm = yes)
 AM_CONDITIONAL(LIBGO_IS_SPARC, test $is_sparc = yes)
-AM_CONDITIONAL(LIBGO_IS_SPARCV9, test $isv_sparcv9 = yes)
+AM_CONDITIONAL(LIBGO_IS_SPARC64, test $is_sparc64 = yes)
 AM_CONDITIONAL(LIBGO_IS_X86_64, test $is_x86_64 = yes)
 AC_SUBST(GOARCH)
 
