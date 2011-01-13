@@ -232,6 +232,22 @@ i386_pe_maybe_mangle_decl_assembler_name (tree decl, tree id)
   return new_id;
 }
 
+/* Emit an assembler directive to set symbol for DECL visibility to
+   the visibility type VIS, which must not be VISIBILITY_DEFAULT.
+   As for PE there is no hidden support in gas, we just warn for
+   user-specified visibility attributes.  */
+
+void
+i386_pe_assemble_visibility (tree decl,
+			     int vis ATTRIBUTE_UNUSED)
+{
+  if (!decl
+      || !lookup_attribute ("visibility", DECL_ATTRIBUTES (decl)))
+    return;
+  warning (OPT_Wattributes, "visibility attribute not supported "
+	   "in this configuration; ignored");
+}
+
 /* This is used as a target hook to modify the DECL_ASSEMBLER_NAME
    in the language-independent default hook
    langhooks,c:lhd_set_decl_assembler_name ()

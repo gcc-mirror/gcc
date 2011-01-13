@@ -1,3 +1,8 @@
+2011-01-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR c++/47213
+	* g++.dg/ext/pr47213.C: New.
+
 2011-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gfortran.dg/cray_pointers_2.f90: Use dg-timeout-factor 4.
