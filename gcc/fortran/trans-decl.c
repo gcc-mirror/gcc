@@ -1575,6 +1575,12 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, name, type);
 
+  /* Initialize DECL_EXTERNAL and TREE_PUBLIC before calling decl_attributes;
+     TREE_PUBLIC specifies whether a function is globally addressable (i.e.
+     the the opposite of declaring a function as static in C).  */
+  DECL_EXTERNAL (fndecl) = 1;
+  TREE_PUBLIC (fndecl) = 1;
+
   attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
   decl_attributes (&fndecl, attributes, 0);
 
@@ -1591,12 +1597,6 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
       /* Global declaration, e.g. intrinsic subroutine.  */
       DECL_CONTEXT (fndecl) = NULL_TREE;
     }
-
-  DECL_EXTERNAL (fndecl) = 1;
-
-  /* This specifies if a function is globally addressable, i.e. it is
-     the opposite of declaring static in C.  */
-  TREE_PUBLIC (fndecl) = 1;
 
   /* Set attributes for PURE functions. A call to PURE function in the
      Fortran 95 sense is both pure and without side effects in the C
@@ -1658,6 +1658,15 @@ build_function_decl (gfc_symbol * sym, bool global)
 
   attr = sym->attr;
 
+  /* Initialize DECL_EXTERNAL and TREE_PUBLIC before calling decl_attributes;
+     TREE_PUBLIC specifies whether a function is globally addressable (i.e.
+     the the opposite of declaring a function as static in C).  */
+  DECL_EXTERNAL (fndecl) = 0;
+
+  if (!current_function_decl
+      && !sym->attr.entry_master && !sym->attr.is_main_program)
+    TREE_PUBLIC (fndecl) = 1;
+
   attributes = add_attributes_to_decl (attr, NULL_TREE);
   decl_attributes (&fndecl, attributes, 0);
 
@@ -1706,15 +1715,6 @@ build_function_decl (gfc_symbol * sym, bool global)
 
   /* Don't call layout_decl for a RESULT_DECL.
      layout_decl (result_decl, 0);  */
-
-  /* Set up all attributes for the function.  */
-  DECL_EXTERNAL (fndecl) = 0;
-
-  /* This specifies if a function is globally visible, i.e. it is
-     the opposite of declaring static in C.  */
-  if (!current_function_decl
-      && !sym->attr.entry_master && !sym->attr.is_main_program)
-    TREE_PUBLIC (fndecl) = 1;
 
   /* TREE_STATIC means the function body is defined here.  */
   TREE_STATIC (fndecl) = 1;
