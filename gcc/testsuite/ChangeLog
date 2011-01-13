@@ -1,3 +1,9 @@
+2011-01-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/guality/pr36728-1.c: Disable arg1/2 checks for s390 and
+	s390x.
+	* gcc.dg/guality/pr36728-2.c: Likewise.
+
 2011-01-13  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/PR46973
