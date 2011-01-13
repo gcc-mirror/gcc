@@ -1,3 +1,22 @@
+2011-01-13  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/45848
+	PR fortran/47204
+	* gfortran.h (gfc_code): Move union ext's case_list into
+	the struct block.
+	* dump-parse-tree.c (show_code_node): Adapt by prefixing case_list
+	by "block.".
+	* frontend-passes.c (gfc_code_walker): Ditto.
+	* match.c (gfc_match_goto, gfc_match_call, gfc_match_case,
+	gfc_match_type_is, gfc_match_class_is): Ditto.
+	* resolve.c (resolve_select, resolve_select_type): Ditto.
+	* st.c (gfc_free_statement): Ditto.
+	* trans-stmt.c (gfc_trans_integer_select, gfc_trans_logical_select,
+	gfc_trans_character_select): Ditto.
+	* parse.c (resolve_all_program_units): For error recovery, avoid
+	segfault is proc_name is NULL.
+
 2011-01-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/47051

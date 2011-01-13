@@ -1,3 +1,11 @@
+2011-01-13  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/45848
+	PR fortran/47204
+	* gfortran.dg/select_type_20.f90: New.
+	* gfortran.dg/select_type_21.f90: New.
+
 2011-01-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/47251
