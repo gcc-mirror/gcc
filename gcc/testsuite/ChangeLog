@@ -1,3 +1,7 @@
+2011-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gfortran.dg/cray_pointers_2.f90: Use dg-timeout-factor 4.
+
 2011-01-13  Tobias Burnus  <burnus@net-b.de>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 
