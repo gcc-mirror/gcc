@@ -1,3 +1,10 @@
+2011-01-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/PR46973
+	* dwarf2out.c (prune_unused_types_mark_generic_parms_dies): New
+	static function.
+    	(prune_unused_types_mark): Use it.
+
 2011-01-13  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/45352

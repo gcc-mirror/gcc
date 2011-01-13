@@ -6477,6 +6477,7 @@ static void output_loc_list (dw_loc_list_ref);
 static char *gen_internal_sym (const char *);
 
 static void prune_unmark_dies (dw_die_ref);
+static void prune_unused_types_mark_generic_parms_dies (dw_die_ref);
 static void prune_unused_types_mark (dw_die_ref, int);
 static void prune_unused_types_walk (dw_die_ref);
 static void prune_unused_types_walk_attribs (dw_die_ref);
@@ -22245,6 +22246,32 @@ prune_unused_types_walk_attribs (dw_die_ref die)
     }
 }
 
+/* Mark the generic parameters and arguments children DIEs of DIE.  */
+
+static void
+prune_unused_types_mark_generic_parms_dies (dw_die_ref die)
+{
+  dw_die_ref c;
+
+  if (die == NULL || die->die_child == NULL)
+    return;
+  c = die->die_child;
+  do
+    {
+      switch (c->die_tag)
+	{
+	case DW_TAG_template_type_param:
+	case DW_TAG_template_value_param:
+	case DW_TAG_GNU_template_template_param:
+	case DW_TAG_GNU_template_parameter_pack:
+	  prune_unused_types_mark (c, 1);
+	  break;
+	default:
+	  break;
+	}
+      c = c->die_sib;
+    } while (c && c != die->die_child);
+}
 
 /* Mark DIE as being used.  If DOKIDS is true, then walk down
    to DIE's children.  */
@@ -22258,6 +22285,10 @@ prune_unused_types_mark (dw_die_ref die, int dokids)
     {
       /* We haven't done this node yet.  Mark it as used.  */
       die->die_mark = 1;
+      /* If this is the DIE of a generic type instantiation,
+	 mark the children DIEs that describe its generic parms and
+	 args.  */
+      prune_unused_types_mark_generic_parms_dies (die);
 
       /* We also have to mark its parents as used.
 	 (But we don't want to mark our parents' kids due to this.)  */
