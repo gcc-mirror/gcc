@@ -1,3 +1,8 @@
+2011-01-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/47251
+	* gcc.target/powerpc/pr47251.c: New file, test PR 47251 fix.
+
 2011-01-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/guality/pr36728-1.c: Disable arg1/2 checks for s390 and
