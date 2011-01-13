@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -538,33 +538,6 @@ extern const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
 
 /* Don't worry about compatibility with PCC.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
-
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  Because we have defined
-   TARGET_PROMOTE_FUNCTION_MODE to promote everything, we have to
-   perform the same promotions as PROMOTE_MODE.  */
-#define XTENSA_LIBCALL_VALUE(MODE, OUTGOINGP)				\
-  gen_rtx_REG ((GET_MODE_CLASS (MODE) == MODE_INT			\
-		&& GET_MODE_SIZE (MODE) < UNITS_PER_WORD)		\
-	       ? SImode : (MODE),					\
-	       OUTGOINGP ? GP_OUTGOING_RETURN : GP_RETURN)
-
-#define LIBCALL_VALUE(MODE)						\
-  XTENSA_LIBCALL_VALUE ((MODE), 0)
-
-#define LIBCALL_OUTGOING_VALUE(MODE)			 		\
-  XTENSA_LIBCALL_VALUE ((MODE), 1)
-
-/* A C expression that is nonzero if REGNO is the number of a hard
-   register in which the values of called function may come back.  A
-   register whose use for returning values is limited to serving as
-   the second of a pair (for a value of type 'double', say) need not
-   be recognized by this macro.  If the machine has register windows,
-   so that the caller and the called function use different registers
-   for the return value, this macro should recognize only the caller's
-   register numbers.  */
-#define FUNCTION_VALUE_REGNO_P(N)					\
-  ((N) == GP_RETURN)
 
 /* A C expression that is nonzero if REGNO is the number of a hard
    register in which function arguments are sometimes passed.  This

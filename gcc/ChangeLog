@@ -1,3 +1,11 @@
+2011-01-13  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/xtensa/xtensa.h (XTENSA_LIBCALL_VALUE, LIBCALL_VALUE,
+	LIBCALL_OUTGOING_VALUE, FUNCTION_VALUE_REGNO_P): Remove macros.
+	* config/xtensa/xtensa.c (xtensa_libcall_value,
+	xtensa_function_value_regno_p): New functions.
+	(TARGET_LIBCALL_VALUE, TARGET_FUNCTION_VALUE_REGNO_P): Define.
+
 2011-01-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR c++/47213
