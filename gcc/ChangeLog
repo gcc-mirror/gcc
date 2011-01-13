@@ -216,7 +216,7 @@
 
 2011-01-11  Jeff Law  <law@redhat.com>
 
-	* PR tree-optimization/47086
+	PR tree-optimization/47086
 	* tree-ssa-loop-ivopts.c (find_givs_in_stmt_scev): Do not record
 	IVs from statements that might throw.
 
@@ -258,7 +258,7 @@
 
 2011-01-10  Jeff Law  <law@redhat.com>
 
-	* PR tree-optimization/47141
+	PR tree-optimization/47141
 	* ipa-split.c (split_function): Handle case where we are
 	returning a value and the return block has a virtual operand phi.
 
