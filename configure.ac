@@ -804,8 +804,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs readline mmalloc libgui itcl gdb"
     ;;
   ia64*-**-hpux*)
-    # No gdb or ld support yet.
-    noconfigdirs="$noconfigdirs ${libgcj} readline mmalloc libgui itcl gdb ld"
+    # No ld support yet.
+    noconfigdirs="$noconfigdirs ${libgcj} libgui itcl ld"
     ;;
   ia64*-*-*vms*)
     # No gdb or ld support yet.

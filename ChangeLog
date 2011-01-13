@@ -1,3 +1,9 @@
+2011-01-13  Joel Brobecker  <brobecker@adacore.com>
+
+	* configure.ac: Remove readline, mmalloc, and gdb from noconfigdirs
+	for ia64-hpux.
+	* configure: Regenerate.
+
 2011-01-10  Jan Hubicka  <jh@suse.cz>
 
 	* config/bootstrap-lto.mk: -fuse-linker-plugin is default now;
