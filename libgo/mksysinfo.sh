@@ -207,7 +207,7 @@ fi
 # The registers returned by PTRACE_GETREGS.  This is probably
 # GNU/Linux specific; it should do no harm if there is no
 # _user_regs_struct.
-regs=`grep '^type _user_regs_struct struct' gen-sysinfo.go`
+regs=`grep '^type _user_regs_struct struct' gen-sysinfo.go || true`
 if test "$regs" != ""; then
   regs=`echo $regs | sed -e 's/type _user_regs_struct struct //' -e 's/[{}]//g'`
   regs=`echo $regs | sed -e s'/^ *//'`
