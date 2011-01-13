@@ -821,7 +821,32 @@ rx_function_value (const_tree ret_type,
 		   const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
 		   bool       outgoing ATTRIBUTE_UNUSED)
 {
-  return gen_rtx_REG (TYPE_MODE (ret_type), FUNC_RETURN_REGNUM);
+  enum machine_mode mode = TYPE_MODE (ret_type);
+
+  /* RX ABI specifies that small integer types are
+     promoted to int when returned by a function.  */
+  if (GET_MODE_SIZE (mode) > 0 && GET_MODE_SIZE (mode) < 4)
+    return gen_rtx_REG (SImode, FUNC_RETURN_REGNUM);
+    
+  return gen_rtx_REG (mode, FUNC_RETURN_REGNUM);
+}
+
+/* TARGET_PROMOTE_FUNCTION_MODE must behave in the same way with
+   regard to function returns as does TARGET_FUNCTION_VALUE.  */
+
+static enum machine_mode
+rx_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+			  enum machine_mode mode,
+			  int * punsignedp ATTRIBUTE_UNUSED,
+			  const_tree funtype ATTRIBUTE_UNUSED,
+			  int for_return)
+{
+  if (for_return != 1
+      || GET_MODE_SIZE (mode) >= 4
+      || GET_MODE_SIZE (mode) < 1)
+    return mode;
+
+  return SImode;
 }
 
 static bool
@@ -2758,6 +2783,9 @@ rx_compare_redundant (rtx cmp)
 
 #undef  TARGET_CC_MODES_COMPATIBLE
 #define TARGET_CC_MODES_COMPATIBLE		rx_cc_modes_compatible
+
+#undef  TARGET_PROMOTE_FUNCTION_MODE
+#define TARGET_PROMOTE_FUNCTION_MODE		rx_promote_function_mode
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
