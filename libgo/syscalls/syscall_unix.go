@@ -10,6 +10,11 @@ var (
 	Stderr = 2
 )
 
+const ENONE = 0
+
+func GetErrno() int
+func SetErrno(int)
+
 func libc_uname(buf *Utsname) (errno int) __asm__("uname")
 
 func Uname(buf *Utsname) (errno int) {

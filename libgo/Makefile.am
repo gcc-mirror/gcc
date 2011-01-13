@@ -596,10 +596,17 @@ go_mime_files = \
 if LIBGO_IS_RTEMS
 go_net_fd_os_file = go/net/fd_rtems.go
 go_net_newpollserver_file = go/net/newpollserver_rtems.go
-else
+else # !LIBGO_IS_RTEMS
+if LIBGO_IS_LINUX
 go_net_fd_os_file = go/net/fd_linux.go
 go_net_newpollserver_file = go/net/newpollserver.go
-endif
+else # !LIBGO_IS_LINUX && !LIBGO_IS_RTEMS
+# By default use select with pipes.  Most systems should have
+# something better.
+go_net_fd_os_file = go/net/fd_rtems.go
+go_net_newpollserver_file = go/net/newpollserver.go
+endif # !LIBGO_IS_LINUX
+endif # !LIBGO_IS_RTEMS
 
 go_net_files = \
 	go/net/dial.go \
@@ -1019,26 +1026,84 @@ go_testing_quick_files = \
 go_testing_script_files = \
 	go/testing/script/script.go
 
+# Define Syscall and Syscall6.
+if LIBGO_IS_RTEMS
+syscall_syscall_file = syscalls/syscall_stubs.go
+else
+syscall_syscall_file = syscalls/syscall.go
+endif
+
+# Declare libc functions that vary for largefile systems.
+if LIBGO_IS_LINUX
+# Always use lseek64 on GNU/Linux.
+syscall_filesize_file = syscalls/sysfile_largefile.go
+else # !LIBGO_IS_LINUX
+if LIBGO_IS_SOLARIS
+if LIBGO_IS_386
+# Use lseek64 on 386 Solaris.
+syscall_filesize_flie = syscalls/sysfile_largefile.go
+else # !LIBGO_IS_LINUX && LIBGO_IS_SOLARIS && !LIBGO_IS_386
+# Use lseek on amd64 Solaris.
+syscall_filesize_flie = syscalls/sysfile_regfile.go
+endif # !LIBGO_IS_386
+else # !LIBGO_IS_LINUX && !LIBGO_IS_SOLARIS
+# Use lseek by default.
+syscall_filesize_file = syscalls/sysfile_regfile.go
+endif # !LIBGO_IS_SOLARIS
+endif # !LIBGO_IS_LINUX
+
+
+# Define ForkExec, PtraceForkExec, Exec, and Wait4.
 if LIBGO_IS_RTEMS
 syscall_exec_os_file = syscalls/exec_stubs.go
-syscall_socket_os_file = syscalls/socket_bsd.go
-syscall_socket_epoll_file =
-syscall_sysfile_os_file = syscalls/sysfile_rtems.go
-syscall_syscall_file = syscalls/syscall_stubs.go
-syscall_errstr_file = syscalls/errstr_rtems.go
-syscall_errstr_decl_file = syscalls/errstr_decl_rtems.go
 else
 syscall_exec_os_file = syscalls/exec.go
-syscall_socket_os_file = syscalls/socket_linux.go
-syscall_socket_epoll_file = syscalls/socket_epoll.go
-syscall_sysfile_os_file = syscalls/sysfile_linux.go
-syscall_syscall_file = syscalls/syscall.go
+endif
+
+# Define Sleep.
+if LIBGO_IS_RTEMS
+syscall_sleep_file = syscalls/sleep_rtems.go
+else
+syscall_sleep_file = syscalls/sleep_select.go
+endif
+
+# Define Errstr.
+if LIBGO_IS_RTEMS
+syscall_errstr_file = syscalls/errstr_rtems.go
+else
 syscall_errstr_file = syscalls/errstr.go
+endif
+
+# Declare libc_strerror_r which is the Go name for strerror_r.
+if LIBGO_IS_RTEMS
+# RTEMS uses newlib in which strerror_r returns char *.
+syscall_errstr_decl_file = syscalls/errstr_decl_rtems.go
+else
 if LIBGO_IS_LINUX
+# In Linux the POSIX strerror_r is called __xpg_strerror_r.
 syscall_errstr_decl_file = syscalls/errstr_decl_linux.go
 else
+# On other systems we hope strerror_r is just strerror_r.
 syscall_errstr_decl_file = syscalls/errstr_decl.go
 endif
+endif
+
+# Define socket sizes and types.
+if LIBGO_IS_LINUX
+syscall_socket_os_file = syscalls/socket_linux.go
+else
+if LIBGO_IS_SOLARIS
+syscall_socket_os_file = syscalls/socket_solaris.go
+else
+syscall_socket_os_file = syscalls_socket_bsd.go
+endif
+endif
+
+# Support for epoll.
+if LIBGO_IS_LINUX
+syscall_socket_epoll_file = syscalls/socket_epoll.go
+else
+syscall_socket_epoll_file =
 endif
 
 syscall_arch.go: s-syscall_arch; @true
@@ -1046,6 +1111,7 @@ s-syscall_arch: Makefile
 	rm -f syscall_arch.go.tmp
 	echo "package syscall" > syscall_arch.go.tmp
 	echo 'const ARCH = "'$(GOARCH)'"' >> syscall_arch.go.tmp
+	echo 'const OS = "'$(GOOS)'"' >> syscall_arch.go.tmp
 	$(SHELL) $(srcdir)/../move-if-change syscall_arch.go.tmp syscall_arch.go
 	$(STAMP) $@
 
@@ -1054,6 +1120,8 @@ go_syscall_files = \
 	$(syscall_errstr_decl_file) \
 	syscalls/exec_helpers.go \
 	$(syscall_exec_os_file) \
+	$(syscall_filesize_file) \
+	$(syscall_sleep_file) \
 	syscalls/socket.go \
 	$(syscall_socket_os_file) \
 	$(syscall_socket_epoll_file) \
@@ -1063,7 +1131,6 @@ go_syscall_files = \
 	syscalls/syscall_$(GOOS).go \
 	syscalls/syscall_$(GOOS)_$(GOARCH).go \
 	syscalls/sysfile_posix.go \
-	$(syscall_sysfile_os_file) \
 	sysinfo.go \
 	syscall_arch.go
 go_syscall_c_files = \
@@ -2232,7 +2299,7 @@ testing/script/check: $(CHECK_DEPS)
 .PHONY: testing/script/check
 
 sysinfo.go: $(srcdir)/mksysinfo.sh config.h
-	$(SHELL) $(srcdir)/mksysinfo.sh
+	CC="$(CC)" $(SHELL) $(srcdir)/mksysinfo.sh
 syscalls/libsyscall.a: $(go_syscall_files) $(go_syscall_c_files) sync.gox
 	rm -f syscall.gox syscalls/libsyscall.a
 	test -d syscalls || $(MKDIR_P) syscalls
