@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2011-01-10 21:00+0900\n"
+"PO-Revision-Date: 2011-01-13 10:32+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -19508,7 +19508,7 @@ msgstr "%qE 属性用としては無効なベクトル型です"
 #: ada/gcc-interface/utils.c:5434
 #, gcc-internal-format
 msgid "vector size not an integral multiple of component size"
-msgstr ""
+msgstr "ベクトルのサイズが要素のサイズの整数倍ではありません"
 
 #: c-family/c-common.c:7317 ada/gcc-interface/utils.c:5346
 #: ada/gcc-interface/utils.c:5440
@@ -19520,17 +19520,17 @@ msgstr "ベクトルのサイズが 0 です"
 #: ada/gcc-interface/utils.c:5447
 #, gcc-internal-format
 msgid "number of components of the vector not a power of two"
-msgstr ""
+msgstr "ベクトルの要素の数が 2 の乗数ではありません"
 
 #: c-family/c-common.c:7353 ada/gcc-interface/utils.c:5070
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "nonnull attribute without arguments on a non-prototype"
-msgstr "仮引数の数がプロトタイプと一致しません"
+msgstr ""
 
 #: c-family/c-common.c:7368 ada/gcc-interface/utils.c:5085
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "nonnull argument has invalid operand number (argument %lu)"
-msgstr "フォーマット文字列に不適切なオペランド数があります"
+msgstr ""
 
 #: c-family/c-common.c:7387 ada/gcc-interface/utils.c:5104
 #, gcc-internal-format
@@ -19543,14 +19543,14 @@ msgid "nonnull argument references non-pointer operand (argument %lu, operand %l
 msgstr ""
 
 #: c-family/c-common.c:7471
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "not enough variable arguments to fit a sentinel"
-msgstr "関数への引数が少なすぎます"
+msgstr ""
 
 #: c-family/c-common.c:7485
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing sentinel in function call"
-msgstr "PC 関連の関数呼び出しを禁じる"
+msgstr ""
 
 #: c-family/c-common.c:7526
 #, gcc-internal-format
@@ -19558,19 +19558,19 @@ msgid "null argument where non-null required (argument %lu)"
 msgstr ""
 
 #: c-family/c-common.c:7591
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cleanup argument not an identifier"
-msgstr "述語は識別子でなければなりません"
+msgstr ""
 
 #: c-family/c-common.c:7598
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cleanup argument not a function"
-msgstr "関数に対する引数が多すぎます"
+msgstr ""
 
 #: c-family/c-common.c:7637
 #, gcc-internal-format
 msgid "%qE attribute requires prototypes with named arguments"
-msgstr ""
+msgstr "%qE 属性は名前付き引数があるプロトタイプが必要です"
 
 #: c-family/c-common.c:7648
 #, fuzzy, gcc-internal-format
@@ -19590,52 +19590,52 @@ msgstr ""
 #: c-family/c-common.c:7794
 #, gcc-internal-format
 msgid "bad option %s to optimize attribute"
-msgstr ""
+msgstr "最適化属性への間違ったオプション %s です"
 
 #: c-family/c-common.c:7797
 #, gcc-internal-format
 msgid "bad option %s to pragma attribute"
-msgstr ""
+msgstr "pragma 属性への間違ったオプション %s です"
 
 #: c-family/c-common.c:8026
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "not enough arguments to function %qE"
-msgstr "関数 `%s' への引数が少なすぎます"
+msgstr "関数 %qE へ十分な引数がありません"
 
 #: c-family/c-common.c:8062 c-family/c-common.c:8108
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-floating-point argument in call to function %qE"
-msgstr "関数 `%s' に対する引数が多すぎます"
+msgstr "関数 %qE の呼び出し内に非浮動小数点引数があります"
 
 #: c-family/c-common.c:8085
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-floating-point arguments in call to function %qE"
-msgstr "関数 `%s' に対する引数が多すぎます"
+msgstr "関数 %qE の呼び出し内に非浮動小数点引数があります"
 
 #: c-family/c-common.c:8101
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-const integer argument %u in call to function %qE"
-msgstr "関数 `%s' への引数が少なすぎます"
+msgstr "%u 番目の引数が非定数整数の関数呼び出し %qE があります"
 
 #: c-family/c-common.c:8437
 #, gcc-internal-format
 msgid "cannot apply %<offsetof%> to static data member %qD"
-msgstr ""
+msgstr "%<offsetof%> を静的データメンバ %qD へ適用できません"
 
 #: c-family/c-common.c:8442
 #, gcc-internal-format
 msgid "cannot apply %<offsetof%> when %<operator[]%> is overloaded"
-msgstr ""
+msgstr "%<offsetof%> は %<operator[]%> がオーバーロードされているときには適用できません"
 
 #: c-family/c-common.c:8449
 #, gcc-internal-format
 msgid "cannot apply %<offsetof%> to a non constant address"
-msgstr ""
+msgstr "一定ではないアドレスへ %<offsetof%> を適用できません"
 
 #: c-family/c-common.c:8462 cp/typeck.c:4915
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "attempt to take address of bit-field structure member %qD"
-msgstr "構造体メンバ `%s' のビットフィールドのアドレスを取得しようとしています"
+msgstr "ビットフィールドである構造体のメンバ %qD のアドレスを取得しようとする試みです"
 
 #: c-family/c-common.c:8521
 #, gcc-internal-format
@@ -19648,124 +19648,124 @@ msgid "the omitted middle operand in ?: will always be %<true%>, suggest explici
 msgstr ""
 
 #: c-family/c-common.c:8578
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assignment of member %qD in read-only object"
-msgstr "%sが読み込み専用領域で行われました"
+msgstr "読み取り専用オブジェクト内のメンバ %qD への代入です"
 
 #: c-family/c-common.c:8580
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "increment of member %qD in read-only object"
-msgstr "%sが読み込み専用領域で行われました"
+msgstr "読み取り専用オブジェクト内のメンバ %qD のインクリメントです"
 
 #: c-family/c-common.c:8582
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "decrement of member %qD in read-only object"
-msgstr "%sが読み込み専用領域で行われました"
+msgstr "読み取り専用オブジェクト内のメンバ %qD のデクリメントです"
 
 #: c-family/c-common.c:8584
 #, gcc-internal-format
 msgid "member %qD in read-only object used as %<asm%> output"
-msgstr ""
+msgstr "読み取り専用オブジェクト内のメンバ %qD が %<asm%> の出力として使用されています"
 
 #: c-family/c-common.c:8588
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assignment of read-only member %qD"
-msgstr "%sが読み込み専用メンバ `%s' に行われました"
+msgstr "読み取り専用メンバ %qD への代入です"
 
 #: c-family/c-common.c:8589
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "increment of read-only member %qD"
-msgstr "%sが読み込み専用メンバ `%s' に行われました"
+msgstr "読み取り専用メンバ %qD のインクリメントです"
 
 #: c-family/c-common.c:8590
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "decrement of read-only member %qD"
-msgstr "%sが読み込み専用メンバ `%s' に行われました"
+msgstr "読み取り専用メンバ %qD のデクリメントです"
 
 #: c-family/c-common.c:8591
 #, gcc-internal-format
 msgid "read-only member %qD used as %<asm%> output"
-msgstr ""
+msgstr "読み取り専用メンバ %qD が %<asm%> の出力として使用されています"
 
 #: c-family/c-common.c:8595
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assignment of read-only variable %qD"
-msgstr "%sが読み込み専用変数 `%s' に行われました"
+msgstr "読み取り専用変数 %qD への代入です"
 
 #: c-family/c-common.c:8596
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "increment of read-only variable %qD"
-msgstr "%sが読み込み専用変数 `%s' に行われました"
+msgstr "読み取り専用変数 %qD のインクリメントです"
 
 #: c-family/c-common.c:8597
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "decrement of read-only variable %qD"
-msgstr "%sが読み込み専用変数 `%s' に行われました"
+msgstr "読み取り専用変数 %qD のデクリメントです"
 
 #: c-family/c-common.c:8598
 #, gcc-internal-format
 msgid "read-only variable %qD used as %<asm%> output"
-msgstr ""
+msgstr "読み取り専用変数 %qD が %<asm%> の出力として使用されています"
 
 #: c-family/c-common.c:8601
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assignment of read-only parameter %qD"
-msgstr "%sが読み込み専用メンバ `%s' に行われました"
+msgstr "読み取り専用パラメータ %qD への代入です"
 
 #: c-family/c-common.c:8602
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "increment of read-only parameter %qD"
-msgstr "%sが読み込み専用メンバ `%s' に行われました"
+msgstr "読み取り専用パラメータ %qD のインクリメントです"
 
 #: c-family/c-common.c:8603
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "decrement of read-only parameter %qD"
-msgstr "%sが読み込み専用メンバ `%s' に行われました"
+msgstr "読み取り専用パラメータ %qD のデクリメントです"
 
 #: c-family/c-common.c:8604
 #, gcc-internal-format
 msgid "read-only parameter %qD use as %<asm%> output"
-msgstr ""
+msgstr "読み取り専用パラメータ %qD が %<asm%> の出力として使用されています"
 
 #: c-family/c-common.c:8609
 #, gcc-internal-format
 msgid "assignment of read-only named return value %qD"
-msgstr ""
+msgstr "読み取り専用名前付き戻り値 %qD への代入です"
 
 #: c-family/c-common.c:8611
 #, gcc-internal-format
 msgid "increment of read-only named return value %qD"
-msgstr ""
+msgstr "読み取り専用名前付き戻り値 %qD のインクリメントです"
 
 #: c-family/c-common.c:8613
 #, gcc-internal-format
 msgid "decrement of read-only named return value %qD"
-msgstr ""
+msgstr "読み取り専用名前付き戻り値 %qD のデクリメントです"
 
 #: c-family/c-common.c:8615
 #, gcc-internal-format
 msgid "read-only named return value %qD used as %<asm%>output"
-msgstr ""
+msgstr "読み取り専用名前付き戻り値 %qD が %<asm%> の出力として使用されています"
 
 #: c-family/c-common.c:8620
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assignment of function %qD"
-msgstr "関数 `%s' への引数が少なすぎます"
+msgstr "関数 %qD への代入です"
 
 #: c-family/c-common.c:8621
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "increment of function %qD"
-msgstr "関数 `%s' に対する引数が多すぎます"
+msgstr "関数 %qD のインクリメントです"
 
 #: c-family/c-common.c:8622
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "decrement of function %qD"
-msgstr "関数 `%s' への引数が少なすぎます"
+msgstr "関数 %qD のデクリメントです"
 
 #: c-family/c-common.c:8623
 #, gcc-internal-format
 msgid "function %qD used as %<asm%> output"
-msgstr ""
+msgstr "関数 %qD が %<asm%> の出力として使用されています"
 
 #: c-family/c-common.c:8629
 #, gcc-internal-format
@@ -19773,9 +19773,9 @@ msgid "read-only location %qE used as %<asm%> output"
 msgstr ""
 
 #: c-family/c-common.c:8642
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "lvalue required as left operand of assignment"
-msgstr "代入として無効な左辺値です"
+msgstr ""
 
 #: c-family/c-common.c:8645
 #, gcc-internal-format
