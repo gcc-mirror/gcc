@@ -5354,11 +5354,11 @@ Subroutine
 @multitable @columnfractions .15 .70
 @item @var{NUMBER} @tab Shall be a scalar of type @code{INTEGER} and of
 default kind, @math{@var{NUMBER} \geq 0}
-@item @var{VALUE}  @tab Shall be a scalar of type @code{CHARACTER}
+@item @var{VALUE}  @tab (Optional) Shall be a scalar of type @code{CHARACTER}
 and of default kind.
-@item @var{LENGTH} @tab (Option) Shall be a scalar of type @code{INTEGER}
+@item @var{LENGTH} @tab (Optional) Shall be a scalar of type @code{INTEGER}
 and of default kind.
-@item @var{STATUS} @tab (Option) Shall be a scalar of type @code{INTEGER}
+@item @var{STATUS} @tab (Optional) Shall be a scalar of type @code{INTEGER}
 and of default kind.
 @end multitable
 
@@ -5514,13 +5514,13 @@ Subroutine
 @multitable @columnfractions .15 .70
 @item @var{NAME}      @tab Shall be a scalar of type @code{CHARACTER}
 and of default kind.
-@item @var{VALUE}     @tab Shall be a scalar of type @code{CHARACTER}
+@item @var{VALUE}     @tab (Optional) Shall be a scalar of type @code{CHARACTER}
 and of default kind.
-@item @var{LENGTH}    @tab Shall be a scalar of type @code{INTEGER}
+@item @var{LENGTH}    @tab (Optional) Shall be a scalar of type @code{INTEGER}
 and of default kind.
-@item @var{STATUS}    @tab Shall be a scalar of type @code{INTEGER}
+@item @var{STATUS}    @tab (Optional) Shall be a scalar of type @code{INTEGER}
 and of default kind.
-@item @var{TRIM_NAME} @tab Shall be a scalar of type @code{LOGICAL}
+@item @var{TRIM_NAME} @tab (Optional) Shall be a scalar of type @code{LOGICAL}
 and of default kind.
 @end multitable
 
