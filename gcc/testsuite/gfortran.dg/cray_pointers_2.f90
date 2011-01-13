@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fcray-pointer -fbounds-check" }
+! { dg-timeout-factor 4 }
 ! Series of routines for testing a Cray pointer implementation
 program craytest
   common /errors/errors(400)
