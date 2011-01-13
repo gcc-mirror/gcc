@@ -1,3 +1,8 @@
+2011-01-13  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/PR46973
+	* g++.dg/debug/dwarf2/template-params-9.C: New test.
+
 2011-01-13  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/45352
