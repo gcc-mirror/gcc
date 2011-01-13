@@ -1,5 +1,6 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -6988,7 +6989,7 @@ reset_sched_cycles_in_current_ebb (void)
     {
       int cost, haifa_cost;
       int sort_p;
-      bool asm_p, real_insn, after_stall;
+      bool asm_p, real_insn, after_stall, all_issued;
       int clock;
 
       if (!INSN_P (insn))
@@ -7024,8 +7025,8 @@ reset_sched_cycles_in_current_ebb (void)
           haifa_cost = cost;
           after_stall = 1;
         }
-      if (haifa_cost == 0
-	  && issued_insns == issue_rate)
+      all_issued = issued_insns == issue_rate;
+      if (haifa_cost == 0 && all_issued)
 	haifa_cost = 1;
       if (haifa_cost > 0)
 	{
@@ -7053,11 +7054,12 @@ reset_sched_cycles_in_current_ebb (void)
                 break;
 
               /* When the data dependency stall is longer than the DFA stall,
-                 it could be that after the longer stall the insn will again
+                 and when we have issued exactly issue_rate insns and stalled,
+                 it could be that after this longer stall the insn will again
                  become unavailable  to the DFA restrictions.  Looks strange
                  but happens e.g. on x86-64.  So recheck DFA on the last
                  iteration.  */
-              if (after_stall
+              if ((after_stall || all_issued)
                   && real_insn
                   && haifa_cost == 0)
                 haifa_cost = estimate_insn_cost (insn, curr_state);

@@ -1,3 +1,8 @@
+2011-01-13  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/45352
+	* gcc.dg/pr45352-3.c: New.
+
 2011-01-12  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	* g++.dg/cpp0x/range-for4.C: Delete useless include and duplicated
