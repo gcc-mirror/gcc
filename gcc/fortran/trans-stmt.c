@@ -1560,7 +1560,7 @@ gfc_trans_integer_select (gfc_code * code)
 
   for (c = code->block; c; c = c->block)
     {
-      for (cp = c->ext.case_list; cp; cp = cp->next)
+      for (cp = c->ext.block.case_list; cp; cp = cp->next)
 	{
 	  tree low, high;
           tree label;
@@ -1672,7 +1672,7 @@ gfc_trans_logical_select (gfc_code * code)
      always executed, and we don't generate code a COND_EXPR.  */
   for (c = code->block; c; c = c->block)
     {
-      for (cp = c->ext.case_list; cp; cp = cp->next)
+      for (cp = c->ext.block.case_list; cp; cp = cp->next)
 	{
 	  if (cp->low)
 	    {
@@ -1771,7 +1771,7 @@ gfc_trans_character_select (gfc_code *code)
   static tree ss_string2[2], ss_string2_len[2];
   static tree ss_target[2];
 
-  cp = code->block->ext.case_list;
+  cp = code->block->ext.block.case_list;
   while (cp->left != NULL)
     cp = cp->left;
 
@@ -1840,7 +1840,7 @@ gfc_trans_character_select (gfc_code *code)
 
 	  for (c = code->block; c; c = c->block)
 	    {
-	      for (cp = c->ext.case_list; cp; cp = cp->next)
+	      for (cp = c->ext.block.case_list; cp; cp = cp->next)
 		{
 		  tree low, high;
 		  tree label;
@@ -1969,7 +1969,7 @@ gfc_trans_character_select (gfc_code *code)
 
   for (c = code->block; c; c = c->block)
     {
-      for (d = c->ext.case_list; d; d = d->next)
+      for (d = c->ext.block.case_list; d; d = d->next)
         {
 	  label = gfc_build_label_decl (NULL_TREE);
 	  tmp = fold_build3_loc (input_location, CASE_LABEL_EXPR,

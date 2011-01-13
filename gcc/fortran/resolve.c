@@ -7361,7 +7361,7 @@ resolve_select (gfc_code *code)
 
   if (type == BT_INTEGER)
     for (body = code->block; body; body = body->block)
-      for (cp = body->ext.case_list; cp; cp = cp->next)
+      for (cp = body->ext.block.case_list; cp; cp = cp->next)
 	{
 	  if (cp->low
 	      && gfc_check_integer_range (cp->low->value.integer,
@@ -7389,7 +7389,7 @@ resolve_select (gfc_code *code)
       for (body = code->block; body; body = body->block)
 	{
 	  /* Walk the case label list.  */
-	  for (cp = body->ext.case_list; cp; cp = cp->next)
+	  for (cp = body->ext.block.case_list; cp; cp = cp->next)
 	    {
 	      /* Intercept the DEFAULT case.  It does not have a kind.  */
 	      if (cp->low == NULL && cp->high == NULL)
@@ -7426,7 +7426,7 @@ resolve_select (gfc_code *code)
 
       /* Walk the case label list, making sure that all case labels
 	 are legal.  */
-      for (cp = body->ext.case_list; cp; cp = cp->next)
+      for (cp = body->ext.block.case_list; cp; cp = cp->next)
 	{
 	  /* Count the number of cases in the whole construct.  */
 	  ncases++;
@@ -7527,19 +7527,19 @@ resolve_select (gfc_code *code)
       if (seen_unreachable)
       {
 	/* Advance until the first case in the list is reachable.  */
-	while (body->ext.case_list != NULL
-	       && body->ext.case_list->unreachable)
+	while (body->ext.block.case_list != NULL
+	       && body->ext.block.case_list->unreachable)
 	  {
-	    gfc_case *n = body->ext.case_list;
-	    body->ext.case_list = body->ext.case_list->next;
+	    gfc_case *n = body->ext.block.case_list;
+	    body->ext.block.case_list = body->ext.block.case_list->next;
 	    n->next = NULL;
 	    gfc_free_case_list (n);
 	  }
 
 	/* Strip all other unreachable cases.  */
-	if (body->ext.case_list)
+	if (body->ext.block.case_list)
 	  {
-	    for (cp = body->ext.case_list; cp->next; cp = cp->next)
+	    for (cp = body->ext.block.case_list; cp->next; cp = cp->next)
 	      {
 		if (cp->next->unreachable)
 		  {
@@ -7575,7 +7575,7 @@ resolve_select (gfc_code *code)
      unreachable case labels for a block.  */
   for (body = code; body && body->block; body = body->block)
     {
-      if (body->block->ext.case_list == NULL)
+      if (body->block->ext.block.case_list == NULL)
 	{
 	  /* Cut the unreachable block from the code chain.  */
 	  gfc_code *c = body->block;
@@ -7714,7 +7714,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   /* Loop over TYPE IS / CLASS IS cases.  */
   for (body = code->block; body; body = body->block)
     {
-      c = body->ext.case_list;
+      c = body->ext.block.case_list;
 
       /* Check F03:C815.  */
       if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
@@ -7744,7 +7744,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	    {
 	      gfc_error ("The DEFAULT CASE at %L cannot be followed "
 			 "by a second DEFAULT CASE at %L",
-			 &default_case->ext.case_list->where, &c->where);
+			 &default_case->ext.block.case_list->where, &c->where);
 	      error++;
 	      continue;
 	    }
@@ -7799,7 +7799,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   /* Loop over TYPE IS / CLASS IS cases.  */
   for (body = code->block; body; body = body->block)
     {
-      c = body->ext.case_list;
+      c = body->ext.block.case_list;
 
       if (c->ts.type == BT_DERIVED)
 	c->low = c->high = gfc_get_int_expr (gfc_default_integer_kind, NULL,
@@ -7845,7 +7845,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   body = code;
   while (body && body->block)
     {
-      if (body->block->ext.case_list->ts.type == BT_CLASS)
+      if (body->block->ext.block.case_list->ts.type == BT_CLASS)
 	{
 	  /* Add to class_is list.  */
 	  if (class_is == NULL)
@@ -7878,8 +7878,8 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  tail->block = gfc_get_code ();
 	  tail = tail->block;
 	  tail->op = EXEC_SELECT_TYPE;
-	  tail->ext.case_list = gfc_get_case ();
-	  tail->ext.case_list->ts.type = BT_UNKNOWN;
+	  tail->ext.block.case_list = gfc_get_case ();
+	  tail->ext.block.case_list->ts.type = BT_UNKNOWN;
 	  tail->next = NULL;
 	  default_case = tail;
 	}
@@ -7897,15 +7897,16 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 		{
 		  c2 = (*c1)->block;
 		  /* F03:C817 (check for doubles).  */
-		  if ((*c1)->ext.case_list->ts.u.derived->hash_value
-		      == c2->ext.case_list->ts.u.derived->hash_value)
+		  if ((*c1)->ext.block.case_list->ts.u.derived->hash_value
+		      == c2->ext.block.case_list->ts.u.derived->hash_value)
 		    {
 		      gfc_error ("Double CLASS IS block in SELECT TYPE "
-				 "statement at %L", &c2->ext.case_list->where);
+				 "statement at %L",
+				 &c2->ext.block.case_list->where);
 		      return;
 		    }
-		  if ((*c1)->ext.case_list->ts.u.derived->attr.extension
-		      < c2->ext.case_list->ts.u.derived->attr.extension)
+		  if ((*c1)->ext.block.case_list->ts.u.derived->attr.extension
+		      < c2->ext.block.case_list->ts.u.derived->attr.extension)
 		    {
 		      /* Swap.  */
 		      (*c1)->block = c2->block;
@@ -7940,7 +7941,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	  new_st->expr1->value.function.actual->expr = gfc_get_variable_expr (code->expr1->symtree);
 	  new_st->expr1->value.function.actual->expr->where = code->loc;
 	  gfc_add_vptr_component (new_st->expr1->value.function.actual->expr);
-	  vtab = gfc_find_derived_vtab (body->ext.case_list->ts.u.derived);
+	  vtab = gfc_find_derived_vtab (body->ext.block.case_list->ts.u.derived);
 	  st = gfc_find_symtree (vtab->ns->sym_root, vtab->name);
 	  new_st->expr1->value.function.actual->next = gfc_get_actual_arglist ();
 	  new_st->expr1->value.function.actual->next->expr = gfc_get_variable_expr (st);

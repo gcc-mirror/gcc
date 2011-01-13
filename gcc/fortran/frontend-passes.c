@@ -659,7 +659,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	      for (b = (*c)->block; b; b = b->block)
 		{
 		  gfc_case *cp;
-		  for (cp = b->ext.case_list; cp; cp = cp->next)
+		  for (cp = b->ext.block.case_list; cp; cp = cp->next)
 		    {
 		      WALK_SUBEXPR (cp->low);
 		      WALK_SUBEXPR (cp->high);

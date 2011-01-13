@@ -2651,7 +2651,7 @@ gfc_match_goto (void)
 					     NULL, i++);
 
       tail->op = EXEC_SELECT;
-      tail->ext.case_list = cp;
+      tail->ext.block.case_list = cp;
 
       tail->next = gfc_get_code ();
       tail->next->op = EXEC_GOTO;
@@ -3607,7 +3607,7 @@ gfc_match_call (void)
 	  new_case = gfc_get_case ();
 	  new_case->high = gfc_get_int_expr (gfc_default_integer_kind, NULL, i);
 	  new_case->low = new_case->high;
-	  c->ext.case_list = new_case;
+	  c->ext.block.case_list = new_case;
 
 	  c->next = gfc_get_code ();
 	  c->next->op = EXEC_GOTO;
@@ -4658,7 +4658,7 @@ gfc_match_case (void)
       new_st.op = EXEC_SELECT;
       c = gfc_get_case ();
       c->where = gfc_current_locus;
-      new_st.ext.case_list = c;
+      new_st.ext.block.case_list = c;
       return MATCH_YES;
     }
 
@@ -4690,7 +4690,7 @@ gfc_match_case (void)
     goto cleanup;
 
   new_st.op = EXEC_SELECT;
-  new_st.ext.case_list = head;
+  new_st.ext.block.case_list = head;
 
   return MATCH_YES;
 
@@ -4738,7 +4738,7 @@ gfc_match_type_is (void)
     goto cleanup;
 
   new_st.op = EXEC_SELECT_TYPE;
-  new_st.ext.case_list = c;
+  new_st.ext.block.case_list = c;
 
   /* Create temporary variable.  */
   select_type_set_tmp (&c->ts);
@@ -4778,7 +4778,7 @@ gfc_match_class_is (void)
       c = gfc_get_case ();
       c->where = gfc_current_locus;
       c->ts.type = BT_UNKNOWN;
-      new_st.ext.case_list = c;
+      new_st.ext.block.case_list = c;
       select_type_set_tmp (NULL);
       return MATCH_YES;
     }
@@ -4811,7 +4811,7 @@ gfc_match_class_is (void)
     goto cleanup;
 
   new_st.op = EXEC_SELECT_TYPE;
-  new_st.ext.case_list = c;
+  new_st.ext.block.case_list = c;
   
   /* Create temporary variable.  */
   select_type_set_tmp (&c->ts);

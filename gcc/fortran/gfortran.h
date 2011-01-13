@@ -2079,7 +2079,6 @@ typedef struct gfc_code
   union
   {
     gfc_actual_arglist *actual;
-    gfc_case *case_list;
     gfc_iterator *iterator;
 
     struct
@@ -2093,6 +2092,7 @@ typedef struct gfc_code
     {
       gfc_namespace *ns;
       gfc_association_list *assoc;
+      gfc_case *case_list;
     }
     block;
 

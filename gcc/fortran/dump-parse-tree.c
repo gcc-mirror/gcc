@@ -1467,7 +1467,7 @@ show_code_node (int level, gfc_code *c)
 	  code_indent (level, 0);
 
 	  fputs ("CASE ", dumpfile);
-	  for (cp = d->ext.case_list; cp; cp = cp->next)
+	  for (cp = d->ext.block.case_list; cp; cp = cp->next)
 	    {
 	      fputc ('(', dumpfile);
 	      show_expr (cp->low);

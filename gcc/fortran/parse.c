@@ -4190,7 +4190,8 @@ resolve_all_program_units (gfc_namespace *gfc_global_ns_list)
   gfc_current_ns = gfc_global_ns_list;
   for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
     {
-      gfc_current_locus = gfc_current_ns->proc_name->declared_at;
+      if (gfc_current_ns->proc_name)
+	gfc_current_locus = gfc_current_ns->proc_name->declared_at;
       gfc_resolve (gfc_current_ns);
       gfc_current_ns->derived_types = gfc_derived_types;
       gfc_derived_types = NULL;
