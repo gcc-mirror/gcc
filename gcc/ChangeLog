@@ -1,3 +1,9 @@
+2011-01-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (print_operand_address): Replace 'error' with
+	'output_operand_lossage'.
+	(print_operand): Likewise.
+
 2011-01-13  Jeff Law  <law@redhat.com>
 
 	* PR rtl-optimization/39077
