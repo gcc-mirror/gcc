@@ -1221,9 +1221,9 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Gives the visibility specification for a class type.  */
 #define CLASSTYPE_VISIBILITY(TYPE)		\
-	DECL_VISIBILITY (TYPE_NAME (TYPE))
+	DECL_VISIBILITY (TYPE_MAIN_DECL (TYPE))
 #define CLASSTYPE_VISIBILITY_SPECIFIED(TYPE)	\
-	DECL_VISIBILITY_SPECIFIED (TYPE_NAME (TYPE))
+	DECL_VISIBILITY_SPECIFIED (TYPE_MAIN_DECL (TYPE))
 
 typedef struct GTY (()) tree_pair_s {
   tree purpose;

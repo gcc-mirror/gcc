@@ -1,3 +1,12 @@
+2011-01-13  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR c++/47213
+	* cp-tree.h (CLASSTYPE_VISIBILITY): Use
+	TYPE_MAIN_DECL instead of TYPE_NAME.
+	(CLASSTYPE_VISIBILITY_SPECIFIED): Likewise.
+	* decl2.c (determine_visibility): Add check
+	of CLASS_TYPE_P for underlying_type.
+
 2011-01-12  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	* cp-tree.h (begin_for_scope): New prototype.
