@@ -1,3 +1,7 @@
+2011-01-14  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/variadic105.C: New.
+
 2011-01-08  Dominique d'Humieres  <dominiq@lps.ens.fr>
 	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
