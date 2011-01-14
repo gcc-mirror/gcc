@@ -1,3 +1,17 @@
+2011-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/45934
+	PR tree-optimization/46302
+	* g++.dg/ipa/devirt-c-1.C: New test.
+	* g++.dg/ipa/devirt-c-2.C: Likewise.
+	* g++.dg/ipa/devirt-c-3.C: Likewise.
+	* g++.dg/ipa/devirt-c-4.C: Likewise.
+	* g++.dg/ipa/devirt-c-5.C: Likewise.
+	* g++.dg/ipa/devirt-c-6.C: Likewise.
+	* g++.dg/ipa/devirt-6.C: Likewise.
+	* g++.dg/ipa/devirt-d-1.C: Likewise.
+	* g++.dg/torture/pr45934.C: Likewise.
+
 2011-01-14  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/variadic105.C: New.

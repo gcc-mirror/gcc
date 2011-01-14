@@ -1,3 +1,19 @@
+2011-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/45934
+	PR tree-optimization/46302
+	* ipa-prop.c (type_change_info): New type.
+	(stmt_may_be_vtbl_ptr_store): New function.
+	(check_stmt_for_type_change): Likewise.
+	(detect_type_change): Likewise.
+	(detect_type_change_ssa): Likewise.
+	(compute_complex_assign_jump_func): Check for dynamic type change.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(compute_known_type_jump_func): Likewise.
+	(compute_scalar_jump_functions): Likewise.
+	(ipa_analyze_virtual_call_uses): Likewise.
+	(ipa_analyze_node): Push and pop cfun, set current_function_decl.
+
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386.h (CC1_CPU_SPEC_1): Don't handle -msse5.
