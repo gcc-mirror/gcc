@@ -1,3 +1,14 @@
+2011-01-15  Martin Jambor  <mjambor@suse.cz>
+
+	* common.opt (fdevirtualize): New flag.
+	* doc/invoke.texi (Option Summary): Document it.
+	* opts.c (default_options_table): Add devirtualize flag.
+	* ipa-prop.c (detect_type_change): Return immediately if
+	devirtualize flag is not set.
+	(detect_type_change_ssa): Likewise.
+	(compute_known_type_jump_func): Likewise.
+	(ipa_analyze_virtual_call_uses): Likewise.
+
 2011-01-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/45934

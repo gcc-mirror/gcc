@@ -911,6 +911,10 @@ fdelete-null-pointer-checks
 Common Report Var(flag_delete_null_pointer_checks) Init(1) Optimization
 Delete useless null pointer checks
 
+fdevirtualize
+Common Report Var(flag_devirtualize) Optimization
+Try to convert virtual calls to direct ones.
+
 fdiagnostics-show-location=
 Common Joined RejectNegative Enum(diagnostic_prefixing_rule)
 -fdiagnostics-show-location=[once|every-line]	How often to emit source location at the beginning of line-wrapped diagnostics
