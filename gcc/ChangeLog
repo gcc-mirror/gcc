@@ -1,5 +1,11 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/arm/linux-elf.h (LINUX_TARGET_LINK_SPEC): Remove
+	%{version:-v}.
+	* config/lm32/uclinux-elf.h (LINK_SPEC): Likewise.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/sparc/sp-elf.h (ASM_SPEC): Remove %{v:-V}.
 	* config/sparc/sp64-elf.h (ASM_SPEC): Likewise.
 

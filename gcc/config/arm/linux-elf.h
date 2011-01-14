@@ -64,7 +64,7 @@
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux.so.2"
 
-#define LINUX_TARGET_LINK_SPEC  "%{h*} %{version:-v} \
+#define LINUX_TARGET_LINK_SPEC  "%{h*} \
    %{static:-Bstatic} \
    %{shared:-shared} \
    %{symbolic:-Bsymbolic} \
