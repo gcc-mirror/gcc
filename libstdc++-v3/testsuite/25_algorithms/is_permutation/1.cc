@@ -76,25 +76,25 @@ void test01()
   do_test(arr6, std::equal_to<int>(), false);
 
   int arr7[] = { 1, 2, 3, 4, 5 };
-  do_test(arr7,  my_equal_to());
+  do_test(arr7, my_equal_to());
 
   int arr8[] = { 1, 3, 3, 4, 5 };
-  do_test(arr8,  my_equal_to(), false);
+  do_test(arr8, my_equal_to(), false);
 
   int arr9[] = { 3, 3, 3, 4, 4 };
-  do_test(arr9,  my_equal_to(), false);
+  do_test(arr9, my_equal_to(), false);
 
   int arr10[] = { 111, 222, 333, 444, 555 };
-  do_test(arr10,  my_equal_to());
+  do_test(arr10, my_equal_to());
 
   int arr11[] = { 1, 222, 33, 4, 55 };
-  do_test(arr11,  my_equal_to());
+  do_test(arr11, my_equal_to());
 
   int arr12[] = { 111, 333, 333, 444, 555 };
-  do_test(arr12,  my_equal_to(), false);
+  do_test(arr12, my_equal_to(), false);
 
   int arr13[] = { 333, 333, 333, 444, 444 };
-  do_test(arr13,  my_equal_to(), false);
+  do_test(arr13, my_equal_to(), false);
 }
 
 int main()

@@ -29,20 +29,21 @@
 using __gnu_test::forward_iterator_wrapper;
 
 struct X { };
-
 bool operator==(const X&, const X) { return true; }
-bool predicate(const X&, const X&) { return true; }
+
+struct Y { };
+bool predicate(const Y&, const Y&) { return true; }
 
 bool
-test1(forward_iterator_wrapper<X>& lhs1, 
-      forward_iterator_wrapper<X>& rhs1)
+test1(forward_iterator_wrapper<X>& x1, 
+      forward_iterator_wrapper<X>& x2)
 {
-  return std::is_permutation(lhs1, lhs1, rhs1);
+  return std::is_permutation(x1, x1, x2);
 }
 
 bool
-test2(forward_iterator_wrapper<X>& x1,
-      forward_iterator_wrapper<X>& x2)
+test2(forward_iterator_wrapper<Y>& y1,
+      forward_iterator_wrapper<Y>& y2)
 {
-  return std::is_permutation(x1, x1, x2, predicate);
+  return std::is_permutation(y1, y1, y2, predicate);
 }

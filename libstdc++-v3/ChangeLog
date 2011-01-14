@@ -1,3 +1,9 @@
+2011-01-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/25_algorithms/is_permutation/check_type.cc: Minor
+	tweaks.
+	* testsuite/25_algorithms/is_permutation/1.cc: Cosmetic changes.
+
 2011-01-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/25_algorithms/is_permutation/check_type.cc: New.
