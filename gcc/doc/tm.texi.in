@@ -4283,6 +4283,8 @@ with machine mode @var{mode}.  The default version of this
 hook returns true for both @code{ptr_mode} and @code{Pmode}.
 @end deftypefn
 
+@hook TARGET_REF_MAY_ALIAS_ERRNO
+
 @hook TARGET_SCALAR_MODE_SUPPORTED_P
 Define this to return nonzero if the port is prepared to handle
 insns involving scalar mode @var{mode}.  For a scalar mode to be
