@@ -1519,6 +1519,17 @@ DEFHOOK
  bool, (enum machine_mode mode),
  default_valid_pointer_mode)
 
+/* Disambiguate with errno.  */
+DEFHOOK
+(ref_may_alias_errno,
+ "Define this to return nonzero if the memory reference @var{ref}\
+  may alias with the system C library errno location.  The default\
+  version of this hook assumes the system C library errno location\
+  is either a declaration of type int or accessed by dereferencing\
+  a pointer to int.",
+ bool, (struct ao_ref_s *ref),
+ default_ref_may_alias_errno)
+
 /* Support for named address spaces.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_ADDR_SPACE_"

@@ -1,5 +1,20 @@
 2011-01-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/47179
+	* target.def (ref_may_alias_errno): New target hook.
+	* targhooks.h (default_ref_may_alias_errno): Declare.
+	* targhooks.c: Include tree-ssa-alias.h and tree-flow.h.
+	(default_ref_may_alias_errno): New function.
+	* target.h (struct ao_ref_s): Declare.
+	* tree-ssa-alias.c: Include target.h.
+	(call_may_clobber_ref_p_1): Use the ref_may_alias_errno target hook.
+	* Makefile.in (tree-ssa-alias.o): Adjust dependencies.
+	(targhooks.o): Likewise.
+	* doc/tm.texi.in (TARGET_REF_MAY_ALIAS_ERRNO): Document.
+	* doc/tm.texi (TARGET_REF_MAY_ALIAS_ERRNO): Copy documentation.
+
+2011-01-14  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-structalias.c  (new_var_info): Use DECL_HARD_REGISTER.
 
 2011-01-14  Richard Guenther  <rguenther@suse.de>
