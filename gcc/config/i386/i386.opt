@@ -1,7 +1,7 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
 ; Copyright (C) 2005, 2006, 2007, 2008, 2009,
-; 2010 Free Software Foundation, Inc.
+; 2010, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -319,6 +319,10 @@ Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and co
 mno-sse4
 Target RejectNegative Report InverseMask(ISA_SSE4_1) MaskExists Var(ix86_isa_flags) Save
 Do not support SSE4.1 and SSE4.2 built-in functions and code generation
+
+msse5
+Target Undocumented Alias(mavx) Warn(%<-msse5%> was removed)
+;; Deprecated
 
 mavx
 Target Report Mask(ISA_AVX) Var(ix86_isa_flags)

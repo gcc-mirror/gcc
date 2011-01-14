@@ -1,5 +1,10 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/i386.h (CC1_CPU_SPEC_1): Don't handle -msse5.
+	* config/i386/i386.opt (msse5): New Alias.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/sparc/linux.h (CC1_SPEC): Remove %{sun4:} %{target:}.
 	* config/sparc/linux64.h (CC1_SPEC): Likewise.
 	* config/sparc/netbsd-elf.h (CC1_SPEC32, CC1_SPEC64): Likewise.

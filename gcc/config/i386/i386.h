@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -553,9 +553,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Specs for the compiler proper */
 
 #ifndef CC1_CPU_SPEC
-#define CC1_CPU_SPEC_1 "\
-%{msse5:-mavx \
-%n'-msse5' was removed\n}"
+#define CC1_CPU_SPEC_1 ""
 
 #ifndef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1
