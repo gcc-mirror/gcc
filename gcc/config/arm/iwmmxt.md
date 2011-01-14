@@ -551,7 +551,7 @@
 ;;
 ;; Note - you cannot use patterns like these here:
 ;;
-;;   (set:<vector> (match:<vector>) (<comparator>:<vector> (match:<vector>) (match:<vector>)))
+;;   (set (match:<vector>) (<comparator>:<vector> (match:<vector>) (match:<vector>)))
 ;;
 ;; Because GCC will assume that the truth value (1 or 0) is installed
 ;; into the entire destination vector, (with the '1' going into the least
