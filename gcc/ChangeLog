@@ -1,3 +1,8 @@
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/vxworks.h (CC1_SPEC): Don't handle -fvec or
+	-fvec-eabi.
+
 2011-01-14  Mike Stump  <mikestump@comcast.net>
 
 	* config/alpha/alpha.md (umk_mismatch_args): Don't put a mode on set.
