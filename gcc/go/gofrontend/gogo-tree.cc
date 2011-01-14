@@ -22,7 +22,6 @@ extern "C"
 #include "convert.h"
 #include "output.h"
 #include "diagnostic.h"
-#include "rtl.h"
 
 #ifndef ENABLE_BUILD_WITH_CXX
 }
@@ -809,17 +808,6 @@ Gogo::write_globals()
     this->write_initialization_function(init_fndecl, init_stmt_list);
 
   // Pass everything back to the middle-end.
-
-  if (this->imported_unsafe_)
-    {
-      // Importing the "unsafe" package automatically disables TBAA.
-      flag_strict_aliasing = false;
-
-      // This is a real hack.  init_varasm_once has already grabbed an
-      // alias set, which we don't want when we aren't going strict
-      // aliasing.  We reinitialize to make it do it again.  FIXME.
-      init_varasm_once();
-    }
 
   wrapup_global_declarations(vec, count);
 

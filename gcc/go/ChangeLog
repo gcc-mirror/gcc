@@ -1,3 +1,12 @@
+2011-01-13  Ian Lance Taylor  <iant@google.com>
+
+	* go-backend.c: Include "rtl.h" and "target.h".
+	(go_imported_unsafe): New function.
+	* go-c.h (go_imported_unsafe): Declare.
+	* Make-lang.in (go/go-backend.o): Depend on $(RTL_H).
+	(go/gogo-tree.o): Remove dependency on $(RTL_H).
+	(go/unsafe.o): Depend on $(GO_C_H).
+
 2010-12-31  Joern Rennecke  <amylaar@spamcop.net>
 
 	PR go/47113

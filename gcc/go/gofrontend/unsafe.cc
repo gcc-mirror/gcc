@@ -6,6 +6,7 @@
 
 #include "go-system.h"
 
+#include "go-c.h"
 #include "types.h"
 #include "gogo.h"
 
@@ -130,5 +131,9 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
   if (add_to_globals)
     this->add_named_object(no);
 
-  this->imported_unsafe_ = true;
+  if (!this->imported_unsafe_)
+    {
+      go_imported_unsafe();
+      this->imported_unsafe_ = true;
+    }
 }
