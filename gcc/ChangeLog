@@ -1,3 +1,8 @@
+2011-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/46823
+	* tree-inline.c (expand_call_inline): Get fndecl from call graph edge.
+
 2011-01-13  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/xtensa/xtensa.h (XTENSA_LIBCALL_VALUE, LIBCALL_VALUE,
