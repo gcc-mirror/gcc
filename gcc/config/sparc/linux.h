@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 /* This is for -profile to use -lc_p instead of -lc.  */
 #undef	CC1_SPEC
 #define	CC1_SPEC "%{profile:-p} \
-%{sun4:} %{target:} \
 "
 
 #undef TARGET_VERSION

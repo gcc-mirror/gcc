@@ -115,8 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* CC1_SPEC for NetBSD/sparc.  */
 #define CC1_SPEC32 \
- "%{sun4:} %{target:} \
-  %{m32:%{m64:%emay not use both -m32 and -m64}} \
+ "%{m32:%{m64:%emay not use both -m32 and -m64}} \
   %{m64: \
     -mptr64 -mstack-bias -mno-v8plus -mlong-double-128 \
     %{!mcpu*:%{!mv8plus:-mcpu=ultrasparc}} \
@@ -125,8 +124,7 @@ along with GCC; see the file COPYING3.  If not see
     %{pg:-mcmodel=medlow}}"
 
 #define CC1_SPEC64 \
- "%{sun4:} %{target:} \
-  %{m32:%{m64:%emay not use both -m32 and -m64}} \
+ "%{m32:%{m64:%emay not use both -m32 and -m64}} \
   %{m32: \
     -mptr32 -mno-stack-bias \
     %{!mlong-double-128:-mlong-double-64} \

@@ -1,5 +1,12 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/sparc/linux.h (CC1_SPEC): Remove %{sun4:} %{target:}.
+	* config/sparc/linux64.h (CC1_SPEC): Likewise.
+	* config/sparc/netbsd-elf.h (CC1_SPEC32, CC1_SPEC64): Likewise.
+	* config/sparc/sparc.h (CC1_SPEC): Likewise.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/sparc/linux.h (CC1_SPEC): Don't handle old equivalents of
 	-mcpu options.
 	* config/sparc/linux64.h (CC1_SPEC): Likewise.

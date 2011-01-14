@@ -148,7 +148,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef	CC1_SPEC
 #if DEFAULT_ARCH32_P
 #define CC1_SPEC "%{profile:-p} \
-%{sun4:} %{target:} \
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m64:-mptr64 -mstack-bias -mlong-double-128 \
   %{!mcpu*:-mcpu=ultrasparc} \
@@ -156,7 +155,6 @@ along with GCC; see the file COPYING3.  If not see
 "
 #else
 #define CC1_SPEC "%{profile:-p} \
-%{sun4:} %{target:} \
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m32:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
   %{!mcpu*:-mcpu=cypress}} \
