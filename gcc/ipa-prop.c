@@ -456,7 +456,7 @@ detect_type_change (tree arg, tree base, gimple call,
 		       || handled_component_p (arg));
   /* Const calls cannot call virtual methods through VMT and so type changes do
      not matter.  */
-  if (!gimple_vuse (call))
+  if (!flag_devirtualize || !gimple_vuse (call))
     return false;
 
   tci.type_maybe_changed = false;
@@ -486,7 +486,8 @@ static bool
 detect_type_change_ssa (tree arg, gimple call, struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (TREE_CODE (arg) == SSA_NAME);
-  if (!POINTER_TYPE_P (TREE_TYPE (arg))
+  if (!flag_devirtualize
+      || !POINTER_TYPE_P (TREE_TYPE (arg))
       || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != RECORD_TYPE)
     return false;
 
@@ -689,7 +690,8 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
   HOST_WIDE_INT offset, size, max_size;
   tree base, binfo;
 
-  if (TREE_CODE (op) != ADDR_EXPR
+  if (!flag_devirtualize
+      || TREE_CODE (op) != ADDR_EXPR
       || TREE_CODE (TREE_TYPE (TREE_TYPE (op))) != RECORD_TYPE)
     return;
 
@@ -1377,6 +1379,9 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
   tree obj = OBJ_TYPE_REF_OBJECT (target);
   tree var;
   int index;
+
+  if (!flag_devirtualize)
+    return;
 
   if (TREE_CODE (obj) == ADDR_EXPR)
     {
