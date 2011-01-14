@@ -1,5 +1,11 @@
 2011-01-14  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/47281
+	* gcc.dg/torture/pr47281.c: New testcase.
+	* gcc.dg/tree-ssa/pr46076.c: XFAIL.
+
+2011-01-14  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/47286
 	* gcc.dg/tree-ssa/pr47286.c: New testcase.
 

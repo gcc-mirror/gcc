@@ -1410,11 +1410,6 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
       if (!prototype_p (outer_type))
 	return true;
 
-      /* A conversion between unprototyped and empty argument list is ok.  */
-      if (TYPE_ARG_TYPES (outer_type) == void_list_node
-	  && !prototype_p (inner_type))
-	return true;
-
       /* If the unqualified argument types are compatible the conversion
 	 is useless.  */
       if (TYPE_ARG_TYPES (outer_type) == TYPE_ARG_TYPES (inner_type))
