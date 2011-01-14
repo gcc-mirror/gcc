@@ -1,5 +1,6 @@
 /* Definitions for Renesas M32R running Linux-based GNU systems using ELF.
-   Copyright (C) 2003, 2004, 2006, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2006, 2007, 2010, 2011
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -52,19 +53,17 @@
 #if TARGET_LITTLE_ENDIAN
 #define LINK_SPEC "%(link_cpu) -m m32rlelf_linux %{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-	%{rdynamic:-export-dynamic} \
-	-dynamic-linker " LINUX_DYNAMIC_LINKER "} \
-	%{static:-static}}}"
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+      %{static:-static}}"
 #else
 #define LINK_SPEC "%(link_cpu) -m m32relf_linux %{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-	%{rdynamic:-export-dynamic} \
-	-dynamic-linker " LINUX_DYNAMIC_LINKER "} \
-	%{static:-static}}}"
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+      %{static:-static}}"
 #endif
 
 #undef	LIB_SPEC

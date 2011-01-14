@@ -1,6 +1,6 @@
 /* Definitions for 64-bit SPARC running Linux-based GNU systems with ELF.
    Copyright 1996, 1997, 1998, 2000, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by David S. Miller (davem@caip.rutgers.edu)
 
 This file is part of GCC.
@@ -115,20 +115,18 @@ along with GCC; see the file COPYING3.  If not see
 
 #define LINK_ARCH32_SPEC "-m elf32_sparc -Y P,%R/usr/lib %{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        -dynamic-linker " LINUX_DYNAMIC_LINKER32 "} \
-        %{static:-static}}} \
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER32 "} \
+      %{static:-static}} \
 "
 
 #define LINK_ARCH64_SPEC "-m elf64_sparc -Y P,%R/usr/lib64 %{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
-        %{static:-static}}} \
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
+      %{static:-static}} \
 "
 
 #define LINK_ARCH_SPEC "\
@@ -205,11 +203,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_SPEC
 #define LINK_SPEC "-m elf64_sparc -Y P,%R/usr/lib64 %{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
-        %{static:-static}}} \
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER64 "} \
+    %{static:-static}} \
 %{mlittle-endian:-EL} \
 %{!mno-relax:%{!r:-relax}} \
 "

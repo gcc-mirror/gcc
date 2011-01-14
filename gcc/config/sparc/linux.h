@@ -1,6 +1,6 @@
 /* Definitions for SPARC running Linux-based GNU systems with ELF.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GCC.
@@ -81,11 +81,10 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
   %{!mno-relax:%{!r:-relax}} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
-        %{static:-static}}}"
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+      %{static:-static}}"
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
    It's safe to pass -s always, even if -g is not used.  */
