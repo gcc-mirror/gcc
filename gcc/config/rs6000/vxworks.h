@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996, 2000, 2002, 2003, 2004, 2005, 2007, 2009, 2010
+   Copyright (C) 1996, 2000, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
@@ -81,8 +81,7 @@ VXWORKS_ADDITIONAL_CPP_SPEC
 #define CC1_SPEC						\
 "%{G*} %{mno-sdata:-msdata=none} %{msdata:-msdata=default}	\
  %{mlittle|mlittle-endian:-mstrict-align}			\
- %{profile: -p}		\
- %{fvec:-maltivec} %{fvec-eabi:-maltivec -mabi=altivec}"
+ %{profile: -p}"
 
 #define ASM_SPEC \
 "%(asm_cpu) \
