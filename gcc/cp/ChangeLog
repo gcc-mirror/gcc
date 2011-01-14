@@ -1,3 +1,9 @@
+2011-01-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46688
+	* tree.c (build_vec_init_expr): Handle flexible array
+	properly.
+
 2011-01-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR c++/47213

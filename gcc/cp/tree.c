@@ -474,7 +474,12 @@ build_vec_init_expr (tree type, tree init)
      what functions are needed.  Here we assume that init is either
      NULL_TREE, void_type_node (indicating value-initialization), or
      another array to copy.  */
-  if (init == void_type_node)
+  if (integer_zerop (array_type_nelts_total (type)))
+    {
+      /* No actual initialization to do.  */;
+      init = NULL_TREE;
+    }
+  else if (init == void_type_node)
     {
       elt_init = build_value_init (inner_type, tf_warning_or_error);
       value_init = true;
