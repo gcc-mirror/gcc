@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 
-   2008, 2009, 2010
+   2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
@@ -739,9 +739,9 @@ extern const char *avr_device_to_devicelib (int argc, const char **argv);
   { "device_to_startfile", avr_device_to_startfiles }, \
   { "device_to_devicelib", avr_device_to_devicelib },
 
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC ""
 
-#define CC1_SPEC "%{profile:-p}"
+#define CC1_SPEC ""
 
 #define CC1PLUS_SPEC "%{!frtti:-fno-rtti} \
     %{!fenforce-eh-specs:-fno-enforce-eh-specs} \
