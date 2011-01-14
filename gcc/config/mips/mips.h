@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
@@ -1170,7 +1170,6 @@ enum mips_code_readable_setting {
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
-%{save-temps: } \
 %(subtarget_cc1_spec)"
 
 /* Preprocessor specs.  */

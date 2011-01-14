@@ -1,5 +1,10 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/microblaze/microblaze.h (CC1_SPEC): Remove %{save-temps: }.
+	* config/mips/mips.h (CC1_SPEC): Likewise.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/i386/linux.h (LINK_SPEC): Don't use %{!ibcs:} conditional.
 	* config/m32r/linux.h (LINK_SPEC): Likewise.
 	* config/mips/linux.h (LINK_SPEC): Likewise.
