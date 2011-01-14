@@ -1,5 +1,6 @@
 2011-01-14  Ben Elliston  <bje@au.ibm.com>
 
+	PR 19162
 	* objc-act.c (generate_struct_by_value_array): Do not output a
 	definition for struct_forward_array.
 
