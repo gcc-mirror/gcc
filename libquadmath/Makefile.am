@@ -126,7 +126,7 @@ stamp-geninsrc: libquadmath.info
 	cp -p $(top_builddir)/libquadmath.info $(srcdir)/libquadmath.info
 	@touch $@
 
-stamp-build-info: libquadmath.texi
+stamp-build-info: libquadmath.texi $(libquadmath_TEXINFOS)
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libquadmath.info $(srcdir)/libquadmath.texi
 	@touch $@
 
@@ -150,3 +150,7 @@ TEXINFO_TEX   = ../gcc/doc/include/texinfo.tex
 # Defines info, dvi, pdf and html targets
 MAKEINFOFLAGS = -I $(srcdir)/../gcc/doc/include
 info_TEXINFOS = libquadmath.texi
+libquadmath_TEXINFOS = libquadmath-vers.texi
+
+libquadmath-vers.texi:
+	echo "@set BUGURL $(REPORT_BUGS_TEXI)" > $@

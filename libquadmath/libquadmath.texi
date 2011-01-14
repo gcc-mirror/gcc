@@ -272,6 +272,9 @@ int main ()
 @c Reporting Bugs
 @c ---------------------------------------------------------------------
 
+@c For BUGURL
+@include libquadmath-vers.texi
+
 @node Reporting Bugs
 @chapter Reporting Bugs
 
