@@ -1,3 +1,9 @@
+2011-01-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_static_dynamic): Solaris 2 ld always
+	supports -Bstatic/-Bdynamic.
+	* configure: Regenerate.
+
 2011-01-14  Jan Hubicka  <jh@suse.cz>
 	Jack Howarth <howarth@bromo.med.uc.edu>
 

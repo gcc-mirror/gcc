@@ -3117,11 +3117,18 @@ if test $in_tree_ld = yes ; then
     gcc_cv_ld_static_dynamic=yes
   fi
 elif test x$gcc_cv_ld != x; then
-	# Check if linker supports -Bstatic/-Bdynamic option
-	if $gcc_cv_ld --help 2>/dev/null | grep -- -Bstatic > /dev/null \
-	  && $gcc_cv_ld --help 2>/dev/null | grep -- -Bdynamic > /dev/null; then
-		gcc_cv_ld_static_dynamic=yes
-	fi
+  # Check if linker supports -Bstatic/-Bdynamic option
+  if $gcc_cv_ld --help 2>/dev/null | grep -- -Bstatic > /dev/null \
+     && $gcc_cv_ld --help 2>/dev/null | grep -- -Bdynamic > /dev/null; then
+      gcc_cv_ld_static_dynamic=yes
+  else
+    case "$target" in
+      # Solaris 2 ld always supports -Bstatic/-Bdynamic.
+      *-*-solaris2*)
+        gcc_cv_ld_static_dynamic=yes
+        ;;
+    esac
+  fi
 fi
 if test x"$gcc_cv_ld_static_dynamic" = xyes; then
 	AC_DEFINE(HAVE_LD_STATIC_DYNAMIC, 1,
