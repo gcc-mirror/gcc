@@ -1,3 +1,19 @@
+2011-01-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/25_algorithms/is_permutation/check_type.cc: New.
+	* testsuite/25_algorithms/is_permutation/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/1.cc: Likewise.
+
+2011-01-13  John Lakos  <jlakos@bloomberg.net>
+	    Pablo Halpern  <phalpern@halpernwightsoftware.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (is_permutation): Add, per N3068.
+	* include/bits/algorithmfwd.h: Add.
+
 2011-01-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/47045
