@@ -1,5 +1,10 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/microblaze/microblaze.h (ASM_SPEC): Remove
+	%{microblaze1}.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/m32r/little.h (CPP_ENDIAN_SPEC, CC1_ENDIAN_SPEC,
 	ASM_ENDIAN_SPEC, LINK_ENDIAN_SPEC): Remove.
 

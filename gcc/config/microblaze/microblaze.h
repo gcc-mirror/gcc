@@ -77,7 +77,6 @@ extern enum pipeline_type microblaze_pipe;
 #define TARGET_ASM_SPEC ""
 
 #define ASM_SPEC "\
-%{microblaze1} \
 %(target_asm_spec)"
 
 /* Extra switches sometimes passed to the linker.  */
