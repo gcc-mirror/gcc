@@ -1,5 +1,10 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/microblaze/microblaze.h (CC1_SPEC): Remove -gline spec.
+	* config/mips/mips.h (CC1_SPEC): Likewise.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/microblaze/microblaze.h (CC1_SPEC): Remove %{save-temps: }.
 	* config/mips/mips.h (CC1_SPEC): Likewise.
 
