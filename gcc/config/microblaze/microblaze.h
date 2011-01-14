@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Xilinx MicroBlaze.
-   Copyright 2009, 2010 Free Software Foundation, Inc.
+   Copyright 2009, 2010, 2011 Free Software Foundation, Inc.
 
    Contributed by Michael Eager <eager@eagercon.com>.
 
@@ -94,7 +94,6 @@ extern enum pipeline_type microblaze_pipe;
 #ifndef CC1_SPEC
 #define CC1_SPEC " \
 %{G*} %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{save-temps: } \
 %(subtarget_cc1_spec) \
 %{mxl-multiply-high:-mcpu=v6.00.a} \
 "
