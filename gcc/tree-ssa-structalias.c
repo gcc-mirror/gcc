@@ -413,7 +413,10 @@ new_var_info (tree t, const char *name)
   ret->is_global_var = (t == NULL_TREE);
   ret->is_fn_info = false;
   if (t && DECL_P (t))
-    ret->is_global_var = is_global_var (t);
+    ret->is_global_var = (is_global_var (t)
+			  /* We have to treat even local register variables
+			     as escape points.  */
+			  || (TREE_CODE (t) == VAR_DECL && DECL_REGISTER (t)));
   ret->solution = BITMAP_ALLOC (&pta_obstack);
   ret->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
   ret->next = NULL;

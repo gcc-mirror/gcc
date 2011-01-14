@@ -1,3 +1,9 @@
+2011-01-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47286
+	* tree-ssa-structalias.c (new_var_info): Register variables
+	are global.
+
 2011-01-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/46823

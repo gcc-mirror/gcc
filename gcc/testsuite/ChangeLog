@@ -1,3 +1,8 @@
+2011-01-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47286
+	* gcc.dg/tree-ssa/pr47286.c: New testcase.
+
 2011-01-13  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR c++/47213
