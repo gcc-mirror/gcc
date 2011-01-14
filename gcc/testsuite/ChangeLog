@@ -1,5 +1,7 @@
 2011-01-14  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-regress1.C: New.
+
 	* g++.dg/ext/flexary2.C: New.
 
 2011-01-14  Richard Guenther  <rguenther@suse.de>

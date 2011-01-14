@@ -1,5 +1,8 @@
 2011-01-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46903
+	* typeck2.c (check_narrowing): Only check arithmetic types.
+
 	PR c++/46688
 	* tree.c (build_vec_init_expr): Handle flexible array
 	properly.
