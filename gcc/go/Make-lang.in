@@ -1,6 +1,6 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for gcc Go frontend.
 
-# Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 
 # This file is part of GCC.
 
@@ -221,7 +221,7 @@ GO_EXPRESSIONS_H = go/gofrontend/expressions.h go/gofrontend/operator.h
 GO_IMPORT_H = go/gofrontend/import.h go/gofrontend/export.h
 
 go/go-backend.o: go/go-backend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TREE_H) $(TM_H) $(TM_P_H)
+	$(TM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(TARGET_H)
 
 go/go-lang.o: go/go-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 		$(TREE_H) $(GIMPLE_H) $(GGC_H) $(TOPLEV_H) debug.h options.h \
@@ -254,7 +254,7 @@ go/go-dump.o: go/gofrontend/go-dump.cc $(GO_SYSTEM_H) $(GO_C_H) \
 	go/gofrontend/go-dump.h
 go/gogo-tree.o: go/gofrontend/gogo-tree.cc $(GO_SYSTEM_H) $(TOPLEV_H) \
 	$(TREE_H) $(GIMPLE_H) tree-iterator.h $(CGRAPH_H) langhooks.h \
-	convert.h output.h $(DIAGNOSTIC_H) $(RTL_H) $(GO_TYPES_H) \
+	convert.h output.h $(DIAGNOSTIC_H) $(GO_TYPES_H) \
 	$(GO_EXPRESSIONS_H) $(GO_STATEMENTS_H) $(GO_GOGO_H)
 go/gogo.o: go/gofrontend/gogo.cc $(GO_SYSTEM_H) $(GO_C_H) \
 	go/gofrontend/go-dump.h $(GO_LEX_H) $(GO_TYPES_H) $(GO_STATEMENTS_H) \
@@ -277,4 +277,5 @@ go/types.o: go/gofrontend/types.cc $(GO_SYSTEM_H) $(TOPLEV_H) intl.h $(TREE_H) \
 	$(GIMPLE_H) $(REAL_H) convert.h $(GO_C_H) $(GO_GOGO_H) \
 	go/gofrontend/operator.h $(GO_EXPRESSIONS_H) $(GO_STATEMENTS_H) \
 	go/gofrontend/export.h $(GO_IMPORT_H) $(GO_TYPES_H)
-go/unsafe.o: go/gofrontend/unsafe.cc $(GO_SYSTEM_H) $(GO_TYPES_H) $(GO_GOGO_H)
+go/unsafe.o: go/gofrontend/unsafe.cc $(GO_SYSTEM_H) $(GO_C_H) $(GO_TYPES_H) \
+	$(GO_GOGO_H)
