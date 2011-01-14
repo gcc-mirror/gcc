@@ -558,15 +558,7 @@ generate_struct_by_value_array (void)
       for (i = 31; i >= 0;  i--)
 	if (!aggregate_in_mem[i])
 	  break;
-      printf ("#define OBJC_MAX_STRUCT_BY_VALUE %d\n\n", i);
-
-      /* The first member of the structure is always 0 because we don't handle
-	 structures with 0 members */
-      printf ("static int struct_forward_array[] = {\n  0");
-
-      for (j = 1; j <= i; j++)
-	printf (", %d", aggregate_in_mem[j]);
-      printf ("\n};\n");
+      printf ("#define OBJC_MAX_STRUCT_BY_VALUE %d\n", i);
     }
 
   exit (0);

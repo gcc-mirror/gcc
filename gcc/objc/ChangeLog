@@ -1,3 +1,8 @@
+2011-01-14  Ben Elliston  <bje@au.ibm.com>
+
+	* objc-act.c (generate_struct_by_value_array): Do not output a
+	definition for struct_forward_array.
+
 2011-01-08  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc-act.c (objc_finish_foreach_loop): Mark collection expression
