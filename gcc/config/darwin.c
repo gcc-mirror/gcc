@@ -2616,9 +2616,10 @@ darwin_override_options (void)
     }
 
   if (flag_var_tracking
-      && (generating_for_darwin_version >= 9)
-      && debug_info_level >= DINFO_LEVEL_NORMAL
-      && debug_hooks->var_location != do_nothing_debug_hooks.var_location)
+      && generating_for_darwin_version >= 9
+      && (flag_gtoggle ? (debug_info_level == DINFO_LEVEL_NONE)
+      : (debug_info_level >= DINFO_LEVEL_NORMAL))
+      && write_symbols == DWARF2_DEBUG)
     flag_var_tracking_uninit = 1;
 
   if (MACHO_DYNAMIC_NO_PIC_P)

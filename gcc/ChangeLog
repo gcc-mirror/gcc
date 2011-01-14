@@ -1,3 +1,11 @@
+2011-01-14  Jan Hubicka  <jh@suse.cz>
+	Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/46037
+	* config/darwin.c (darwin_override_options): Honor flag_gtoggle
+	when checking debug_info_level. Test write_symbols instead of
+	debug_hooks->var_location when setting flag_var_tracking_uninit.
+
 2011-01-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47179
