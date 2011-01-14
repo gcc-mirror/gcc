@@ -250,6 +250,15 @@ else
   exit 1
 fi
 
+# Solaris 2 needs _u?pad128_t, but its default definition in terms of long
+# double is commented by -fdump-go-spec.
+if grep "^// type _pad128_t" gen-sysinfo.go > /dev/null 2>&1; then
+  echo "type _pad128_t struct { _l [4]int32; }" >> ${OUT}
+fi
+if grep "^// type _upad128_t" gen-sysinfo.go > /dev/null 2>&1; then
+  echo "type _upad128_t struct { _l [4]uint32; }" >> ${OUT}
+fi
+
 # The time structures need special handling: we need to name the
 # types, so that we can cast integers to the right types when
 # assigning to the structures.
