@@ -13,7 +13,7 @@ import "unsafe"
 
 // 64-bit ptrace(3C) doesn't exist
 func libc_ptrace(request int, pid Pid_t, addr uintptr, data *byte) int {
-	errno := ENOSYS
+	SetErrno(ENOSYS)
 	return -1
 }
 
