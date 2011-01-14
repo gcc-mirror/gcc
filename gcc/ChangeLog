@@ -1,5 +1,10 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/nwld.h (LINK_SPEC): Check -nodefaultlibs not
+	-nodefaultlib.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/cris/cris.h (ASM_SPEC, CRIS_ASM_SUBTARGET_SPEC): Check
 	for mcpu not cpu.
 	* config/cris/linux.h (CRIS_CPP_SUBTARGET_SPEC,

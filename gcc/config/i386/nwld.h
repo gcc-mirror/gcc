@@ -1,6 +1,6 @@
 /* nwld.h -- defines to be used when targeting GCC for some generic NetWare
    system while using the Novell linker.
-   Copyright (C) 2004, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2010, 2011 Free Software Foundation, Inc.
 
    Written by Jan Beulich (jbeulich@novell.com)
 
@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  LINK_SPEC
 #define LINK_SPEC "--format:NLM --extensions:GNU" \
-	" %{static:%{!nostdlib:%{!nodefaultlib:%estatic linking is not supported\n}}}"
+	" %{static:%{!nostdlib:%{!nodefaultlibs:%estatic linking is not supported\n}}}"
 
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC "%L %G"
