@@ -23056,11 +23056,18 @@ if test $in_tree_ld = yes ; then
     gcc_cv_ld_static_dynamic=yes
   fi
 elif test x$gcc_cv_ld != x; then
-	# Check if linker supports -Bstatic/-Bdynamic option
-	if $gcc_cv_ld --help 2>/dev/null | grep -- -Bstatic > /dev/null \
-	  && $gcc_cv_ld --help 2>/dev/null | grep -- -Bdynamic > /dev/null; then
-		gcc_cv_ld_static_dynamic=yes
-	fi
+  # Check if linker supports -Bstatic/-Bdynamic option
+  if $gcc_cv_ld --help 2>/dev/null | grep -- -Bstatic > /dev/null \
+     && $gcc_cv_ld --help 2>/dev/null | grep -- -Bdynamic > /dev/null; then
+      gcc_cv_ld_static_dynamic=yes
+  else
+    case "$target" in
+      # Solaris 2 ld always supports -Bstatic/-Bdynamic.
+      *-*-solaris2*)
+        gcc_cv_ld_static_dynamic=yes
+        ;;
+    esac
+  fi
 fi
 if test x"$gcc_cv_ld_static_dynamic" = xyes; then
 
@@ -23093,10 +23100,10 @@ $as_echo "#define HAVE_LD_DEMANGLE 1" >>confdefs.h
 $as_echo "$gcc_cv_ld_demangle" >&6; }
 fi
 
-if test -f ../lto-plugin/Makefile ; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker plugin support" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker plugin support" >&5
 $as_echo_n "checking linker plugin support... " >&6; }
-  gcc_cv_lto_plugin=no
+gcc_cv_lto_plugin=no
+if test -f ../lto-plugin/Makefile ; then
   if test $in_tree_ld = yes -a x"$ORIGINAL_PLUGIN_LD_FOR_TARGET=" = x"$gcc_cv_ld"; then
     if test x"$ld_is_gold" = xyes; then
       gcc_cv_lto_plugin=yes
@@ -23107,14 +23114,14 @@ $as_echo_n "checking linker plugin support... " >&6; }
   elif $ORIGINAL_PLUGIN_LD_FOR_TARGET --help 2>/dev/null | grep plugin-opt > /dev/null; then
     gcc_cv_lto_plugin=yes
   fi
-  if test x"$gcc_cv_lto_plugin" = xyes; then
+fi
+if test x"$gcc_cv_lto_plugin" = xyes; then
 
 $as_echo "#define HAVE_LTO_PLUGIN 1" >>confdefs.h
 
-  fi
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_lto_plugin" >&5
-$as_echo "$gcc_cv_lto_plugin" >&6; }
 fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_lto_plugin" >&5
+$as_echo "$gcc_cv_lto_plugin" >&6; }
 
 case "$target" in
   # All TARGET_ABI_OSF targets.
