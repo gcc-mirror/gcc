@@ -1,5 +1,15 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/cris/cris.h (ASM_SPEC, CRIS_ASM_SUBTARGET_SPEC): Check
+	for mcpu not cpu.
+	* config/cris/linux.h (CRIS_CPP_SUBTARGET_SPEC,
+	CRIS_CC1_SUBTARGET_SPEC, CRIS_ASM_SUBTARGET_SPEC): Check for mcpu
+	not cpu.
+	(CRIS_LINK_SUBTARGET_SPEC): Don't generate -rpath-link options.
+	Don't handle -shlib.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/avr/avr.h (CPP_SPEC): Don't handle -posix.
 	(CC1_SPEC): Don't handle -profile.
 
