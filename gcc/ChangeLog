@@ -1,3 +1,13 @@
+2011-01-14  Mike Stump  <mikestump@comcast.net>
+
+	* config/alpha/alpha.md (umk_mismatch_args): Don't put a mode on set.
+	* config/fr30/fr30.md: Likweise
+	(movsi_push): Likewise.
+	(movsi_pop): Likewise.
+	(enter_func): Likewise.
+	* config/moxie/moxie.md (movsi_push): Likewise.
+	(movsi_pop): Likewise.
+
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/linux64.h (LINK_SPEC): Remove %{bestGnum}
