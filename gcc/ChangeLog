@@ -1,5 +1,13 @@
 2011-01-14  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/47280
+	* tree-ssa-forwprop.c (associate_plusminus): Cleanup EH and
+	return CFG changes.
+	(tree_ssa_forward_propagate_single_use_vars): Deal with
+	CFG changes from associate_plusminus.
+
+2011-01-14  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/47281
 	Revert
 	2011-01-11  Richard Guenther  <rguenther@suse.de>
