@@ -1,5 +1,16 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/linux.h (LINK_SPEC): Don't use %{!ibcs:} conditional.
+	* config/m32r/linux.h (LINK_SPEC): Likewise.
+	* config/mips/linux.h (LINK_SPEC): Likewise.
+	* config/mips/linux64.h (LINK_SPEC): Likewise.
+	* config/sparc/linux.h (LINK_SPEC): Likewise.
+	* config/sparc/linux64.h (LINK_ARCH32_SPEC, LINK_ARCH64_SPEC,
+	LINK_SPEC): Likewise.
+	* config/xtensa/linux.h (LINK_SPEC): Likewise.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/arm/linux-elf.h (LINUX_TARGET_LINK_SPEC): Remove
 	%{version:-v}.
 	* config/lm32/uclinux-elf.h (LINK_SPEC): Likewise.

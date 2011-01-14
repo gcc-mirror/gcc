@@ -1,6 +1,6 @@
 /* Xtensa Linux configuration.
    Derived from the configuration for GCC for Intel i386 running Linux.
-   Copyright (C) 2001, 2002, 2003, 2006, 2007, 2008, 2010
+   Copyright (C) 2001, 2002, 2003, 2006, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -54,11 +54,10 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SPEC \
  "%{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
-      %{static:-static}}}"
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      -dynamic-linker " LINUX_DYNAMIC_LINKER "} \
+    %{static:-static}}"
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."
