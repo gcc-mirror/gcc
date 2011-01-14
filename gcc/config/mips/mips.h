@@ -1168,7 +1168,6 @@ enum mips_code_readable_setting {
 
 #undef CC1_SPEC
 #define CC1_SPEC "\
-%{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
 %(subtarget_cc1_spec)"
 
