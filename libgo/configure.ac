@@ -274,6 +274,9 @@ PTHREAD_LIBS=
 AC_CHECK_LIB([pthread], [pthread_create], PTHREAD_LIBS=-lpthread)
 AC_SUBST(PTHREAD_LIBS)
 
+dnl Test if -lrt is required for sched_yield.
+AC_SEARCH_LIBS([sched_yield], [rt])
+
 AC_C_BIGENDIAN
 
 GCC_CHECK_UNWIND_GETIPINFO
