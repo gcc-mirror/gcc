@@ -1,3 +1,7 @@
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/linux-elf.h (LINUX_TARGET_LINK_SPEC): Remove %{b}.
+
 2011-01-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_static_dynamic): Solaris 2 ld always
