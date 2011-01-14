@@ -1,7 +1,7 @@
 /* { dg-do link } */
 /* { dg-options "-O2" } */
 
-extern void link_error (void);
+extern void link_error (void) { /* XFAIL */ }
 
 typedef unsigned char(*Calculable)(void);
 

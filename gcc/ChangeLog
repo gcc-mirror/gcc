@@ -1,5 +1,15 @@
 2011-01-14  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/47281
+	Revert
+	2011-01-11  Richard Guenther  <rguenther@suse.de>
+
+        PR tree-optimization/46076
+        * tree-ssa.c (useless_type_conversion_p): Conversions from
+        unprototyped to empty argument list function types are useless.
+
+2011-01-14  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/47286
 	* tree-ssa-structalias.c (new_var_info): Register variables
 	are global.
