@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC,
    for SPARC running in an embedded environment using the ELF file format.
-   Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
    It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{v:-V} %{Qy:} %{!Qn:-Qy} %{Ym,*} -s \
+  "%{Qy:} %{!Qn:-Qy} %{Ym,*} -s \
    %{fpic|fpie|fPIC|fPIE:-K PIC} %(asm_cpu)"
 
 /* Use the default.  */
