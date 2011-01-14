@@ -12,15 +12,14 @@
 	Revert
 	2011-01-11  Richard Guenther  <rguenther@suse.de>
 
-        PR tree-optimization/46076
-        * tree-ssa.c (useless_type_conversion_p): Conversions from
-        unprototyped to empty argument list function types are useless.
+	PR tree-optimization/46076
+	* tree-ssa.c (useless_type_conversion_p): Conversions from
+	unprototyped to empty argument list function types are useless.
 
 2011-01-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47286
-	* tree-ssa-structalias.c (new_var_info): Register variables
-	are global.
+	* tree-ssa-structalias.c (new_var_info): Register variables are global.
 
 2011-01-14  Martin Jambor  <mjambor@suse.cz>
 
@@ -60,7 +59,7 @@
 
 2011-01-13  Jeff Law  <law@redhat.com>
 
-	* PR rtl-optimization/39077
+	PR rtl-optimization/39077
 	* doc/invoke.texi (max-gcse-insertion-ratio): Document.
 	* params.h (MAX_GCSE_INSERTION_RATIO): Define.
 	* params.def (PARAM_MAX_GCSE_INSERTION_RATIO): Define.
@@ -497,8 +496,8 @@
 2011-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR debug/46704
-	* dwarf2out.c (dwarf2out_finish): Output the debug_aranges section
-	only when it is not empty.
+	* dwarf2out.c (dwarf2out_finish): Output the debug_aranges section only
+	when it is not empty.
 
 2011-01-06  Changpeng Fang  <changpeng.fang@amd.com>
 
