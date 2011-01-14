@@ -1,3 +1,8 @@
+2011-01-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47280
+	* g++.dg/opt/pr47280.C: New testcase.
+
 2011-01-14  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-regress1.C: New.

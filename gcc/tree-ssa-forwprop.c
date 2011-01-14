@@ -1658,9 +1658,9 @@ simplify_bitwise_and (gimple_stmt_iterator *gsi, gimple stmt)
 
 
 /* Perform re-associations of the plus or minus statement STMT that are
-   always permitted.  */
+   always permitted.  Returns true if the CFG was changed.  */
 
-static void
+static bool
 associate_plusminus (gimple stmt)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
@@ -1671,7 +1671,7 @@ associate_plusminus (gimple stmt)
 
   /* We can't reassociate at all for saturating types.  */
   if (TYPE_SATURATING (TREE_TYPE (rhs1)))
-    return;
+    return false;
 
   /* First contract negates.  */
   do
@@ -1934,7 +1934,12 @@ out:
     {
       fold_stmt_inplace (stmt);
       update_stmt (stmt);
+      if (maybe_clean_or_replace_eh_stmt (stmt, stmt)
+	  && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
+	return true;
     }
+
+  return false;
 }
 
 /* Main entry point for the forward propagation optimizer.  */
@@ -2062,7 +2067,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	      else if (gimple_assign_rhs_code (stmt) == PLUS_EXPR
 		       || gimple_assign_rhs_code (stmt) == MINUS_EXPR)
 		{
-		  associate_plusminus (stmt);
+		  cfg_changed |= associate_plusminus (stmt);
 		  gsi_next (&gsi);
 		}
 	      else
