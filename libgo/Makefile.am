@@ -1,6 +1,6 @@
 # Makefile.am -- Go library Makefile.
 
-# Copyright 2009, 2010 The Go Authors. All rights reserved.
+# Copyright 2009 The Go Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
@@ -1041,10 +1041,10 @@ else # !LIBGO_IS_LINUX
 if LIBGO_IS_SOLARIS
 if LIBGO_IS_386
 # Use lseek64 on 386 Solaris.
-syscall_filesize_flie = syscalls/sysfile_largefile.go
+syscall_filesize_file = syscalls/sysfile_largefile.go
 else # !LIBGO_IS_LINUX && LIBGO_IS_SOLARIS && !LIBGO_IS_386
 # Use lseek on amd64 Solaris.
-syscall_filesize_flie = syscalls/sysfile_regfile.go
+syscall_filesize_file = syscalls/sysfile_regfile.go
 endif # !LIBGO_IS_386
 else # !LIBGO_IS_LINUX && !LIBGO_IS_SOLARIS
 # Use lseek by default.
