@@ -398,15 +398,10 @@ extern enum cmodel sparc_cmodel;
 
 #define CPP_SPEC "%(cpp_cpu) %(cpp_arch) %(cpp_endian) %(cpp_subtarget)"
 
-/* Prevent error on `-sun4' and `-target sun4' options.  */
 /* This used to translate -dalign to -malign, but that is no good
    because it can't turn off the usual meaning of making debugging dumps.  */
-/* Translate old style -m<cpu> into new style -mcpu=<cpu>.
-   ??? Delete support for -m<cpu> for 2.9.  */
 
-#define CC1_SPEC "\
-%{sun4:} %{target:} \
-"
+#define CC1_SPEC ""
 
 /* Override in target specific files.  */
 #define ASM_CPU_SPEC "\
