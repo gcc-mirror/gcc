@@ -9541,7 +9541,7 @@ String_index_expression::do_type()
   if (this->end_ == NULL)
     return Type::lookup_integer_type("uint8");
   else
-    return Type::make_string_type();
+    return this->string_->type();
 }
 
 // Determine the type of a string index.
