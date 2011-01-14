@@ -1,5 +1,16 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/sparc/linux.h (CC1_SPEC): Don't handle old equivalents of
+	-mcpu options.
+	* config/sparc/linux64.h (CC1_SPEC): Likewise.
+	* config/sparc/netbsd-elf.h (CC1_SPEC32, CC1_SPEC64): Likewise.
+	* config/sparc/sol2-bi.h (CPP_CPU_SPEC, CC1_SPEC): Likewise.
+	* config/sparc/sparc.h (CPP_CPU_SPEC, CC1_SPEC, ASM_CPU_SPEC):
+	Likewise.
+	* config/sparc/t-elf (MULTILIB_MATCHES): Don't handle -mv8.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/rs6000/vxworks.h (CC1_SPEC): Don't handle -fvec or
 	-fvec-eabi.
 

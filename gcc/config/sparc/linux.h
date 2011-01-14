@@ -43,9 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef	CC1_SPEC
 #define	CC1_SPEC "%{profile:-p} \
 %{sun4:} %{target:} \
-%{mcypress:-mcpu=cypress} \
-%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
-%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 "
 
 #undef TARGET_VERSION

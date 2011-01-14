@@ -149,23 +149,17 @@ along with GCC; see the file COPYING3.  If not see
 #if DEFAULT_ARCH32_P
 #define CC1_SPEC "%{profile:-p} \
 %{sun4:} %{target:} \
-%{mcypress:-mcpu=cypress} \
-%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
-%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m64:-mptr64 -mstack-bias -mlong-double-128 \
-  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=ultrasparc}}}}}}} \
+  %{!mcpu*:-mcpu=ultrasparc} \
   %{!mno-vis:%{!mcpu=v9:-mvis}}} \
 "
 #else
 #define CC1_SPEC "%{profile:-p} \
 %{sun4:} %{target:} \
-%{mcypress:-mcpu=cypress} \
-%{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
-%{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m32:-mptr32 -mno-stack-bias %{!mlong-double-128:-mlong-double-64} \
-  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=cypress}}}}}}}} \
+  %{!mcpu*:-mcpu=cypress}} \
 %{!m32:%{!mcpu*:-mcpu=ultrasparc}} \
 %{!mno-vis:%{!m32:%{!mcpu=v9:-mvis}}} \
 "
