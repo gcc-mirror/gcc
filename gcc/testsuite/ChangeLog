@@ -1,3 +1,14 @@
+2011-01-08  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR objc/45989
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c
+	(switchfiles): XFAIL
+	objc.dg-struct-layout-encoding-1/t02[57-9]_main.m execution tests
+	on i?86-*-*, x86_64-*-*, and powerpc*-apple-darwin* && ilp32.
+	XFAIL objc.dg-struct-layout-encoding-1/t03[01]_main.m execution
+	tests on i?86-*-* and x86_64-*-*.
+
 2011-01-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47280
