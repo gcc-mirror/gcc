@@ -1145,14 +1145,12 @@ enum mips_code_readable_setting {
 %(subtarget_asm_spec)"
 
 /* Extra switches sometimes passed to the linker.  */
-/* ??? The bestGnum will never be passed to the linker, because the gcc driver
-  will interpret it as a -b option.  */
 
 #ifndef LINK_SPEC
 #define LINK_SPEC "\
 %(endian_spec) \
 %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32*} %{mips64*} \
-%{bestGnum} %{shared} %{non_shared}"
+%{shared} %{non_shared}"
 #endif  /* LINK_SPEC defined */
 
 

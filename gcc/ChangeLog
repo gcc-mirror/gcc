@@ -1,5 +1,16 @@
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/mips/linux64.h (LINK_SPEC): Remove %{bestGnum}
+	%{no_archive} %{exact_version}.
+	* config/mips/mips.h (LINK_SPEC): Remove %{bestGnum}.
+	* config/mips/netbsd.h (LINK_SPEC): Remove %{bestGnum}
+	%{no_archive} %{exact_version}.
+	* config/mips/openbsd.h (LINK_SPEC): Likewise.
+	* config/mips/sde.h (LINK_SPEC): Remove %{bestGnum}.
+	* config/mips/vxworks.h: Likewise.
+
+2011-01-14  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/microblaze/microblaze.h (ASM_SPEC): Remove
 	%{microblaze1}.
 
