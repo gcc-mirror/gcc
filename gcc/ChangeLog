@@ -1,3 +1,9 @@
+2011-01-13  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/47276 
+	* ipa.c (function_and_variable_visibility): Do not try to mark alias
+	declarations as needed.
+
 2011-01-15  Martin Jambor  <mjambor@suse.cz>
 
 	* common.opt (fdevirtualize): New flag.
