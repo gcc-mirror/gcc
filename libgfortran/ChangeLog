@@ -1,3 +1,9 @@
+2011-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47296
+	* io/unix.c (unpack_filename): Return non-zero if the filename passed
+	in is NULL.
+
 2011-01-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/47154
