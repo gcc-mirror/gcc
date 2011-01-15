@@ -1000,6 +1000,8 @@ unit_to_fd (int unit)
 int
 unpack_filename (char *cstring, const char *fstring, int len)
 {
+  if (fstring == NULL)
+    return 1;
   len = fstrlen (fstring, len);
   if (len >= PATH_MAX)
     return 1;
