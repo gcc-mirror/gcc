@@ -239,7 +239,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 %{sun4:} %{target:} \
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m32:-mptr32 -mno-stack-bias \
-  %{!mcpu*:%{!mv8plus-mcpu=v9}}} \
+  %{!mcpu*:%{!mv8plus:-mcpu=v9}}} \
 %{mv8plus:-m32 -mptr32 -mno-stack-bias \
   %{!mcpu*:-mcpu=v9}} \
 "
