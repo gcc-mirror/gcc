@@ -847,6 +847,8 @@ function_and_variable_visibility (bool whole_program)
       if ((node = cgraph_node_for_asm (p->target)) != NULL
 	  && !DECL_EXTERNAL (node->decl))
         {
+	  if (!node->analyzed)
+	    continue;
 	  /* Weakrefs alias symbols from other compilation unit.  In the case
 	     the destination of weakref became available because of LTO, we must
 	     mark it as needed.  */
