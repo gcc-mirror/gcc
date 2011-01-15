@@ -1,5 +1,5 @@
 // -*- C++ -*- Common throw conditions.
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2009
+// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2009, 2011
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -27,7 +27,7 @@
 #include "exception"
 #include <cstdlib>
 #include "unwind-cxx.h"
-#include "exception_defines.h"
+#include <bits/exception_defines.h>
 
 extern "C" void
 __cxxabiv1::__cxa_bad_cast ()

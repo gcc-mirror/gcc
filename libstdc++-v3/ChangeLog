@@ -1,3 +1,52 @@
+2011-01-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/36104
+	* include/Makefile.am (bits_sup_headers, stamp-bits-sup): New.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am (std_HEADERS, bits_HEADERS): New.
+	(install-stdHEADERS, install-bitsHEADERS): New.
+	* libsupc++/Makefile.in: Regenerate.
+
+	* include/bits/c++config: Update for inline namespaces.
+	* libsupc++/cxxabi-forced.h: To...
+	* libsupc++/cxxabi_forced.h: ...this.
+	* libsupc++/hash_bytes.h: Separate file.
+	* libsupc++/typeinfo: Use it.
+	* libsupc++/exception: Adjust for bits subdirectory.
+	* libsupc++/eh_aux_runtime.cc: Same.
+	* libsupc++/eh_ptr.cc: Same.
+	* libsupc++/new_op.cc: Same.
+	* libsupc++/exception_defines.h: Same.
+	* libsupc++/nested_exception.h: Same.
+	* libsupc++/eh_terminate.cc: Same.
+	* libsupc++/vec.cc: Same.
+	* libsupc++/vterminate.cc: Same.
+	* libsupc++/exception_ptr.h: Same.
+	* libsupc++/eh_personality.cc: Same.
+	* libsupc++/eh_call.cc: Same.
+	* libsupc++/new_opnt.cc: Same.
+	* libsupc++/hash_bytes.cc: Same.
+	* config/cpu/arm/cxxabi_tweaks.h: Same.
+	* config/cpu/generic/cxxabi_tweaks.h: Same.
+	* libsupc++/cxxabi.h: Same. Consolidate _GLIBCXX_NOTHROW defines.
+	* include/std/bitset: Same.
+	* include/ext/vstring.tcc: Same.
+	* include/bits/hashtable.h: Same.
+	* include/bits/functional_hash.h: Same.
+	* include/bits/hashtable_policy.h: Same.
+	* include/bits/basic_string.h: Same.
+	* include/bits/istream.tcc: Same.
+	* include/bits/ostream.tcc: Same.
+	* include/bits/algorithmfwd.h: Same.
+	* include/bits/basic_string.tcc: Same.
+	* include/bits/ostream_insert.h: Same.
+	* include/bits/fstream.tcc: Same.
+	* include/bits/functexcept.h: Same.
+
+	* doc/doxygen/user.cfg.in: Adjust names.
+
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust line numbers.
+
 2011-01-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/25_algorithms/is_permutation/check_type.cc: Minor

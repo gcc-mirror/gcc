@@ -1,6 +1,7 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+// 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -49,7 +50,7 @@
 #include <bits/functexcept.h>   // For invalid_argument, out_of_range,
                                 // overflow_error
 #include <iosfwd>
-#include <cxxabi-forced.h>
+#include <bits/cxxabi_forced.h>
 
 #define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * sizeof(unsigned long))
 #define _GLIBCXX_BITSET_WORDS(__n) \

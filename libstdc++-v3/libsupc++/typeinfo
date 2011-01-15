@@ -1,6 +1,6 @@
 // RTTI support for -*- C++ -*-
 // Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-// 2003, 2004, 2005, 2006, 2007, 2009, 2010
+// 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation
 //
 // This file is part of GCC.
@@ -34,6 +34,10 @@
 #pragma GCC system_header
 
 #include <exception>
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <bits/hash_bytes.h>
+#endif
+
 
 #pragma GCC visibility push(default)
 
@@ -78,11 +82,6 @@ namespace __cxxabiv1
 
 namespace std 
 {
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  size_t
-  _Hash_bytes(const void* __ptr, size_t __len, size_t __seed);
-#endif
-
   /**
    *  @brief  Part of RTTI.
    *

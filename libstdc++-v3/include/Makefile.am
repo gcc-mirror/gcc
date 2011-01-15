@@ -1,6 +1,7 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+## Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+## 2011
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -171,6 +172,14 @@ bits_headers = \
 	${bits_srcdir}/valarray_before.h \
 	${bits_srcdir}/valarray_after.h \
 	${bits_srcdir}/vector.tcc
+
+bits_sup_srcdir = ${glibcxx_srcdir}/libsupc++
+bits_sup_headers = \
+        ${bits_sup_srcdir}/cxxabi_forced.h \
+        ${bits_sup_srcdir}/exception_defines.h \
+        ${bits_sup_srcdir}/exception_ptr.h \
+        ${bits_sup_srcdir}/hash_bytes.h \
+        ${bits_sup_srcdir}/nested_exception.h
 
 backward_srcdir = ${glibcxx_srcdir}/include/backward
 backward_builddir = ./backward
@@ -888,7 +897,7 @@ endif
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.
 allstamped = \
-	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
+	stamp-std stamp-bits stamp-bits-sup stamp-c_base stamp-c_compatibility \
 	stamp-backward stamp-ext stamp-pb stamp-tr1 stamp-decimal \
 	stamp-debug stamp-parallel stamp-profile stamp-profile-impl \
 	stamp-host 
@@ -916,6 +925,10 @@ stamp-bits: ${bits_headers}
 	@-mkdir -p ${bits_builddir}
 	@-cd ${bits_builddir} && $(LN_S) $? . 2>/dev/null
 	@$(STAMP) stamp-bits
+
+stamp-bits-sup: stamp-bits ${bits_sup_headers}
+	@-cd ${bits_builddir} && $(LN_S) $? . 2>/dev/null
+	@$(STAMP) stamp-bits-sup
 
 stamp-c_base: ${c_base_headers}
 	@-mkdir -p ${c_base_builddir}
@@ -1071,14 +1084,14 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      stamp-namespace-version \
 			      stamp-visibility
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
-	nsa_version=`cat stamp-namespace-version` ;\
+	ns_version=`cat stamp-namespace-version` ;\
 	visibility=`cat stamp-visibility` ;\
 	ldbl_compat='s,g,g,' ;\
 	grep "^[ 	]*#[ 	]*define[ 	][ 	]*_GLIBCXX_LONG_DOUBLE_COMPAT[ 	][ 	]*1[ 	]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
 	&& ldbl_compat='s,^#undef _GLIBCXX_LONG_DOUBLE_COMPAT$$,#define _GLIBCXX_LONG_DOUBLE_COMPAT 1,' ;\
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
-	-e "s,define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION, define _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION $$nsa_version," \
+	-e "s,define _GLIBCXX_INLINE_VERSION, define _GLIBCXX_INLINE_VERSION $$ns_version," \
 	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
 	-e "$$ldbl_compat" \
             < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
