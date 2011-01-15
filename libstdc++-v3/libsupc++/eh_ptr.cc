@@ -29,7 +29,7 @@
 #define _GLIBCXX_EH_PTR_COMPAT
 
 #include <exception>
-#include <exception_ptr.h>
+#include <bits/exception_ptr.h>
 #include "unwind-cxx.h"
 
 using namespace __cxxabiv1;

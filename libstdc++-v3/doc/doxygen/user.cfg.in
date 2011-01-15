@@ -586,7 +586,7 @@ WARN_LOGFILE           =
 
 INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          @srcdir@/libsupc++/cxxabi.h \
-                         @srcdir@/libsupc++/cxxabi-forced.h \
+                         @srcdir@/libsupc++/cxxabi_forced.h \
                          @srcdir@/libsupc++/exception \
                          @srcdir@/libsupc++/exception_defines.h \
                          @srcdir@/libsupc++/exception_ptr.h \

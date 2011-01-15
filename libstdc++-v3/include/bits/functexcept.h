@@ -1,6 +1,6 @@
 // Function-Based Exception Support -*- C++ -*-
 
-// Copyright (C) 2001, 2004, 2005, 2008, 2009, 2010
+// Copyright (C) 2001, 2004, 2005, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -38,7 +38,7 @@
 #define _FUNCTEXCEPT_H 1
 
 #include <bits/c++config.h>
-#include <exception_defines.h>
+#include <bits/exception_defines.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 

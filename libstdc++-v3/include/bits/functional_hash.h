@@ -1,6 +1,6 @@
 // functional_hash.h header -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,10 +32,10 @@
 
 #pragma GCC system_header
 
-#include <bits/c++config.h>
+#include <bits/hash_bytes.h>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   /** @defgroup hashes Hashes
    *  @ingroup functors
    *
@@ -122,20 +122,6 @@ namespace std
 
 #undef _Cxx_hashtable_define_trivial_hash
 
-  // Hash function implementation for the nontrivial specialization.
-  // All of them are based on a primitive that hashes a pointer to
-  // a byte array. The actual hash algorithm is not guaranteed to
-  // stay the same from release to release -- it may be updated or
-  // tuned to improve hash quality or speed.
-  size_t
-  _Hash_bytes(const void* __ptr, size_t __len, size_t __seed);
-
-  // A similar hash primitive, using the FNV hash algorithm. This
-  // algorithm is guaranteed to stay the same from release to release.
-  // (although it might not produce the same values on different machines.)
-  size_t
-  _Fnv_hash_bytes(const void* __ptr, size_t __len, size_t __seed);
-
   struct _Hash_impl
   {
     static size_t
@@ -158,7 +144,7 @@ namespace std
   {
     static size_t
     hash(const void* __ptr, size_t __clength,
-         size_t __seed = static_cast<size_t>(2166136261UL))
+	 size_t __seed = static_cast<size_t>(2166136261UL))
     { return _Fnv_hash_bytes(__ptr, __clength, __seed); }
 
     template<typename _Tp>
@@ -196,6 +182,7 @@ namespace std
     hash<long double>::operator()(long double __val) const;
 
   // @} group hashes
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif // _FUNCTIONAL_HASH_H

@@ -1,6 +1,6 @@
-// cxxabi.h subset for inclusion by other library headers -*- C++ -*-
+// cxxabi.h subset for cancellation -*- C++ -*-
   
-// Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -23,8 +23,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file cxxabi-forced.h
- *  The header provides an interface to the C++ ABI.
+/** @file bits/cxxabi_forced.h
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{cxxabi.h}
  */
 
 #ifndef _CXXABI_FORCED_H
