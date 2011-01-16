@@ -1,3 +1,55 @@
+2011-01-16  François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/23_containers/forward_list/debug/erase_after1_neg.cc: Move
+	to this. Use _neg suffix.
+	* testsuite/23_containers/forward_list/debug/erase_after1.cc: ...from
+	this.
+	* testsuite/23_containers/forward_list/debug/erase_after2_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/erase_after2.cc: Same.
+	* testsuite/23_containers/forward_list/debug/erase_after3_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/erase_after3.cc: Same.
+	* testsuite/23_containers/forward_list/debug/erase_after4_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/erase_after4.cc: Same.
+	* testsuite/23_containers/forward_list/debug/erase_after5_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/erase_after5.cc: Same.
+	* testsuite/23_containers/forward_list/debug/erase_after6_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/erase_after6.cc: Same.
+	* testsuite/23_containers/forward_list/debug/erase_after7_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/erase_after7.cc: Same.
+	* testsuite/23_containers/forward_list/debug/erase_after8_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/erase_after8.cc: Same.
+	* testsuite/23_containers/forward_list/debug/erase_after9_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/erase_after9.cc: Same.
+	* testsuite/23_containers/forward_list/debug/insert_after1_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/insert_after1.cc: Same.
+	* testsuite/23_containers/forward_list/debug/insert_after2_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/insert_after2.cc: Same.
+	* testsuite/23_containers/forward_list/debug/insert_after3_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/insert_after3.cc: Same.
+	* testsuite/23_containers/forward_list/debug/splice_after1_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/splice_after1.cc: Same.
+	* testsuite/23_containers/forward_list/debug/splice_after2_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/splice_after2.cc: Same.
+	* testsuite/23_containers/forward_list/debug/splice_after3_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/splice_after3.cc: Same.
+	* testsuite/23_containers/forward_list/debug/splice_after4_neg.cc:
+	Same.
+	* testsuite/23_containers/forward_list/debug/splice_after4.cc: Same.
+
 2011-01-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/36104
