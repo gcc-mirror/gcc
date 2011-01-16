@@ -4662,7 +4662,10 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
       /* If store_expr stores a DECL whose DECL_RTL(exp) == TARGET,
 	 but TARGET is not valid memory reference, TEMP will differ
 	 from TARGET although it is really the same location.  */
-      && !(alt_rtl && rtx_equal_p (alt_rtl, target))
+      && !(alt_rtl
+	   && rtx_equal_p (alt_rtl, target)
+	   && !side_effects_p (alt_rtl)
+	   && !side_effects_p (target))
       /* If there's nothing to copy, don't bother.  Don't call
 	 expr_size unless necessary, because some front-ends (C++)
 	 expr_size-hook must not be given objects that are not
