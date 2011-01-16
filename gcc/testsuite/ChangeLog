@@ -3,6 +3,9 @@
 	Backport from mainline
 	2010-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/46880
+	* gcc.target/i386/pr46880.c: New test.
+
 	PR middle-end/45852
 	* gcc.target/i386/pr45852.c: New test.
 

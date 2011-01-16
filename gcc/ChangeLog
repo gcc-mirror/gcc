@@ -3,6 +3,10 @@
 	Backport from mainline
 	2010-12-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/46880
+	* config/i386/sse.md (sse2_loadlpd, sse2_movsd): Fix shufpd source
+	operand.
+
 	PR middle-end/45852
 	* expr.c (store_expr): Ignore alt_rtl if equal to target,
 	but has side-effects.
