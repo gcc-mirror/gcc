@@ -1,5 +1,8 @@
 2011-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libfortran/47322
+	* math/remquoq.c (remquoq): Use uint64_t type instead of u_int64_t.
+
 	PR fortran/46625
 	* quadmath.map (QUADMATH_1.0): Remove quadmath_strtopQ
 	and quadmath_dtoaq.  Add strtoflt128 and quadmath_flt128tostr.
