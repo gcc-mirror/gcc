@@ -1670,7 +1670,13 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 
 	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
-	    return 0;
+	    {
+	      if (((code == ASM_OPERANDS && i == 5)
+		   || (code == ASM_INPUT && i == 1))
+		  && locator_eq (XINT (x, i), XINT (y, i)))
+		break;
+	      return 0;
+	    }
 	  break;
 
 	case 't':

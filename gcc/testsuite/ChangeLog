@@ -1,3 +1,12 @@
+2011-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2010-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/46865
+	* gcc.target/i386/pr46865-1.c: New test.
+	* gcc.target/i386/pr46865-2.c: New test.
+
 2011-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gfortran.dg/cray_pointers_2.f90: Use dg-timeout-factor 4.
