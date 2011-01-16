@@ -111,12 +111,16 @@ The following mathematical functions are available:
 @item @code{expm1q}: exponential minus 1 function
 @need 800
 @item @code{fabsq}: absolute value function
+@item @code{fdimq}: positive difference function
 @item @code{finiteq}: check finiteness of value
 @item @code{floorq}: floor value function
 @item @code{fmaq}: fused multiply and add
+@item @code{fmaxq}: determine maximum of two values
+@item @code{fminq}: determine minimum of two values
 @item @code{fmodq}: remainder value function
 @item @code{frexpq}: extract mantissa and exponent
 @item @code{hypotq}: Eucledian distance function
+@item @code{ilogbq}: get exponent of the value
 @item @code{isinfq}: check for infinity
 @item @code{isnanq}: check for not a number
 @item @code{j0q}: Bessel function of the first kind, first order
@@ -124,17 +128,22 @@ The following mathematical functions are available:
 @item @code{jnq}: Bessel function of the first kind, @var{n}-th order
 @item @code{ldexpq}: load exponent of the value
 @item @code{lgammaq}: logarithmic gamma function
+@item @code{llrintq}: round to nearest integer value
 @item @code{llroundq}: round to nearest integer value away from zero
 @item @code{logq}: natural logarithm function
 @item @code{log10q}: base 10 logarithm function
 @item @code{log1pq}: compute natural logarithm of the value plus one
+@item @code{log2q}: base 2 logarithm function
 @need 800
+@item @code{lrintq}: round to nearest integer value
 @item @code{lroundq}: round to nearest integer value away from zero
 @item @code{modfq}: decompose the floating-point number
 @item @code{nanq}: return quiet NaN
+@item @code{nearbyintq}: round to nearest integer
 @item @code{nextafterq}: next representable floating-point number
 @item @code{powq}: power function
 @item @code{remainderq}: remainder function
+@item @code{remquoq}: remainder and part of quotient
 @item @code{rintq}: round-to-nearest integral value
 @item @code{roundq}: round-to-nearest integral value, return @code{__float128}
 @item @code{scalblnq}: compute exponent using @code{FLT_RADIX}
@@ -152,8 +161,10 @@ The following mathematical functions are available:
 @item @code{y0q}: Bessel function of the second kind, first order
 @item @code{y1q}: Bessel function of the second kind, second order
 @item @code{ynq}: Bessel function of the second kind, @var{n}-th order
-@item @code{cabsq} complex absolute value function:
+@item @code{cabsq} complex absolute value function
 @item @code{cargq}: calculate the argument
+@item @code{cimagq} imaginary part of complex number
+@item @code{crealq}: real part of complex number
 @item @code{cacoshq}: complex arc hyperbolic cosine function
 @item @code{cacosq}: complex arc cosine function
 @item @code{casinhq}: complex arc hyperbolic sine function
@@ -168,7 +179,9 @@ The following mathematical functions are available:
                      real value
 @item @code{clogq}: complex natural logarithm
 @item @code{clog10q}: complex base 10 logarithm
+@item @code{conjq}: complex conjugate function
 @item @code{cpowq}: complex power function
+@item @code{cprojq}: project into Riemann Sphere
 @item @code{csinq}: complex sine function
 @item @code{csinhq}: complex hyperbolic sine function
 @item @code{csqrtq}: complex square root
