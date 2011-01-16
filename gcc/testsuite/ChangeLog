@@ -1,3 +1,11 @@
+2011-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2010-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46864
+	* g++.dg/opt/pr46864.C: New test.
+
 2011-01-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gfortran.dg/cray_pointers_2.f90: Use dg-timeout-factor 4.

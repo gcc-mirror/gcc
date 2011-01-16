@@ -2139,7 +2139,7 @@ loop_suitable_for_sm (struct loop *loop ATTRIBUTE_UNUSED,
   edge ex;
 
   for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
-    if (ex->flags & EDGE_ABNORMAL)
+    if (ex->flags & (EDGE_ABNORMAL | EDGE_EH))
       return false;
 
   return true;
