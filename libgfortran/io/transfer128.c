@@ -61,18 +61,17 @@ extern void transfer_complex128_write (st_parameter_dt *, void *, int);
 export_proto(transfer_complex128_write);
 
 
-/* Make sure that libquadmath is pulled in. The functions quadmath_strtopQ
-   and quadmath_dtoaq are weakly referrenced in convert_real and write_float;
-   the pointer assignment with USED attribute make sure that there is a
-   non-weakref dependence if the quadmath functions are used. That avoids
-   segfault when libquad is statically linked.  */
+/* Make sure that libquadmath is pulled in. The functions strtoflt128
+   and quadmath_flt128tostr are weakly referrenced in convert_real and
+   write_float; the pointer assignment with USED attribute make sure
+   that there is a non-weakref dependence if the quadmath functions
+   are used. That avoids segfault when libquadmath is statically linked.  */
+static void __attribute__((used)) *tmp1 = strtoflt128;
+static void __attribute__((used)) *tmp2 = quadmath_flt128tostr;
 
 void
 transfer_real128 (st_parameter_dt *dtp, void *p, int kind)
 {
-  static void __attribute__((used)) *tmp1 = quadmath_strtopQ;
-  static void __attribute__((used)) *tmp2 = quadmath_dtoaq;
-
   transfer_real (dtp, p, kind);
 }
 
@@ -80,9 +79,6 @@ transfer_real128 (st_parameter_dt *dtp, void *p, int kind)
 void
 transfer_real128_write (st_parameter_dt *dtp, void *p, int kind)
 {
-  static void __attribute__((used)) *tmp1 = quadmath_strtopQ;
-  static void __attribute__((used)) *tmp2 = quadmath_dtoaq;
-
   transfer_real (dtp, p, kind);
 }
 
@@ -90,9 +86,6 @@ transfer_real128_write (st_parameter_dt *dtp, void *p, int kind)
 void
 transfer_complex128 (st_parameter_dt *dtp, void *p, int kind)
 {
-  static void __attribute__((used)) *tmp1 = quadmath_strtopQ;
-  static void __attribute__((used)) *tmp2 = quadmath_dtoaq;
-
   transfer_complex (dtp, p, kind);
 }
 
@@ -100,9 +93,6 @@ transfer_complex128 (st_parameter_dt *dtp, void *p, int kind)
 void
 transfer_complex128_write (st_parameter_dt *dtp, void *p, int kind)
 {
-/*  static void __attribute__((used)) *tmp1 = quadmath_strtopQ;
-  static void __attribute__((used)) *tmp2 = quadmath_dtoaq;*/
-
   transfer_complex_write (dtp, p, kind);
 }
 #endif

@@ -975,7 +975,7 @@ sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 
 #if defined(GFC_REAL_16_IS_FLOAT128)
 #define DTOAQ \
-__qmath_(quadmath_dtoaq) (buffer, size, ndigits - 1, tmp);
+__qmath_(quadmath_flt128tostr) (buffer, size, ndigits - 1, tmp);
 #endif
 
 #define WRITE_FLOAT(x,y)\

@@ -130,8 +130,8 @@ __qmath3 (ctanq)
 __qmath3 (ctanhq)
 
 
-// Prototypes for our I/O functions
-__qmath3 (quadmath_strtopQ)
-__qmath3 (quadmath_dtoaq)
+// Prototypes for string <-> flt128 conversion functions
+__qmath3 (strtoflt128)
+__qmath3 (quadmath_flt128tostr)
 
 #endif

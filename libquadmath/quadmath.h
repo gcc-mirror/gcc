@@ -23,8 +23,8 @@ Boston, MA 02110-1301, USA.  */
 
 #include <stdlib.h>
 
-// Define the complex type corresponding to __float128
-// ("_Complex __float128" is not allowed)
+/* Define the complex type corresponding to __float128
+   ("_Complex __float128" is not allowed) */
 typedef _Complex float __attribute__((mode(TC))) __complex128;
 
 #ifdef __cplusplus
@@ -35,7 +35,7 @@ typedef _Complex float __attribute__((mode(TC))) __complex128;
 # define __quadmath_nth(fct) __attribute__((__nothrow__)) fct
 #endif
 
-// Prototypes for real functions
+/* Prototypes for real functions */
 extern __float128 acosq (__float128) __quadmath_throw;
 extern __float128 acoshq (__float128) __quadmath_throw;
 extern __float128 asinq (__float128) __quadmath_throw;
@@ -103,7 +103,7 @@ extern __float128 y1q (__float128) __quadmath_throw;
 extern __float128 ynq (int, __float128) __quadmath_throw;
 
 
-// Prototypes for complex functions
+/* Prototypes for complex functions */
 extern __float128 cabsq (__complex128) __quadmath_throw;
 extern __float128 cargq (__complex128) __quadmath_throw;
 extern __float128 cimagq (__complex128) __quadmath_throw;
@@ -130,13 +130,13 @@ extern __complex128 ctanq (__complex128) __quadmath_throw;
 extern __complex128 ctanhq (__complex128) __quadmath_throw;
 
 
-// Prototypes for our I/O functions
-extern int quadmath_strtopQ (const char *, char **, void *) __quadmath_throw;
-extern void quadmath_dtoaq (char *, size_t, size_t, __float128)
+/* Prototypes for string <-> __float128 conversion functions */
+extern __float128 strtoflt128 (const char *, char **) __quadmath_throw;
+extern void quadmath_flt128tostr (char *, size_t, size_t, __float128)
   __quadmath_throw;
 
 
-// Macros
+/* Macros */
 #define FLT128_MAX 1.18973149535723176508575932662800702e4932Q
 #define FLT128_MIN 3.36210314311209350626267781732175260e-4932Q
 #define FLT128_EPSILON 1.92592994438723585305597794258492732e-34Q
@@ -144,8 +144,8 @@ extern void quadmath_dtoaq (char *, size_t, size_t, __float128)
 #define FLT128_MANT_DIG 113
 #define FLT128_MIN_EXP (-16381)
 #define FLT128_MAX_EXP 16384
-// TODO -- One day, we need to add the following macros:
-// FLT128_DIG, FLT128_MIN_10_EXP, FLT128_MAX_10_EXP
+/* TODO -- One day, we need to add the following macros:
+   FLT128_DIG, FLT128_MIN_10_EXP, FLT128_MAX_10_EXP */
 
 
 #define HUGE_VALQ __builtin_huge_valq()

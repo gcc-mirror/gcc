@@ -1,3 +1,16 @@
+2011-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46625
+	* io/write_float.def (DTOAQ): Use quadmath_flt128tostr
+	instead of quadmath_dtoa.
+	* io/transfer128.c (tmp1, tmp2): New variables, bring in
+	strtoflt128 and quadmath_flt128tostr.
+	(transfer_real128, transfer_real128_write, transfer_complex128,
+	transfer_complex128_write): Remove tmp1/tmp2 variables.
+	* io/read.c (convert_real): Use strtoflt128 instead of
+	quadmath_strtopQ, adjust for the changed arguments and return
+	value.
+
 2011-01-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/47296

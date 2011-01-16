@@ -1,5 +1,22 @@
 2011-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/46625
+	* quadmath.map (QUADMATH_1.0): Remove quadmath_strtopQ
+	and quadmath_dtoaq.  Add strtoflt128 and quadmath_flt128tostr.
+	* quadmath_weak.h (quadmath_strtopQ, quadmath_dtoaq): Remove.
+	(strtoflt128, quadmath_flt128tostr): Add.
+	* gdtoa/strtopQ.c (quadmath_strtopQ): Rename to...
+	(strtoflt128): ... this.  Return __float128, instead of writing
+	to memory pointed by last argument.
+	* quadmath.h: Use C style comments instead of C++ style.
+	(quadmath_strtopQ, quadmath_dtoaq): Remove prototypes.
+	(strtoflt128, quadmath_flt128tostr): Add prototypes.
+	* libquadmath.texi (quadmath_dtoaq): Rename to quadmath_flt128tostr.
+	(quadmath_strtopQ): Rename to strtoflt128.  Adjust prototype,
+	adjust examples.
+	* quadmath_io.c (quadmath_dtoaq): Rename to...
+	(quadmath_flt128tostr): ... this.
+
 	* quadmath.h (__quadmath_throw, __quadmath_nth): Define.
 	Use it for all prototypes.
 
