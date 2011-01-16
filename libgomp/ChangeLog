@@ -1,3 +1,7 @@
+2011-01-16  Gerald Pfeifer
+
+	* configure.tgt (*-*-freebsd*): Add -lpthread to XLDFLAGS.
+
 2010-12-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/46874
