@@ -1,11 +1,11 @@
-@c Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@c Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 @c Free Software Foundation, Inc.
 @c This is part of the GNU Fortran manual.   
 @c For copying conditions, see the file gfortran.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2004, 2005, 2006, 2007, 2008, 2009, 2010
+Copyright @copyright{} 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -410,7 +410,7 @@ preprocessor, including predefined macros. This gives you a way
 of finding out what is predefined in your version of the preprocessor.
 Assuming you have no file @file{foo.f90}, the command
 @smallexample
-  touch foo.f90; gfortran -cpp -dM foo.f90
+  touch foo.f90; gfortran -cpp -E -dM foo.f90
 @end smallexample
 will show all the predefined macros.
 

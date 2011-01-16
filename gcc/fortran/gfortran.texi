@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@set copyrights-gfortran 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 
 @include gcc-common.texi
 
@@ -803,17 +803,70 @@ list can be found below.  See also the
 @uref{http://gcc.gnu.org/wiki/Fortran2003, wiki page} about Fortran 2003.
 
 @itemize
-@item 
-Intrinsics @code{command_argument_count}, @code{get_command},
-@code{get_command_argument}, @code{get_environment_variable}, and
-@code{move_alloc}.
+@item Procedure pointers including procedure-pointer components with
+@code{PASS} attribute.
 
-@item 
+@item Procedures which are bound to a derived type (type-bound procedures)
+including @code{PASS}, @code{PROCEDURE} and @code{GENERIC}, and
+operators bound to a type.
+
+@item Abstract interfaces and and type extension with the possibility to
+override type-bound procedures or to have deferred binding.
+
+@item Polymorphic entities (``@code{CLASS}'') for derived types -- including
+@code{SAME_TYPE_AS}, @code{EXTENDS_TYPE_OF} and @code{SELECT TYPE}.
+Note that the support for array-valued polymorphic entities is incomplete
+and unlimited polymophism is currently not supported.
+
+@item The @code{ASSOCIATE} construct.
+
+@item Interoperability with C including enumerations, 
+
+@item In structure constructors the components with default values may be
+omitted.
+
+@item Extensions to the @code{ALLOCATE} statement, allowing for a
+type-specification with type parameter and for allocation and initialization
+from a @code{SOURCE=} expression; @code{ALLOCATE} and @code{DEALLOCATE}
+optionally return an error message string via @code{ERRMSG=}.
+
+@item Reallocation on assignment for arrays: If an intrinsic assignment is
+used, an allocatable variable on the left-hand side is automatically allocated
+(if unallocated) or reallocated (if the shape is different). Currently, the
+reallocation for scalars is not implemented.
+
+@item Transferring of allocations via @code{MOVE_ALLOC}.
+
+@item The @code{PRIVATE} and @code{PUBLIC} attributes may be given individually
+to derived-type components.
+
+@item In pointer assignments, the lower bound may be specified and
+the remapping of elements is supported.
+
+@item For pointers an @code{INTENT} may be specified which affect the
+association status not the value of the pointer target.
+
+@item Intrinsics @code{command_argument_count}, @code{get_command},
+@code{get_command_argument}, and @code{get_environment_variable}.
+
+@item Support for unicode characters (ISO 10646) and UTF-8, including
+the @code{SELECTED_CHAR_KIND} and @code{NEW_LINE} intrinsic functions.
+
+@item Support for binary, octal and hexadecimal (BOZ) constants in the
+intrinsic functions @code{INT}, @code{REAL}, @code{CMPLX} and @code{DBLE}.
+
+@item
 @cindex array, constructors
 @cindex @code{[...]}
 Array constructors using square brackets.  That is, @code{[...]} rather
 than @code{(/.../)}.  Type-specification for array constructors like
 @code{(/ some-type :: ... /)}.
+
+@item Extensions to the specification and initialization expressions,
+including the support for intrinsics with real and complex arguments.
+
+@item Support for the asynchronous input/output syntax; however, the
+data transfer is currently always synchronously performed. 
 
 @item
 @cindex @code{FLUSH} statement
@@ -851,14 +904,6 @@ TR 15581:
 @end itemize
 
 @item
-@cindex @code{ALLOCATE}
-The @code{ERRMSG=} tag is now supported in @code{ALLOCATE} and
-@code{DEALLOCATE} statements.  The @code{SOURCE=} tag is supported
-in an @code{ALLOCATE} statement.  An @emph{intrinsic-type-spec}
-can be used as the @emph{type-spec} in an @code{ALLOCATE} statement;
-while the use of a @emph{derived-type-name} is currently unsupported.
-
-@item
 @cindex @code{STREAM} I/O
 @cindex @code{ACCESS='STREAM'} I/O
 The @code{OPEN} statement supports the @code{ACCESS='STREAM'} specifier,
@@ -866,6 +911,10 @@ allowing I/O without any record structure.
 
 @item
 Namelist input/output for internal files.
+
+@item Further I/O extensions: Rounding during formatted output, using of
+a decimal comma instead of a decimal point, setting whether a plus sign
+should appear for positive numbers.
 
 @item
 @cindex @code{PROTECTED} statement
@@ -888,6 +937,11 @@ The @code{VOLATILE} statement and attribute.
 The @code{IMPORT} statement, allowing to import
 host-associated derived types.
 
+@item The intrinsic modules @code{ISO_FORTRAN_ENVIRONMENT} is supported,
+which contains parameters of the I/O units, storage sizes. Additionally,
+procedures for C interoperability are available in the @code{ISO_C_BINDING}
+module.
+
 @item
 @cindex @code{USE, INTRINSIC} statement
 @cindex statement, @code{USE, INTRINSIC}
@@ -895,33 +949,10 @@ host-associated derived types.
 @cindex statement, @code{ISO_FORTRAN_ENV}
 @code{USE} statement with @code{INTRINSIC} and @code{NON_INTRINSIC}
 attribute; supported intrinsic modules: @code{ISO_FORTRAN_ENV},
-@code{OMP_LIB} and @code{OMP_LIB_KINDS}.
+@code{ISO_C_BINDING}, @code{OMP_LIB} and @code{OMP_LIB_KINDS}.
 
 @item
 Renaming of operators in the @code{USE} statement.
-
-@item
-@cindex ISO C Bindings
-Interoperability with C (ISO C Bindings)
-
-@item
-BOZ as argument of @code{INT}, @code{REAL}, @code{DBLE} and @code{CMPLX}.
-
-@item
-@cindex type-bound procedure
-@cindex type-bound operator
-Type-bound procedures with @code{PROCEDURE} or @code{GENERIC}, and operators
-bound to a derived-type.
-
-@item
-@cindex @code{EXTENDS}
-@cindex derived-type extension
-Extension of derived-types (the @code{EXTENDS(...)} syntax).
-
-@item
-@cindex @code{ABSTRACT} type
-@cindex @code{DEFERRED} procedure binding
-@code{ABSTRACT} derived-types and declaring procedure bindings @code{DEFERRED}.
 
 @end itemize
 
