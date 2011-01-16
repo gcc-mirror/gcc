@@ -3,6 +3,9 @@
 	Backport from mainline
 	2010-12-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/43655
+	* g++.dg/opt/pr43655.C: New test.
+
 	PR debug/46893
 	* gcc.dg/pr46893.c: New test.
 

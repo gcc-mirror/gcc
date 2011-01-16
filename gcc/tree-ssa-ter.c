@@ -416,7 +416,9 @@ is_replaceable_p (gimple stmt)
     return false;
 
   /* Without alias info we can't move around loads.  */
-  if (gimple_references_memory_p (stmt) && !optimize)
+  if (!optimize
+      && gimple_assign_single_p (stmt)
+      && !is_gimple_val (gimple_assign_rhs1 (stmt)))
     return false;
 
   /* Float expressions must go through memory if float-store is on.  */
