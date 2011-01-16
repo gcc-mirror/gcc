@@ -113,6 +113,7 @@ The following mathematical functions are available:
 @item @code{fabsq}: absolute value function
 @item @code{finiteq}: check finiteness of value
 @item @code{floorq}: floor value function
+@item @code{fmaq}: fused multiply and add
 @item @code{fmodq}: remainder value function
 @item @code{frexpq}: extract mantissa and exponent
 @item @code{hypotq}: Eucledian distance function

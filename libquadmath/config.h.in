@@ -6,6 +6,24 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* libm includes feholdexcept */
+#undef HAVE_FEHOLDEXCEPT
+
+/* Define to 1 if you have the <fenv.h> header file. */
+#undef HAVE_FENV_H
+
+/* libm includes fesetenv */
+#undef HAVE_FESETENV
+
+/* libm includes fesetround */
+#undef HAVE_FESETROUND
+
+/* libm includes fetestexcept */
+#undef HAVE_FETESTEXCEPT
+
+/* libm includes feupdateenv */
+#undef HAVE_FEUPDATEENV
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 

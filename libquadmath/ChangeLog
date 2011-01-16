@@ -1,3 +1,22 @@
+2011-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/46402
+	* quadmath.map (QUADMATH_1.0): Add fmaq.
+	* configure.ac: Check for fenv.h, feholdexcept, fesetround,
+	feupdateenv, fesetenv and fetestexcept.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* quadmath.h (fmaq): New prototype.
+	* quadmath_weak.h (fmaq): Add.
+	* Makefile.am (libquadmath_la_SOURCES): Add math/fmaq.c.
+	* Makefile.in: Regenerated.
+	* quadmath-imp.h: Include config.h.
+	* math/expq.c: Include fenv.h.
+	(USE_FENV_H): Define if libm support for fe* is there.
+	(expq): Add fesetround etc. support if USE_FENV_H is defined.
+	* math/fmaq.c: New file.
+	* libquadmath.texi (fmaq): Add.
+
 2011-01-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47182

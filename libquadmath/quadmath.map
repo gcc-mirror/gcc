@@ -19,6 +19,7 @@ QUADMATH_1.0 {
     fabsq;
     finiteq;
     floorq;
+    fmaq;
     fmodq;
     frexpq;
     hypotq;

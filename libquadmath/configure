@@ -1757,6 +1757,93 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
 
 } # ac_fn_c_check_func
+
+# ac_fn_c_check_header_mongrel LINENO HEADER VAR INCLUDES
+# -------------------------------------------------------
+# Tests whether HEADER exists, giving a warning if it cannot be compiled using
+# the include files in INCLUDES and setting the cache variable VAR
+# accordingly.
+ac_fn_c_check_header_mongrel ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+else
+  # Is the header compilable?
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 usability" >&5
+$as_echo_n "checking $2 usability... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+#include <$2>
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_header_compiler=yes
+else
+  ac_header_compiler=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_compiler" >&5
+$as_echo "$ac_header_compiler" >&6; }
+
+# Is the header present?
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 presence" >&5
+$as_echo_n "checking $2 presence... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <$2>
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  ac_header_preproc=yes
+else
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_preproc" >&5
+$as_echo "$ac_header_preproc" >&6; }
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in #((
+  yes:no: )
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: accepted by the compiler, rejected by the preprocessor!" >&5
+$as_echo "$as_me: WARNING: $2: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: proceeding with the compiler's result" >&5
+$as_echo "$as_me: WARNING: $2: proceeding with the compiler's result" >&2;}
+    ;;
+  no:yes:* )
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: present but cannot be compiled" >&5
+$as_echo "$as_me: WARNING: $2: present but cannot be compiled" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2:     check for missing prerequisite headers?" >&5
+$as_echo "$as_me: WARNING: $2:     check for missing prerequisite headers?" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: see the Autoconf documentation" >&5
+$as_echo "$as_me: WARNING: $2: see the Autoconf documentation" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2:     section \"Present But Cannot Be Compiled\"" >&5
+$as_echo "$as_me: WARNING: $2:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: proceeding with the compiler's result" >&5
+$as_echo "$as_me: WARNING: $2: proceeding with the compiler's result" >&2;}
+    ;;
+esac
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  eval "$3=\$ac_header_compiler"
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+fi
+  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
+
+} # ac_fn_c_check_header_mongrel
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -10370,7 +10457,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10373 "configure"
+#line 10460 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10476,7 +10563,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10479 "configure"
+#line 10566 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11781,6 +11868,19 @@ esac
 
 
 
+for ac_header in fenv.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "fenv.h" "ac_cv_header_fenv_h" "$ac_includes_default"
+if test "x$ac_cv_header_fenv_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FENV_H 1
+_ACEOF
+
+fi
+
+done
+
+
 # If available, sqrtl and cbrtl speed up the calculation -
 # but they are not required
 if test x$gcc_no_link != xyes; then
@@ -11874,6 +11974,231 @@ $as_echo "#define HAVE_CBRTL 1" >>confdefs.h
 
 fi
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for feholdexcept in -lm" >&5
+$as_echo_n "checking for feholdexcept in -lm... " >&6; }
+if test "${ac_cv_lib_m_feholdexcept+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lm  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char feholdexcept ();
+int
+main ()
+{
+return feholdexcept ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_m_feholdexcept=yes
+else
+  ac_cv_lib_m_feholdexcept=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_feholdexcept" >&5
+$as_echo "$ac_cv_lib_m_feholdexcept" >&6; }
+if test "x$ac_cv_lib_m_feholdexcept" = x""yes; then :
+
+$as_echo "#define HAVE_FEHOLDEXCEPT 1" >>confdefs.h
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fesetround in -lm" >&5
+$as_echo_n "checking for fesetround in -lm... " >&6; }
+if test "${ac_cv_lib_m_fesetround+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lm  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fesetround ();
+int
+main ()
+{
+return fesetround ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_m_fesetround=yes
+else
+  ac_cv_lib_m_fesetround=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_fesetround" >&5
+$as_echo "$ac_cv_lib_m_fesetround" >&6; }
+if test "x$ac_cv_lib_m_fesetround" = x""yes; then :
+
+$as_echo "#define HAVE_FESETROUND 1" >>confdefs.h
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for feupdateenv in -lm" >&5
+$as_echo_n "checking for feupdateenv in -lm... " >&6; }
+if test "${ac_cv_lib_m_feupdateenv+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lm  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char feupdateenv ();
+int
+main ()
+{
+return feupdateenv ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_m_feupdateenv=yes
+else
+  ac_cv_lib_m_feupdateenv=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_feupdateenv" >&5
+$as_echo "$ac_cv_lib_m_feupdateenv" >&6; }
+if test "x$ac_cv_lib_m_feupdateenv" = x""yes; then :
+
+$as_echo "#define HAVE_FEUPDATEENV 1" >>confdefs.h
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fesetenv in -lm" >&5
+$as_echo_n "checking for fesetenv in -lm... " >&6; }
+if test "${ac_cv_lib_m_fesetenv+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lm  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fesetenv ();
+int
+main ()
+{
+return fesetenv ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_m_fesetenv=yes
+else
+  ac_cv_lib_m_fesetenv=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_fesetenv" >&5
+$as_echo "$ac_cv_lib_m_fesetenv" >&6; }
+if test "x$ac_cv_lib_m_fesetenv" = x""yes; then :
+
+$as_echo "#define HAVE_FESETENV 1" >>confdefs.h
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for fetestexcept in -lm" >&5
+$as_echo_n "checking for fetestexcept in -lm... " >&6; }
+if test "${ac_cv_lib_m_fetestexcept+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lm  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char fetestexcept ();
+int
+main ()
+{
+return fetestexcept ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_m_fetestexcept=yes
+else
+  ac_cv_lib_m_fetestexcept=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_fetestexcept" >&5
+$as_echo "$ac_cv_lib_m_fetestexcept" >&6; }
+if test "x$ac_cv_lib_m_fetestexcept" = x""yes; then :
+
+$as_echo "#define HAVE_FETESTEXCEPT 1" >>confdefs.h
+
+fi
+
 else
   if test "x$ac_cv_lib_m_sqrtl" = x""yes; then
 
@@ -11883,6 +12208,31 @@ $as_echo "#define HAVE_SQRTL 1" >>confdefs.h
   if test "x$ac_cv_lib_m_cbrtl" = x""yes; then
 
 $as_echo "#define HAVE_CBRTL 1" >>confdefs.h
+
+  fi
+  if test "x$ac_cv_lib_m_feholdexcept" = x""yes; then
+
+$as_echo "#define HAVE_FEHOLDEXCEPT 1" >>confdefs.h
+
+  fi
+  if test "x$ac_cv_lib_m_fesetround" = x""yes; then
+
+$as_echo "#define HAVE_FESETROUND 1" >>confdefs.h
+
+  fi
+  if test "x$ac_cv_lib_m_feupdateenv" = x""yes; then
+
+$as_echo "#define HAVE_FEUPDATEENV 1" >>confdefs.h
+
+  fi
+  if test "x$ac_cv_lib_m_fesetenv" = x""yes; then
+
+$as_echo "#define HAVE_FESETENV 1" >>confdefs.h
+
+  fi
+  if test "x$ac_cv_lib_m_fetestexcept" = x""yes; then
+
+$as_echo "#define HAVE_FETESTEXCEPT 1" >>confdefs.h
 
   fi
 fi
