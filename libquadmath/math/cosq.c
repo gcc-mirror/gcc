@@ -49,7 +49,7 @@
 __float128
 cosq (__float128 x)
 {
-	__float128 y[2],z=0.0L;
+	__float128 y[2],z=0.0Q;
 	int64_t n, ix;
 
     /* High word of x. */

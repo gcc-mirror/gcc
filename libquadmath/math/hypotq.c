@@ -116,7 +116,7 @@ hypotq (__float128 x, __float128 y)
   }
   if(k!=0) {
       uint64_t high;
-      t1 = 1.0L;
+      t1 = 1.0Q;
       GET_FLT128_MSW64(high,t1);
       SET_FLT128_MSW64(t1,high+(k<<48));
       return t1*w;

@@ -7,6 +7,12 @@ QUADMATH_1.0 {
     atanq;
     atanhq;
     atan2q;
+    cacoshq;
+    cacosq;
+    casinhq;
+    casinq;
+    catanhq;
+    catanq;
     cbrtq;
     ceilq;
     copysignq;

@@ -43,12 +43,12 @@
 #include "quadmath-imp.h"
 
 static const __float128
-tiny  = 1.0e-4900L,
+tiny  = 1.0e-4900Q,
 zero  = 0.0,
-pi_o_4  = 7.85398163397448309615660845819875699e-01L, /* 3ffe921fb54442d18469898cc51701b8 */
-pi_o_2  = 1.57079632679489661923132169163975140e+00L, /* 3fff921fb54442d18469898cc51701b8 */
-pi      = 3.14159265358979323846264338327950280e+00L, /* 4000921fb54442d18469898cc51701b8 */
-pi_lo   = 8.67181013012378102479704402604335225e-35L; /* 3f8dcd129024e088a67cc74020bbea64 */
+pi_o_4  = 7.85398163397448309615660845819875699e-01Q, /* 3ffe921fb54442d18469898cc51701b8 */
+pi_o_2  = 1.57079632679489661923132169163975140e+00Q, /* 3fff921fb54442d18469898cc51701b8 */
+pi      = 3.14159265358979323846264338327950280e+00Q, /* 4000921fb54442d18469898cc51701b8 */
+pi_lo   = 8.67181013012378102479704402604335225e-35Q; /* 3f8dcd129024e088a67cc74020bbea64 */
 
 __float128
 atan2q (__float128 y, __float128 x)
@@ -64,7 +64,7 @@ atan2q (__float128 y, __float128 x)
 	if(((ix|((lx|-lx)>>63))>0x7fff000000000000LL)||
 	   ((iy|((ly|-ly)>>63))>0x7fff000000000000LL))	/* x or y is NaN */
 	   return x+y;
-	if(((hx-0x3fff000000000000LL)|lx)==0) return atanq(y);   /* x=1.0L */
+	if(((hx-0x3fff000000000000LL)|lx)==0) return atanq(y);   /* x=1.0Q */
 	m = ((hy>>63)&1)|((hx>>62)&2);	/* 2*sign(x)+sign(y) */
 
     /* when y = 0 */
@@ -85,8 +85,8 @@ atan2q (__float128 y, __float128 x)
 		switch(m) {
 		    case 0: return  pi_o_4+tiny;/* atan(+INF,+INF) */
 		    case 1: return -pi_o_4-tiny;/* atan(-INF,+INF) */
-		    case 2: return  3.0L*pi_o_4+tiny;/*atan(+INF,-INF)*/
-		    case 3: return -3.0L*pi_o_4-tiny;/*atan(-INF,-INF)*/
+		    case 2: return  3.0Q*pi_o_4+tiny;/*atan(+INF,-INF)*/
+		    case 3: return -3.0Q*pi_o_4-tiny;/*atan(-INF,-INF)*/
 		}
 	    } else {
 		switch(m) {
@@ -102,8 +102,8 @@ atan2q (__float128 y, __float128 x)
 
     /* compute y/x */
 	k = (iy-ix)>>48;
-	if(k > 120) z=pi_o_2+0.5L*pi_lo; 	/* |y/x| >  2**120 */
-	else if(hx<0&&k<-120) z=0.0L; 		/* |y|/x < -2**120 */
+	if(k > 120) z=pi_o_2+0.5Q*pi_lo; 	/* |y/x| >  2**120 */
+	else if(hx<0&&k<-120) z=0.0Q; 		/* |y|/x < -2**120 */
 	else z=atanq(fabsq(y/x));		/* safe to do y/x */
 	switch (m) {
 	    case 0: return       z  ;	/* atan(+,+) */

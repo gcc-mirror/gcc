@@ -1,5 +1,33 @@
 2011-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/46416
+	* quadmath.h (cacosq, cacoshq, casinq, casinhq, catanq, catanhq):
+	New prototypes.
+	(M_Eq, M_LOG2Eq, M_LOG10Eq, M_LN2q, M_LN10q, M_PIq, M_PI_2q, M_PI_4q,
+	M_1_PIq, M_2_PIq, M_2_SQRTPIq, M_SQRT2q, M_SQRT1_2q): Define.
+	* quadmath_weak.h (cacosq, cacoshq, casinq, casinhq, catanq,
+	catanhq): Add.
+	* quadmath-imp.h (fpclassifyq, QUADFP_NAN, QUADFP_INFINITE,
+	QUADFP_ZERO, QUADFP_SUBNORMAL, QUADFP_NORMAL): Define.
+	* quadmath.map (QUADMATH_1.0): Add cacosq, cacoshq, casinq, casinhq,
+	catanq and catanhq.
+	* Makefile.am (libquadmath_la_SOURCES): Add math/cacosq.c,
+	math/cacoshq.c, math/casinq.c, math/casinhq.c, math/catanq.c
+	and math/catanhq.c.
+	* Makefile.in: Regenerated.
+	* libquadmath.texi (cacosq, cacoshq, casinq, casinhq,
+	catanq, catanhq): Add.
+	* math/cacoshq.c: New file.
+	* math/cacosq.c: New file.
+	* math/catanq.c: New file.
+	* math/catanhq.c: New file.
+	* math/casinq.c: New file.
+	* math/casinhq.c: New file.
+
+	* math/hypotq.c (hypotq): Use Q suffix instead of L.
+	* math/atan2q.c (tiny, pi_o_4, pi_o_2, pi, pi_lo, atan2q): Likewise.
+	* math/cosq.c (cosq): Likewise.
+
 	PR fortran/46402
 	* quadmath.map (QUADMATH_1.0): Add fmaq.
 	* configure.ac: Check for fenv.h, feholdexcept, fesetround,
