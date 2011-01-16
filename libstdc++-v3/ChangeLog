@@ -1,3 +1,9 @@
+2011-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/47321
+	* testsuite/21_strings/basic_string/requirements/typedefs.cc:
+	Only test std::wstring when _GLIBCXX_USE_WCHAR_T is defined.
+
 2011-01-16  François Dumont  <francois.cppdevs@free.fr>
 
 	* testsuite/23_containers/forward_list/debug/erase_after1_neg.cc: Move
