@@ -42,12 +42,6 @@ extern __float128 __quadmath_kernel_cosq (__float128, __float128);
 #endif
 
 
-// If we don't have macros to know endianess, assume little endian
-#if !defined(__BIG_ENDIAN__) && !defined(__LITTLE_ENDIAN__)
-# define __LITTLE_ENDIAN__ 1
-#endif
-
-
 // Main union type we use to manipulate the floating-point type
 typedef union
 {
@@ -55,13 +49,12 @@ typedef union
 
   struct
   {
-#if __BIG_ENDIAN__
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     unsigned negative:1;
     unsigned exponent:15;
     uint64_t mant_high:48;
     uint64_t mant_low:64;
-#endif
-#if __LITTLE_ENDIAN__
+#else
     uint64_t mant_low:64;
     uint64_t mant_high:48;
     unsigned exponent:15;
@@ -71,11 +64,10 @@ typedef union
 
   struct
   {
-#if __BIG_ENDIAN__
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     uint64_t high;
     uint64_t low;
-#endif
-#if __LITTLE_ENDIAN__
+#else
     uint64_t low;
     uint64_t high;
 #endif
@@ -83,13 +75,12 @@ typedef union
 
   struct
   {
-#if __BIG_ENDIAN__
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     uint32_t w0;
     uint32_t w1;
     uint32_t w2;
     uint32_t w3;
-#endif
-#if __LITTLE_ENDIAN__
+#else
     uint32_t w3;
     uint32_t w2;
     uint32_t w1;
@@ -99,14 +90,13 @@ typedef union
 
   struct
   {
-#if __BIG_ENDIAN__
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     unsigned negative:1;
     unsigned exponent:15;
     unsigned quiet_nan:1;
     uint64_t mant_high:47;
     uint64_t mant_low:64;
-#endif
-#if __LITTLE_ENDIAN__
+#else
     uint64_t mant_low:64;
     uint64_t mant_high:47;
     unsigned quiet_nan:1;

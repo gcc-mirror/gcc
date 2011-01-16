@@ -63,7 +63,10 @@ libquadmath_la_SOURCES = \
   math/nanq.c math/tgammaq.c math/finiteq.c math/nextafterq.c \
   math/truncq.c math/floorq.c math/powq.c math/fmaq.c \
   math/cacoshq.c math/cacosq.c math/casinhq.c math/casinq.c \
-  math/catanhq.c math/catanq.c
+  math/catanhq.c math/catanq.c math/cimagq.c math/conjq.c math/cprojq.c \
+  math/crealq.c math/fdimq.c math/fmaxq.c math/fminq.c math/ilogbq.c \
+  math/llrintq.c math/log2q.c math/lrintq.c math/nearbyintq.c math/remquoq.c
+
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

@@ -1,6 +1,44 @@
 2011-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/46416
+	* quadmath.h (cbrtq, finiteq, isnanq, signbitq, sqrtq): Remove
+	const from prototype argument.
+	(cimagq, conjq, cprojq, crealq, fdimq, fmaxq, fminq, ilogbq,
+	llrintq, log2q, lrintq, nearbyintq, remquoq): New prototypes.
+	(__quadmath_extern_inline): Define.
+	(cimagq, conjq, crealq): New inlines.
+	* Makefile.am (libquadmath_la_SOURCES): Add math/cimagq.c,
+	math/conjq.c, math/cprojq.c, math/crealq.c, math/fdimq.c,
+	math/fmaxq.c, math/fminq.c, math/ilogbq.c, math/llrintq.c,
+	math/log2q.c, math/lrintq.c, math/nearbyintq.c and math/remquoq.c.
+	* Makefile.in: Regenerated.
+	* quadmath_weak.h (cimagq, conjq, cprojq, crealq, fdimq, fmaxq,
+	fminq, ilogbq, llrintq, log2q, lrintq, nearbyintq, remquoq): Add.
+	* quadmath-imp.h (__LITTLE_ENDIAN__): Don't define.
+	(ieee854_float128): Use __BYTE_ORDER == __ORDER_BIG_ENDIAN__
+	tests instead of __BIG_ENDIAN__.
+	* quadmath.map (QUADMATH_1.0): Add cimagq, conjq, cprojq, crealq,
+	fdimq, fmaxq, fminq, ilogbq, llrintq, log2q, lrintq, nearbyintq
+	and remquoq.
+	* libquadmath.texi (cimagq, conjq, cprojq, crealq, fdimq, fmaxq,
+	fminq, ilogbq, llrintq, log2q, lrintq, nearbyintq, remquoq): Add.
+	* math/cprojq.c: New file.
+	* math/ilogbq.c: New file.
+	* math/fminq.c: New file.
+	* math/llrintq.c: New file.
+	* math/log2q.c: New file.
+	* math/lrintq.c: New file.
+	* math/crealq.c: New file.
+	* math/nearbyintq.c: New file.
+	* math/fmaxq.c: New file.
+	* math/conjq.c: New file.
+	* math/remquoq.c: New file.
+	* math/cimagq.c: New file.
+	* math/fdimq.c: New file.
+
+	* math/ldexpq.c: Include errno.h.  Set errno to ERANGE if needed.
+
+	PR fortran/46416
 	* quadmath.h (cacosq, cacoshq, casinq, casinhq, catanq, catanhq):
 	New prototypes.
 	(M_Eq, M_LOG2Eq, M_LOG10Eq, M_LN2q, M_LN10q, M_PIq, M_PI_2q, M_PI_4q,
