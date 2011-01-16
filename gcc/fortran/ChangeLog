@@ -1,3 +1,10 @@
+2011-01-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi: Update Fortran 2003 Status section.
+
+	PR fortran/47177
+	* invoke.texi: Add missing "-E" to the -dM example.
+
 2011-01-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47268
