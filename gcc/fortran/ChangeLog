@@ -1,4 +1,19 @@
-2011-02-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2011-01-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/45777
+	* symbol.c (gfc_symbols_could_alias):  Strip gfc_ prefix,
+	make static and move in front of its only caller, to ...
+	* trans-array.c (symbols_could_alias): ... here.
+	Pass information about pointer and target status as
+	arguments.  Allocatable arrays don't alias anything
+	unless they have the POINTER attribute.
+	(gfc_could_be_alias):  Keep track of pointer and target
+	status when following references.  Also check if typespecs
+	of components match those of other components or symbols.
+	* gfortran.h:  Remove prototype for gfc_symbols_could_alias.
+
+2011-01-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from mainline
 	PR fortran/45338

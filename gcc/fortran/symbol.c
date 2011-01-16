@@ -2733,41 +2733,6 @@ gfc_get_ha_symbol (const char *name, gfc_symbol **result)
   return i;
 }
 
-/* Return true if both symbols could refer to the same data object.  Does
-   not take account of aliasing due to equivalence statements.  */
-
-int
-gfc_symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym)
-{
-  /* Aliasing isn't possible if the symbols have different base types.  */
-  if (gfc_compare_types (&lsym->ts, &rsym->ts) == 0)
-    return 0;
-
-  /* Pointers can point to other pointers, target objects and allocatable
-     objects.  Two allocatable objects cannot share the same storage.  */
-  if (lsym->attr.pointer
-      && (rsym->attr.pointer || rsym->attr.allocatable || rsym->attr.target))
-    return 1;
-  if (lsym->attr.target && rsym->attr.pointer)
-    return 1;
-  if (lsym->attr.allocatable && rsym->attr.pointer)
-    return 1;
-
-  /* Special case: Argument association, cf. F90 12.4.1.6, F2003 12.4.1.7
-     and F2008 12.5.2.13 items 3b and 4b. The pointer case (a) is already
-     checked above.  */
-  if (lsym->attr.target && rsym->attr.target
-      && ((lsym->attr.dummy
-	   && (!lsym->attr.dimension || lsym->as->type == AS_ASSUMED_SHAPE))
-	  || (rsym->attr.dummy
-	      && (!rsym->attr.dimension
-		  || rsym->as->type == AS_ASSUMED_SHAPE))))
-    return 1;
-
-  return 0;
-}
-
-
 /* Undoes all the changes made to symbols in the current statement.
    This subroutine is made simpler due to the fact that attributes are
    never removed once added.  */

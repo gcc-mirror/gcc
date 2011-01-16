@@ -3389,6 +3389,37 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
     }
 }
 
+/* Return true if both symbols could refer to the same data object.  Does
+   not take account of aliasing due to equivalence statements.  */
+
+static int
+symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym, bool lsym_pointer,
+		     bool lsym_target, bool rsym_pointer, bool rsym_target)
+{
+  /* Aliasing isn't possible if the symbols have different base types.  */
+  if (gfc_compare_types (&lsym->ts, &rsym->ts) == 0)
+    return 0;
+
+  /* Pointers can point to other pointers and target objects.  */
+
+  if ((lsym_pointer && (rsym_pointer || rsym_target))
+      || (rsym_pointer && (lsym_pointer || lsym_target)))
+    return 1;
+
+  /* Special case: Argument association, cf. F90 12.4.1.6, F2003 12.4.1.7
+     and F2008 12.5.2.13 items 3b and 4b. The pointer case (a) is already
+     checked above.  */
+  if (lsym->attr.target && rsym->attr.target
+      && ((lsym->attr.dummy
+	   && (!lsym->attr.dimension || lsym->as->type == AS_ASSUMED_SHAPE))
+	  || (rsym->attr.dummy
+	      && (!rsym->attr.dimension
+		  || rsym->as->type == AS_ASSUMED_SHAPE))))
+    return 1;
+
+  return 0;
+}
+
 
 /* Return true if the two SS could be aliased, i.e. both point to the same data
    object.  */
@@ -3401,10 +3432,18 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
   gfc_ref *rref;
   gfc_symbol *lsym;
   gfc_symbol *rsym;
+  bool lsym_pointer, lsym_target, rsym_pointer, rsym_target;
 
   lsym = lss->expr->symtree->n.sym;
   rsym = rss->expr->symtree->n.sym;
-  if (gfc_symbols_could_alias (lsym, rsym))
+
+  lsym_pointer = lsym->attr.pointer;
+  lsym_target = lsym->attr.target;
+  rsym_pointer = rsym->attr.pointer;
+  rsym_target = rsym->attr.target;
+
+  if (symbols_could_alias (lsym, rsym, lsym_pointer, lsym_target,
+			   rsym_pointer, rsym_target))
     return 1;
 
   if (rsym->ts.type != BT_DERIVED
@@ -3419,8 +3458,20 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
       if (lref->type != REF_COMPONENT)
 	continue;
 
-      if (gfc_symbols_could_alias (lref->u.c.sym, rsym))
+      lsym_pointer = lsym_pointer || lref->u.c.sym->attr.pointer;
+      lsym_target  = lsym_target  || lref->u.c.sym->attr.target;
+
+      if (symbols_could_alias (lref->u.c.sym, rsym, lsym_pointer, lsym_target,
+			       rsym_pointer, rsym_target))
 	return 1;
+
+      if ((lsym_pointer && (rsym_pointer || rsym_target))
+	  || (rsym_pointer && (lsym_pointer || lsym_target)))
+	{
+	  if (gfc_compare_types (&lref->u.c.component->ts,
+				 &rsym->ts))
+	    return 1;
+	}
 
       for (rref = rss->expr->ref; rref != rss->data.info.ref;
 	   rref = rref->next)
@@ -3428,18 +3479,54 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
 	  if (rref->type != REF_COMPONENT)
 	    continue;
 
-	  if (gfc_symbols_could_alias (lref->u.c.sym, rref->u.c.sym))
+	  rsym_pointer = rsym_pointer || rref->u.c.sym->attr.pointer;
+	  rsym_target  = lsym_target  || rref->u.c.sym->attr.target;
+
+	  if (symbols_could_alias (lref->u.c.sym, rref->u.c.sym,
+				   lsym_pointer, lsym_target,
+				   rsym_pointer, rsym_target))
 	    return 1;
+
+	  if ((lsym_pointer && (rsym_pointer || rsym_target))
+	      || (rsym_pointer && (lsym_pointer || lsym_target)))
+	    {
+	      if (gfc_compare_types (&lref->u.c.component->ts,
+				     &rref->u.c.sym->ts))
+		return 1;
+	      if (gfc_compare_types (&lref->u.c.sym->ts,
+				     &rref->u.c.component->ts))
+		return 1;
+	      if (gfc_compare_types (&lref->u.c.component->ts,
+				     &rref->u.c.component->ts))
+		return 1;
+	    }
 	}
     }
+
+  lsym_pointer = lsym->attr.pointer;
+  lsym_target = lsym->attr.target;
+  lsym_pointer = lsym->attr.pointer;
+  lsym_target = lsym->attr.target;
 
   for (rref = rss->expr->ref; rref != rss->data.info.ref; rref = rref->next)
     {
       if (rref->type != REF_COMPONENT)
 	break;
 
-      if (gfc_symbols_could_alias (rref->u.c.sym, lsym))
+      rsym_pointer = rsym_pointer || rref->u.c.sym->attr.pointer;
+      rsym_target  = lsym_target  || rref->u.c.sym->attr.target;
+
+      if (symbols_could_alias (rref->u.c.sym, lsym,
+			       lsym_pointer, lsym_target,
+			       rsym_pointer, rsym_target))
 	return 1;
+
+      if ((lsym_pointer && (rsym_pointer || rsym_target))
+	  || (rsym_pointer && (lsym_pointer || lsym_target)))
+	{
+	  if (gfc_compare_types (&lsym->ts, &rref->u.c.component->ts))
+	    return 1;
+	}
     }
 
   return 0;
