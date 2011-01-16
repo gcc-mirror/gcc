@@ -1,3 +1,8 @@
+2011-01-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_classify_symbol): Don't return
+	SYMBOL_PC_RELATIVE for nonlocal labels.
+
 2011-01-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sol2-bi.h (CC1_SPEC): Fix typo.
