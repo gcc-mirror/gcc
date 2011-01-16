@@ -27,105 +27,113 @@ Boston, MA 02110-1301, USA.  */
 // ("_Complex __float128" is not allowed)
 typedef _Complex float __attribute__((mode(TC))) __complex128;
 
+#ifdef __cplusplus
+# define __quadmath_throw throw ()
+# define __quadmath_nth(fct) fct throw ()
+#else
+# define __quadmath_throw __attribute__((__nothrow__))
+# define __quadmath_nth(fct) __attribute__((__nothrow__)) fct
+#endif
 
 // Prototypes for real functions
-extern __float128 acosq (__float128);
-extern __float128 acoshq (__float128);
-extern __float128 asinq (__float128);
-extern __float128 asinhq (__float128);
-extern __float128 atanq (__float128);
-extern __float128 atanhq (__float128);
-extern __float128 atan2q (__float128, __float128);
-extern __float128 cbrtq (__float128);
-extern __float128 ceilq (__float128);
-extern __float128 copysignq (__float128, __float128);
-extern __float128 coshq (__float128);
-extern __float128 cosq (__float128);
-extern __float128 erfq (__float128);
-extern __float128 erfcq (__float128);
-extern __float128 expq (__float128);
-extern __float128 expm1q (__float128);
-extern __float128 fabsq (__float128);
-extern __float128 fdimq (__float128, __float128);
-extern int finiteq (__float128);
-extern __float128 floorq (__float128);
-extern __float128 fmaq (__float128, __float128, __float128);
-extern __float128 fmaxq (__float128, __float128);
-extern __float128 fminq (__float128, __float128);
-extern __float128 fmodq (__float128, __float128);
-extern __float128 frexpq (__float128, int *);
-extern __float128 hypotq (__float128, __float128);
-extern int isinfq (__float128);
-extern int ilogbq (__float128);
-extern int isnanq (__float128);
-extern __float128 j0q (__float128);
-extern __float128 j1q (__float128);
-extern __float128 jnq (int, __float128);
-extern __float128 ldexpq (__float128, int);
-extern __float128 lgammaq (__float128);
-extern long long int llrintq (__float128);
-extern long long int llroundq (__float128);
-extern __float128 logq (__float128);
-extern __float128 log10q (__float128);
-extern __float128 log2q (__float128);
-extern __float128 log1pq (__float128);
-extern long int lrintq (__float128);
-extern long int lroundq (__float128);
-extern __float128 modfq (__float128, __float128 *);
-extern __float128 nanq (const char *);
-extern __float128 nearbyintq (__float128);
-extern __float128 nextafterq (__float128, __float128);
-extern __float128 powq (__float128, __float128);
-extern __float128 remainderq (__float128, __float128);
-extern __float128 remquoq (__float128, __float128, int *);
-extern __float128 rintq (__float128);
-extern __float128 roundq (__float128);
-extern __float128 scalblnq (__float128, long int);
-extern __float128 scalbnq (__float128, int);
-extern int signbitq (__float128);
-extern void sincosq (__float128, __float128 *, __float128 *);
-extern __float128 sinhq (__float128);
-extern __float128 sinq (__float128);
-extern __float128 sqrtq (__float128);
-extern __float128 tanq (__float128);
-extern __float128 tanhq (__float128);
-extern __float128 tgammaq (__float128);
-extern __float128 truncq (__float128);
-extern __float128 y0q (__float128);
-extern __float128 y1q (__float128);
-extern __float128 ynq (int, __float128);
+extern __float128 acosq (__float128) __quadmath_throw;
+extern __float128 acoshq (__float128) __quadmath_throw;
+extern __float128 asinq (__float128) __quadmath_throw;
+extern __float128 asinhq (__float128) __quadmath_throw;
+extern __float128 atanq (__float128) __quadmath_throw;
+extern __float128 atanhq (__float128) __quadmath_throw;
+extern __float128 atan2q (__float128, __float128) __quadmath_throw;
+extern __float128 cbrtq (__float128) __quadmath_throw;
+extern __float128 ceilq (__float128) __quadmath_throw;
+extern __float128 copysignq (__float128, __float128) __quadmath_throw;
+extern __float128 coshq (__float128) __quadmath_throw;
+extern __float128 cosq (__float128) __quadmath_throw;
+extern __float128 erfq (__float128) __quadmath_throw;
+extern __float128 erfcq (__float128) __quadmath_throw;
+extern __float128 expq (__float128) __quadmath_throw;
+extern __float128 expm1q (__float128) __quadmath_throw;
+extern __float128 fabsq (__float128) __quadmath_throw;
+extern __float128 fdimq (__float128, __float128) __quadmath_throw;
+extern int finiteq (__float128) __quadmath_throw;
+extern __float128 floorq (__float128) __quadmath_throw;
+extern __float128 fmaq (__float128, __float128, __float128) __quadmath_throw;
+extern __float128 fmaxq (__float128, __float128) __quadmath_throw;
+extern __float128 fminq (__float128, __float128) __quadmath_throw;
+extern __float128 fmodq (__float128, __float128) __quadmath_throw;
+extern __float128 frexpq (__float128, int *) __quadmath_throw;
+extern __float128 hypotq (__float128, __float128) __quadmath_throw;
+extern int isinfq (__float128) __quadmath_throw;
+extern int ilogbq (__float128) __quadmath_throw;
+extern int isnanq (__float128) __quadmath_throw;
+extern __float128 j0q (__float128) __quadmath_throw;
+extern __float128 j1q (__float128) __quadmath_throw;
+extern __float128 jnq (int, __float128) __quadmath_throw;
+extern __float128 ldexpq (__float128, int) __quadmath_throw;
+extern __float128 lgammaq (__float128) __quadmath_throw;
+extern long long int llrintq (__float128) __quadmath_throw;
+extern long long int llroundq (__float128) __quadmath_throw;
+extern __float128 logq (__float128) __quadmath_throw;
+extern __float128 log10q (__float128) __quadmath_throw;
+extern __float128 log2q (__float128) __quadmath_throw;
+extern __float128 log1pq (__float128) __quadmath_throw;
+extern long int lrintq (__float128) __quadmath_throw;
+extern long int lroundq (__float128) __quadmath_throw;
+extern __float128 modfq (__float128, __float128 *) __quadmath_throw;
+extern __float128 nanq (const char *) __quadmath_throw;
+extern __float128 nearbyintq (__float128) __quadmath_throw;
+extern __float128 nextafterq (__float128, __float128) __quadmath_throw;
+extern __float128 powq (__float128, __float128) __quadmath_throw;
+extern __float128 remainderq (__float128, __float128) __quadmath_throw;
+extern __float128 remquoq (__float128, __float128, int *) __quadmath_throw;
+extern __float128 rintq (__float128) __quadmath_throw;
+extern __float128 roundq (__float128) __quadmath_throw;
+extern __float128 scalblnq (__float128, long int) __quadmath_throw;
+extern __float128 scalbnq (__float128, int) __quadmath_throw;
+extern int signbitq (__float128) __quadmath_throw;
+extern void sincosq (__float128, __float128 *, __float128 *) __quadmath_throw;
+extern __float128 sinhq (__float128) __quadmath_throw;
+extern __float128 sinq (__float128) __quadmath_throw;
+extern __float128 sqrtq (__float128) __quadmath_throw;
+extern __float128 tanq (__float128) __quadmath_throw;
+extern __float128 tanhq (__float128) __quadmath_throw;
+extern __float128 tgammaq (__float128) __quadmath_throw;
+extern __float128 truncq (__float128) __quadmath_throw;
+extern __float128 y0q (__float128) __quadmath_throw;
+extern __float128 y1q (__float128) __quadmath_throw;
+extern __float128 ynq (int, __float128) __quadmath_throw;
 
 
 // Prototypes for complex functions
-extern __float128 cabsq (__complex128);
-extern __float128 cargq (__complex128);
-extern __float128 cimagq (__complex128);
-extern __float128 crealq (__complex128);
-extern __complex128 cacosq (__complex128);
-extern __complex128 cacoshq (__complex128);
-extern __complex128 casinq (__complex128);
-extern __complex128 casinhq (__complex128);
-extern __complex128 catanq (__complex128);
-extern __complex128 catanhq (__complex128);
-extern __complex128 ccosq (__complex128);
-extern __complex128 ccoshq (__complex128);
-extern __complex128 cexpq (__complex128);
-extern __complex128 cexpiq (__float128);
-extern __complex128 clogq (__complex128);
-extern __complex128 clog10q (__complex128);
-extern __complex128 conjq (__complex128);
-extern __complex128 cpowq (__complex128, __complex128);
-extern __complex128 cprojq (__complex128);
-extern __complex128 csinq (__complex128);
-extern __complex128 csinhq (__complex128);
-extern __complex128 csqrtq (__complex128);
-extern __complex128 ctanq (__complex128);
-extern __complex128 ctanhq (__complex128);
+extern __float128 cabsq (__complex128) __quadmath_throw;
+extern __float128 cargq (__complex128) __quadmath_throw;
+extern __float128 cimagq (__complex128) __quadmath_throw;
+extern __float128 crealq (__complex128) __quadmath_throw;
+extern __complex128 cacosq (__complex128) __quadmath_throw;
+extern __complex128 cacoshq (__complex128) __quadmath_throw;
+extern __complex128 casinq (__complex128) __quadmath_throw;
+extern __complex128 casinhq (__complex128) __quadmath_throw;
+extern __complex128 catanq (__complex128) __quadmath_throw;
+extern __complex128 catanhq (__complex128) __quadmath_throw;
+extern __complex128 ccosq (__complex128) __quadmath_throw;
+extern __complex128 ccoshq (__complex128) __quadmath_throw;
+extern __complex128 cexpq (__complex128) __quadmath_throw;
+extern __complex128 cexpiq (__float128) __quadmath_throw;
+extern __complex128 clogq (__complex128) __quadmath_throw;
+extern __complex128 clog10q (__complex128) __quadmath_throw;
+extern __complex128 conjq (__complex128) __quadmath_throw;
+extern __complex128 cpowq (__complex128, __complex128) __quadmath_throw;
+extern __complex128 cprojq (__complex128) __quadmath_throw;
+extern __complex128 csinq (__complex128) __quadmath_throw;
+extern __complex128 csinhq (__complex128) __quadmath_throw;
+extern __complex128 csqrtq (__complex128) __quadmath_throw;
+extern __complex128 ctanq (__complex128) __quadmath_throw;
+extern __complex128 ctanhq (__complex128) __quadmath_throw;
 
 
 // Prototypes for our I/O functions
-extern int quadmath_strtopQ (const char *, char **, void *);
-extern void quadmath_dtoaq (char *, size_t, size_t, __float128);
+extern int quadmath_strtopQ (const char *, char **, void *) __quadmath_throw;
+extern void quadmath_dtoaq (char *, size_t, size_t, __float128)
+  __quadmath_throw;
 
 
 // Macros
@@ -163,19 +171,19 @@ extern void quadmath_dtoaq (char *, size_t, size_t, __float128);
   extern inline __attribute__ ((__gnu_inline__))
 
 __quadmath_extern_inline __float128
-cimagq (__complex128 __z)
+__quadmath_nth (cimagq (__complex128 __z))
 {
   return __imag__ __z;
 }
 
 __quadmath_extern_inline __float128
-crealq (__complex128 __z)
+__quadmath_nth (crealq (__complex128 __z))
 {
   return __real__ __z;
 }
 
 __quadmath_extern_inline __complex128
-conjq (__complex128 __z)
+__quadmath_nth (conjq (__complex128 __z))
 {
   return __extension__ ~__z;
 }

@@ -1,5 +1,8 @@
 2011-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* quadmath.h (__quadmath_throw, __quadmath_nth): Define.
+	Use it for all prototypes.
+
 	PR fortran/46416
 	* quadmath.h (cbrtq, finiteq, isnanq, signbitq, sqrtq): Remove
 	const from prototype argument.
