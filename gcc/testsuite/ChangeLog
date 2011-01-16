@@ -1,5 +1,10 @@
 2011-01-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.dg/fixed-point/composite-type.c: Pass -Wno-unused.
+	* gcc.dg/fixed-point/struct-union.c: Update error messages.
+
+2011-01-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.c-torture/execute/20101011-1.c: Skip test for MIPS16
 	Linux-based targets.
 

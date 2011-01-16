@@ -34,22 +34,22 @@ union u h (union u u)
 
 void f()
 {
-  cs.f = 0.1r; /* { dg-error "assignment of read-only variable" } */
-  cs.lf = 0.2lr; /* { dg-error "assignment of read-only variable" } */
+  cs.f = 0.1r; /* { dg-error "assignment of member 'f' in read-only object" } */
+  cs.lf = 0.2lr; /* { dg-error "assignment of member 'lf' in read-only object" } */
   s.lf = 0.3lr;  /* { dg-error "assignment of read-only member" } */
 
   s.f = 0.4r;
   u.f = 0.5r;
 
   u.lf = 0.6lr;    /* { dg-error "assignment of read-only member" } */
-  u.cs.f = 0.7r; /* { dg-error "assignment of read-only member" } */
-  u.cs.lf = 0.8lr; /* { dg-error "assignment of read-only member" } */
+  u.cs.f = 0.7r;   /* { dg-error "assignment of member 'f' in read-only object" } */
+  u.cs.lf = 0.8lr; /* { dg-error "assignment of member 'lf' in read-only object" } */
 
-  cu.f = 0.9r;   /* { dg-error "assignment of read-only variable" } */
+  cu.f = 0.9r;   /* { dg-error "assignment of member 'f' in read-only object" } */
 
-  cu.lf = 0.01lr;    /* { dg-error "assignment of read-only variable" } */
-  cu.cs.f = 0.02r; /* { dg-error "assignment of read-only variable" } */
-  cu.cs.lf = 0.03lr; /* { dg-error "assignment of read-only variable" } */
+  cu.lf = 0.01lr;    /* { dg-error "assignment of member 'lf' in read-only object" } */
+  cu.cs.f = 0.02r;   /* { dg-error "assignment of member 'f' in read-only object" } */
+  cu.cs.lf = 0.03lr; /* { dg-error "assignment of member 'lf' in read-only object" } */
 
   /* f().x is a valid postfix expression but is not an lvalue if
      function f() returning a structure or union.  */
