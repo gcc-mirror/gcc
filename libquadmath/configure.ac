@@ -110,17 +110,39 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
+AC_CHECK_HEADERS(fenv.h)
+
 # If available, sqrtl and cbrtl speed up the calculation -
 # but they are not required
 if test x$gcc_no_link != xyes; then
   AC_CHECK_LIB([m],[sqrtl],[AC_DEFINE([HAVE_SQRTL],[1],[libm includes sqrtl])])
   AC_CHECK_LIB([m],[cbrtl],[AC_DEFINE([HAVE_CBRTL],[1],[libm includes cbrtl])])
+  AC_CHECK_LIB([m],[feholdexcept],[AC_DEFINE([HAVE_FEHOLDEXCEPT],[1],[libm includes feholdexcept])])
+  AC_CHECK_LIB([m],[fesetround],[AC_DEFINE([HAVE_FESETROUND],[1],[libm includes fesetround])])
+  AC_CHECK_LIB([m],[feupdateenv],[AC_DEFINE([HAVE_FEUPDATEENV],[1],[libm includes feupdateenv])])
+  AC_CHECK_LIB([m],[fesetenv],[AC_DEFINE([HAVE_FESETENV],[1],[libm includes fesetenv])])
+  AC_CHECK_LIB([m],[fetestexcept],[AC_DEFINE([HAVE_FETESTEXCEPT],[1],[libm includes fetestexcept])])
 else
   if test "x$ac_cv_lib_m_sqrtl" = x""yes; then
     AC_DEFINE([HAVE_SQRTL],[1],[libm includes sqrtl])  
   fi
   if test "x$ac_cv_lib_m_cbrtl" = x""yes; then
     AC_DEFINE([HAVE_CBRTL],[1],[libm includes cbrtl])  
+  fi
+  if test "x$ac_cv_lib_m_feholdexcept" = x""yes; then
+    AC_DEFINE([HAVE_FEHOLDEXCEPT],[1],[libm includes feholdexcept])
+  fi
+  if test "x$ac_cv_lib_m_fesetround" = x""yes; then
+    AC_DEFINE([HAVE_FESETROUND],[1],[libm includes fesetround])
+  fi
+  if test "x$ac_cv_lib_m_feupdateenv" = x""yes; then
+    AC_DEFINE([HAVE_FEUPDATEENV],[1],[libm includes feupdateenv])
+  fi
+  if test "x$ac_cv_lib_m_fesetenv" = x""yes; then
+    AC_DEFINE([HAVE_FESETENV],[1],[libm includes fesetenv])
+  fi
+  if test "x$ac_cv_lib_m_fetestexcept" = x""yes; then
+    AC_DEFINE([HAVE_FETESTEXCEPT],[1],[libm includes fetestexcept])
   fi
 fi
 

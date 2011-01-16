@@ -48,6 +48,7 @@ extern __float128 expm1q (__float128);
 extern __float128 fabsq (__float128);
 extern int finiteq (const __float128);
 extern __float128 floorq (__float128);
+extern __float128 fmaq (__float128, __float128, __float128);
 extern __float128 fmodq (__float128, __float128);
 extern __float128 frexpq (__float128, int *);
 extern __float128 hypotq (__float128, __float128);

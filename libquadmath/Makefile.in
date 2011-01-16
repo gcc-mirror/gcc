@@ -43,17 +43,16 @@ DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(srcdir)/config.h.in $(srcdir)/../mkinstalldirs \
 	$(srcdir)/../depcomp $(libquadmath_TEXINFOS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../ltoptions.m4 \
+	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
+	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/lthostflags.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
-	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
-	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/override.m4 $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -123,7 +122,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_LIBQUADMATH_TRUE@	math/nanq.lo math/tgammaq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/finiteq.lo math/nextafterq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/truncq.lo math/floorq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/powq.lo
+@BUILD_LIBQUADMATH_TRUE@	math/powq.lo math/fmaq.lo
 libquadmath_la_OBJECTS = $(am_libquadmath_la_OBJECTS)
 libquadmath_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -325,7 +324,7 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@  math/erfq.c math/logq.c math/sqrtq.c math/expm1q.c math/lroundq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/tanhq.c math/expq.c math/modfq.c math/tanq.c math/fabsq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/nanq.c math/tgammaq.c math/finiteq.c math/nextafterq.c \
-@BUILD_LIBQUADMATH_TRUE@  math/truncq.c math/floorq.c math/powq.c
+@BUILD_LIBQUADMATH_TRUE@  math/truncq.c math/floorq.c math/powq.c math/fmaq.c
 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -570,6 +569,7 @@ math/nextafterq.lo: math/$(am__dirstamp) \
 math/truncq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/floorq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/powq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/fmaq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 libquadmath.la: $(libquadmath_la_OBJECTS) $(libquadmath_la_DEPENDENCIES) 
 	$(libquadmath_la_LINK) $(am_libquadmath_la_rpath) $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) $(LIBS)
 
@@ -643,6 +643,8 @@ mostlyclean-compile:
 	-rm -f math/finiteq.lo
 	-rm -f math/floorq.$(OBJEXT)
 	-rm -f math/floorq.lo
+	-rm -f math/fmaq.$(OBJEXT)
+	-rm -f math/fmaq.lo
 	-rm -f math/fmodq.$(OBJEXT)
 	-rm -f math/fmodq.lo
 	-rm -f math/frexpq.$(OBJEXT)
@@ -756,6 +758,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/fabsq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/finiteq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/floorq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/fmaq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/fmodq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/frexpq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/hypotq.Plo@am__quote@

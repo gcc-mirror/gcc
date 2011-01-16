@@ -24,6 +24,7 @@ Boston, MA 02110-1301, USA.  */
 #include <stdint.h>
 #include <stdlib.h>
 #include "quadmath.h"
+#include "config.h"
 
 
 // Prototypes for internal functions
