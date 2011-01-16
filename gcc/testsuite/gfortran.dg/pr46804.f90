@@ -1,0 +1,36 @@
+! PR rtl-optimization/46804
+! { dg-do run }
+! { dg-options "-O -fPIC -fexpensive-optimizations -fgcse -foptimize-register-move -fpeel-loops -fno-tree-loop-optimize" }
+
+program main
+  integer, parameter :: n1 = 2, n2 = 3, n3 = 4, slen = 3
+  character (len = slen), dimension (n1, n2, n3) :: a
+  integer (kind = 1), dimension (2, 4) :: shift1
+  integer (kind = 2), dimension (2, 4) :: shift2
+  integer (kind = 4), dimension (2, 4) :: shift3
+  do i3 = 1, n3
+    do i2 = 1, n2
+      do i1 = 1, n1
+        a (i1, i2, i3) = 'ab'(i1:i1) // 'cde'(i2:i2) // 'fghi'(i3:i3)
+      end do
+    end do
+  end do
+  shift1 (1, :) = (/ 4, 11, 19, 20 /)
+  shift1 (2, :) = (/ 55, 5, 1, 2 /)
+  shift2 = shift1
+  shift3 = shift1
+  call test (cshift (a, shift2, 2))
+  call test (cshift (a, shift3, 2))
+contains
+  subroutine test (b)
+    character (len = slen), dimension (n1, n2, n3) :: b
+    do i3 = 1, n3
+      do i2 = 1, n2
+        do i1 = 1, n1
+          i2p = mod (shift1 (i1, i3) + i2 - 1, n2) + 1
+          if (b (i1, i2, i3) .ne. a (i1, i2p, i3)) call abort
+        end do
+      end do
+    end do
+  end subroutine test
+end program main

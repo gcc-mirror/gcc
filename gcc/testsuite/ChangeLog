@@ -3,6 +3,9 @@
 	Backport from mainline
 	2010-12-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/46804
+	* gfortran.dg/pr46804.f90: New test.
+
 	PR rtl-optimization/46865
 	* gcc.target/i386/pr46865-1.c: New test.
 	* gcc.target/i386/pr46865-2.c: New test.
