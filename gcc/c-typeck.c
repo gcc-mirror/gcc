@@ -5025,10 +5025,10 @@ convert_for_assignment (location_t location, tree type, tree rhs,
     {
       tree ret;
       bool save = in_late_binary_op;
-      if (codel == BOOLEAN_TYPE)
+      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
 	in_late_binary_op = true;
       ret = convert_and_check (type, orig_rhs);
-      if (codel == BOOLEAN_TYPE)
+      if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE)
 	in_late_binary_op = save;
       return ret;
     }
