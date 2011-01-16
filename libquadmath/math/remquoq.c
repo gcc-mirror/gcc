@@ -29,7 +29,7 @@ __float128
 remquoq (__float128 x, __float128 y, int *quo)
 {
   int64_t hx,hy;
-  u_int64_t sx,lx,ly,qs;
+  uint64_t sx,lx,ly,qs;
   int cquo;
 
   GET_FLT128_WORDS64 (hx, lx, x);
