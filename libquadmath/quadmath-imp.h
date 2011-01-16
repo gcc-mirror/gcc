@@ -164,5 +164,13 @@ do {                                   \
 
 #define IEEE854_FLOAT128_BIAS 0x3fff
 
+#define QUADFP_NAN		0
+#define QUADFP_INFINITE		1
+#define QUADFP_ZERO		2
+#define QUADFP_SUBNORMAL	3
+#define QUADFP_NORMAL		4
+#define fpclassifyq(x) \
+  __builtin_fpclassify (QUADFP_NAN, QUADFP_INFINITE, QUADFP_NORMAL, \
+			QUADFP_SUBNORMAL, QUADFP_ZERO, x)
 
 #endif

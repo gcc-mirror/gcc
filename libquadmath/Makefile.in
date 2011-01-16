@@ -122,7 +122,10 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_LIBQUADMATH_TRUE@	math/nanq.lo math/tgammaq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/finiteq.lo math/nextafterq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/truncq.lo math/floorq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/powq.lo math/fmaq.lo
+@BUILD_LIBQUADMATH_TRUE@	math/powq.lo math/fmaq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/cacoshq.lo math/cacosq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/casinhq.lo math/casinq.lo \
+@BUILD_LIBQUADMATH_TRUE@	math/catanhq.lo math/catanq.lo
 libquadmath_la_OBJECTS = $(am_libquadmath_la_OBJECTS)
 libquadmath_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -324,7 +327,9 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@  math/erfq.c math/logq.c math/sqrtq.c math/expm1q.c math/lroundq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/tanhq.c math/expq.c math/modfq.c math/tanq.c math/fabsq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/nanq.c math/tgammaq.c math/finiteq.c math/nextafterq.c \
-@BUILD_LIBQUADMATH_TRUE@  math/truncq.c math/floorq.c math/powq.c math/fmaq.c
+@BUILD_LIBQUADMATH_TRUE@  math/truncq.c math/floorq.c math/powq.c math/fmaq.c \
+@BUILD_LIBQUADMATH_TRUE@  math/cacoshq.c math/cacosq.c math/casinhq.c math/casinq.c \
+@BUILD_LIBQUADMATH_TRUE@  math/catanhq.c math/catanq.c
 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -570,6 +575,12 @@ math/truncq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/floorq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/powq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/fmaq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/cacoshq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/cacosq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/casinhq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/casinq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/catanhq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+math/catanq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 libquadmath.la: $(libquadmath_la_OBJECTS) $(libquadmath_la_DEPENDENCIES) 
 	$(libquadmath_la_LINK) $(am_libquadmath_la_rpath) $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) $(LIBS)
 
@@ -617,6 +628,18 @@ mostlyclean-compile:
 	-rm -f math/atanhq.lo
 	-rm -f math/atanq.$(OBJEXT)
 	-rm -f math/atanq.lo
+	-rm -f math/cacoshq.$(OBJEXT)
+	-rm -f math/cacoshq.lo
+	-rm -f math/cacosq.$(OBJEXT)
+	-rm -f math/cacosq.lo
+	-rm -f math/casinhq.$(OBJEXT)
+	-rm -f math/casinhq.lo
+	-rm -f math/casinq.$(OBJEXT)
+	-rm -f math/casinq.lo
+	-rm -f math/catanhq.$(OBJEXT)
+	-rm -f math/catanhq.lo
+	-rm -f math/catanq.$(OBJEXT)
+	-rm -f math/catanq.lo
 	-rm -f math/cbrtq.$(OBJEXT)
 	-rm -f math/cbrtq.lo
 	-rm -f math/ceilq.$(OBJEXT)
@@ -745,6 +768,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/atan2q.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/atanhq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/atanq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/cacoshq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/cacosq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/casinhq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/casinq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/catanhq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/catanq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/cbrtq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/ceilq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/complex.Plo@am__quote@

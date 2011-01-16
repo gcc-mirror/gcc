@@ -154,9 +154,16 @@ The following mathematical functions are available:
 @item @code{ynq}: Bessel function of the second kind, @var{n}-th order
 @item @code{cabsq} complex absolute value function:
 @item @code{cargq}: calculate the argument
+@item @code{cacoshq}: complex arc hyperbolic cosine function
+@item @code{cacosq}: complex arc cosine function
+@item @code{casinhq}: complex arc hyperbolic sine function
+@item @code{casinq}: complex arc sine function
+@item @code{catanhq}: complex arc hyperbolic tangent function
+@item @code{catanq}: complex arc tangent function
 @item @code{ccosq} complex cosine function:
 @item @code{ccoshq}: complex hyperbolic cosine function
 @item @code{cexpq}: complex exponential function
+@need 800
 @item @code{cexpiq}: computes the exponential function of ``i'' times a
                      real value
 @item @code{clogq}: complex natural logarithm
@@ -164,7 +171,6 @@ The following mathematical functions are available:
 @item @code{cpowq}: complex power function
 @item @code{csinq}: complex sine function
 @item @code{csinhq}: complex hyperbolic sine function
-@need 800
 @item @code{csqrtq}: complex square root
 @item @code{ctanq}: complex tangent function
 @item @code{ctanhq}: complex hyperbolic tangent function
