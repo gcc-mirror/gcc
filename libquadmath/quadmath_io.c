@@ -101,7 +101,7 @@ format (char * res, const __float128 x, size_t n)
 
 
 void
-quadmath_dtoaq (char *s, size_t size, size_t n, __float128 x)
+quadmath_flt128tostr (char *s, size_t size, size_t n, __float128 x)
 {
   char buffer[1024];
   memset (buffer, 0, sizeof(buffer));

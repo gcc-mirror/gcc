@@ -165,7 +165,7 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
 #if defined(HAVE_GFC_REAL_16)
 # if defined(GFC_REAL_16_IS_FLOAT128)
     case 16:
-      __qmath_(quadmath_strtopQ) (buffer, NULL, dest);
+      *((GFC_REAL_16*) dest) = __qmath_(strtoflt128) (buffer, NULL);
       break;
 # elif defined(HAVE_STRTOLD)
     case 16:

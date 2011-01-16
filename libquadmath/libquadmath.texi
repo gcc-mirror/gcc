@@ -198,20 +198,20 @@ The following mathematical functions are available:
 @chapter I/O Library Routines
 
 @menu
-* @code{quadmath_strtopQ}:  quadmath_strtopQ,  Convert from string
-* @code{quadmath_dtoaq}:    quadmath_dtoaq,    Convert to string
+* @code{strtoflt128}:          strtoflt128,          Convert from string
+* @code{quadmath_flt128tostr}: quadmath_flt128tostr, Convert to string
 @end menu
 
 
-@node quadmath_strtopQ
-@section @code{quadmath_strtopQ} --- Convert from string
+@node strtoflt128
+@section @code{strtoflt128} --- Convert from string
 
 The function @code{dmath_strtopQ} converts a string into a
 @code{__float128} number.
 
 @table @asis
 @item Syntax
-@code{int quadmath_strtopQ (const char *s, char **sp, void *V)}
+@code{__float128 strtoflt128 (const char *s, char **sp)}
 
 @c The return values are defined in gdtoa/gdtoa.h STRTOG_*
 @c However, the values are currently not exported - thus we
@@ -221,7 +221,6 @@ The function @code{dmath_strtopQ} converts a string into a
 @multitable @columnfractions .15 .70
 @item @var{s}  @tab input string
 @item @var{sp} @tab the address of the next character in the string
-@item @var{V}  @tab @code{__float128} containing the converted number
 @end multitable
 
 The argument @var{sp} contains, if not @code{NULL}, the address of the
@@ -234,9 +233,8 @@ next character following the parts of the string, which have been read.
 int main ()
 @{
   __float128 r;
-  char str[200];
 
-  quadmath_strtopQ ("1.2345678", NULL, &r);
+  r = strtoflt128 ("1.2345678", NULL);
 
   return 0;
 @}
@@ -244,15 +242,15 @@ int main ()
 @end table
 
 
-@node quadmath_dtoaq
-@section @code{quadmath_dtoaq} --- Convert to string
+@node quadmath_flt128tostr
+@section @code{quadmath_flt128tostr} --- Convert to string
 
-The function @code{quadmath_dtoaq} converts a @code{__float128} floating-point
+The function @code{quadmath_flt128tostr} converts a @code{__float128} floating-point
 number into a string.
 
 @table @asis
 @item Syntax
-@code{void quadmath_dtoaq (char *s, size_t size, size_t n, __float128 x)}
+@code{void quadmath_flt128tostr (char *s, size_t size, size_t n, __float128 x)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -273,7 +271,7 @@ int main ()
 
   r = 2.0q;
   r = sqrtq(r);
-  quadmath_dtoaq (str, sizeof (str), 20, r);
+  quadmath_flt128tostr (str, sizeof (str), 20, r);
   printf("%s\n", str);
   /* Prints: +1.41421356237309504880e+00 */
   return 0;
