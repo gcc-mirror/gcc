@@ -1,5 +1,11 @@
 2011-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/47320
+	* testsuite/18_support/numeric_limits/lowest.cc:
+	Only test wchar_t when _GLIBCXX_USE_WCHAR_T is defined.
+
+2011-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/47321
 	* testsuite/21_strings/basic_string/requirements/typedefs.cc:
 	Only test std::wstring when _GLIBCXX_USE_WCHAR_T is defined.
