@@ -1,6 +1,11 @@
 2011-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2011-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/47201
+	* gcc.dg/pr47201.c: New test.
+
 	2011-01-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/47150

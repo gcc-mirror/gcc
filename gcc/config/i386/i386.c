@@ -11038,7 +11038,11 @@ ix86_delegitimize_address (rtx x)
 	return orig_x;
       x = XVECEXP (XEXP (x, 0), 0, 0);
       if (GET_MODE (orig_x) != Pmode)
-	return simplify_gen_subreg (GET_MODE (orig_x), x, Pmode, 0);
+	{
+	  x = simplify_gen_subreg (GET_MODE (orig_x), x, Pmode, 0);
+	  if (x == NULL_RTX)
+	    return orig_x;
+	}
       return x;
     }
 
@@ -11107,7 +11111,11 @@ ix86_delegitimize_address (rtx x)
 	return orig_x;
     }
   if (GET_MODE (orig_x) != Pmode && MEM_P (orig_x))
-    return simplify_gen_subreg (GET_MODE (orig_x), result, Pmode, 0);
+    {
+      result = simplify_gen_subreg (GET_MODE (orig_x), result, Pmode, 0);
+      if (result == NULL_RTX)
+	return orig_x;
+    }
   return result;
 }
 
