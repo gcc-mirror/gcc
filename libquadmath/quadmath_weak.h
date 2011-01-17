@@ -1,20 +1,20 @@
 /* GCC Quad-Precision Math Library
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
    Written by Tobias Burnus  <burnus@net-b.de>
 
-This file is part of the libiberty library.
-Libiberty is free software; you can redistribute it and/or
+This file is part of the libquadmath library.
+Libquadmath is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
 
-Libiberty is distributed in the hope that it will be useful,
+Libquadmath is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Library General Public License for more details.
 
 You should have received a copy of the GNU Library General Public
-License along with libiberty; see the file COPYING.LIB.  If
+License along with libquadmath; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
@@ -35,7 +35,7 @@ Boston, MA 02110-1301, USA.  */
 /* __qmath_foo is a weak reference to symbol foo.  */
 #define __qmath3(name) __qmath2(__qmath_ ## name,name,name)
 
-// Prototypes for real functions
+/* Prototypes for real functions.  */
 __qmath3 (acosq)
 __qmath3 (acoshq)
 __qmath3 (asinq)
@@ -103,7 +103,7 @@ __qmath3 (y1q)
 __qmath3 (ynq)
 
 
-// Prototypes for complex functions
+/* Prototypes for complex functions.  */
 __qmath3 (cabsq)
 __qmath3 (cargq)
 __qmath3 (cimagq)
@@ -130,7 +130,7 @@ __qmath3 (ctanq)
 __qmath3 (ctanhq)
 
 
-// Prototypes for string <-> flt128 conversion functions
+/* Prototypes for string <-> flt128 conversion functions.  */
 __qmath3 (strtoflt128)
 __qmath3 (quadmath_flt128tostr)
 
