@@ -1,3 +1,17 @@
+2011-01-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/47318
+	* gcc.target/i386/avx-vmaskmovpd-1.c: New.
+	* gcc.target/i386/avx-vmaskmovpd-2.c: Likewise.
+	* gcc.target/i386/avx-vmaskmovps-1.c: Likewise.
+	* gcc.target/i386/avx-vmaskmovps-1.c: Likewise.
+
+	* gcc.target/i386/avx-vmaskmovpd-256-1.c (avx_test): Load mask
+	as __m256i.
+	* gcc.target/i386/avx-vmaskmovpd-256-2.c (avx_test): Likewise.
+	* gcc.target/i386/avx-vmaskmovps-256-1.c (avx_test): Likewise.
+	* gcc.target/i386/avx-vmaskmovps-256-2.c (avx_test): Likewise.
+
 2011-01-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45967
