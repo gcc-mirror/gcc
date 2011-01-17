@@ -1,5 +1,12 @@
 2011-01-17  Richard Henderson  <rth@redhat.com>
 
+	* config/rx/rx-modes.def (CC_F): New mode.
+	* config/rx/rx.c (rx_select_cc_mode): New.
+	* config/rx/rx.h (SELECT_CC_MODE): Use it.
+	* config/rx/rx-protos.h: Update.
+
+2011-01-17  Richard Henderson  <rth@redhat.com>
+
 	* except.c (dump_eh_tree): Fix stray ; after for statement.
 
 2011-01-17  Richard Guenther  <rguenther@suse.de>

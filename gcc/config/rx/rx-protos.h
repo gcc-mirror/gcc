@@ -24,6 +24,7 @@
 /* A few abbreviations to make the prototypes shorter.  */
 #define Mmode 	enum machine_mode
 #define Fargs	CUMULATIVE_ARGS
+#define Rcode	enum rtx_code
 
 extern void		rx_expand_prologue (void);
 extern int		rx_initial_elimination_offset (int, int);
@@ -40,6 +41,7 @@ extern bool		rx_is_legitimate_constant (rtx);
 extern bool 		rx_is_mode_dependent_addr (rtx);
 extern bool		rx_is_restricted_memory_address (rtx, Mmode);
 extern void		rx_notice_update_cc (rtx body, rtx insn);
+extern Mmode		rx_select_cc_mode (Rcode, rtx, rtx);
 #endif
 
 #endif /* GCC_RX_PROTOS_H */

@@ -624,12 +624,4 @@ extern int rx_float_compare_mode;
 #define BRANCH_COST(SPEED,PREDICT)       1
 #define REGISTER_MOVE_COST(MODE,FROM,TO) 2
 
-#define SELECT_CC_MODE(OP,X,Y)						\
-  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? CC_ZSmode :		\
-    (GET_CODE (X) == PLUS || GET_CODE (X) == MINUS ? CC_ZSCmode :	\
-    (GET_CODE (X) == ABS ? CC_ZSOmode :					\
-    (GET_CODE (X) == AND || GET_CODE (X) == NOT || GET_CODE (X) == IOR	\
-     || GET_CODE (X) == XOR || GET_CODE (X) == ROTATE			\
-     || GET_CODE (X) == ROTATERT || GET_CODE (X) == ASHIFTRT		\
-     || GET_CODE (X) == LSHIFTRT || GET_CODE (X) == ASHIFT ? CC_ZSmode : \
-     CCmode))))
+#define SELECT_CC_MODE(OP,X,Y)  rx_select_cc_mode(OP, X, Y)
