@@ -1,3 +1,13 @@
+2011-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/47331
+	* gfortran.h (struct gfc_omp_saved_state): New type.
+	(gfc_omp_save_and_clear_state, gfc_omp_restore_state): New prototypes.
+	* resolve.c (resolve_global_procedure): Call it around gfc_resolve
+	call.
+	* openmp.c (gfc_omp_save_and_clear_state, gfc_omp_restore_state): New
+	functions.
+
 2011-01-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47327
