@@ -3194,7 +3194,7 @@ dump_eh_tree (FILE * out, struct function *fun)
 	    }
 	  else
 	    {
-	      for (lp = i->landing_pads; lp ; lp = lp->next_lp);
+	      for (lp = i->landing_pads; lp ; lp = lp->next_lp)
 		{
 		  fprintf (out, "{%i,", lp->index);
 		  if (lp->landing_pad)
