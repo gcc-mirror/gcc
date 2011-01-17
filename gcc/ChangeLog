@@ -1,3 +1,11 @@
+2011-01-17  Olivier Hainque  <hainque@adacore.com>
+            Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/46655
+	* xcoffout.c (ASM_OUTPUT_LINE): Output line only if positive, and only
+	if <= USHRT_MAX in 32-bit mode.
+
 2011-01-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/install.texi (Configuration, Specific): Wrap long
