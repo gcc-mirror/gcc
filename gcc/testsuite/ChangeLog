@@ -1,3 +1,17 @@
+2011-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2010-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr28796-2.c: SKIP on SPARC/Solaris 8.
+
+	PR rtl-optimization/46603
+	* gcc.dg/vect/slp-multitypes-2.c: XFAIL execution on SPARC 32-bit.
+
+	2010-08-31  Bingfeng Mei  <bmei@broadcom.com>
+
+	* gcc.dg/vect/pr43430-1.c: Requires vect_condition target.
+
 2011-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.other/init19.C: Don't XFAIL on mips-sgi-irix*.
