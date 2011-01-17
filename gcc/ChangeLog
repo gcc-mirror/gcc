@@ -1,3 +1,13 @@
+2011-01-17  Ian Lance Taylor  <iant@google.com>
+
+	* config/sparc/sparc.c (sparc_sr_alias_set): Don't define.
+	(struct_value_alias_set): Don't define.
+	(sparc_option_override): Don't set sparc_sr_alias_set and
+	struct_value_alias_set.
+	(save_or_restore_regs): Use gen_frame_mem rather than calling
+	set_mem_alias_set.
+	(sparc_struct_value_rtx): Likewise.
+
 2011-01-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/47318

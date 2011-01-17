@@ -300,12 +300,6 @@ static HOST_WIDE_INT actual_fsize;
    saved (as 4-byte quantities).  */
 static int num_gfregs;
 
-/* The alias set for prologue/epilogue register save/restore.  */
-static GTY(()) alias_set_type sparc_sr_alias_set;
-
-/* The alias set for the structure return value.  */
-static GTY(()) alias_set_type struct_value_alias_set;
-
 /* Vector to say how input registers are mapped to output registers.
    HARD_FRAME_POINTER_REGNUM cannot be remapped by this function to
    eliminate it.  You must use -fomit-frame-pointer to get that.  */
@@ -911,10 +905,6 @@ sparc_option_override (void)
 
   /* Do various machine dependent initializations.  */
   sparc_init_modes ();
-
-  /* Acquire unique alias sets for our private stuff.  */
-  sparc_sr_alias_set = new_alias_set ();
-  struct_value_alias_set = new_alias_set ();
 
   /* Set up function hooks.  */
   init_machine_status = sparc_init_machine_status;
@@ -4381,8 +4371,7 @@ save_or_restore_regs (int low, int high, rtx base, int offset, int action)
 	{
 	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 	    {
-	      mem = gen_rtx_MEM (DImode, plus_constant (base, offset));
-	      set_mem_alias_set (mem, sparc_sr_alias_set);
+	      mem = gen_frame_mem (DImode, plus_constant (base, offset));
 	      if (action == SORR_SAVE)
 		{
 		  insn = emit_move_insn (mem, gen_rtx_REG (DImode, i));
@@ -4422,8 +4411,7 @@ save_or_restore_regs (int low, int high, rtx base, int offset, int action)
 	  else
 	    continue;
 
-	  mem = gen_rtx_MEM (mode, plus_constant (base, offset));
-	  set_mem_alias_set (mem, sparc_sr_alias_set);
+	  mem = gen_frame_mem (mode, plus_constant (base, offset));
 	  if (action == SORR_SAVE)
 	    {
 	      insn = emit_move_insn (mem, gen_rtx_REG (mode, regno));
@@ -6087,11 +6075,11 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
       rtx mem;
 
       if (incoming)
-	mem = gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,
-						 STRUCT_VALUE_OFFSET));
+	mem = gen_frame_mem (Pmode, plus_constant (frame_pointer_rtx,
+						   STRUCT_VALUE_OFFSET));
       else
-	mem = gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx,
-						 STRUCT_VALUE_OFFSET));
+	mem = gen_frame_mem (Pmode, plus_constant (stack_pointer_rtx,
+						   STRUCT_VALUE_OFFSET));
 
       /* Only follow the SPARC ABI for fixed-size structure returns.
          Variable size structure returns are handled per the normal
@@ -6133,7 +6121,6 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 	  emit_label (endlab);
 	}
 
-      set_mem_alias_set (mem, struct_value_alias_set);
       return mem;
     }
 }
