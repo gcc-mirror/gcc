@@ -1,20 +1,20 @@
 /* GCC Quad-Precision Math Library
-   Copyright (C) 2010 Free Software Foundation, Inc.
+   Copyright (C) 2010, 2011 Free Software Foundation, Inc.
    Written by Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
-This file is part of the libiberty library.
-Libiberty is free software; you can redistribute it and/or
+This file is part of the libquadmath library.
+Libquadmath is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public
 License as published by the Free Software Foundation; either
 version 2 of the License, or (at your option) any later version.
 
-Libiberty is distributed in the hope that it will be useful,
+Libquadmath is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Library General Public License for more details.
 
 You should have received a copy of the GNU Library General Public
-License along with libiberty; see the file COPYING.LIB.  If
+License along with libquadmath; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
@@ -37,19 +37,19 @@ format (char * res, const __float128 x, size_t n)
   g_Qfmt (buffer, &x, n + 1, sizeof(buffer) - 3);
   p = buffer + (*buffer == '-' ? 1 : 0);
 
-  // The sign is the easiest part
+  /* The sign is the easiest part.  */
   res[0] = (signbitq (x) ? '-' : '+');
 
   if (*p == '.')
   {
-    // We have a number smaller than 1, without exponent
+    /* We have a number smaller than 1, without exponent.  */
     int exp = 0;
     char *c;
 
     for (c = p+1; *c == '0'; c++)
       exp++;
 
-    // We move the string "exp" characters left
+    /* We move the string "exp" characters left.  */
     size_t l = strlen (p+1+exp);
     memcpy (res + 2, p + 1 + exp, l);
     memset (res + 2 + l, '0', n - l + 1);
@@ -61,7 +61,7 @@ format (char * res, const __float128 x, size_t n)
     return;
   }
 
-  // Now, do we already have an exponent
+  /* Now, do we already have an exponent.  */
   char *c;
   for (c = p; *c && *c != 'e'; c++)
     ;
@@ -81,7 +81,7 @@ format (char * res, const __float128 x, size_t n)
   }
   else
   {
-    // If we have no exponent, normalize and add the exponent
+    /* If we have no exponent, normalize and add the exponent.  */
     for (c = p; *c && *c != '.'; c++)
       ;
 
