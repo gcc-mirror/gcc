@@ -11938,7 +11938,7 @@
   [(set (match_operand:AVXMODEF2P 0 "register_operand" "=x")
 	(unspec:AVXMODEF2P
 	  [(match_operand:AVXMODEF2P 1 "memory_operand" "m")
-	   (match_operand:AVXMODEF2P 2 "register_operand" "x")
+	   (match_operand:<avxpermvecmode> 2 "register_operand" "x")
 	   (match_dup 0)]
 	  UNSPEC_MASKLOAD))]
   "TARGET_AVX"
@@ -11951,7 +11951,7 @@
 (define_insn "avx_maskstore<ssemodesuffix><avxmodesuffix>"
   [(set (match_operand:AVXMODEF2P 0 "memory_operand" "=m")
 	(unspec:AVXMODEF2P
-	  [(match_operand:AVXMODEF2P 1 "register_operand" "x")
+	  [(match_operand:<avxpermvecmode> 1 "register_operand" "x")
 	   (match_operand:AVXMODEF2P 2 "register_operand" "x")
 	   (match_dup 0)]
 	  UNSPEC_MASKSTORE))]

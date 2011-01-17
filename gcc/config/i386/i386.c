@@ -24483,14 +24483,14 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movntv4df, "__builtin_ia32_movntpd256", IX86_BUILTIN_MOVNTPD256, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V4DF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movntv8sf, "__builtin_ia32_movntps256", IX86_BUILTIN_MOVNTPS256, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V8SF },
 
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd, "__builtin_ia32_maskloadpd", IX86_BUILTIN_MASKLOADPD, UNKNOWN, (int) V2DF_FTYPE_PCV2DF_V2DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps, "__builtin_ia32_maskloadps", IX86_BUILTIN_MASKLOADPS, UNKNOWN, (int) V4SF_FTYPE_PCV4SF_V4SF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd256, "__builtin_ia32_maskloadpd256", IX86_BUILTIN_MASKLOADPD256, UNKNOWN, (int) V4DF_FTYPE_PCV4DF_V4DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps256, "__builtin_ia32_maskloadps256", IX86_BUILTIN_MASKLOADPS256, UNKNOWN, (int) V8SF_FTYPE_PCV8SF_V8SF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd, "__builtin_ia32_maskstorepd", IX86_BUILTIN_MASKSTOREPD, UNKNOWN, (int) VOID_FTYPE_PV2DF_V2DF_V2DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps, "__builtin_ia32_maskstoreps", IX86_BUILTIN_MASKSTOREPS, UNKNOWN, (int) VOID_FTYPE_PV4SF_V4SF_V4SF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd256, "__builtin_ia32_maskstorepd256", IX86_BUILTIN_MASKSTOREPD256, UNKNOWN, (int) VOID_FTYPE_PV4DF_V4DF_V4DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps256, "__builtin_ia32_maskstoreps256", IX86_BUILTIN_MASKSTOREPS256, UNKNOWN, (int) VOID_FTYPE_PV8SF_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd, "__builtin_ia32_maskloadpd", IX86_BUILTIN_MASKLOADPD, UNKNOWN, (int) V2DF_FTYPE_PCV2DF_V2DI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps, "__builtin_ia32_maskloadps", IX86_BUILTIN_MASKLOADPS, UNKNOWN, (int) V4SF_FTYPE_PCV4SF_V4SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd256, "__builtin_ia32_maskloadpd256", IX86_BUILTIN_MASKLOADPD256, UNKNOWN, (int) V4DF_FTYPE_PCV4DF_V4DI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps256, "__builtin_ia32_maskloadps256", IX86_BUILTIN_MASKLOADPS256, UNKNOWN, (int) V8SF_FTYPE_PCV8SF_V8SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd, "__builtin_ia32_maskstorepd", IX86_BUILTIN_MASKSTOREPD, UNKNOWN, (int) VOID_FTYPE_PV2DF_V2DI_V2DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps, "__builtin_ia32_maskstoreps", IX86_BUILTIN_MASKSTOREPS, UNKNOWN, (int) VOID_FTYPE_PV4SF_V4SI_V4SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd256, "__builtin_ia32_maskstorepd256", IX86_BUILTIN_MASKSTOREPD256, UNKNOWN, (int) VOID_FTYPE_PV4DF_V4DI_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps256, "__builtin_ia32_maskstoreps256", IX86_BUILTIN_MASKSTOREPS256, UNKNOWN, (int) VOID_FTYPE_PV8SF_V8SI_V8SF },
 
   { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_llwpcb, "__builtin_ia32_llwpcb", IX86_BUILTIN_LLWPCB, UNKNOWN, (int) VOID_FTYPE_PVOID },
   { OPTION_MASK_ISA_LWP, CODE_FOR_lwp_slwpcb, "__builtin_ia32_slwpcb", IX86_BUILTIN_SLWPCB, UNKNOWN, (int) PVOID_FTYPE_VOID },
@@ -26821,18 +26821,18 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 1;
       break;
-    case V8SF_FTYPE_PCV8SF_V8SF:
-    case V4DF_FTYPE_PCV4DF_V4DF:
-    case V4SF_FTYPE_PCV4SF_V4SF:
-    case V2DF_FTYPE_PCV2DF_V2DF:
+    case V8SF_FTYPE_PCV8SF_V8SI:
+    case V4DF_FTYPE_PCV4DF_V4DI:
+    case V4SF_FTYPE_PCV4SF_V4SI:
+    case V2DF_FTYPE_PCV2DF_V2DI:
       nargs = 2;
       klass = load;
       memory = 0;
       break;
-    case VOID_FTYPE_PV8SF_V8SF_V8SF:
-    case VOID_FTYPE_PV4DF_V4DF_V4DF:
-    case VOID_FTYPE_PV4SF_V4SF_V4SF:
-    case VOID_FTYPE_PV2DF_V2DF_V2DF:
+    case VOID_FTYPE_PV8SF_V8SI_V8SF:
+    case VOID_FTYPE_PV4DF_V4DI_V4DF:
+    case VOID_FTYPE_PV4SF_V4SI_V4SF:
+    case VOID_FTYPE_PV2DF_V2DI_V2DF:
       nargs = 2;
       klass = store;
       /* Reserve memory operand for target.  */
