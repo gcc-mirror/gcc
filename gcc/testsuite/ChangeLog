@@ -1,3 +1,7 @@
+2011-01-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.old-deja/g++.other/init19.C: Don't XFAIL on mips-sgi-irix*.
+
 2011-01-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/guality/pr36728-1.c: Replace XFAIL for s390(x) with a
