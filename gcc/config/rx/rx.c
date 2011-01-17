@@ -53,6 +53,15 @@
 
 static void rx_print_operand (FILE *, rtx, int);
 
+#define CC_FLAG_S	(1 << 0)
+#define CC_FLAG_Z	(1 << 1)
+#define CC_FLAG_O	(1 << 2)
+#define CC_FLAG_C	(1 << 3)
+#define CC_FLAG_FP	(1 << 4)	/* fake, to differentiate CC_Fmode */
+
+static unsigned int flags_from_mode (enum machine_mode mode);
+static unsigned int flags_from_code (enum rtx_code code);
+
 enum rx_cpu_types  rx_cpu_type = RX600;
 
 /* Return true if OP is a reference to an object in a small data area.  */
@@ -395,21 +404,84 @@ rx_print_operand (FILE * file, rtx op, int letter)
       break;
 
     case 'B':
-      switch (GET_CODE (op))
-	{
-	case LT:  fprintf (file, "lt"); break;
-	case GE:  fprintf (file, "ge"); break;
-	case GT:  fprintf (file, "gt"); break;
-	case LE:  fprintf (file, "le"); break;
-	case GEU: fprintf (file, "geu"); break;
-	case LTU: fprintf (file, "ltu"); break;
-	case GTU: fprintf (file, "gtu"); break;
-	case LEU: fprintf (file, "leu"); break;
-	case EQ:  fprintf (file, "eq"); break;
-	case NE:  fprintf (file, "ne"); break;
-	default:  debug_rtx (op); gcc_unreachable ();
-	}
-      break;
+      {
+	enum rtx_code code = GET_CODE (op);
+	enum machine_mode mode = GET_MODE (XEXP (op, 0));
+	const char *ret;
+
+	if (mode == CC_Fmode)
+	  {
+	    /* C flag is undefined, and O flag carries unordered.  None of the
+	       branch combinations that include O use it helpfully.  */
+	    switch (code)
+	      {
+	      case ORDERED:
+		ret = "no";
+		break;
+	      case UNORDERED:
+		ret = "o";
+		break;
+	      case LT:
+		ret = "n";
+		break;
+	      case GE:
+		ret = "pz";
+		break;
+	      case EQ:
+		ret = "eq";
+		break;
+	      case NE:
+		ret = "ne";
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+	  }
+	else
+	  {
+	    switch (code)
+	      {
+	      case LT:
+		ret = "n";
+		break;
+	      case GE:
+		ret = "pz";
+		break;
+	      case GT:
+		ret = "gt";
+		break;
+	      case LE:
+		ret = "le";
+		break;
+	      case GEU:
+		ret = "geu";
+		break;
+	      case LTU:
+		ret = "ltu";
+		break;
+	      case GTU:
+		ret = "gtu";
+		break;
+	      case LEU:
+		ret = "leu";
+		break;
+	      case EQ:
+		ret = "eq";
+		break;
+	      case NE:
+		ret = "ne";
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
+	    /* ??? Removable when all of cbranch, cstore, cmove are updated. */
+	    if (GET_MODE_CLASS (mode) == MODE_CC)
+	    gcc_checking_assert ((flags_from_code (code)
+				  & ~flags_from_mode (mode)) == 0);
+	  }
+	fputs (ret, file);
+	break;
+      }
 
     case 'C':
       gcc_assert (CONST_INT_P (op));
@@ -699,51 +771,6 @@ rx_gen_move_template (rtx * operands, bool is_movu)
   sprintf (out_template, "%s%s\t%s, %s", is_movu ? "movu" : "mov",
 	   extension, src_template, dst_template);
   return out_template;
-}
-
-/* Returns an assembler template for a conditional branch instruction.  */
-
-const char *
-rx_gen_cond_branch_template (rtx condition, bool reversed)
-{
-  enum rtx_code code = GET_CODE (condition);
-
-  if (reversed)
-    {
-      if (rx_float_compare_mode)
-	code = reverse_condition_maybe_unordered (code);
-      else
-	code = reverse_condition (code);
-    }
-
-  /* We do not worry about encoding the branch length here as GAS knows
-     how to choose the smallest version, and how to expand a branch that
-     is to a destination that is out of range.  */
-
-  switch (code)
-    {
-    case UNEQ:	    return "bo\t1f\n\tbeq\t%0\n1:";
-    case LTGT:	    return "bo\t1f\n\tbne\t%0\n1:";
-    case UNLT:      return "bo\t1f\n\tbn\t%0\n1:";
-    case UNGE:      return "bo\t1f\n\tbpz\t%0\n1:";
-    case UNLE:      return "bo\t1f\n\tbgt\t1f\n\tbra\t%0\n1:";
-    case UNGT:      return "bo\t1f\n\tble\t1f\n\tbra\t%0\n1:";
-    case UNORDERED: return "bo\t%0";
-    case ORDERED:   return "bno\t%0";
-
-    case LT:        return rx_float_compare_mode ? "bn\t%0" : "blt\t%0";
-    case GE:        return rx_float_compare_mode ? "bpz\t%0" : "bge\t%0";
-    case GT:        return "bgt\t%0";
-    case LE:        return "ble\t%0";
-    case GEU:       return "bgeu\t%0";
-    case LTU:       return "bltu\t%0";
-    case GTU:       return "bgtu\t%0";
-    case LEU:       return "bleu\t%0";
-    case EQ:        return "beq\t%0";
-    case NE:        return "bne\t%0";
-    default:
-      gcc_unreachable ();
-    }
 }
 
 /* Return VALUE rounded up to the next ALIGNMENT boundary.  */
@@ -2543,69 +2570,100 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
     }
 }
 
-
-static enum machine_mode
-rx_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
+static int
+rx_memory_move_cost (enum machine_mode mode, reg_class_t regclass, bool in)
 {
-  if (m1 == CCmode)
-    return m2;
-  if (m2 == CCmode)
-    return m1;
-  if (m1 == m2)
-    return m1;
-  if (m1 == CC_ZSmode)
-    return m1;
-  if (m2 == CC_ZSmode)
-    return m2;
-  return VOIDmode;   
+  return 2 + memory_move_secondary_cost (mode, regclass, in);
 }
 
-#define CC_FLAG_S (1 << 0)
-#define CC_FLAG_Z (1 << 1)
-#define CC_FLAG_O (1 << 2)
-#define CC_FLAG_C (1 << 3)
-
-static unsigned int
-flags_needed_for_conditional (rtx conditional)
-{
-  switch (GET_CODE (conditional))
-    {
-    case LE:
-    case GT:	return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O;
-
-    case LEU:
-    case GTU:	return CC_FLAG_Z | CC_FLAG_C;
-
-    case LT:
-    case GE:	return CC_FLAG_S | CC_FLAG_O;
-
-    case LTU:
-    case GEU:	return CC_FLAG_C;
-
-    case EQ:
-    case NE:	return CC_FLAG_Z;
-
-    default:	gcc_unreachable ();
-    }
-}
+/* Convert a CC_MODE to the set of flags that it represents.  */
 
 static unsigned int
 flags_from_mode (enum machine_mode mode)
 {
   switch (mode)
     {
-    case CCmode:     return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O | CC_FLAG_C;
-    case CC_ZSmode:  return CC_FLAG_S | CC_FLAG_Z;
-    case CC_ZSOmode: return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O;
-    case CC_ZSCmode: return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_C;
-    default:         gcc_unreachable ();
+    case CC_ZSmode:
+      return CC_FLAG_S | CC_FLAG_Z;
+    case CC_ZSOmode:
+      return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O;
+    case CC_ZSCmode:
+      return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_C;
+    case CCmode:
+      return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O | CC_FLAG_C;
+    case CC_Fmode:
+      return CC_FLAG_FP;
+    default:
+      gcc_unreachable ();
     }
 }
 
-static int
-rx_memory_move_cost (enum machine_mode mode, reg_class_t regclass, bool in)
+/* Convert a set of flags to a CC_MODE that can implement it.  */
+
+static enum machine_mode
+mode_from_flags (unsigned int f)
 {
-  return 2 + memory_move_secondary_cost (mode, regclass, in);
+  if (f & CC_FLAG_FP)
+    return CC_Fmode;
+  if (f & CC_FLAG_O)
+    {
+      if (f & CC_FLAG_C)
+	return CCmode;
+      else
+	return CC_ZSOmode;
+    }
+  else if (f & CC_FLAG_C)
+    return CC_ZSCmode;
+  else
+    return CC_ZSmode;
+}
+
+/* Convert an RTX_CODE to the set of flags needed to implement it.
+   This assumes an integer comparison.  */
+
+static unsigned int
+flags_from_code (enum rtx_code code)
+{
+  switch (code)
+    {
+    case LT:
+    case GE:
+      return CC_FLAG_S;
+    case GT:
+    case LE:
+      return CC_FLAG_S | CC_FLAG_O | CC_FLAG_Z;
+    case GEU:
+    case LTU:
+      return CC_FLAG_C;
+    case GTU:
+    case LEU:
+      return CC_FLAG_C | CC_FLAG_Z;
+    case EQ:
+    case NE:
+      return CC_FLAG_Z;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Return a CC_MODE of which both M1 and M2 are subsets.  */
+
+static enum machine_mode
+rx_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
+{
+  unsigned f;
+
+  /* Early out for identical modes.  */
+  if (m1 == m2)
+    return m1;
+
+  /* There's no valid combination for FP vs non-FP.  */
+  f = flags_from_mode (m1) | flags_from_mode (m2);
+  if (f & CC_FLAG_FP)
+    return VOIDmode;
+
+  /* Otherwise, see what mode can implement all the flags.  */
+  return mode_from_flags (f);
 }
 
 /* Return the minimal CC mode needed to implement (CMP_CODE X Y).  */
@@ -2616,24 +2674,89 @@ rx_select_cc_mode (enum rtx_code cmp_code, rtx x, rtx y ATTRIBUTE_UNUSED)
   if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
     return CC_Fmode;
 
-  switch (cmp_code)
+  return mode_from_flags (flags_from_code (cmp_code));
+}
+
+/* Split the floating-point comparison IN into individual comparisons
+   O1 and O2.  O2 may be UNKNOWN if there is no second comparison.
+   Return true iff the comparison operands must be swapped.  */
+
+bool
+rx_split_fp_compare (enum rtx_code in, enum rtx_code *o1, enum rtx_code *o2)
+{
+  enum rtx_code cmp1 = in, cmp2 = UNKNOWN;
+  bool swap = false;
+
+  switch (in)
     {
-    case EQ:
-    case NE:
+    case ORDERED:
+    case UNORDERED:
     case LT:
     case GE:
-      return CC_ZSmode;
+    case EQ:
+    case NE:
+      break;
+
     case GT:
     case LE:
-      return CC_ZSOmode;
-    case GEU:
-    case LTU:
-    case GTU:
-    case LEU:
-      return CC_ZSCmode;
+      cmp1 = swap_condition (cmp1);
+      swap = true;
+      break;
+
+    case UNEQ:
+      cmp1 = UNORDERED;
+      cmp2 = EQ;
+      break;
+    case UNLT:
+      cmp1 = UNORDERED;
+      cmp2 = LT;
+      break;
+    case UNGE:
+      cmp1 = UNORDERED;
+      cmp2 = GE;
+      break;
+    case UNLE:
+      cmp1 = UNORDERED;
+      cmp2 = GT;
+      swap = true;
+      break;
+    case UNGT:
+      cmp1 = UNORDERED;
+      cmp2 = LE;
+      swap = true;
+      break;
+    case LTGT:
+      cmp1 = ORDERED;
+      cmp2 = NE;
+      break;
+
     default:
-      return CCmode;
+      gcc_unreachable ();
     }
+
+  *o1 = cmp1;
+  *o2 = cmp2;
+  return swap;
+}
+
+/* Split the conditional branch.  Emit (COMPARE C1 C2) into CC_REG with
+   CC_MODE, and use that in branches based on that compare.  */
+
+void
+rx_split_cbranch (enum machine_mode cc_mode, enum rtx_code cmp1,
+		  rtx c1, rtx c2, rtx label)
+{
+  rtx flags, x;
+
+  flags = gen_rtx_REG (cc_mode, CC_REG);
+  x = gen_rtx_COMPARE (cc_mode, c1, c2);
+  x = gen_rtx_SET (VOIDmode, flags, x);
+  emit_insn (x);
+
+  x = gen_rtx_fmt_ee (cmp1, VOIDmode, flags, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, label, pc_rtx);
+  x = gen_rtx_SET (VOIDmode, pc_rtx, x);
+  emit_jump_insn (x);
 }
 
 

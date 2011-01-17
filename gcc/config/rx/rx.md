@@ -19,14 +19,6 @@
 ;; <http://www.gnu.org/licenses/>.
 
 
-;; This code iterator allows all branch instructions to
-;; be generated from a single define_expand template.
-(define_code_iterator most_cond [eq ne gt ge lt le gtu geu ltu leu
-				 unordered ordered ])
-
-;; Likewise, but only the ones that use Z or S.
-(define_code_iterator zs_cond [eq ne gtu geu ltu leu ])
-
 ;; This code iterator is used for sign- and zero- extensions.
 (define_mode_iterator small_int_modes [(HI "") (QI "")])
 
@@ -150,6 +142,8 @@
 (define_insn_reservation "throughput_18_latency_18"  1
   (eq_attr "timings" "1818") "throughput*18")
 
+;; ----------------------------------------------------------------------------
+
 ;; Comparisons
 
 ;; Note - we do not specify the two instructions necessary to perform
@@ -160,245 +154,228 @@
 
 (define_expand "cbranchsi4"
   [(set (pc)
-	(if_then_else (match_operator 0 "comparison_operator"
-				      [(match_operand:SI 1 "register_operand")
-				       (match_operand:SI 2 "rx_source_operand")])
-		      (label_ref (match_operand 3 ""))
-		      (pc)))
-   ]
-  ""
+	(if_then_else
+	  (match_operator 0 "comparison_operator"
+	    [(match_operand:SI 1 "register_operand")
+	     (match_operand:SI 2 "rx_source_operand")])
+	  (label_ref (match_operand 3 ""))
+	  (pc)))]
   ""
 )
 
-(define_insn_and_split "*cbranchsi4_<code>"
+(define_insn_and_split "*cbranchsi4"
   [(set (pc)
-	(if_then_else (most_cond (match_operand:SI  0 "register_operand"  "r")
-				    (match_operand:SI  1 "rx_source_operand" "riQ"))
-		      (label_ref (match_operand        2 "" ""))
-		      (pc)))
-   ]
+	(if_then_else
+	  (match_operator 3 "comparison_operator"
+	    [(match_operand:SI  0 "register_operand"  "r")
+	     (match_operand:SI  1 "rx_source_operand" "riQ")])
+	  (match_operand        2 "label_ref_operand" "")
+	  (pc)))]
   ""
   "#"
   "reload_completed"
   [(const_int 0)]
-  "
-  /* We contstruct the split by hand as otherwise the JUMP_LABEL
-     attribute is not set correctly on the jump insn.  */
-  emit_insn (gen_cmpsi (operands[0], operands[1]));
-  
-  emit_jump_insn (gen_conditional_branch (operands[2],
-  		 gen_rtx_fmt_ee (<most_cond:CODE>, CCmode,
-				 gen_rtx_REG (CCmode, CC_REG), const0_rtx)));
-  "
-)
+{
+  rx_split_cbranch (CCmode, GET_CODE (operands[3]),
+		    operands[0], operands[1], operands[2]);
+  DONE;
+})
 
-;; -----------------------------------------------------------------------------
-;; These two are the canonical TST/branch insns.  However, GCC
-;; generates a wide variety of tst-like patterns, we catch those
-;; below.
-(define_insn_and_split "*tstbranchsi4_<code>"
-  [(set (pc)
-	(if_then_else (zs_cond (and:SI (match_operand:SI  0 "register_operand"  "r")
-				       (match_operand:SI  1 "rx_source_operand" "riQ"))
-			       (const_int 0))
-		      (label_ref (match_operand 2 "" ""))
-		      (pc)))
-   ]
-  ""
-  "#"
-  "reload_completed"
-  [(const_int 0)]
-  "
-  emit_insn (gen_tstsi (operands[0], operands[1]));
-  
-  emit_jump_insn (gen_conditional_branch (operands[2],
-  		 gen_rtx_fmt_ee (<zs_cond:CODE>, CCmode,
-				 gen_rtx_REG (CCmode, CC_REG), const0_rtx)));
-  "
-)
-
-;; Inverse of above
-(define_insn_and_split "*tstbranchsi4r_<code>"
-  [(set (pc)
-	(if_then_else (zs_cond (and:SI (match_operand:SI  0 "register_operand"  "r")
-				       (match_operand:SI  1 "rx_source_operand" "riQ"))
-			       (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 2 "" ""))))
-   ]
-  ""
-  "#"
-  "reload_completed"
-  [(const_int 0)]
-  "
-  emit_insn (gen_tstsi (operands[0], operands[1]));
-  
-  emit_jump_insn (gen_conditional_branch (operands[2],
-  		 gen_rtx_fmt_ee (reverse_condition (<zs_cond:CODE>), CCmode,
-				 gen_rtx_REG (CCmode, CC_REG), const0_rtx)));
-  "
-)
-
-;; Various other ways that GCC codes "var & const"
-
-(define_insn_and_split "*tstbranchsi4m_eq"
-  [(set (pc)
-	(if_then_else (eq (zero_extract:SI (match_operand:SI  0 "register_operand"  "r")
-					   (match_operand  1 "rx_constshift_operand" "i")
-					   (match_operand  2 "rx_constshift_operand" "i"))
-			  (const_int 0))
-		      (label_ref (match_operand        3 "" ""))
-		      (pc)))
-   ]
-  ""
-  "#"
-  ""
-  [(set (pc)
-	(if_then_else (eq (and:SI (match_dup  0)
-				  (match_dup 4))
-			  (const_int 0))
-		      (label_ref (match_dup 3))
-		      (pc)))
-   ]
-  "operands[4] = GEN_INT (((1 << INTVAL (operands[1]))-1) << INTVAL (operands[2]));"
-)
-
-(define_insn_and_split "*tstbranchsi4m_ne"
-  [(set (pc)
-	(if_then_else (ne (zero_extract:SI (match_operand:SI  0 "register_operand"  "r")
-					   (match_operand  1 "rx_constshift_operand" "i")
-					   (match_operand  2 "rx_constshift_operand" "i"))
-			  (const_int 0))
-		      (label_ref (match_operand        3 "" ""))
-		      (pc)))
-   ]
-  ""
-  "#"
-  ""
-  [(set (pc)
-	(if_then_else (ne (and:SI (match_dup  0)
-				  (match_dup 4))
-			  (const_int 0))
-		      (label_ref (match_dup 3))
-		      (pc)))
-   ]
-  "operands[4] = GEN_INT (((1 << INTVAL (operands[1]))-1) << INTVAL (operands[2]));"
-)
-
-;; -----------------------------------------------------------------------------
-
-(define_expand "cbranchsf4"
-  [(set (pc)
-	(if_then_else (match_operator 0 "comparison_operator"
-				      [(match_operand:SF 1 "register_operand")
-				       (match_operand:SF 2 "rx_source_operand")])
-		      (label_ref (match_operand 3 ""))
-		      (pc)))
-   ]
-  "ALLOW_RX_FPU_INSNS"
-  ""
-)
-
-(define_insn_and_split "*cbranchsf4_<code>"
-  [(set (pc)
-	(if_then_else (most_cond (match_operand:SF  0 "register_operand"  "r")
-				 (match_operand:SF  1 "rx_source_operand" "rFiQ"))
-		      (label_ref (match_operand        2 "" ""))
-		      (pc)))
-   ]
-  "ALLOW_RX_FPU_INSNS"
-  "#"
-  "&& reload_completed"
-  [(const_int 0)]
-  "
-  /* We contstruct the split by hand as otherwise the JUMP_LABEL
-     attribute is not set correctly on the jump insn.  */
-  emit_insn (gen_cmpsf (operands[0], operands[1]));
-  
-  emit_jump_insn (gen_conditional_branch (operands[2],
-  		 gen_rtx_fmt_ee (<most_cond:CODE>, CCmode,
- 		 		 gen_rtx_REG (CCmode, CC_REG), const0_rtx)));
-  "
-)
-
-(define_insn "tstsi"
-  [(set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (and:SI (match_operand:SI 0 "register_operand"  "r,r,r")
-			       (match_operand:SI 1 "rx_source_operand" "r,i,Q"))
-		       (const_int 0)))]
-  ""
-  {
-    rx_float_compare_mode = false;
-    return "tst\t%Q1, %0";
-  }
-  [(set_attr "timings" "11,11,33")
-   (set_attr "length"   "3,7,6")]
-)
-
-(define_insn "cmpsi"
+(define_insn "*cmpsi"
   [(set (reg:CC CC_REG)
 	(compare:CC (match_operand:SI 0 "register_operand"  "r,r,r,r,r,r,r")
 		    (match_operand:SI 1 "rx_source_operand" "r,Uint04,Int08,Sint16,Sint24,i,Q")))]
-  ""
+  "reload_completed"
   "cmp\t%Q1, %0"
   [(set_attr "timings" "11,11,11,11,11,11,33")
    (set_attr "length"  "2,2,3,4,5,6,5")]
 )
 
-;; ??? g++.dg/eh/080514-1.C to see this happen.
-(define_insn "cmpsf"
-  [(set (reg:CC_ZSO CC_REG)
-	(compare:CC_ZSO (match_operand:SF 0 "register_operand"  "r,r,r")
-			(match_operand:SF 1 "rx_source_operand" "r,iF,Q")))]
+;; Canonical method for representing TST.
+(define_insn_and_split "*cbranchsi4_tst"
+  [(set (pc)
+	(if_then_else
+	  (match_operator 3 "rx_zs_comparison_operator"
+	    [(and:SI (match_operand:SI  0 "register_operand"  "r")
+		     (match_operand:SI  1 "rx_source_operand" "riQ"))
+	     (const_int 0)])
+	  (match_operand 2 "label_ref_operand" "")
+	  (pc)))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  rx_split_cbranch (CC_ZSmode, GET_CODE (operands[3]),
+		    XEXP (operands[3], 0), XEXP (operands[3], 1),
+		    operands[2]);
+  DONE;
+})
+
+;; Various other ways that GCC codes "var & const"
+(define_insn_and_split "*cbranchsi4_tst_ext"
+  [(set (pc)
+	(if_then_else
+	  (match_operator 4 "rx_z_comparison_operator"
+	    [(zero_extract:SI
+		(match_operand:SI 0 "register_operand" "r")
+		(match_operand:SI 1 "rx_constshift_operand" "")
+		(match_operand:SI 2 "rx_constshift_operand" ""))
+	     (const_int 0)])
+	  (match_operand 3 "label_ref_operand" "")
+	  (pc)))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  HOST_WIDE_INT mask;
+  rtx x;
+
+  mask = 1;
+  mask <<= INTVAL (operands[1]);
+  mask -= 1;
+  mask <<= INTVAL (operands[2]);
+  x = gen_rtx_AND (SImode, operands[0], gen_int_mode (mask, SImode));
+
+  rx_split_cbranch (CC_ZSmode, GET_CODE (operands[4]),
+		    x, const0_rtx, operands[3]);
+  DONE;
+})
+
+(define_insn "*tstsi"
+  [(set (reg:CC_ZS CC_REG)
+	(compare:CC_ZS
+	  (and:SI (match_operand:SI 0 "register_operand"  "r,r,r")
+		  (match_operand:SI 1 "rx_source_operand" "r,i,Q"))
+	  (const_int 0)))]
+  "reload_completed"
+  "tst\t%Q1, %0"
+  [(set_attr "timings" "11,11,33")
+   (set_attr "length"  "3,7,6")]
+)
+
+(define_expand "cbranchsf4"
+  [(set (pc)
+	(if_then_else
+	  (match_operator 0 "comparison_operator"
+	    [(match_operand:SF 1 "register_operand")
+	     (match_operand:SF 2 "register_operand")])
+          (label_ref (match_operand 3 ""))
+	  (pc)))]
   "ALLOW_RX_FPU_INSNS"
-  {
-    rx_float_compare_mode = true;
-    return "fcmp\t%1, %0";
-  }
+{
+  enum rtx_code cmp1, cmp2;
+
+  /* If the comparison needs swapping of operands, do that now.
+     Do not split the comparison in two yet.  */
+  if (rx_split_fp_compare (GET_CODE (operands[0]), &cmp1, &cmp2))
+    {
+      rtx op1, op2;
+
+      if (cmp2 != UNKNOWN)
+	{
+	  gcc_assert (cmp1 == UNORDERED);
+	  if (cmp2 == GT)
+	    cmp1 = UNGT;
+	  else if (cmp2 == LE)
+	    cmp1 = UNLE;
+	  else
+	    gcc_unreachable ();
+	}
+
+      op1 = operands[2];
+      op2 = operands[1];
+      operands[0] = gen_rtx_fmt_ee (cmp1, VOIDmode, op1, op2);
+      operands[1] = op1;
+      operands[2] = op2;
+    }
+})
+
+(define_insn_and_split "*cbranchsf4"
+  [(set (pc)
+	(if_then_else
+	  (match_operator 3 "rx_fp_comparison_operator"
+	    [(match_operand:SF  0 "register_operand"  "r")
+	     (match_operand:SF  1 "rx_source_operand" "rFiQ")])
+	  (match_operand        2 "label_ref_operand" "")
+	  (pc)))]
+  "ALLOW_RX_FPU_INSNS"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  enum rtx_code cmp0, cmp1, cmp2;
+  rtx flags, lab1, lab2, over, x;
+  bool swap;
+
+  cmp0 = GET_CODE (operands[3]);
+  swap = rx_split_fp_compare (cmp0, &cmp1, &cmp2);
+  gcc_assert (!swap);
+
+  flags = gen_rtx_REG (CC_Fmode, CC_REG);
+  x = gen_rtx_COMPARE (CC_Fmode, operands[0], operands[1]);
+  x = gen_rtx_SET (VOIDmode, flags, x);
+  emit_insn (x);
+
+  over = NULL;
+  lab1 = lab2 = operands[2];
+
+  /* The one case of LTGT needs to be split into cmp1 && cmp2.  */
+  if (cmp0 == LTGT)
+    {
+      over = gen_label_rtx ();
+      lab1 = gen_rtx_LABEL_REF (VOIDmode, over);
+      cmp1 = reverse_condition_maybe_unordered (cmp1);
+    }
+
+  /* Otherwise we split into cmp1 || cmp2.  */
+  x = gen_rtx_fmt_ee (cmp1, VOIDmode, flags, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, lab1, pc_rtx);
+  x = gen_rtx_SET (VOIDmode, pc_rtx, x);
+  emit_jump_insn (x);
+
+  if (cmp2 != UNKNOWN)
+    {
+      x = gen_rtx_fmt_ee (cmp2, VOIDmode, flags, const0_rtx);
+      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, lab2, pc_rtx);
+      x = gen_rtx_SET (VOIDmode, pc_rtx, x);
+      emit_jump_insn (x);
+    }
+
+  if (over)
+    emit_label (over);
+  DONE;
+})
+
+(define_insn "*cmpsf"
+  [(set (reg:CC_F CC_REG)
+	(compare:CC_F
+	  (match_operand:SF 0 "register_operand"  "r,r,r")
+	  (match_operand:SF 1 "rx_source_operand" "r,iF,Q")))]
+  "ALLOW_RX_FPU_INSNS && reload_completed"
+  "fcmp\t%1, %0"
   [(set_attr "timings" "11,11,33")
    (set_attr "length" "3,7,5")]
 )
 
 ;; Flow Control Instructions:
 
-(define_expand "b<code>"
+(define_insn "*conditional_branch"
   [(set (pc)
-        (if_then_else (most_cond (reg:CC CC_REG) (const_int 0))
-                      (label_ref (match_operand 0))
-                      (pc)))]
+	(if_then_else
+	  (match_operator 1 "comparison_operator"
+	    [(reg CC_REG) (const_int 0)])
+	  (label_ref (match_operand 0 "" ""))
+	  (pc)))]
   ""
-  ""
-)
-
-(define_insn "conditional_branch"
-  [(set (pc)
-	(if_then_else (match_operator           1 "comparison_operator"
-						[(reg:CC CC_REG) (const_int 0)])
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  {
-    return rx_gen_cond_branch_template (operands[1], false);
-  }
+  "b%B1\t%0"
   [(set_attr "length" "8")    ;; This length is wrong, but it is
                               ;; too hard to compute statically.
    (set_attr "timings" "33")] ;; The timing assumes that the branch is taken.
 )
 
-(define_insn "*reveresed_conditional_branch"
-  [(set (pc)
-	(if_then_else (match_operator 1 "comparison_operator"
-				      [(reg:CC CC_REG) (const_int 0)])
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-  {
-    return rx_gen_cond_branch_template (operands[1], true);
-  }
-  [(set_attr "length" "8")    ;; This length is wrong, but it is
-                              ;; too hard to compute statically.
-   (set_attr "timings" "33")] ;; The timing assumes that the branch is taken.
-)
+;; ----------------------------------------------------------------------------
 
 (define_insn "jump"
   [(set (pc)
