@@ -293,3 +293,20 @@
   element = XVECEXP (op, 0, count - 1);
   return GET_CODE (element) == RETURN;
 })
+
+(define_predicate "label_ref_operand"
+  (match_code "label_ref")
+)
+
+(define_predicate "rx_z_comparison_operator"
+  (match_code "eq,ne")
+)
+
+(define_predicate "rx_zs_comparison_operator"
+  (match_code "eq,ne,lt,ge")
+)
+
+;; GT, LE, UNLE, UNGT omitted due to operand swap required.
+(define_predicate "rx_fp_comparison_operator"
+  (match_code "eq,ne,lt,ge,ordered,unordered,uneq,unlt,unge,ltgt")
+)

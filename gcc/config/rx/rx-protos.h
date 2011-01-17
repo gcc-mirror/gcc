@@ -34,12 +34,13 @@ extern void             rx_emit_stack_popm (rtx *, bool);
 extern void             rx_emit_stack_pushm (rtx *);
 extern void		rx_expand_epilogue (bool);
 extern bool		rx_expand_insv (rtx *);
-extern const char *	rx_gen_cond_branch_template (rtx, bool);
 extern char *		rx_gen_move_template (rtx *, bool);
 extern bool		rx_is_legitimate_constant (rtx);
 extern bool 		rx_is_mode_dependent_addr (rtx);
 extern bool		rx_is_restricted_memory_address (rtx, Mmode);
 extern void		rx_notice_update_cc (rtx body, rtx insn);
+extern void		rx_split_cbranch (Mmode, Rcode, rtx, rtx, rtx);
+extern bool		rx_split_fp_compare (Rcode, Rcode *, Rcode *);
 extern Mmode		rx_select_cc_mode (Rcode, rtx, rtx);
 #endif
 
