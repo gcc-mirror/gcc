@@ -988,17 +988,127 @@
    (set_attr "length"   "2,2,2,3,4,5,6,2,3,3,4,5,6,5")]
 )
 
-(define_insn "adddi3"
-  [(set (match_operand:DI          0 "register_operand" "=r,r,r,r,r,r")
-	(plus:DI (match_operand:DI 1 "register_operand" "%0,0,0,0,0,0")
-		 (match_operand:DI 2 "rx_source_operand"
-				   "r,Sint08,Sint16,Sint24,i,Q")))
+;; A helper to expand the above with the CC_MODE filled in.
+(define_expand "addsi3_flags"
+  [(parallel [(set (match_operand:SI 0 "register_operand")
+		   (plus:SI (match_operand:SI 1 "register_operand")
+			    (match_operand:SI 2 "rx_source_operand")))
+	      (set (reg:CC_ZSC CC_REG)
+		   (compare:CC_ZSC (plus:SI (match_dup 1) (match_dup 2))
+				   (const_int 0)))])]
+)
+
+(define_insn "adc_internal"
+  [(set (match_operand:SI     0 "register_operand"  "=r,r,r,r,r,r")
+	(plus:SI
+	  (plus:SI
+	    (ltu:SI (reg:CC CC_REG) (const_int 0))
+	    (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0"))
+	  (match_operand:SI   2 "rx_source_operand" "r,Sint08,Sint16,Sint24,i,Q")))
+    (clobber (reg:CC CC_REG))]
+  "reload_completed"
+  "adc %2,%0"
+  [(set_attr "timings" "11,11,11,11,11,33")
+   (set_attr "length"   "3,4,5,6,7,6")]
+)
+
+(define_insn "*adc_flags"
+  [(set (match_operand:SI     0 "register_operand"  "=r,r,r,r,r,r")
+	(plus:SI
+	  (plus:SI
+	    (ltu:SI (reg:CC CC_REG) (const_int 0))
+	    (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0"))
+	  (match_operand:SI   2 "rx_source_operand" "r,Sint08,Sint16,Sint24,i,Q")))
+   (set (reg CC_REG)
+	(compare 
+	  (plus:SI
+	    (plus:SI
+	      (ltu:SI (reg:CC CC_REG) (const_int 0))
+	      (match_dup 1))
+	    (match_dup 2))
+	  (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSCmode)"
+  "adc %2,%0"
+  [(set_attr "timings" "11,11,11,11,11,33")
+   (set_attr "length"   "3,4,5,6,7,6")]
+)
+
+(define_expand "adddi3"
+  [(set (match_operand:DI          0 "register_operand" "")
+	(plus:DI (match_operand:DI 1 "register_operand" "")
+		 (match_operand:DI 2 "rx_source_operand" "")))]
+  ""
+{
+  rtx op0l, op0h, op1l, op1h, op2l, op2h;
+
+  op0l = gen_lowpart (SImode, operands[0]);
+  op1l = gen_lowpart (SImode, operands[1]);
+  op2l = gen_lowpart (SImode, operands[2]);
+  op0h = gen_highpart (SImode, operands[0]);
+  op1h = gen_highpart (SImode, operands[1]);
+  op2h = gen_highpart_mode (SImode, DImode, operands[2]);
+
+  emit_insn (gen_adddi3_internal (op0l, op0h, op1l, op2l, op1h, op2h));
+  DONE;
+})
+
+(define_insn_and_split "adddi3_internal"
+  [(set (match_operand:SI          0 "register_operand"  "=r")
+	(plus:SI (match_operand:SI 2 "register_operand"  "r")
+		 (match_operand:SI 3 "rx_source_operand" "riQ")))
+   (set (match_operand:SI          1 "register_operand"  "=r")
+	(plus:SI
+	  (plus:SI
+	    (ltu:SI (plus:SI (match_dup 2) (match_dup 3)) (match_dup 2))
+	    (match_operand:SI      4 "register_operand"  "%1"))
+	  (match_operand:SI        5 "rx_source_operand" "riQ")))
+   (clobber (match_scratch:SI      6                     "=&r"))
    (clobber (reg:CC CC_REG))]
   ""
-  "add\t%L2, %L0\n\tadc\t%H2, %H0"
-  [(set_attr "timings" "22,22,22,22,22,44")
-   (set_attr "length" "5,7,9,11,13,11")]
-)
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  rtx op0l = operands[0];
+  rtx op0h = operands[1];
+  rtx op1l = operands[2];
+  rtx op2l = operands[3];
+  rtx op1h = operands[4];
+  rtx op2h = operands[5];
+  rtx scratch = operands[6];
+  rtx x;
+
+  if (reg_overlap_mentioned_p (op0l, op1h))
+    {
+      emit_move_insn (scratch, op0l);
+      op1h = scratch;
+      if (reg_overlap_mentioned_p (op0l, op2h))
+	op2h = scratch;
+    }
+  else if (reg_overlap_mentioned_p (op0l, op2h))
+    {
+      emit_move_insn (scratch, op0l);
+      op2h = scratch;
+    }
+
+  if (rtx_equal_p (op0l, op1l))
+    ;
+  else if (rtx_equal_p (op0l, op2l))
+    x = op1l, op1l = op2l, op2l = x;
+  emit_insn (gen_addsi3_flags (op0l, op1l, op2l));
+
+  if (rtx_equal_p (op0h, op1h))
+    ;
+  else if (rtx_equal_p (op0h, op2h))
+    x = op1h, op1h = op2h, op2h = x;
+  else
+    {
+      emit_move_insn (op0h, op1h);
+      op1h = op0h;
+    }
+  emit_insn (gen_adc_internal (op0h, op1h, op2h));
+  DONE;
+})
 
 (define_insn "andsi3"
   [(set (match_operand:SI         0 "register_operand"  "=r,r,r,r,r,r,r,r,r")
@@ -1445,16 +1555,88 @@
    (set_attr "length" "2,2,6,3,5")]
 )
 
-(define_insn "subdi3"
-  [(set (match_operand:DI           0 "register_operand" "=r,r")
-	(minus:DI (match_operand:DI 1 "register_operand"  "0,0")
-		  (match_operand:DI 2 "rx_source_operand" "r,Q")))
+;; A helper to expand the above with the CC_MODE filled in.
+(define_expand "subsi3_flags"
+  [(parallel [(set (match_operand:SI 0 "register_operand")
+		   (minus:SI (match_operand:SI 1 "register_operand")
+			     (match_operand:SI 2 "rx_source_operand")))
+	      (set (reg:CC_ZSC CC_REG)
+		   (compare:CC_ZSC (minus:SI (match_dup 1) (match_dup 2))
+				   (const_int 0)))])]
+)
+
+(define_insn "sbb_internal"
+  [(set (match_operand:SI     0 "register_operand"   "=r,r")
+	(minus:SI
+	  (minus:SI
+	    (match_operand:SI 1 "register_operand"   " 0,0")
+	    (match_operand:SI 2 "rx_compare_operand" " r,Q"))
+	  (geu:SI (reg:CC CC_REG) (const_int 0))))
+    (clobber (reg:CC CC_REG))]
+  "reload_completed"
+  "sbb\t%2, %0"
+  [(set_attr "timings" "11,33")
+   (set_attr "length"  "3,6")]
+)
+
+(define_insn "*sbb_flags"
+  [(set (match_operand:SI     0 "register_operand"   "=r,r")
+	(minus:SI
+	  (minus:SI
+	    (match_operand:SI 1 "register_operand"   " 0,0")
+	    (match_operand:SI 2 "rx_compare_operand" " r,Q"))
+	  (geu:SI (reg:CC CC_REG) (const_int 0))))
+   (set (reg CC_REG)
+	(compare
+	  (minus:SI
+	    (minus:SI (match_dup 1) (match_dup 2))
+	    (geu:SI (reg:CC CC_REG) (const_int 0)))
+	  (const_int 0)))]
+  "reload_completed"
+  "sbb\t%2, %0"
+  [(set_attr "timings" "11,33")
+   (set_attr "length"  "3,6")]
+)
+
+(define_expand "subdi3"
+  [(set (match_operand:DI           0 "register_operand" "")
+	(minus:DI (match_operand:DI 1 "register_operand" "")
+		  (match_operand:DI 2 "rx_source_operand" "")))]
+  ""
+{
+  rtx op0l, op0h, op1l, op1h, op2l, op2h;
+
+  op0l = gen_lowpart (SImode, operands[0]);
+  op1l = gen_lowpart (SImode, operands[1]);
+  op2l = gen_lowpart (SImode, operands[2]);
+  op0h = gen_highpart (SImode, operands[0]);
+  op1h = gen_highpart (SImode, operands[1]);
+  op2h = gen_highpart_mode (SImode, DImode, operands[2]);
+
+  emit_insn (gen_subdi3_internal (op0l, op0h, op1l, op2l, op1h, op2h));
+  DONE;
+})
+
+(define_insn_and_split "subdi3_internal"
+  [(set (match_operand:SI          0 "register_operand"   "=&r,&r")
+	(minus:SI (match_operand:SI 2 "register_operand"  "  0, r")
+		  (match_operand:SI 3 "rx_source_operand" "rnQ, r")))
+   (set (match_operand:SI          1 "register_operand"   "= r, r")
+	(minus:SI
+	  (minus:SI
+	    (match_operand:SI      4 "register_operand"   "  1, 1")
+	    (match_operand:SI      5 "rx_compare_operand" " rQ,rQ"))
+	  (geu:SI (match_dup 2) (match_dup 3))))
    (clobber (reg:CC CC_REG))]
   ""
-  "sub\t%L2, %L0\n\tsbb\t%H2, %H0"
-  [(set_attr "timings" "22,44")
-   (set_attr "length" "5,11")]
-)
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  emit_insn (gen_subsi3_flags (operands[0], operands[2], operands[3]));
+  emit_insn (gen_sbb_internal (operands[1], operands[4], operands[5]));
+  DONE;
+})
 
 (define_insn "xorsi3"
   [(set (match_operand:SI         0 "register_operand" "=r,r,r,r,r,r")

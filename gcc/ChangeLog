@@ -1,5 +1,16 @@
 2011-01-17  Richard Henderson  <rth@redhat.com>
 
+	* config/rx/predicates.md (rx_constshift_operand): Use match_test.
+	(rx_restricted_mem_operand): New.
+	(rx_shift_operand): Use register_operand.
+	(rx_source_operand, rx_compare_operand): Likewise.
+	* config/rx/rx.md (addsi3_flags): New expander.
+	(adddi3): Rewrite as expander.
+	(adc_internal, *adc_flags, adddi3_internal): New patterns.
+	(subsi3_flags): New expander.
+	(subdi3): Rewrite as expander.
+	(sbb_internal, *sbb_flags, subdi3_internal): New patterns.
+
 	* config/rx/rx.c (RX_BUILTIN_SAT): Remove.
 	(rx_init_builtins): Remove sat builtin.
 	(rx_expand_builtin): Likewise.
