@@ -1,3 +1,8 @@
+2011-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/47325
+	g++.dg/ext/pr47213.C: Require visibility.
+
 2011-01-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/fixed-point/composite-type.c: Pass -Wno-unused.
