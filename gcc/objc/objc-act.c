@@ -12986,7 +12986,7 @@ finish_objc (void)
 	  for (hsh = cls_method_hash_list[slot]; hsh; hsh = hsh->next)
 	    check_duplicates (hsh, 0, 1);
 	  for (hsh = nst_method_hash_list[slot]; hsh; hsh = hsh->next)
-	    check_duplicates (hsh, 0, 1);
+	    check_duplicates (hsh, 0, 0);
 	}
     }
 
