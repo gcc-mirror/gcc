@@ -21,3 +21,5 @@
 CC_MODE (CC_ZS);
 CC_MODE (CC_ZSO);
 CC_MODE (CC_ZSC);
+
+CC_MODE (CC_F);		/* fcmp */

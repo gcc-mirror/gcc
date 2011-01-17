@@ -2756,6 +2756,35 @@ rx_memory_move_cost (enum machine_mode mode, reg_class_t regclass, bool in)
 {
   return 2 + memory_move_secondary_cost (mode, regclass, in);
 }
+
+/* Return the minimal CC mode needed to implement (CMP_CODE X Y).  */
+
+enum machine_mode
+rx_select_cc_mode (enum rtx_code cmp_code, rtx x, rtx y ATTRIBUTE_UNUSED)
+{
+  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+    return CC_Fmode;
+
+  switch (cmp_code)
+    {
+    case EQ:
+    case NE:
+    case LT:
+    case GE:
+      return CC_ZSmode;
+    case GT:
+    case LE:
+      return CC_ZSOmode;
+    case GEU:
+    case LTU:
+    case GTU:
+    case LEU:
+      return CC_ZSCmode;
+    default:
+      return CCmode;
+    }
+}
+
 
 #undef  TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE		rx_function_value
