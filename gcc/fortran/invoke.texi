@@ -865,7 +865,7 @@ off via @option{-Wno-align-commons}. See also @option{-falign-commons}.
 Turns all warnings into errors.
 @end table
 
-@xref{Error and Warning Options,,Options to Request or Suppress Errors and
+@xref{Warning Options,,Options to Request or Suppress Errors and
 Warnings, gcc,Using the GNU Compiler Collection (GCC)}, for information on
 more options offered by the GBE shared by @command{gfortran}, @command{gcc}
 and other GNU compilers.
