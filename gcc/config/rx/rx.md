@@ -1044,7 +1044,7 @@
 
 ;; Byte swap (single 32-bit value).
 (define_insn "bswapsi2"
-  [(set (match_operand:SI           0 "register_operand" "+r")
+  [(set (match_operand:SI           0 "register_operand" "=r")
 	(bswap:SI (match_operand:SI 1 "register_operand"  "r")))]
   ""
   "revl\t%1, %0"
@@ -1053,7 +1053,7 @@
 
 ;; Byte swap (single 16-bit value).  Note - we ignore the swapping of the high 16-bits.
 (define_insn "bswaphi2"
-  [(set (match_operand:HI           0 "register_operand" "+r")
+  [(set (match_operand:HI           0 "register_operand" "=r")
 	(bswap:HI (match_operand:HI 1 "register_operand"  "r")))]
   ""
   "revw\t%1, %0"
@@ -1545,8 +1545,8 @@
    (set_attr "timings" "34")]
 )
 
-(define_insn "bitinvert"
-  [(set (match_operand:SI 0 "register_operand" "+r")
+(define_insn "*bitinvert"
+  [(set (match_operand:SI 0 "register_operand" "=r")
 	(xor:SI (match_operand:SI 1 "register_operand" "0")
 		(ashift:SI (const_int 1)
 			   (match_operand:SI 2 "nonmemory_operand" "ri"))))]
@@ -1931,7 +1931,7 @@
 
 ;; Byte swap (two 16-bit values).
 (define_insn "revw"
-  [(set (match_operand:SI             0 "register_operand" "+r")
+  [(set (match_operand:SI             0 "register_operand" "=r")
 	(unspec:SI [(match_operand:SI 1 "register_operand"  "r")]
 		   UNSPEC_BUILTIN_REVW))]
   ""
