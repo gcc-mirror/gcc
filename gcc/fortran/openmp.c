@@ -1390,6 +1390,31 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
 }
 
 
+/* Save and clear openmp.c private state.  */
+
+void
+gfc_omp_save_and_clear_state (struct gfc_omp_saved_state *state)
+{
+  state->ptrs[0] = omp_current_ctx;
+  state->ptrs[1] = omp_current_do_code;
+  state->ints[0] = omp_current_do_collapse;
+  omp_current_ctx = NULL;
+  omp_current_do_code = NULL;
+  omp_current_do_collapse = 0;
+}
+
+
+/* Restore openmp.c private state from the saved state.  */
+
+void
+gfc_omp_restore_state (struct gfc_omp_saved_state *state)
+{
+  omp_current_ctx = (struct omp_context *) state->ptrs[0];
+  omp_current_do_code = (gfc_code *) state->ptrs[1];
+  omp_current_do_collapse = state->ints[0];
+}
+
+
 /* Note a DO iterator variable.  This is special in !$omp parallel
    construct, where they are predetermined private.  */
 
