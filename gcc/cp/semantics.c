@@ -5538,7 +5538,11 @@ build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
     }
   if (TREE_CODE (member) == ADDR_EXPR)
     member = TREE_OPERAND (member, 0);
-  if (TREE_CODE (member) == COMPONENT_REF)
+  if (TREE_CODE (member) == COMPONENT_REF
+      /* If we're initializing a member of a subaggregate, it's a vtable
+	 pointer.  Leave it as COMPONENT_REF so we remember the path to get
+	 to the vfield.  */
+      && TREE_CODE (TREE_OPERAND (member, 0)) != COMPONENT_REF)
     member = TREE_OPERAND (member, 1);
   CONSTRUCTOR_APPEND_ELT (*vec, member, init);
   return true;
@@ -6350,6 +6354,36 @@ cxx_eval_logical_expression (const constexpr_call *call, tree t,
   return r;
 }
 
+/* REF is a COMPONENT_REF designating a particular field.  V is a vector of
+   CONSTRUCTOR elements to initialize (part of) an object containing that
+   field.  Return a pointer to the constructor_elt corresponding to the
+   initialization of the field.  */
+
+static constructor_elt *
+base_field_constructor_elt (VEC(constructor_elt,gc) *v, tree ref)
+{
+  tree aggr = TREE_OPERAND (ref, 0);
+  tree field = TREE_OPERAND (ref, 1);
+  HOST_WIDE_INT i;
+  constructor_elt *ce;
+
+  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
+
+  if (TREE_CODE (aggr) == COMPONENT_REF)
+    {
+      constructor_elt *base_ce
+	= base_field_constructor_elt (v, aggr);
+      v = CONSTRUCTOR_ELTS (base_ce->value);
+    }
+
+  for (i = 0; VEC_iterate (constructor_elt, v, i, ce); ++i)
+    if (ce->index == field)
+      return ce;
+
+  gcc_unreachable ();
+  return NULL;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    The expression tree T denotes a C-style array or a C-style
    aggregate.  Reduce it to a constant expression.  */
@@ -6365,7 +6399,6 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
   constructor_elt *ce;
   HOST_WIDE_INT i;
   bool changed = false;
-  tree type = TREE_TYPE (t);
   gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (t));
   for (i = 0; VEC_iterate (constructor_elt, v, i, ce); ++i)
     {
@@ -6377,23 +6410,13 @@ cxx_eval_bare_aggregate (const constexpr_call *call, tree t,
 	goto fail;
       if (elt != ce->value)
 	changed = true;
-      if (TREE_CODE (type) != ARRAY_TYPE
-	  && !(same_type_ignoring_top_level_qualifiers_p
-	       (DECL_CONTEXT (ce->index), type)))
+      if (TREE_CODE (ce->index) == COMPONENT_REF)
 	{
-	  /* Push our vtable pointer down into the base where it belongs.  */
-	  tree vptr_base = DECL_CONTEXT (ce->index);
-	  tree base_ctor;
-	  gcc_assert (ce->index == TYPE_VFIELD (type));
-	  for (base_ctor = VEC_index (constructor_elt, n, 0)->value; ;
-	       base_ctor = CONSTRUCTOR_ELT (base_ctor, 0)->value)
-	    if (TREE_TYPE (base_ctor) == vptr_base)
-	      {
-		constructor_elt *p = CONSTRUCTOR_ELT (base_ctor, 0);
-		gcc_assert (p->index == ce->index);
-		p->value = elt;
-		break;
-	      }
+	  /* This is an initialization of a vfield inside a base
+	     subaggregate that we already initialized; push this
+	     initialization into the previous initialization.  */
+	  constructor_elt *inner = base_field_constructor_elt (n, ce->index);
+	  inner->value = elt;
 	}
       else
 	CONSTRUCTOR_APPEND_ELT (n, ce->index, elt);

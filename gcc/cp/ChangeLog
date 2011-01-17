@@ -1,3 +1,11 @@
+2011-01-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47067
+	* semantics.c (base_field_constructor_elt): New fn.
+	(cxx_eval_bare_aggregate): Use it.
+	(build_data_member_initialization): Leave COMPONENT_REF for
+	vfield inits.
+
 2011-01-14  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	* parser.c (cp_parser_range_for): Remove the "unused variable" warning
