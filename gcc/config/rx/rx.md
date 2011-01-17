@@ -1378,6 +1378,37 @@
   [(set_attr "length" "3,2,3")]
 )
 
+;; Saturate to 32-bits
+(define_insn_and_split "ssaddsi3"
+  [(set (match_operand:SI             0 "register_operand" "=r")
+	(ss_plus:SI (match_operand:SI 1 "register_operand"  "r")
+		    (match_operand:SI 2 "rx_source_operand" "riQ")))
+   (clobber (reg:CC CC_REG))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (plus:SI (match_dup 1) (match_dup 2)))
+	      (set (reg:CC_ZSC CC_REG)
+		   (compare:CC_ZSC
+		     (plus:SI (match_dup 1) (match_dup 2))
+		     (const_int 0)))])
+   (set (match_dup 0)
+	(unspec:SI [(match_dup 0) (reg:CC CC_REG)] 
+		   UNSPEC_BUILTIN_SAT))]
+   ""
+)
+
+(define_insn "*sat"
+  [(set (match_operand:SI             0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand"  "0")
+		    (reg:CC CC_REG)]
+		   UNSPEC_BUILTIN_SAT))]
+  "reload_completed"
+  "sat\t%0"
+  [(set_attr "length" "2")]
+)
+
 (define_insn "subsi3"
   [(set (match_operand:SI           0 "register_operand" "=r,r,r,r,r")
 	(minus:SI (match_operand:SI 1 "register_operand"  "0,0,0,r,0")
@@ -2066,16 +2097,6 @@
   "round\t%1, %0"
   [(set_attr "timings" "22,44")   
    (set_attr "length" "3,5")]
-)
-
-;; Saturate to 32-bits
-(define_insn "sat"
-  [(set (match_operand:SI             0 "register_operand" "=r")
-	(unspec:SI [(match_operand:SI 1 "register_operand"  "0")]
-		   UNSPEC_BUILTIN_SAT))]
-  ""
-  "sat\t%0"
-  [(set_attr "length" "2")]
 )
 
 ;;---------- Control Registers ------------------------
