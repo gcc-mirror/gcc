@@ -1,3 +1,10 @@
+2011-01-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47313
+	* tree-inline.c (tree_function_versioning): Move DECL_RESULT
+	handling before copying the body.  Properly deal with
+	by-reference result in SSA form.
+
 2011-01-17  Ian Lance Taylor  <iant@google.com>
 
 	PR target/47219
