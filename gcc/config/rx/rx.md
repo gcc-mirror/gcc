@@ -744,47 +744,78 @@
     [(set (match_operand:SI                  0 "register_operand")
 	  (if_then_else:SI (match_operand:SI 1 "comparison_operator")
 			   (match_operand:SI 2 "nonmemory_operand")
-			   (match_operand:SI 3 "immediate_operand")))
-     (clobber (reg:CC CC_REG))])] ;; See cstoresi4
+			   (match_operand:SI 3 "nonmemory_operand")))
+     (clobber (reg:CC CC_REG))])]
   ""
-  {
-    if (GET_CODE (operands[1]) != EQ && GET_CODE (operands[1]) != NE)
-      FAIL;
-    if (! CONST_INT_P (operands[3]))
-      FAIL;
-  }
-)
+{
+  /* ??? Support other conditions via cstore into a temporary?  */
+  if (GET_CODE (operands[1]) != EQ && GET_CODE (operands[1]) != NE)
+    FAIL;
+  /* One operand must be a constant.  */
+  if (!CONSTANT_P (operands[2]) && !CONSTANT_P (operands[3]))
+    FAIL;
+})
 
-(define_insn "*movsieq"
-  [(set (match_operand:SI                      0 "register_operand" "=r,r,r")
-	(if_then_else:SI (eq (match_operand:SI 3 "register_operand"  "r,r,r")
-			     (match_operand:SI 4 "rx_source_operand" "riQ,riQ,riQ"))
-			 (match_operand:SI     1 "nonmemory_operand" "0,i,r")
-			 (match_operand:SI     2 "immediate_operand" "i,i,i")))
-   (clobber (reg:CC CC_REG))] ;; See cstoresi4
-  ""
-  "@
-  cmp\t%Q4, %Q3\n\tstnz\t%2, %0
-  cmp\t%Q4, %Q3\n\tmov.l\t%2, %0\n\tstz\t%1, %0
-  cmp\t%Q4, %Q3\n\tmov.l\t%1, %0\n\tstnz\t%2, %0"
-  [(set_attr "length"  "13,19,15")
-   (set_attr "timings" "22,33,33")]
-)
+(define_insn_and_split "*movsicc"
+  [(set (match_operand:SI     0 "register_operand" "=r,r")
+	(if_then_else:SI
+	  (match_operator 5 "rx_z_comparison_operator"
+	   [(match_operand:SI 3 "register_operand"  "r,r")
+	    (match_operand:SI 4 "rx_source_operand" "riQ,riQ")])
+	  (match_operand:SI   1 "nonmemory_operand" "i,ri")
+	  (match_operand:SI   2 "nonmemory_operand" "ri,i")))
+   (clobber (reg:CC CC_REG))]
+  "CONSTANT_P (operands[1]) || CONSTANT_P (operands[2])"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx x, flags, op0, op1, op2;
+  enum rtx_code cmp_code;
 
-(define_insn "*movsine"
-  [(set (match_operand:SI                      0 "register_operand" "=r,r,r")
-	(if_then_else:SI (ne (match_operand:SI 3 "register_operand"  "r,r,r")
-			     (match_operand:SI 4 "rx_source_operand" "riQ,riQ,riQ"))
-			 (match_operand:SI     1 "nonmemory_operand" "0,i,r")
-			 (match_operand:SI     2 "immediate_operand" "i,i,i")))
-   (clobber (reg:CC CC_REG))] ;; See cstoresi4
-  ""
-  "@
-  cmp\t%Q4, %Q3\n\tstz\t%2, %0
-  cmp\t%Q4, %Q3\n\tmov.l\t%2, %0\n\tstnz\t%1, %0
-  cmp\t%Q4, %Q3\n\tmov.l\t%1, %0\n\tstz\t%2, %0"
-  [(set_attr "length"  "13,19,15")
-   (set_attr "timings" "22,33,33")]
+  flags = gen_rtx_REG (CCmode, CC_REG);
+  x = gen_rtx_COMPARE (CCmode, operands[3], operands[4]);
+  emit_insn (gen_rtx_SET (VOIDmode, flags, x));
+
+  cmp_code = GET_CODE (operands[5]);
+  op0 = operands[0];
+  op1 = operands[1];
+  op2 = operands[2];
+
+  /* If OP2 is the constant, reverse the sense of the move.  */
+  if (!CONSTANT_P (operands[1]))
+    {
+      x = op1, op1 = op2, op2 = x;
+      cmp_code = reverse_condition (cmp_code);
+    }
+
+  /* If OP2 does not match the output, copy it into place.  We have allowed
+     these alternatives so that the destination can legitimately be one of
+     the comparison operands without increasing register pressure.  */
+  if (!rtx_equal_p (op0, op2))
+    emit_move_insn (op0, op2);
+
+  x = gen_rtx_fmt_ee (cmp_code, VOIDmode, flags, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (SImode, x, op1, op0);
+  emit_insn (gen_rtx_SET (VOIDmode, op0, x));
+  DONE;
+})
+
+(define_insn "*stcc"
+  [(set (match_operand:SI 0 "register_operand" "+r,r,r,r")
+	(if_then_else:SI
+	  (match_operator 2 "rx_z_comparison_operator"
+	    [(reg CC_REG) (const_int 0)])
+	  (match_operand:SI 1 "immediate_operand" "Sint08,Sint16,Sint24,i")
+	  (match_dup 0)))]
+  "reload_completed"
+{
+  if (GET_CODE (operands[2]) == EQ)
+    return "stz\t%1, %0";
+  else
+    return "stnz\t%1, %0";
+}
+  [(set_attr "length" "4,5,6,7")]
 )
 
 ;; Arithmetic Instructions
