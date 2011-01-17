@@ -1,3 +1,9 @@
+2011-01-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/install.texi (Configuration, Specific): Wrap long
+	lines in examples.  Allow line wrapping in long options
+	and URLs where beneficial for PDF output.
+
 2011-01-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_classify_symbol): Don't return
