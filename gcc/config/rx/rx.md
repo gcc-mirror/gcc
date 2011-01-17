@@ -739,6 +739,98 @@
   [(set_attr "length" "3")]
 )
 
+(define_expand "cstoresf4"
+  [(parallel [(set (match_operand:SI 0 "register_operand" "")
+		   (match_operator:SI 1 "comparison_operator"
+		    [(match_operand:SF 2 "register_operand" "")
+		     (match_operand:SF 3 "register_operand" "")]))
+	     (clobber (match_scratch:SI 4))])]
+  "ALLOW_RX_FPU_INSNS"
+{
+  enum rtx_code cmp1, cmp2;
+
+  /* If the comparison needs swapping of operands, do that now.
+     Do not split the comparison in two yet.  */
+  if (rx_split_fp_compare (GET_CODE (operands[0]), &cmp1, &cmp2))
+    {
+      rtx op2, op3;
+
+      if (cmp2 != UNKNOWN)
+	{
+	  gcc_assert (cmp1 == UNORDERED);
+	  if (cmp2 == GT)
+	    cmp1 = UNGT;
+	  else if (cmp2 == LE)
+	    cmp1 = UNLE;
+	  else
+	    gcc_unreachable ();
+	}
+
+      op2 = operands[3];
+      op3 = operands[2];
+      operands[0] = gen_rtx_fmt_ee (cmp1, VOIDmode, op2, op3);
+      operands[2] = op2;
+      operands[3] = op3;
+    }
+})
+
+(define_insn_and_split "*cstoresf4"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 4 "rx_fp_comparison_operator"
+	 [(match_operand:SF 2 "register_operand" "r")
+	  (match_operand:SF 3 "rx_source_operand" "rFiQ")]))
+   (clobber (match_scratch:SI 1 "=r"))]
+  "ALLOW_RX_FPU_INSNS"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  enum rtx_code cmp0, cmp1, cmp2;
+  rtx flags, x;
+  bool swap;
+
+  cmp0 = GET_CODE (operands[4]);
+  swap = rx_split_fp_compare (cmp0, &cmp1, &cmp2);
+  gcc_assert (!swap);
+
+  flags = gen_rtx_REG (CC_Fmode, CC_REG);
+  x = gen_rtx_COMPARE (CC_Fmode, operands[2], operands[3]);
+  x = gen_rtx_SET (VOIDmode, flags, x);
+  emit_insn (x);
+
+  x = gen_rtx_fmt_ee (cmp1, SImode, flags, const0_rtx);
+  x = gen_rtx_SET (VOIDmode, operands[0], x);
+  emit_insn (x);
+
+  if (cmp0 == LTGT)
+    {
+      /* The one case of LTGT needs to be split into ORDERED && NE.  */
+      x = gen_rtx_fmt_ee (EQ, VOIDmode, flags, const0_rtx);
+      x = gen_rtx_IF_THEN_ELSE (SImode, x, const0_rtx, operands[0]);
+      x = gen_rtx_SET (VOIDmode, operands[0], x);
+      emit_insn (x);
+    }
+  else if (cmp2 == EQ || cmp2 == NE)
+    {
+      /* Oring the two flags can be performed with a movcc operation.  */
+      x = gen_rtx_fmt_ee (cmp2, VOIDmode, flags, const0_rtx);
+      x = gen_rtx_IF_THEN_ELSE (SImode, x, const1_rtx, operands[0]);
+      x = gen_rtx_SET (VOIDmode, operands[0], x);
+      emit_insn (x);
+    }
+  else if (cmp2 != UNKNOWN)
+    {
+      /* We can't use movcc, but need to or in another compare.
+	 Do this by storing the second operation into the scratch.  */
+      x = gen_rtx_fmt_ee (cmp2, SImode, flags, const0_rtx);
+      x = gen_rtx_SET (VOIDmode, operands[1], x);
+      emit_insn (x);
+
+      emit_insn (gen_iorsi3 (operands[0], operands[0], operands[1]));
+    }
+  DONE;
+})
+
 (define_expand "movsicc"
   [(parallel
     [(set (match_operand:SI                  0 "register_operand")
