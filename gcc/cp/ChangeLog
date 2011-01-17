@@ -1,3 +1,8 @@
+2011-01-14  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	* parser.c (cp_parser_range_for): Remove the "unused variable" warning
+	workaround.
+
 2011-01-15  Giovanni Funchal  <gafunchal@gmail.com>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
