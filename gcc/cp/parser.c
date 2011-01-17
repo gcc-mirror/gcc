@@ -8760,15 +8760,6 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl)
 {
   tree stmt, range_expr;
 
-  /* If the variable from a range-for is not actually used, GCC would issue
-     "unused variable" warnings, and the user could do little to prevent them.
-     So we always mark it as used.  */
-  if (range_decl != error_mark_node)
-    {
-      TREE_USED (range_decl) = 1;
-      DECL_READ_P (range_decl) = 1;
-    }
-
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
       bool expr_non_constant_p;
