@@ -2755,6 +2755,34 @@ rx_split_cbranch (enum machine_mode cc_mode, enum rtx_code cmp1,
   emit_jump_insn (x);
 }
 
+/* A helper function for matching parallels that set the flags.  */
+
+bool
+rx_match_ccmode (rtx insn, enum machine_mode cc_mode)
+{
+  rtx op1, flags;
+  enum machine_mode flags_mode;
+
+  gcc_checking_assert (XVECLEN (PATTERN (insn), 0) == 2);
+
+  op1 = XVECEXP (PATTERN (insn), 0, 1);
+  gcc_checking_assert (GET_CODE (SET_SRC (op1)) == COMPARE);
+
+  flags = SET_DEST (op1);
+  flags_mode = GET_MODE (flags);
+
+  if (GET_MODE (SET_SRC (op1)) != flags_mode)
+    return false;
+  if (GET_MODE_CLASS (flags_mode) != MODE_CC)
+    return false;
+
+  /* Ensure that the mode of FLAGS is compatible with CC_MODE.  */
+  if (flags_from_mode (flags_mode) & ~flags_from_mode (cc_mode))
+    return false;
+
+  return true;
+}
+
 
 #undef  TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE		rx_function_value

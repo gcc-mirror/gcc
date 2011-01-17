@@ -42,6 +42,7 @@ extern void		rx_notice_update_cc (rtx body, rtx insn);
 extern void		rx_split_cbranch (Mmode, Rcode, rtx, rtx, rtx);
 extern bool		rx_split_fp_compare (Rcode, Rcode *, Rcode *);
 extern Mmode		rx_select_cc_mode (Rcode, rtx, rtx);
+extern bool		rx_match_ccmode (rtx, Mmode);
 #endif
 
 #endif /* GCC_RX_PROTOS_H */
