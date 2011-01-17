@@ -2339,48 +2339,6 @@ rx_is_ms_bitfield_layout (const_tree record_type ATTRIBUTE_UNUSED)
   /* The packed attribute overrides the MS behaviour.  */
   return ! TYPE_PACKED (record_type);
 }
-
-/* Try to generate code for the "isnv" pattern which inserts bits
-   into a word.
-     operands[0] => Location to be altered.
-     operands[1] => Number of bits to change.
-     operands[2] => Starting bit.
-     operands[3] => Value to insert.
-   Returns TRUE if successful, FALSE otherwise.  */
-
-bool
-rx_expand_insv (rtx * operands)
-{
-  if (INTVAL (operands[1]) != 1
-      || ! CONST_INT_P (operands[3]))
-    return false;
-
-  if (MEM_P (operands[0])
-      && INTVAL (operands[2]) > 7)
-    return false;
-
-  switch (INTVAL (operands[3]))
-    {
-    case 0:
-      if (MEM_P (operands[0]))
-	emit_insn (gen_bitclr_in_memory (operands[0], operands[0],
-					 operands[2]));
-      else
-	emit_insn (gen_bitclr (operands[0], operands[0], operands[2]));
-      break;
-    case 1:
-    case -1:
-      if (MEM_P (operands[0]))
-	emit_insn (gen_bitset_in_memory (operands[0], operands[0],
-					 operands[2]));
-      else
-	emit_insn (gen_bitset (operands[0], operands[0], operands[2]));
-      break;
-   default:
-      return false;
-    }
-  return true;
-}
 
 /* Returns true if X a legitimate constant for an immediate
    operand on the RX.  X is already known to satisfy CONSTANT_P.  */
