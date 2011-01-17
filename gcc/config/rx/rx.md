@@ -429,9 +429,9 @@
 
 (define_insn "pop_and_return"
   [(match_parallel 1 "rx_rtsd_vector"
-		   [(set:SI (reg:SI SP_REG)
-			    (plus:SI (reg:SI SP_REG)
-				     (match_operand:SI 0 "const_int_operand" "n")))])]
+     [(set (reg:SI SP_REG)
+	   (plus:SI (reg:SI SP_REG)
+		    (match_operand:SI 0 "const_int_operand" "n")))])]
   "reload_completed"
   {
     rx_emit_stack_popm (operands, false);
@@ -656,11 +656,11 @@
 )
 
 (define_insn "stack_push"
-  [(set:SI (reg:SI SP_REG)
-	   (minus:SI (reg:SI SP_REG)
-		     (const_int 4)))
-   (set:SI (mem:SI (reg:SI SP_REG))
-	   (match_operand:SI 0 "register_operand" "r"))]
+  [(set (reg:SI SP_REG)
+	(minus:SI (reg:SI SP_REG)
+		  (const_int 4)))
+   (set (mem:SI (reg:SI SP_REG))
+	(match_operand:SI 0 "register_operand" "r"))]
   ""
   "push.l\t%0"
   [(set_attr "length" "2")]
@@ -668,9 +668,9 @@
 
 (define_insn "stack_pushm"
   [(match_parallel 1 "rx_store_multiple_vector"
-		   [(set:SI (reg:SI SP_REG)
-			    (minus:SI (reg:SI SP_REG)
-				      (match_operand:SI 0 "const_int_operand" "n")))])]
+     [(set (reg:SI SP_REG)
+	   (minus:SI (reg:SI SP_REG)
+		     (match_operand:SI 0 "const_int_operand" "n")))])]
   "reload_completed"
   {
     rx_emit_stack_pushm (operands);
@@ -681,11 +681,11 @@
 )
 
 (define_insn "stack_pop"
-  [(set:SI (match_operand:SI 0 "register_operand" "=r")
-	   (mem:SI (reg:SI SP_REG)))
-   (set:SI (reg:SI SP_REG)
-	   (plus:SI (reg:SI SP_REG)
-		    (const_int 4)))]
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mem:SI (reg:SI SP_REG)))
+   (set (reg:SI SP_REG)
+	(plus:SI (reg:SI SP_REG)
+		 (const_int 4)))]
   ""
   "pop\t%0"
   [(set_attr "length" "2")
@@ -694,9 +694,9 @@
 
 (define_insn "stack_popm"
   [(match_parallel 1 "rx_load_multiple_vector"
-		   [(set:SI (reg:SI SP_REG)
-			    (plus:SI (reg:SI SP_REG)
-				     (match_operand:SI 0 "const_int_operand" "n")))])]
+     [(set (reg:SI SP_REG)
+	   (plus:SI (reg:SI SP_REG)
+		    (match_operand:SI 0 "const_int_operand" "n")))])]
   "reload_completed"
   {
     rx_emit_stack_popm (operands, true);
@@ -1525,210 +1525,92 @@
 ;; of three instructions at a time.
 
 (define_insn "bitset"
-  [(set:SI (match_operand:SI                    0 "register_operand" "=r")
-	   (ior:SI (match_operand:SI            1 "register_operand" "0")
-		   (ashift:SI (const_int 1)
-			      (match_operand:SI 2 "nonmemory_operand" "ri"))))]
+  [(set (match_operand:SI                    0 "register_operand" "=r")
+	(ior:SI (match_operand:SI            1 "register_operand" "0")
+		(ashift:SI (const_int 1)
+			   (match_operand:SI 2 "nonmemory_operand" "ri"))))]
   ""
   "bset\t%2, %0"
   [(set_attr "length" "3")]
 )
 
 (define_insn "bitset_in_memory"
-  [(set:QI (match_operand:QI                    0 "memory_operand" "=m")
-	   (ior:QI (match_operand:QI            1 "memory_operand" "0")
-		   (ashift:QI (const_int 1)
-			      (match_operand:QI 2 "nonmemory_operand" "ri"))))]
+  [(set (match_operand:QI                    0 "memory_operand" "=m")
+	(ior:QI (match_operand:QI            1 "memory_operand" "0")
+		(ashift:QI (const_int 1)
+			   (match_operand:QI 2 "nonmemory_operand" "ri"))))]
   ""
   "bset\t%2, %0.B"
   [(set_attr "length" "3")
    (set_attr "timings" "34")]
 )
 
-;; (set (reg A) (const_int 1))
-;; (set (reg A) (ashift (reg A) (reg B)))
-;; (set (reg C) (ior (reg A) (reg C)))
-(define_peephole2
-  [(set:SI (match_operand:SI 0 "register_operand" "")
-	   (const_int 1))
-   (set:SI (match_dup 0)
-	   (ashift:SI (match_dup 0)
-		      (match_operand:SI 1 "register_operand" "")))
-   (set:SI (match_operand:SI 2 "register_operand" "")
-	   (ior:SI (match_dup 0)
-		   (match_dup 2)))]
-  "dead_or_set_p (insn, operands[0])"
-  [(set:SI (match_dup 2)
-	   (ior:SI (match_dup 2)
-		   (ashift:SI (const_int 1)
-			      (match_dup 1))))]
-)
-  
-;; (set (reg A) (const_int 1))
-;; (set (reg A) (ashift (reg A) (reg B)))
-;; (set (reg A) (ior (reg A) (reg C)))
-;; (set (reg C) (reg A)
-(define_peephole2
-  [(set:SI (match_operand:SI 0 "register_operand" "")
-	   (const_int 1))
-   (set:SI (match_dup 0)
-	   (ashift:SI (match_dup 0)
-		      (match_operand:SI 1 "register_operand" "")))
-   (set:SI (match_dup 0)
-	   (ior:SI (match_dup 0)
-		   (match_operand:SI 2 "register_operand" "")))
-   (set:SI (match_dup 2) (match_dup 0))]
-  "dead_or_set_p (insn, operands[0])"
-  [(set:SI (match_dup 2)
-	   (ior:SI (match_dup 2)
-		   (ashift:SI (const_int 1)
-			      (match_dup 1))))]
-)
-  
 (define_insn "bitinvert"
-  [(set:SI (match_operand:SI 0 "register_operand" "+r")
-	   (xor:SI (match_operand:SI 1 "register_operand" "0")
-		   (ashift:SI (const_int 1)
-			      (match_operand:SI 2 "nonmemory_operand" "ri"))))]
+  [(set (match_operand:SI 0 "register_operand" "+r")
+	(xor:SI (match_operand:SI 1 "register_operand" "0")
+		(ashift:SI (const_int 1)
+			   (match_operand:SI 2 "nonmemory_operand" "ri"))))]
   ""
   "bnot\t%2, %0"
   [(set_attr "length" "3")]
 )
 
 (define_insn "bitinvert_in_memory"
-  [(set:QI (match_operand:QI 0 "memory_operand" "+m")
-	   (xor:QI (match_operand:QI 1 "register_operand" "0")
-		   (ashift:QI (const_int 1)
-			      (match_operand:QI 2 "nonmemory_operand" "ri"))))]
+  [(set (match_operand:QI 0 "memory_operand" "+m")
+	(xor:QI (match_operand:QI 1 "register_operand" "0")
+		(ashift:QI (const_int 1)
+			   (match_operand:QI 2 "nonmemory_operand" "ri"))))]
   ""
   "bnot\t%2, %0.B"
   [(set_attr "length" "5")
    (set_attr "timings" "33")]
 )
 
-;; (set (reg A) (const_int 1))
-;; (set (reg A) (ashift (reg A) (reg B)))
-;; (set (reg C) (xor (reg A) (reg C)))
-(define_peephole2
-  [(set:SI (match_operand:SI 0 "register_operand" "")
-	   (const_int 1))
-   (set:SI (match_dup 0)
-	   (ashift:SI (match_dup 0)
-		      (match_operand:SI 1 "register_operand" "")))
-   (set:SI (match_operand:SI 2 "register_operand" "")
-	   (xor:SI (match_dup 0)
-		   (match_dup 2)))]
-  "dead_or_set_p (insn, operands[0])"
-  [(set:SI (match_dup 2)
-	   (xor:SI (match_dup 2)
-		   (ashift:SI (const_int 1)
-			      (match_dup 1))))]
-  ""
-)
-  
-;; (set (reg A) (const_int 1))
-;; (set (reg A) (ashift (reg A) (reg B)))
-;; (set (reg A) (xor (reg A) (reg C)))
-;; (set (reg C) (reg A))
-(define_peephole2
-  [(set:SI (match_operand:SI 0 "register_operand" "")
-	   (const_int 1))
-   (set:SI (match_dup 0)
-	   (ashift:SI (match_dup 0)
-		      (match_operand:SI 1 "register_operand" "")))
-   (set:SI (match_dup 0)
-	   (xor:SI (match_dup 0)
-		   (match_operand:SI 2 "register_operand" "")))
-   (set:SI (match_dup 2) (match_dup 0))]
-  "dead_or_set_p (insn, operands[0])"
-  [(set:SI (match_dup 2)
-	   (xor:SI (match_dup 2)
-		   (ashift:SI (const_int 1)
-			      (match_dup 1))))]
-  ""
-)
-
 (define_insn "bitclr"
-  [(set:SI (match_operand:SI 0 "register_operand" "=r")
-	   (and:SI (match_operand:SI 1 "register_operand" "0")
-		   (not:SI (ashift:SI (const_int 1)
-				      (match_operand:SI 2 "nonmemory_operand" "ri")))))]
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(and:SI (match_operand:SI 1 "register_operand" "0")
+		(not:SI
+		  (ashift:SI
+		    (const_int 1)
+		    (match_operand:SI 2 "nonmemory_operand" "ri")))))]
   ""
   "bclr\t%2, %0"
   [(set_attr "length" "3")]
 )
 
 (define_insn "bitclr_in_memory"
-  [(set:QI (match_operand:QI 0 "memory_operand" "=m")
-	   (and:QI (match_operand:QI 1 "memory_operand" "0")
-		   (not:QI (ashift:QI (const_int 1)
-				      (match_operand:QI 2 "nonmemory_operand" "ri")))))]
+  [(set (match_operand:QI 0 "memory_operand" "=m")
+	(and:QI (match_operand:QI 1 "memory_operand" "0")
+		(not:QI
+		  (ashift:QI
+		    (const_int 1)
+		    (match_operand:QI 2 "nonmemory_operand" "ri")))))]
   ""
   "bclr\t%2, %0.B"
   [(set_attr "length" "3")
    (set_attr "timings" "34")]
 )
 
-;; (set (reg A) (const_int -2))
-;; (set (reg A) (rotate (reg A) (reg B)))
-;; (set (reg C) (and (reg A) (reg C)))
-(define_peephole2
-  [(set:SI (match_operand:SI 0 "register_operand" "")
-	   (const_int -2))
-   (set:SI (match_dup 0)
-	   (rotate:SI (match_dup 0)
-		      (match_operand:SI 1 "register_operand" "")))
-   (set:SI (match_operand:SI 2 "register_operand" "")
-	   (and:SI (match_dup 0)
-		   (match_dup 2)))]
-  "dead_or_set_p (insn, operands[0])"
-  [(set:SI (match_dup 2)
-	   (and:SI (match_dup 2)
-		   (not:SI (ashift:SI (const_int 1)
-				      (match_dup 1)))))]
-)
-  
-;; (set (reg A) (const_int -2))
-;; (set (reg A) (rotate (reg A) (reg B)))
-;; (set (reg A) (and (reg A) (reg C)))
-;; (set (reg C) (reg A)
-(define_peephole2
-  [(set:SI (match_operand:SI 0 "register_operand" "")
-	   (const_int -2))
-   (set:SI (match_dup 0)
-	   (rotate:SI (match_dup 0)
-		      (match_operand:SI 1 "register_operand" "")))
-   (set:SI (match_dup 0)
-	   (and:SI (match_dup 0)
-		   (match_operand:SI 2 "register_operand" "")))
-   (set:SI (match_dup 2) (match_dup 0))]
-  "dead_or_set_p (insn, operands[0])"
-  [(set:SI (match_dup 2)
-	   (and:SI (match_dup 2)
-		   (not:SI (ashift:SI (const_int 1)
-				      (match_dup 1)))))]
-)
-
 (define_expand "insv"
-  [(set:SI (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand") ;; Destination
-		            (match_operand    1 "immediate_operand")    ;; # of bits to set
-			    (match_operand    2 "immediate_operand"))   ;; Starting bit
-	   (match_operand	              3 "immediate_operand"))]  ;; Bits to insert
+  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand") ;; Destination
+		         (match_operand    1 "immediate_operand")    ;; # of bits to set
+			 (match_operand    2 "immediate_operand"))   ;; Starting bit
+	(match_operand	              3 "immediate_operand"))]       ;; Bits to insert
   ""
   {
     if (rx_expand_insv (operands))
       DONE;
     FAIL;
   }
-)   
+)
 
 ;; Atomic exchange operation.
 
 (define_insn "sync_lock_test_and_setsi"
-  [(set:SI (match_operand:SI 0 "register_operand"   "=r,r")
-	   (match_operand:SI 1 "rx_compare_operand" "=r,Q"))
-   (set:SI (match_dup 1)
-	   (match_operand:SI 2 "register_operand"    "0,0"))]
+  [(set (match_operand:SI 0 "register_operand"   "=r,r")
+	(match_operand:SI 1 "rx_compare_operand" "=r,Q"))
+   (set (match_dup 1)
+	(match_operand:SI 2 "register_operand"    "0,0"))]
   ""
   "xchg\t%1, %0"
   [(set_attr "length" "3,6")
@@ -1738,9 +1620,9 @@
 ;; Block move functions.
 
 (define_expand "movstr"
-  [(set:SI (match_operand:BLK 1 "memory_operand")    ;; Dest
-	   (match_operand:BLK 2 "memory_operand"))   ;; Source
-   (use (match_operand:SI     0 "register_operand")) ;; Updated Dest
+  [(set (match_operand:BLK 1 "memory_operand")    ;; Dest
+	(match_operand:BLK 2 "memory_operand"))   ;; Source
+   (use (match_operand:SI  0 "register_operand")) ;; Updated Dest
   ]
   ""
   {
@@ -1763,8 +1645,8 @@
 )
 
 (define_insn "rx_movstr"
-  [(set:SI (mem:BLK (reg:SI 1))
-	   (mem:BLK (reg:SI 2)))
+  [(set (mem:BLK (reg:SI 1))
+	(mem:BLK (reg:SI 2)))
    (unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_MOVSTR)
    (clobber (reg:SI 1))
    (clobber (reg:SI 2))
@@ -1776,8 +1658,8 @@
 )
 
 (define_insn "rx_strend"
-  [(set:SI (match_operand:SI                      0 "register_operand" "=r")
-	   (unspec_volatile:SI [(match_operand:SI 1 "register_operand"  "r")
+  [(set (match_operand:SI                      0 "register_operand" "=r")
+	(unspec_volatile:SI [(match_operand:SI 1 "register_operand"  "r")
 				(reg:SI 3)] UNSPEC_STRLEN))
    (clobber (reg:SI 1))
    (clobber (reg:SI 2))
@@ -1858,8 +1740,8 @@
 )
 
 (define_insn "rx_setmem"
-  [(set:BLK (mem:BLK (reg:SI 1)) (reg 2))
-   (unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_SETMEM)
+  [(set (mem:BLK (reg:SI 1))
+	(unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_SETMEM))
    (clobber (reg:SI 1))
    (clobber (reg:SI 3))]
   ""
@@ -1912,11 +1794,11 @@
 )
 
 (define_insn "rx_cmpstrn"
-  [(set:SI (match_operand:SI 0 "register_operand" "=r")
-	   (unspec_volatile:SI [(reg:SI 1) (reg:SI 2) (reg:SI 3)]
-			       UNSPEC_CMPSTRN))
-   (use (match_operand:BLK   1 "memory_operand" "m"))
-   (use (match_operand:BLK   2 "memory_operand" "m"))
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec_volatile:SI [(reg:SI 1) (reg:SI 2) (reg:SI 3)]
+			    UNSPEC_CMPSTRN))
+   (use (match_operand:BLK 1 "memory_operand" "m"))
+   (use (match_operand:BLK 2 "memory_operand" "m"))
    (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (reg:SI 3))
