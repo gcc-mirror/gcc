@@ -706,20 +706,37 @@
    (set_attr "timings" "45")] ;; The timing is a guesstimate average timing.
 )
 
-;; FIXME: Add memory destination options ?
-(define_insn "cstoresi4"
-  [(set (match_operand:SI   0 "register_operand" "=r,r,r,r,r,r,r")
+(define_insn_and_split "cstoresi4"
+  [(set (match_operand:SI   0 "register_operand" "=r")
 	(match_operator:SI  1 "comparison_operator"
-	 [(match_operand:SI 2 "register_operand"  "r,r,r,r,r,r,r")
-	  (match_operand:SI 3 "rx_source_operand" "r,Uint04,Int08,Sint16,Sint24,i,Q")]))
-   (clobber (reg:CC CC_REG))] ;; Because the cc flags are set based on comparing ops 2 & 3 not the value in op 0.
+	  [(match_operand:SI 2 "register_operand"  "r")
+	   (match_operand:SI 3 "rx_source_operand" "riQ")]))
+   (clobber (reg:CC CC_REG))]
   ""
-  {
-    rx_float_compare_mode = false;
-    return "cmp\t%Q3, %Q2\n\tsc%B1.L\t%0";
-  }
-  [(set_attr "timings" "22,22,22,22,22,22,44")
-   (set_attr "length"  "5,5,6,7,8,9,8")]
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  rtx flags, x;
+
+  flags = gen_rtx_REG (CCmode, CC_REG);
+  x = gen_rtx_COMPARE (CCmode, operands[2], operands[3]);
+  x = gen_rtx_SET (VOIDmode, flags, x);
+  emit_insn (x);
+
+  x = gen_rtx_fmt_ee (GET_CODE (operands[1]), SImode, flags, const0_rtx);
+  x = gen_rtx_SET (VOIDmode, operands[0], x);
+  emit_insn (x);
+  DONE;
+})
+
+(define_insn "*sccc"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 1 "comparison_operator"
+	  [(reg CC_REG) (const_int 0)]))]
+  "reload_completed"
+  "sc%B1.L\t%0"
+  [(set_attr "length" "3")]
 )
 
 (define_expand "movsicc"

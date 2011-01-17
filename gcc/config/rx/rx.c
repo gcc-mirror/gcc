@@ -363,8 +363,6 @@ rx_assemble_integer (rtx x, unsigned int size, int is_aligned)
 }
 
 
-int rx_float_compare_mode;
-
 /* Handles the insertion of a single operand into the assembler output.
    The %<letter> directives supported are:
 
