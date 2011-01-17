@@ -14,18 +14,18 @@ void static
 avx_test (void)
 {
   int i;
-  long long m[4] = {mask_v(0), mask_v(1), mask_v(2), mask_v(3)};
-  double s[4] = {1.1, 2.2, 3.3, 4.4};
-  union256d u;
-  union256i_q mask;
-  double e [4] = {0.0};
+  long long m[2] = {mask_v(0), mask_v(1)};
+  double s[2] = {1.1, 2.2};
+  union128d u;
+  union128i_q mask;
+  double e[2] = {0.0};
 
-  mask.x = _mm256_loadu_si256 ((__m256i *)m);
-  u.x = _mm256_maskload_pd (s, mask.x);
+  mask.x = _mm_loadu_si128 ((__m128i *)m);
+  u.x = _mm_maskload_pd (s, mask.x);
 
-  for (i = 0 ; i < 4; i++) 
+  for (i = 0 ; i < 2; i++) 
     e[i] = m[i] ? s[i] : 0;
    
-  if (check_union256d (u, e))
+  if (check_union128d (u, e))
     abort ();
 }

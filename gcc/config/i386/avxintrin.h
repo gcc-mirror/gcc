@@ -890,55 +890,55 @@ _mm256_storeu_si256 (__m256i *__P, __m256i __A)
 }
 
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskload_pd (double const *__P, __m128d __M)
+_mm_maskload_pd (double const *__P, __m128i __M)
 {
   return (__m128d) __builtin_ia32_maskloadpd ((const __v2df *)__P,
-					      (__v2df)__M);
+					      (__v2di)__M);
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskstore_pd (double *__P, __m128d __M, __m128d __A)
+_mm_maskstore_pd (double *__P, __m128i __M, __m128d __A)
 {
-  __builtin_ia32_maskstorepd ((__v2df *)__P, (__v2df)__M, (__v2df)__A);
+  __builtin_ia32_maskstorepd ((__v2df *)__P, (__v2di)__M, (__v2df)__A);
 }
 
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskload_pd (double const *__P, __m256d __M)
+_mm256_maskload_pd (double const *__P, __m256i __M)
 {
   return (__m256d) __builtin_ia32_maskloadpd256 ((const __v4df *)__P,
-						 (__v4df)__M);
+						 (__v4di)__M);
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskstore_pd (double *__P, __m256d __M, __m256d __A)
+_mm256_maskstore_pd (double *__P, __m256i __M, __m256d __A)
 {
-  __builtin_ia32_maskstorepd256 ((__v4df *)__P, (__v4df)__M, (__v4df)__A);
+  __builtin_ia32_maskstorepd256 ((__v4df *)__P, (__v4di)__M, (__v4df)__A);
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskload_ps (float const *__P, __m128 __M)
+_mm_maskload_ps (float const *__P, __m128i __M)
 {
   return (__m128) __builtin_ia32_maskloadps ((const __v4sf *)__P,
-					     (__v4sf)__M);
+					     (__v4si)__M);
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskstore_ps (float *__P, __m128 __M, __m128 __A)
+_mm_maskstore_ps (float *__P, __m128i __M, __m128 __A)
 {
-  __builtin_ia32_maskstoreps ((__v4sf *)__P, (__v4sf)__M, (__v4sf)__A);
+  __builtin_ia32_maskstoreps ((__v4sf *)__P, (__v4si)__M, (__v4sf)__A);
 }
 
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskload_ps (float const *__P, __m256 __M)
+_mm256_maskload_ps (float const *__P, __m256i __M)
 {
   return (__m256) __builtin_ia32_maskloadps256 ((const __v8sf *)__P,
-						(__v8sf)__M);
+						(__v8si)__M);
 }
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskstore_ps (float *__P, __m256 __M, __m256 __A)
+_mm256_maskstore_ps (float *__P, __m256i __M, __m256 __A)
 {
-  __builtin_ia32_maskstoreps256 ((__v8sf *)__P, (__v8sf)__M, (__v8sf)__A);
+  __builtin_ia32_maskstoreps256 ((__v8sf *)__P, (__v8si)__M, (__v8sf)__A);
 }
 
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

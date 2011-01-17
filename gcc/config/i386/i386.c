@@ -20806,12 +20806,12 @@ enum ix86_special_builtin_type
   V4DF_FTYPE_PCDOUBLE,
   V4SF_FTYPE_PCFLOAT,
   V2DF_FTYPE_PCDOUBLE,
-  V8SF_FTYPE_PCV8SF_V8SF,
-  V4DF_FTYPE_PCV4DF_V4DF,
+  V8SF_FTYPE_PCV8SF_V8SI,
+  V4DF_FTYPE_PCV4DF_V4DI,
   V4SF_FTYPE_V4SF_PCV2SF,
-  V4SF_FTYPE_PCV4SF_V4SF,
+  V4SF_FTYPE_PCV4SF_V4SI,
   V2DF_FTYPE_V2DF_PCDOUBLE,
-  V2DF_FTYPE_PCV2DF_V2DF,
+  V2DF_FTYPE_PCV2DF_V2DI,
   V2DI_FTYPE_PV2DI,
   VOID_FTYPE_PV2SF_V4SF,
   VOID_FTYPE_PV4DI_V4DI,
@@ -20824,10 +20824,10 @@ enum ix86_special_builtin_type
   VOID_FTYPE_PDOUBLE_V2DF,
   VOID_FTYPE_PDI_DI,
   VOID_FTYPE_PINT_INT,
-  VOID_FTYPE_PV8SF_V8SF_V8SF,
-  VOID_FTYPE_PV4DF_V4DF_V4DF,
-  VOID_FTYPE_PV4SF_V4SF_V4SF,
-  VOID_FTYPE_PV2DF_V2DF_V2DF
+  VOID_FTYPE_PV8SF_V8SI_V8SF,
+  VOID_FTYPE_PV4DF_V4DI_V4DF,
+  VOID_FTYPE_PV4SF_V4SI_V4SF,
+  VOID_FTYPE_PV2DF_V2DI_V2DF
 };
 
 /* Builtin types */
@@ -21058,14 +21058,14 @@ static const struct builtin_description bdesc_special_args[] =
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movntv4df, "__builtin_ia32_movntpd256", IX86_BUILTIN_MOVNTPD256, UNKNOWN, (int) VOID_FTYPE_PDOUBLE_V4DF },
   { OPTION_MASK_ISA_AVX, CODE_FOR_avx_movntv8sf, "__builtin_ia32_movntps256", IX86_BUILTIN_MOVNTPS256, UNKNOWN, (int) VOID_FTYPE_PFLOAT_V8SF },
 
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd, "__builtin_ia32_maskloadpd", IX86_BUILTIN_MASKLOADPD, UNKNOWN, (int) V2DF_FTYPE_PCV2DF_V2DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps, "__builtin_ia32_maskloadps", IX86_BUILTIN_MASKLOADPS, UNKNOWN, (int) V4SF_FTYPE_PCV4SF_V4SF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd256, "__builtin_ia32_maskloadpd256", IX86_BUILTIN_MASKLOADPD256, UNKNOWN, (int) V4DF_FTYPE_PCV4DF_V4DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps256, "__builtin_ia32_maskloadps256", IX86_BUILTIN_MASKLOADPS256, UNKNOWN, (int) V8SF_FTYPE_PCV8SF_V8SF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd, "__builtin_ia32_maskstorepd", IX86_BUILTIN_MASKSTOREPD, UNKNOWN, (int) VOID_FTYPE_PV2DF_V2DF_V2DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps, "__builtin_ia32_maskstoreps", IX86_BUILTIN_MASKSTOREPS, UNKNOWN, (int) VOID_FTYPE_PV4SF_V4SF_V4SF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd256, "__builtin_ia32_maskstorepd256", IX86_BUILTIN_MASKSTOREPD256, UNKNOWN, (int) VOID_FTYPE_PV4DF_V4DF_V4DF },
-  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps256, "__builtin_ia32_maskstoreps256", IX86_BUILTIN_MASKSTOREPS256, UNKNOWN, (int) VOID_FTYPE_PV8SF_V8SF_V8SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd, "__builtin_ia32_maskloadpd", IX86_BUILTIN_MASKLOADPD, UNKNOWN, (int) V2DF_FTYPE_PCV2DF_V2DI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps, "__builtin_ia32_maskloadps", IX86_BUILTIN_MASKLOADPS, UNKNOWN, (int) V4SF_FTYPE_PCV4SF_V4SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadpd256, "__builtin_ia32_maskloadpd256", IX86_BUILTIN_MASKLOADPD256, UNKNOWN, (int) V4DF_FTYPE_PCV4DF_V4DI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskloadps256, "__builtin_ia32_maskloadps256", IX86_BUILTIN_MASKLOADPS256, UNKNOWN, (int) V8SF_FTYPE_PCV8SF_V8SI },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd, "__builtin_ia32_maskstorepd", IX86_BUILTIN_MASKSTOREPD, UNKNOWN, (int) VOID_FTYPE_PV2DF_V2DI_V2DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps, "__builtin_ia32_maskstoreps", IX86_BUILTIN_MASKSTOREPS, UNKNOWN, (int) VOID_FTYPE_PV4SF_V4SI_V4SF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstorepd256, "__builtin_ia32_maskstorepd256", IX86_BUILTIN_MASKSTOREPD256, UNKNOWN, (int) VOID_FTYPE_PV4DF_V4DI_V4DF },
+  { OPTION_MASK_ISA_AVX, CODE_FOR_avx_maskstoreps256, "__builtin_ia32_maskstoreps256", IX86_BUILTIN_MASKSTOREPS256, UNKNOWN, (int) VOID_FTYPE_PV8SF_V8SI_V8SF },
 };
 
 /* Builtins with variable number of arguments.  */
@@ -22620,40 +22620,40 @@ ix86_init_mmx_sse_builtins (void)
     = build_pointer_type (build_type_variant (V8SF_type_node, 1, 0));
   tree pcv4df_type_node
     = build_pointer_type (build_type_variant (V4DF_type_node, 1, 0));
-  tree v8sf_ftype_pcv8sf_v8sf
+  tree v8sf_ftype_pcv8sf_v8si
     = build_function_type_list (V8SF_type_node,
-				pcv8sf_type_node, V8SF_type_node,
+				pcv8sf_type_node, V8SI_type_node,
 				NULL_TREE);
-  tree v4df_ftype_pcv4df_v4df
+  tree v4df_ftype_pcv4df_v4di
     = build_function_type_list (V4DF_type_node,
-				pcv4df_type_node, V4DF_type_node,
+				pcv4df_type_node, V4DI_type_node,
 				NULL_TREE);
-  tree v4sf_ftype_pcv4sf_v4sf
+  tree v4sf_ftype_pcv4sf_v4si
     = build_function_type_list (V4SF_type_node,
-				pcv4sf_type_node, V4SF_type_node,
+				pcv4sf_type_node, V4SI_type_node,
 				NULL_TREE);
-  tree v2df_ftype_pcv2df_v2df
+  tree v2df_ftype_pcv2df_v2di
     = build_function_type_list (V2DF_type_node,
-				pcv2df_type_node, V2DF_type_node,
+				pcv2df_type_node, V2DI_type_node,
 				NULL_TREE);
-  tree void_ftype_pv8sf_v8sf_v8sf
+  tree void_ftype_pv8sf_v8si_v8sf
     = build_function_type_list (void_type_node,
-			        pv8sf_type_node, V8SF_type_node,
+			        pv8sf_type_node, V8SI_type_node,
 				V8SF_type_node,
 				NULL_TREE);
-  tree void_ftype_pv4df_v4df_v4df
+  tree void_ftype_pv4df_v4di_v4df
     = build_function_type_list (void_type_node,
-			        pv4df_type_node, V4DF_type_node,
+			        pv4df_type_node, V4DI_type_node,
 				V4DF_type_node,
 				NULL_TREE);
-  tree void_ftype_pv4sf_v4sf_v4sf
+  tree void_ftype_pv4sf_v4si_v4sf
     = build_function_type_list (void_type_node,
-			        pv4sf_type_node, V4SF_type_node,
+			        pv4sf_type_node, V4SI_type_node,
 				V4SF_type_node,
 				NULL_TREE);
-  tree void_ftype_pv2df_v2df_v2df
+  tree void_ftype_pv2df_v2di_v2df
     = build_function_type_list (void_type_node,
-			        pv2df_type_node, V2DF_type_node,
+			        pv2df_type_node, V2DI_type_node,
 				V2DF_type_node,
 				NULL_TREE);
   tree v4df_ftype_v2df
@@ -22759,23 +22759,23 @@ ix86_init_mmx_sse_builtins (void)
 	case V2DF_FTYPE_PCDOUBLE:
 	  type = v2df_ftype_pcdouble;
 	  break;
-	case V8SF_FTYPE_PCV8SF_V8SF:
-	  type = v8sf_ftype_pcv8sf_v8sf;
+	case V8SF_FTYPE_PCV8SF_V8SI:
+	  type = v8sf_ftype_pcv8sf_v8si;
 	  break;
-	case V4DF_FTYPE_PCV4DF_V4DF:
-	  type = v4df_ftype_pcv4df_v4df;
+	case V4DF_FTYPE_PCV4DF_V4DI:
+	  type = v4df_ftype_pcv4df_v4di;
 	  break;
 	case V4SF_FTYPE_V4SF_PCV2SF:
 	  type = v4sf_ftype_v4sf_pcv2sf;
 	  break;
-	case V4SF_FTYPE_PCV4SF_V4SF:
-	  type = v4sf_ftype_pcv4sf_v4sf;
+	case V4SF_FTYPE_PCV4SF_V4SI:
+	  type = v4sf_ftype_pcv4sf_v4si;
 	  break;
 	case V2DF_FTYPE_V2DF_PCDOUBLE:
 	  type = v2df_ftype_v2df_pcdouble;
 	  break;
-	case V2DF_FTYPE_PCV2DF_V2DF:
-	  type = v2df_ftype_pcv2df_v2df;
+	case V2DF_FTYPE_PCV2DF_V2DI:
+	  type = v2df_ftype_pcv2df_v2di;
 	  break;
 	case VOID_FTYPE_PV2SF_V4SF:
 	  type = void_ftype_pv2sf_v4sf;
@@ -22810,17 +22810,17 @@ ix86_init_mmx_sse_builtins (void)
 	case VOID_FTYPE_PINT_INT:
 	  type = void_ftype_pint_int;
 	  break;
-	case VOID_FTYPE_PV8SF_V8SF_V8SF:
-	  type = void_ftype_pv8sf_v8sf_v8sf;
+	case VOID_FTYPE_PV8SF_V8SI_V8SF:
+	  type = void_ftype_pv8sf_v8si_v8sf;
 	  break;
-	case VOID_FTYPE_PV4DF_V4DF_V4DF:
-	  type = void_ftype_pv4df_v4df_v4df;
+	case VOID_FTYPE_PV4DF_V4DI_V4DF:
+	  type = void_ftype_pv4df_v4di_v4df;
 	  break;
-	case VOID_FTYPE_PV4SF_V4SF_V4SF:
-	  type = void_ftype_pv4sf_v4sf_v4sf;
+	case VOID_FTYPE_PV4SF_V4SI_V4SF:
+	  type = void_ftype_pv4sf_v4si_v4sf;
 	  break;
-	case VOID_FTYPE_PV2DF_V2DF_V2DF:
-	  type = void_ftype_pv2df_v2df_v2df;
+	case VOID_FTYPE_PV2DF_V2DI_V2DF:
+	  type = void_ftype_pv2df_v2di_v2df;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -24650,18 +24650,18 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
       klass = load;
       memory = 1;
       break;
-    case V8SF_FTYPE_PCV8SF_V8SF:
-    case V4DF_FTYPE_PCV4DF_V4DF:
-    case V4SF_FTYPE_PCV4SF_V4SF:
-    case V2DF_FTYPE_PCV2DF_V2DF:
+    case V8SF_FTYPE_PCV8SF_V8SI:
+    case V4DF_FTYPE_PCV4DF_V4DI:
+    case V4SF_FTYPE_PCV4SF_V4SI:
+    case V2DF_FTYPE_PCV2DF_V2DI:
       nargs = 2;
       klass = load;
       memory = 0;
       break;
-    case VOID_FTYPE_PV8SF_V8SF_V8SF:
-    case VOID_FTYPE_PV4DF_V4DF_V4DF:
-    case VOID_FTYPE_PV4SF_V4SF_V4SF:
-    case VOID_FTYPE_PV2DF_V2DF_V2DF:
+    case VOID_FTYPE_PV8SF_V8SI_V8SF:
+    case VOID_FTYPE_PV4DF_V4DI_V4DF:
+    case VOID_FTYPE_PV4SF_V4SI_V4SF:
+    case VOID_FTYPE_PV2DF_V2DI_V2DF:
       nargs = 2;
       klass = store;
       /* Reserve memory operand for target.  */
