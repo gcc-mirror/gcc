@@ -472,8 +472,6 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	      default:
 		gcc_unreachable ();
 	      }
-	    /* ??? Removable when all of cbranch, cstore, cmove are updated. */
-	    if (GET_MODE_CLASS (mode) == MODE_CC)
 	    gcc_checking_assert ((flags_from_code (code)
 				  & ~flags_from_mode (mode)) == 0);
 	  }
