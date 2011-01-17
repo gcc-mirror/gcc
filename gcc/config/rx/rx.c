@@ -1847,7 +1847,6 @@ enum rx_builtin
   RX_BUILTIN_REVW,
   RX_BUILTIN_RMPA,
   RX_BUILTIN_ROUND,
-  RX_BUILTIN_SAT,
   RX_BUILTIN_SETPSW,
   RX_BUILTIN_WAIT,
   RX_BUILTIN_max
@@ -1902,7 +1901,6 @@ rx_init_builtins (void)
   ADD_RX_BUILTIN1 (RACW,    "racw",    void,  integer);
   ADD_RX_BUILTIN1 (ROUND,   "round",   intSI, float);
   ADD_RX_BUILTIN1 (REVW,    "revw",    intSI, intSI);
-  ADD_RX_BUILTIN1 (SAT,     "sat",     intSI, intSI);
   ADD_RX_BUILTIN1 (WAIT,    "wait",    void,  void);
 }
 
@@ -2100,8 +2098,6 @@ rx_expand_builtin (tree exp,
     case RX_BUILTIN_ROUND:   return rx_expand_builtin_round (op, target);
     case RX_BUILTIN_REVW:    return rx_expand_int_builtin_1_arg
 	(op, target, gen_revw, false);
-    case RX_BUILTIN_SAT:     return rx_expand_int_builtin_1_arg
-	(op, target, gen_sat, false);
     case RX_BUILTIN_WAIT:    emit_insn (gen_wait ()); return NULL_RTX;
 
     default:
