@@ -1,5 +1,6 @@
 2011-01-17  Ian Lance Taylor  <iant@google.com>
 
+	PR target/47219
 	* config/sparc/sparc.c (sparc_sr_alias_set): Don't define.
 	(struct_value_alias_set): Don't define.
 	(sparc_option_override): Don't set sparc_sr_alias_set and
