@@ -1,3 +1,9 @@
+2011-01-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47314
+	* objc-act.c (finish_objc): When calling check_duplicates to check
+	duplicated instance methods, set 'is_class' to 0, not 1.
+
 2011-01-14  Ben Elliston  <bje@au.ibm.com>
 
 	PR 19162
