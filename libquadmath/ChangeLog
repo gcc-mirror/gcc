@@ -1,5 +1,10 @@
 2011-01-17  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/47295
+	* libquadmath.text: Document typedef and constants.
+
+2011-01-17  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/46817
 	* quadmath-imp.h: Refer to libquadmath not ot libiberty,
 	bump copyright year and use /**/ instead of // comments.

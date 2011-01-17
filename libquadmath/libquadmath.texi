@@ -72,6 +72,7 @@ Math Library Application Programming Interface (API).
 @comment  better formatting.
 @comment
 @menu
+* Typedef and constants::      Defined data types and constants
 * Math Library Routines::      The Libquadmath math runtime application
                                programming interface.
 * I/O Library Routines::       The Libquadmath I/O runtime application
@@ -81,6 +82,52 @@ Math Library Application Programming Interface (API).
 * Reporting Bugs::             How to report bugs in GCC Libquadmath.
 @c * Index::                      Index of this documentation.
 @end menu
+
+
+@c ---------------------------------------------------------------------
+@c Defined macros
+@c ---------------------------------------------------------------------
+
+@node Typedef and constants
+@chapter Typedef and constants
+
+The following data type has been defined via @code{typedef}.
+
+@table @asis
+@item @code{__complex128}: @code{__float128}-based complex number
+@end table
+
+The following macros are defined, which give the numeric limits of the
+@code{__float128} data type.
+
+@table @asis
+@item @code{FLT128_MAX}: largest finite number
+@item @code{FLT128_MIN}: smallest positive number with full precision
+@item @code{FLT128_EPSILON}: difference between 1 and the next larger
+                             representable number
+@item @code{FLT128_DENORM_MIN}: smallest positive denormalized number
+@item @code{FLT128_MANT_DIG}: number of digits in the mantissa (bit precision)
+@item @code{FLT128_MIN_EXP}: maximal negative exponent
+@item @code{FLT128_MAX_EXP}: maximal positive exponent
+@end table
+
+The following mathematical constants of type @code{__float128} are defined.
+
+@table @asis
+@item @code{M_Eq}: the constant e (Euler's number)
+@item @code{M_LOG2Eq}: binary logarithm of 2
+@item @code{M_LOG10Eq}: common, decimal logarithm of 2
+@item @code{M_LN2q}: natural logarithm of 2
+@item @code{M_LN10q}: natural logarithm of 10
+@item @code{M_PIq}: pi
+@item @code{M_PI_2q}: two pi
+@item @code{M_PI_4q}: four pi
+@item @code{M_1_PIq}: one over pi
+@item @code{M_2_PIq}: one over two pi
+@item @code{M_2_SQRTPIq}: two over square root of pi
+@item @code{M_SQRT2q}: square root of 2
+@item @code{M_SQRT1_2q}: one over square root of 2
+@end table
 
 
 @c ---------------------------------------------------------------------
