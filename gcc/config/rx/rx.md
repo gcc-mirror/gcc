@@ -915,10 +915,21 @@
 (define_insn "abssi2"
   [(set (match_operand:SI         0 "register_operand" "=r,r")
         (abs:SI (match_operand:SI 1 "register_operand"  "0,r")))
-   (set (reg:CC_ZSO CC_REG)
-	(compare:CC_ZSO (abs:SI (match_dup 1))
-			(const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "@
+  abs\t%0
+  abs\t%1, %0"
+  [(set_attr "length" "2,3")]
+)
+
+(define_insn "*abssi2_flags"
+  [(set (match_operand:SI         0 "register_operand" "=r,r")
+        (abs:SI (match_operand:SI 1 "register_operand"  "0,r")))
+   (set (reg CC_REG)
+	(compare (abs:SI (match_dup 1))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSOmode)"
   "@
   abs\t%0
   abs\t%1, %0"
@@ -929,10 +940,35 @@
   [(set (match_operand:SI          0 "register_operand"  "=r,r,r,r,r,r,r,r,r,r,r,r,r,r")
 	(plus:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,0,r,r,r,r,r,r,0")
 		 (match_operand:SI 2 "rx_source_operand" "r,Uint04,NEGint4,Sint08,Sint16,Sint24,i,0,r,Sint08,Sint16,Sint24,i,Q")))
-   (set (reg:CC_ZSC CC_REG) ;; See subsi3
-	(compare:CC_ZSC (plus:SI (match_dup 1) (match_dup 2))
-			(const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "@
+  add\t%2, %0
+  add\t%2, %0
+  sub\t%N2, %0
+  add\t%2, %0
+  add\t%2, %0
+  add\t%2, %0
+  add\t%2, %0
+  add\t%1, %0
+  add\t%2, %1, %0
+  add\t%2, %1, %0
+  add\t%2, %1, %0
+  add\t%2, %1, %0
+  add\t%2, %1, %0
+  add\t%Q2, %0"
+  [(set_attr "timings" "11,11,11,11,11,11,11,11,11,11,11,11,11,33")
+   (set_attr "length"   "2,2,2,3,4,5,6,2,3,3,4,5,6,5")]
+)
+
+(define_insn "*addsi3_flags"
+  [(set (match_operand:SI          0 "register_operand"  "=r,r,r,r,r,r,r,r,r,r,r,r,r,r")
+	(plus:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,0,r,r,r,r,r,r,0")
+		 (match_operand:SI 2 "rx_source_operand" "r,Uint04,NEGint4,Sint08,Sint16,Sint24,i,0,r,Sint08,Sint16,Sint24,i,Q")))
+   (set (reg CC_REG)
+	(compare (plus:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSCmode)"
   "@
   add\t%2, %0
   add\t%2, %0
@@ -957,9 +993,7 @@
 	(plus:DI (match_operand:DI 1 "register_operand" "%0,0,0,0,0,0")
 		 (match_operand:DI 2 "rx_source_operand"
 				   "r,Sint08,Sint16,Sint24,i,Q")))
-   (set (reg:CC_ZSC CC_REG) ;; See subsi3
-	(compare:CC_ZSC (plus:DI (match_dup 1) (match_dup 2))
-			(const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
   "add\t%L2, %L0\n\tadc\t%H2, %H0"
   [(set_attr "timings" "22,22,22,22,22,44")
@@ -970,10 +1004,30 @@
   [(set (match_operand:SI         0 "register_operand"  "=r,r,r,r,r,r,r,r,r")
 	(and:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,r,r,0")
 		(match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (and:SI (match_dup 1) (match_dup 2))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "@
+  and\t%2, %0
+  and\t%2, %0
+  and\t%2, %0
+  and\t%2, %0
+  and\t%2, %0
+  and\t%2, %0
+  and\t%1, %0
+  and\t%2, %1, %0
+  and\t%Q2, %0"
+  [(set_attr "timings" "11,11,11,11,11,11,11,33,33")
+   (set_attr "length" "2,2,3,4,5,6,2,5,5")]
+)
+
+(define_insn "*andsi3_flags"
+  [(set (match_operand:SI         0 "register_operand"  "=r,r,r,r,r,r,r,r,r")
+	(and:SI (match_operand:SI 1 "register_operand"  "%0,0,0,0,0,0,r,r,0")
+		(match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))
+   (set (reg CC_REG)
+	(compare (and:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   and\t%2, %0
   and\t%2, %0
@@ -1107,12 +1161,23 @@
 (define_insn "negsi2"
   [(set (match_operand:SI         0 "register_operand" "=r,r")
         (neg:SI (match_operand:SI 1 "register_operand"  "0,r")))
-   (set (reg:CC CC_REG)
-	(compare:CC (neg:SI (match_dup 1))
-		    (const_int 0)))]
-  ;; The NEG instruction does not comply with -fwrapv semantics.
-  ;; See gcc.c-torture/execute/pr22493-1.c for an example of this.
-  "! flag_wrapv"
+   (clobber (reg:CC CC_REG))]
+  ""
+  "@
+  neg\t%0
+  neg\t%1, %0"
+  [(set_attr "length" "2,3")]
+)
+
+;; Note that the O and C flags are not set as per a normal compare,
+;; and thus are unusable in that context.
+(define_insn "*negsi2_flags"
+  [(set (match_operand:SI         0 "register_operand" "=r,r")
+        (neg:SI (match_operand:SI 1 "register_operand"  "0,r")))
+   (set (reg CC_REG)
+	(compare (neg:SI (match_dup 1))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   neg\t%0
   neg\t%1, %0"
@@ -1122,10 +1187,21 @@
 (define_insn "one_cmplsi2"
   [(set (match_operand:SI         0 "register_operand" "=r,r")
 	(not:SI (match_operand:SI 1 "register_operand"  "0,r")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (not:SI (match_dup 1))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "@
+  not\t%0
+  not\t%1, %0"
+  [(set_attr "length" "2,3")]
+)
+
+(define_insn "*one_cmplsi2_flags"
+  [(set (match_operand:SI         0 "register_operand" "=r,r")
+	(not:SI (match_operand:SI 1 "register_operand"  "0,r")))
+   (set (reg CC_REG)
+	(compare (not:SI (match_dup 1))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   not\t%0
   not\t%1, %0"
@@ -1136,10 +1212,30 @@
   [(set (match_operand:SI         0 "register_operand" "=r,r,r,r,r,r,r,r,r")
 	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r,r,0")
 	        (match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (ior:SI (match_dup 1) (match_dup 2))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "@
+  or\t%2, %0
+  or\t%2, %0
+  or\t%2, %0
+  or\t%2, %0
+  or\t%2, %0
+  or\t%Q2, %0
+  or\t%1, %0
+  or\t%2, %1, %0
+  or\t%Q2, %0"
+  [(set_attr "timings" "11,11,11,11,11,11,11,11,33")
+   (set_attr "length"  "2,2,3,4,5,6,2,3,5")]
+)
+
+(define_insn "*iorsi3_flags"
+  [(set (match_operand:SI         0 "register_operand" "=r,r,r,r,r,r,r,r,r")
+	(ior:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0,r,r,0")
+	        (match_operand:SI 2 "rx_source_operand" "r,Uint04,Sint08,Sint16,Sint24,i,0,r,Q")))
+   (set (reg CC_REG)
+	(compare (ior:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   or\t%2, %0
   or\t%2, %0
@@ -1158,10 +1254,20 @@
   [(set (match_operand:SI            0 "register_operand" "=r")
 	(rotate:SI (match_operand:SI 1 "register_operand"  "0")
 		   (match_operand:SI 2 "rx_shift_operand" "rn")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (rotate:SI (match_dup 1) (match_dup 2))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "rotl\t%2, %0"
+  [(set_attr "length" "3")]
+)
+
+(define_insn "*rotlsi3_flags"
+  [(set (match_operand:SI            0 "register_operand" "=r")
+	(rotate:SI (match_operand:SI 1 "register_operand"  "0")
+		   (match_operand:SI 2 "rx_shift_operand" "rn")))
+   (set (reg CC_REG)
+	(compare (rotate:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "rotl\t%2, %0"
   [(set_attr "length" "3")]
 )
@@ -1170,10 +1276,20 @@
   [(set (match_operand:SI              0 "register_operand" "=r")
 	(rotatert:SI (match_operand:SI 1 "register_operand"  "0")
 		     (match_operand:SI 2 "rx_shift_operand" "rn")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (rotatert:SI (match_dup 1) (match_dup 2))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "rotr\t%2, %0"
+  [(set_attr "length" "3")]
+)
+
+(define_insn "*rotrsi3_flags"
+  [(set (match_operand:SI              0 "register_operand" "=r")
+	(rotatert:SI (match_operand:SI 1 "register_operand"  "0")
+		     (match_operand:SI 2 "rx_shift_operand" "rn")))
+   (set (reg CC_REG)
+	(compare (rotatert:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "rotr\t%2, %0"
   [(set_attr "length" "3")]
 )
@@ -1182,10 +1298,23 @@
   [(set (match_operand:SI              0 "register_operand" "=r,r,r")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r")
 		     (match_operand:SI 2 "rx_shift_operand"  "r,n,n")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (ashiftrt:SI (match_dup 1) (match_dup 2))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "@
+  shar\t%2, %0
+  shar\t%2, %0
+  shar\t%2, %1, %0"
+  [(set_attr "length" "3,2,3")]
+)
+
+(define_insn "*ashrsi3_flags"
+  [(set (match_operand:SI              0 "register_operand" "=r,r,r")
+	(ashiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r")
+		     (match_operand:SI 2 "rx_shift_operand"  "r,n,n")))
+   (set (reg CC_REG)
+	(compare (ashiftrt:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   shar\t%2, %0
   shar\t%2, %0
@@ -1197,10 +1326,23 @@
   [(set (match_operand:SI              0 "register_operand" "=r,r,r")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r")
 		     (match_operand:SI 2 "rx_shift_operand"  "r,n,n")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (lshiftrt:SI (match_dup 1) (match_dup 2))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "@
+  shlr\t%2, %0
+  shlr\t%2, %0
+  shlr\t%2, %1, %0"
+  [(set_attr "length" "3,2,3")]
+)
+
+(define_insn "*lshrsi3_flags"
+  [(set (match_operand:SI              0 "register_operand" "=r,r,r")
+	(lshiftrt:SI (match_operand:SI 1 "register_operand"  "0,0,r")
+		     (match_operand:SI 2 "rx_shift_operand"  "r,n,n")))
+   (set (reg CC_REG)
+	(compare (lshiftrt:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   shlr\t%2, %0
   shlr\t%2, %0
@@ -1212,10 +1354,23 @@
   [(set (match_operand:SI            0 "register_operand" "=r,r,r")
 	(ashift:SI (match_operand:SI 1 "register_operand"  "0,0,r")
 	           (match_operand:SI 2 "rx_shift_operand"  "r,n,n")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (ashift:SI (match_dup 1) (match_dup 2))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "@
+  shll\t%2, %0
+  shll\t%2, %0
+  shll\t%2, %1, %0"
+  [(set_attr "length" "3,2,3")]
+)
+
+(define_insn "*ashlsi3_flags"
+  [(set (match_operand:SI            0 "register_operand" "=r,r,r")
+	(ashift:SI (match_operand:SI 1 "register_operand"  "0,0,r")
+	           (match_operand:SI 2 "rx_shift_operand"  "r,n,n")))
+   (set (reg CC_REG)
+	(compare (ashift:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   shll\t%2, %0
   shll\t%2, %0
@@ -1227,13 +1382,28 @@
   [(set (match_operand:SI           0 "register_operand" "=r,r,r,r,r")
 	(minus:SI (match_operand:SI 1 "register_operand"  "0,0,0,r,0")
 		  (match_operand:SI 2 "rx_source_operand" "r,Uint04,n,r,Q")))
-   (set (reg:CC_ZSC CC_REG)
-	;; Note - we do not acknowledge that the SUB instruction sets the Overflow
-	;; flag because its interpretation is different from comparing the result
-	;; against zero.  Compile and run gcc.c-torture/execute/cmpsi-1.c to see this.
-	(compare:CC_ZSC (minus:SI (match_dup 1) (match_dup 2))
-			(const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "@
+  sub\t%2, %0
+  sub\t%2, %0
+  add\t%N2, %0
+  sub\t%2, %1, %0
+  sub\t%Q2, %0"
+  [(set_attr "timings" "11,11,11,11,33")
+   (set_attr "length" "2,2,6,3,5")]
+)
+
+;; Note that the O flag is set as if (compare op1 op2) not for
+;; what is described here, (compare op0 0).
+(define_insn "*subsi3_flags"
+  [(set (match_operand:SI           0 "register_operand" "=r,r,r,r,r")
+	(minus:SI (match_operand:SI 1 "register_operand"  "0,0,0,r,0")
+		  (match_operand:SI 2 "rx_source_operand" "r,Uint04,n,r,Q")))
+   (set (reg CC_REG)
+	(compare (minus:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSCmode)"
   "@
   sub\t%2, %0
   sub\t%2, %0
@@ -1248,9 +1418,7 @@
   [(set (match_operand:DI           0 "register_operand" "=r,r")
 	(minus:DI (match_operand:DI 1 "register_operand"  "0,0")
 		  (match_operand:DI 2 "rx_source_operand" "r,Q")))
-   (set (reg:CC_ZSC CC_REG) ;; See subsi3
-	(compare:CC_ZSC (minus:DI (match_dup 1) (match_dup 2))
-			(const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
   "sub\t%L2, %L0\n\tsbb\t%H2, %H0"
   [(set_attr "timings" "22,44")
@@ -1262,10 +1430,22 @@
 	(xor:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
 	        (match_operand:SI 2 "rx_source_operand"
 				  "r,Sint08,Sint16,Sint24,i,Q")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (xor:SI (match_dup 1) (match_dup 2))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   ""
+  "xor\t%Q2, %0"
+  [(set_attr "timings" "11,11,11,11,11,33")
+   (set_attr "length" "3,4,5,6,7,6")]
+)
+
+(define_insn "*xorsi3_flags"
+  [(set (match_operand:SI         0 "register_operand" "=r,r,r,r,r,r")
+	(xor:SI (match_operand:SI 1 "register_operand" "%0,0,0,0,0,0")
+	        (match_operand:SI 2 "rx_source_operand"
+				  "r,Sint08,Sint16,Sint24,i,Q")))
+   (set (reg CC_REG)
+	(compare (xor:SI (match_dup 1) (match_dup 2))
+		 (const_int 0)))]
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "xor\t%Q2, %0"
   [(set_attr "timings" "11,11,11,11,11,33")
    (set_attr "length" "3,4,5,6,7,6")]
@@ -1277,9 +1457,7 @@
   [(set (match_operand:SF          0 "register_operand"  "=r,r,r")
 	(plus:SF (match_operand:SF 1 "register_operand"  "%0,0,0")
 		 (match_operand:SF 2 "rx_source_operand"  "r,F,Q")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (plus:SF (match_dup 1) (match_dup 2))
-			(const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   "ALLOW_RX_FPU_INSNS"
   "fadd\t%2, %0"
   [(set_attr "timings" "44,44,66")
@@ -1290,9 +1468,7 @@
   [(set (match_operand:SF         0 "register_operand" "=r,r,r")
 	(div:SF (match_operand:SF 1 "register_operand"  "0,0,0")
 		(match_operand:SF 2 "rx_source_operand" "r,F,Q")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (div:SF (match_dup 1) (match_dup 2))
-			(const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   "ALLOW_RX_FPU_INSNS"
   "fdiv\t%2, %0"
   [(set_attr "timings" "1616,1616,1818")
@@ -1303,9 +1479,7 @@
   [(set (match_operand:SF          0 "register_operand" "=r,r,r")
 	(mult:SF (match_operand:SF 1 "register_operand" "%0,0,0")
 		(match_operand:SF  2 "rx_source_operand" "r,F,Q")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (mult:SF (match_dup 1) (match_dup 2))
-			(const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   "ALLOW_RX_FPU_INSNS"
   "fmul\t%2, %0"
   [(set_attr "timings" "33,33,55")
@@ -1316,9 +1490,7 @@
   [(set (match_operand:SF           0 "register_operand" "=r,r,r")
 	(minus:SF (match_operand:SF 1 "register_operand"  "0,0,0")
 		  (match_operand:SF 2 "rx_source_operand" "r,F,Q")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (minus:SF (match_dup 1) (match_dup 2))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   "ALLOW_RX_FPU_INSNS"
   "fsub\t%Q2, %0"
   [(set_attr "timings" "44,44,66")
@@ -1328,9 +1500,7 @@
 (define_insn "fix_truncsfsi2"
   [(set (match_operand:SI         0 "register_operand"  "=r,r")
 	(fix:SI (match_operand:SF 1 "rx_compare_operand" "r,Q")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (fix:SI (match_dup 1))
-		       (const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   "ALLOW_RX_FPU_INSNS"
   "ftoi\t%Q1, %0"
   [(set_attr "timings" "22,44")
@@ -1340,9 +1510,7 @@
 (define_insn "floatsisf2"
   [(set (match_operand:SF           0 "register_operand"  "=r,r")
 	(float:SF (match_operand:SI 1 "rx_compare_operand" "r,Q")))
-   (set (reg:CC_ZS CC_REG)
-	(compare:CC_ZS (float:SF (match_dup 1))
-			(const_int 0)))]
+   (clobber (reg:CC CC_REG))]
   "ALLOW_RX_FPU_INSNS"
   "itof\t%Q1, %0"
   [(set_attr "timings" "22,44")
