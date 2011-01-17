@@ -340,12 +340,7 @@
 	(compare:CC (match_operand:SI 0 "register_operand"  "r,r,r,r,r,r,r")
 		    (match_operand:SI 1 "rx_source_operand" "r,Uint04,Int08,Sint16,Sint24,i,Q")))]
   ""
-  {
-    rx_float_compare_mode = false;
-    if (rx_compare_redundant (insn))
-      return "; Compare Eliminated: cmp %Q1, %0";
-    return "cmp\t%Q1, %0";
-  }
+  "cmp\t%Q1, %0"
   [(set_attr "timings" "11,11,11,11,11,11,33")
    (set_attr "length"  "2,2,3,4,5,6,5")]
 )
