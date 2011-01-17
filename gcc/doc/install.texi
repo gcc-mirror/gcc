@@ -1046,7 +1046,8 @@ endians, with little endian being the default:
 Example 2: to configure a compiler for both SH4A and SH4AL-DSP, but with
 only little endian SH4AL:
 @smallexample
---with-cpu=sh4a --with-endian=little,big --with-multilib-list=sh4al,!mb/m4al
+--with-cpu=sh4a --with-endian=little,big \
+--with-multilib-list=sh4al,!mb/m4al
 @end smallexample
 
 @item --with-endian=@var{endians}
@@ -1559,17 +1560,17 @@ If you do not have GMP (the GNU Multiple Precision library), the MPFR
 library and/or the MPC library installed in a standard location and
 you want to build GCC, you can explicitly specify the directory where
 they are installed (@samp{--with-gmp=@var{gmpinstalldir}},
-@samp{--with-mpfr=@var{mpfrinstalldir}},
-@samp{--with-mpc=@var{mpcinstalldir}}).  The
-@option{--with-gmp=@var{gmpinstalldir}} option is shorthand for
-@option{--with-gmp-lib=@var{gmpinstalldir}/lib} and
-@option{--with-gmp-include=@var{gmpinstalldir}/include}.  Likewise the
-@option{--with-mpfr=@var{mpfrinstalldir}} option is shorthand for
-@option{--with-mpfr-lib=@var{mpfrinstalldir}/lib} and
-@option{--with-mpfr-include=@var{mpfrinstalldir}/include}, also the
-@option{--with-mpc=@var{mpcinstalldir}} option is shorthand for
-@option{--with-mpc-lib=@var{mpcinstalldir}/lib} and
-@option{--with-mpc-include=@var{mpcinstalldir}/include}.  If these
+@samp{--with-mpfr=@/@var{mpfrinstalldir}},
+@samp{--with-mpc=@/@var{mpcinstalldir}}).  The
+@option{--with-gmp=@/@var{gmpinstalldir}} option is shorthand for
+@option{--with-gmp-lib=@/@var{gmpinstalldir}/lib} and
+@option{--with-gmp-include=@/@var{gmpinstalldir}/include}.  Likewise the
+@option{--with-mpfr=@/@var{mpfrinstalldir}} option is shorthand for
+@option{--with-mpfr-lib=@/@var{mpfrinstalldir}/lib} and
+@option{--with-mpfr-include=@/@var{mpfrinstalldir}/include}, also the
+@option{--with-mpc=@/@var{mpcinstalldir}} option is shorthand for
+@option{--with-mpc-lib=@/@var{mpcinstalldir}/lib} and
+@option{--with-mpc-include=@/@var{mpcinstalldir}/include}.  If these
 shorthand assumptions are not correct, you can use the explicit
 include and lib options directly.  You might also need to ensure the
 shared libraries can be found by the dynamic linker when building and
@@ -1585,14 +1586,14 @@ variable (@env{LD_LIBRARY_PATH} on GNU/Linux and Solaris systems).
 If you do not have PPL (the Parma Polyhedra Library) and the CLooG
 libraries installed in a standard location and you want to build GCC,
 you can explicitly specify the directory where they are installed
-(@samp{--with-ppl=@var{pplinstalldir}},
-@samp{--with-cloog=@var{clooginstalldir}}). The
-@option{--with-ppl=@var{pplinstalldir}} option is shorthand for
-@option{--with-ppl-lib=@var{pplinstalldir}/lib} and
-@option{--with-ppl-include=@var{pplinstalldir}/include}.  Likewise the
-@option{--with-cloog=@var{clooginstalldir}} option is shorthand for
-@option{--with-cloog-lib=@var{clooginstalldir}/lib} and
-@option{--with-cloog-include=@var{clooginstalldir}/include}.  If these
+(@samp{--with-ppl=@/@var{pplinstalldir}},
+@samp{--with-cloog=@/@var{clooginstalldir}}). The
+@option{--with-ppl=@/@var{pplinstalldir}} option is shorthand for
+@option{--with-ppl-lib=@/@var{pplinstalldir}/lib} and
+@option{--with-ppl-include=@/@var{pplinstalldir}/include}.  Likewise the
+@option{--with-cloog=@/@var{clooginstalldir}} option is shorthand for
+@option{--with-cloog-lib=@/@var{clooginstalldir}/lib} and
+@option{--with-cloog-include=@/@var{clooginstalldir}/include}.  If these
 shorthand assumptions are not correct, you can use the explicit
 include and lib options directly.
 
@@ -3223,7 +3224,7 @@ For @code{cris-axis-elf} you need binutils 2.11
 or newer.  For @code{cris-axis-linux-gnu} you need binutils 2.12 or newer.
 
 Pre-packaged tools can be obtained from
-@uref{ftp://ftp.axis.com/pub/axis/tools/cris/compiler-kit/}.  More
+@uref{ftp://ftp.axis.com/@/pub/@/axis/@/tools/@/cris/@/compiler-kit/}.  More
 information about this platform is available at
 @uref{http://developer.axis.com/}.
 
@@ -3250,8 +3251,11 @@ is also used to build the @samp{newlib} C library for CRX.
 
 It is also possible to build libstdc++-v3 for the CRX architecture. This
 needs to be done in a separate step with the following configure settings:
-@samp{gcc/libstdc++-v3/configure --host=crx-elf --with-newlib
---enable-sjlj-exceptions --enable-cxx-flags='-fexceptions -frtti'}
+
+@smallexample
+gcc/libstdc++-v3/configure --host=crx-elf --with-newlib \
+    --enable-sjlj-exceptions --enable-cxx-flags='-fexceptions -frtti'
+@end smallexample
 
 @html
 <hr />
@@ -3573,8 +3577,8 @@ due to a packaging bug the version in Solaris 10, from GNU binutils
 2.19, works, as does the latest version, from GNU binutils 2.20.1.
 
 To use GNU @command{as}, configure with the options
-@option{--with-gnu-as --with-as=/usr/sfw/bin/gas}.  It may be necessary
-to configure with @option{--without-gnu-ld --with-ld=/usr/ccs/bin/ld} to
+@option{--with-gnu-as --with-as=@//usr/@/sfw/@/bin/@/gas}.  It may be necessary
+to configure with @option{--without-gnu-ld --with-ld=@//usr/@/ccs/@/bin/@/ld} to
 guarantee use of Sun @command{ld}.
 @c FIXME: why --without-gnu-ld --with-ld?
 
