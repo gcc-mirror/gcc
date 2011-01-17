@@ -1,5 +1,11 @@
 2011-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/47323
+	* testsuite/28_regex/08_basic_regex/requirements/constexpr_data.cc:
+	Only test wregex when _GLIBCXX_USE_WCHAR_T is defined.
+
+2011-01-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/47320
 	* testsuite/18_support/numeric_limits/lowest.cc:
 	Only test wchar_t when _GLIBCXX_USE_WCHAR_T is defined.
