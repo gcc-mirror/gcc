@@ -1,3 +1,9 @@
+2011-01-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45967
+	* gcc.dg/torture/pr45967-2.c: New testcase.
+	* gcc.dg/torture/pr45967-3.c: Likewise.
+
 2011-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/47325
