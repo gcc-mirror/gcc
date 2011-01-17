@@ -1,3 +1,8 @@
+2011-01-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/lto.texi (LTO): Ensure two spaces after period.  Fix
+	spacing after 'e.g.', typos, comma, hyphenation.
+
 2011-01-17  Richard Henderson  <rth@redhat.com>
 
 	* config/rx/predicates.md (rx_constshift_operand): Use match_test.

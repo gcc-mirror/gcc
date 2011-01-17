@@ -27,7 +27,7 @@ the files.  Additionally, one might be able to ship one set of fat
 objects which could be used both for development and the production of
 optimized builds.  A, perhaps surprising, side effect of this feature
 is that any mistake in the toolchain that leads to LTO information not
-being used (e.g. an older @code{libtool} calling @code{ld} directly).
+being used (e.g.@: an older @code{libtool} calling @code{ld} directly).
 This is both an advantage, as the system is more robust, and a
 disadvantage, as the user is not informed that the optimization has
 been disabled.
@@ -54,7 +54,7 @@ Currently, this phase is composed of two IPA passes:
 @item @code{pass_ipa_lto_gimple_out}
 This pass executes the function @code{lto_output} in
 @file{lto-streamer-out.c}, which traverses the call graph encoding
-every reachable declaration, type and function. This generates a
+every reachable declaration, type and function.  This generates a
 memory representation of all the file sections described below.
 
 @item @code{pass_ipa_lto_finish_out}
@@ -98,33 +98,33 @@ would be easy to implement.
 WHOPR splits LTO into three main stages:
 @enumerate
 @item Local generation (LGEN)
-This stage executes in parallel. Every file in the program is compiled
+This stage executes in parallel.  Every file in the program is compiled
 into the intermediate language and packaged together with the local
 call-graph and summary information.  This stage is the same for both
 the LTO and WHOPR compilation mode.
 
 @item Whole Program Analysis (WPA)
-WPA is performed sequentially. The global call-graph is generated, and
-a global analysis procedure makes transformation decisions. The global
+WPA is performed sequentially.  The global call-graph is generated, and
+a global analysis procedure makes transformation decisions.  The global
 call-graph is partitioned to facilitate parallel optimization during
-phase 3. The results of the WPA stage are stored into new object files
+phase 3.  The results of the WPA stage are stored into new object files
 which contain the partitions of program expressed in the intermediate
 language and the optimization decisions.
 
 @item Local transformations (LTRANS)
-This stage executes in parallel. All the decisions made during phase 2
+This stage executes in parallel.  All the decisions made during phase 2
 are implemented locally in each partitioned object file, and the final
-object code is generated. Optimizations which cannot be decided
+object code is generated.  Optimizations which cannot be decided
 efficiently during the phase 2 may be performed on the local
 call-graph partitions.
 @end enumerate
 
 WHOPR can be seen as an extension of the usual LTO mode of
-compilation.  In LTO, WPA and LTRANS and are executed within a single
+compilation.  In LTO, WPA and LTRANS are executed within a single
 execution of the compiler, after the whole program has been read into
 memory.
 
-When compiling in WHOPR mode the callgraph is partitioned during
+When compiling in WHOPR mode, the callgraph is partitioned during
 the WPA stage.  The whole program is split into a given number of
 partitions of roughly the same size.  The compiler tries to
 minimize the number of references which cross partition boundaries.
@@ -149,13 +149,13 @@ are described below.
 @item Command line options (@code{.gnu.lto_.opts})
 
 This section contains the command line options used to generate the
-object files.  This is used at link-time to determine the optimization
+object files.  This is used at link time to determine the optimization
 level and other settings when they are not explicitly specified at the
 linker command line.
 
 Currently, GCC does not support combining LTO object files compiled
 with different set of the command line options into a single binary.
-At link-time, the options given on the command line and the options
+At link time, the options given on the command line and the options
 saved on all the files in a link-time set are applied globally.  No
 attempt is made at validating the combination of flags (other than the
 usual validation done by option processing).  This is implemented in
@@ -165,7 +165,7 @@ usual validation done by option processing).  This is implemented in
 @item Symbol table (@code{.gnu.lto_.symtab})
 
 This table replaces the ELF symbol table for functions and variables
-represented in the LTO IL. Symbols used and exported by the optimized
+represented in the LTO IL.  Symbols used and exported by the optimized
 assembly code of ``fat'' objects might not match the ones used and
 exported by the intermediate code.  This table is necessary because
 the intermediate code is less optimized and thus requires a separate
@@ -174,7 +174,7 @@ symbol table.
 Additionally, the binary code in the ``fat'' object will lack a call
 to a function, since the call was optimized out at compilation time
 after the intermediate language was streamed out.  In some special
-cases, the same optimization may not happen  during link-time
+cases, the same optimization may not happen during link-time
 optimization.  This would lead to an undefined symbol if only one
 symbol table was used.
 
@@ -198,7 +198,7 @@ of pointers when the file is read back in
 @item The callgraph (@code{.gnu.lto_.cgraph})
 
 This section contains the basic data structure used by the GCC
-inter-procedural optimization infrastructure. This section stores an
+inter-procedural optimization infrastructure.  This section stores an
 annotated multi-graph which represents the functions and call sites as
 well as the variables, aliases and top-level @code{asm} statements.
 
@@ -217,7 +217,7 @@ and read by @file{lto-cgraph.c}:@code{input_refs}.
 @item Function bodies (@code{.gnu.lto_.function_body.<name>})
 
 This section contains function bodies in the intermediate language
-representation. Every function body is in a separate section to allow
+representation.  Every function body is in a separate section to allow
 copying of the section independently to different object files or
 reading the function on demand.
 
@@ -263,12 +263,12 @@ that are executed at different times during WHOPR compilation:
 @item LGEN time
 @enumerate
 @item @emph{Generate summary} (@code{generate_summary} in
-@code{struct ipa_opt_pass_d}). This stage analyzes every function
+@code{struct ipa_opt_pass_d}).  This stage analyzes every function
 body and variable initializer is examined and stores relevant
 information into a pass-specific data structure.
 
 @item @emph{Write summary} (@code{write_summary} in
-@code{struct ipa_opt_pass_d}. This stage writes all the
+@code{struct ipa_opt_pass_d}.  This stage writes all the
 pass-specific information generated by @code{generate_summary}.
 Summaries go into their own @code{LTO_section_*} sections that
 have to be declared in @file{lto-streamer.h}:@code{enum
@@ -280,7 +280,7 @@ lto_section_type}.  A new section is created by calling
 @item WPA time
 @enumerate
 @item @emph{Read summary} (@code{read_summary} in
-@code{struct ipa_opt_pass_d}). This stage reads all the
+@code{struct ipa_opt_pass_d}).  This stage reads all the
 pass-specific information in exactly the same order that it was
 written by @code{write_summary}.
 
@@ -335,7 +335,7 @@ between normal inter-procedural passes and small inter-procedural
 passes.  A @emph{small inter-procedural pass}
 (@code{SIMPLE_IPA_PASS}) is a pass that does
 everything at once and thus it can not be executed during WPA in
-WHOPR mode. It defines only the @emph{Execute} stage and during
+WHOPR mode.  It defines only the @emph{Execute} stage and during
 this stage it accesses and modifies the function bodies.  Such
 passes are useful for optimization at LGEN or LTRANS time and are
 used, for example, to implement early optimization before writing
@@ -367,7 +367,7 @@ Most optimization passes split naturally into analysis,
 propagation and transformation stages.  But some do not.  The
 main problem arises when one pass performs changes and the
 following pass gets confused by seeing different callgraphs
-betwee the @emph{Transform} stage and the @emph{Generate summary}
+between the @emph{Transform} stage and the @emph{Generate summary}
 or @emph{Execute} stage.  This means that the passes are required
 to communicate their decisions with each other.
 
@@ -430,7 +430,7 @@ GCC represents IPA references in the callgraph.  For a function
 or variable @code{A}, the @emph{IPA reference} is a list of all
 locations where the address of @code{A} is taken and, when
 @code{A} is a variable, a list of all direct stores and reads
-to/from @code{A}. References represent an oriented multi-graph on
+to/from @code{A}.  References represent an oriented multi-graph on
 the union of nodes of the callgraph and the varpool.  See
 @file{ipa-reference.c}:@code{ipa_reference_write_optimization_summary}
 and
@@ -454,7 +454,7 @@ Link-time optimization gives relatively minor benefits when used
 alone.  The problem is that propagation of inter-procedural
 information does not work well across functions and variables
 that are called or referenced by other compilation units (such as
-from a dynamically linked library). We say that such functions
+from a dynamically linked library).  We say that such functions
 are variables are @emph{externally visible}.
 
 To make the situation even more difficult, many applications
@@ -476,7 +476,7 @@ provided with the link-time information.  In GCC, the whole
 program option (@option{-fwhole-program}) asserts that every
 function and variable defined in the current compilation
 unit is static, except for function @code{main} (note: at
-link-time, the current unit is the union of all objects compiled
+link time, the current unit is the union of all objects compiled
 with LTO).  Since some functions and variables need to
 be referenced externally, for example by another DSO or from an
 assembler file, GCC also provides the function and variable
@@ -485,7 +485,7 @@ the effect of @option{-fwhole-program} on a specific symbol.
 
 The whole program mode assumptions are slightly more complex in
 C++, where inline functions in headers are put into @emph{COMDAT}
-sections. COMDAT function and variables can be defined by
+sections.  COMDAT function and variables can be defined by
 multiple object files and their bodies are unified at link-time
 and dynamic link-time.  COMDAT functions are changed to local only
 when their address is not taken and thus un-sharing them with a
@@ -500,9 +500,9 @@ externally visible symbols (or alternatively an
 the @code{default}, @code{protected}, @code{hidden} and
 @code{internal} visibilities.
 
-The most commonly used is visibility is @code{hidden}. It
+The most commonly used is visibility is @code{hidden}.  It
 specifies that the symbol cannot be referenced from outside of
-the current shared library. Unfortunately, this information
+the current shared library.  Unfortunately, this information
 cannot be used directly by the link-time optimization in the
 compiler since the whole shared library also might contain
 non-LTO objects and those are not visible to the compiler.
@@ -519,7 +519,7 @@ which symbols provided by the claimed objects are bound from the
 rest of a binary being linked.
 
 Currently, the linker plugin  works only in combination
-with the Gold linker,  but a GNU ld implementation is under
+with the Gold linker, but a GNU ld implementation is under
 development.
 
 GCC is designed to be independent of the rest of the toolchain
@@ -528,7 +528,7 @@ reason it does not use the linker plugin by default.  Instead,
 the object files are examined by @command{collect2} before being
 passed to the linker and objects found to have LTO sections are
 passed to @command{lto1} first.  This mode does not work for
-library archives. The decision on what object files from the
+library archives.  The decision on what object files from the
 archive are needed depends on the actual linking and thus GCC
 would have to implement the linker itself.  The resolution
 information is missing too and thus GCC needs to make an educated
@@ -557,7 +557,7 @@ bodies.  It then drives the LTRANS phase.
 @opindex fltrans
 This option runs the link-time optimizer in the
 local-transformation (LTRANS) mode, which reads in output from a
-previous run of the LTO in WPA mode. In the LTRANS mode, LTO
+previous run of the LTO in WPA mode.  In the LTRANS mode, LTO
 optimizes an object and produces the final assembly.
 
 @item -fltrans-output-list=@var{file}
