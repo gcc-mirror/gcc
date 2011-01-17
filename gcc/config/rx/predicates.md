@@ -310,3 +310,7 @@
 (define_predicate "rx_fp_comparison_operator"
   (match_code "eq,ne,lt,ge,ordered,unordered,uneq,unlt,unge,ltgt")
 )
+
+(define_predicate "rshift_operator"
+  (match_code "ashiftrt,lshiftrt")
+)

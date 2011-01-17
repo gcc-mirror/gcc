@@ -33,7 +33,6 @@ extern int		rx_initial_elimination_offset (int, int);
 extern void             rx_emit_stack_popm (rtx *, bool);
 extern void             rx_emit_stack_pushm (rtx *);
 extern void		rx_expand_epilogue (bool);
-extern bool		rx_expand_insv (rtx *);
 extern char *		rx_gen_move_template (rtx *, bool);
 extern bool		rx_is_legitimate_constant (rtx);
 extern bool 		rx_is_mode_dependent_addr (rtx);

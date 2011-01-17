@@ -1518,91 +1518,208 @@
 )
 
 ;; Bit manipulation instructions.
-;; Note - there are two versions of each pattern because the memory
-;; accessing versions use QImode whilst the register accessing
-;; versions use SImode.
-;; The peephole are here because the combiner only looks at a maximum
-;; of three instructions at a time.
 
-(define_insn "bitset"
+;; ??? The *_in_memory patterns will not be matched without further help.
+;; At one time we had the insv expander generate them, but I suspect that
+;; in general we get better performance by exposing the register load to
+;; the optimizers.
+;;
+;; An alternate solution would be to re-organize these patterns such
+;; that allow both register and memory operands.  This would allow the
+;; register allocator to spill and not load the register operand.  This
+;; would be possible only for operations for which we have a constant
+;; bit offset, so that we can adjust the address by ofs/8 and replace
+;; the offset in the insn by ofs%8.
+
+(define_insn "*bitset"
   [(set (match_operand:SI                    0 "register_operand" "=r")
-	(ior:SI (match_operand:SI            1 "register_operand" "0")
-		(ashift:SI (const_int 1)
-			   (match_operand:SI 2 "nonmemory_operand" "ri"))))]
+	(ior:SI (ashift:SI (const_int 1)
+			   (match_operand:SI 1 "rx_shift_operand" "ri"))
+		(match_operand:SI            2 "register_operand" "0")))]
   ""
-  "bset\t%2, %0"
+  "bset\t%1, %0"
   [(set_attr "length" "3")]
 )
 
-(define_insn "bitset_in_memory"
-  [(set (match_operand:QI                    0 "memory_operand" "=m")
-	(ior:QI (match_operand:QI            1 "memory_operand" "0")
-		(ashift:QI (const_int 1)
-			   (match_operand:QI 2 "nonmemory_operand" "ri"))))]
+(define_insn "*bitset_in_memory"
+  [(set (match_operand:QI                    0 "memory_operand" "+Q")
+	(ior:QI (ashift:QI (const_int 1)
+			   (match_operand:QI 1 "nonmemory_operand" "ri"))
+		(match_dup 0)))]
   ""
-  "bset\t%2, %0.B"
+  "bset\t%1, %0.B"
   [(set_attr "length" "3")
    (set_attr "timings" "34")]
 )
 
 (define_insn "*bitinvert"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(xor:SI (match_operand:SI 1 "register_operand" "0")
-		(ashift:SI (const_int 1)
-			   (match_operand:SI 2 "nonmemory_operand" "ri"))))]
+	(xor:SI (ashift:SI (const_int 1)
+			   (match_operand:SI 1 "rx_shift_operand" "ri"))
+		(match_operand:SI 2 "register_operand" "0")))]
   ""
-  "bnot\t%2, %0"
+  "bnot\t%1, %0"
   [(set_attr "length" "3")]
 )
 
-(define_insn "bitinvert_in_memory"
-  [(set (match_operand:QI 0 "memory_operand" "+m")
-	(xor:QI (match_operand:QI 1 "register_operand" "0")
-		(ashift:QI (const_int 1)
-			   (match_operand:QI 2 "nonmemory_operand" "ri"))))]
+(define_insn "*bitinvert_in_memory"
+  [(set (match_operand:QI 0 "memory_operand" "+Q")
+	(xor:QI (ashift:QI (const_int 1)
+			   (match_operand:QI 1 "nonmemory_operand" "ri"))
+		(match_dup 0)))]
   ""
-  "bnot\t%2, %0.B"
+  "bnot\t%1, %0.B"
   [(set_attr "length" "5")
    (set_attr "timings" "33")]
 )
 
-(define_insn "bitclr"
+(define_insn "*bitclr"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(and:SI (match_operand:SI 1 "register_operand" "0")
-		(not:SI
+	(and:SI (not:SI
 		  (ashift:SI
 		    (const_int 1)
-		    (match_operand:SI 2 "nonmemory_operand" "ri")))))]
+		    (match_operand:SI 1 "rx_shift_operand" "ri")))
+		(match_operand:SI 2 "register_operand" "0")))]
   ""
-  "bclr\t%2, %0"
+  "bclr\t%1, %0"
   [(set_attr "length" "3")]
 )
 
-(define_insn "bitclr_in_memory"
-  [(set (match_operand:QI 0 "memory_operand" "=m")
-	(and:QI (match_operand:QI 1 "memory_operand" "0")
-		(not:QI
+(define_insn "*bitclr_in_memory"
+  [(set (match_operand:QI 0 "memory_operand" "+Q")
+	(and:QI (not:QI
 		  (ashift:QI
 		    (const_int 1)
-		    (match_operand:QI 2 "nonmemory_operand" "ri")))))]
+		    (match_operand:QI 1 "nonmemory_operand" "ri")))
+		(match_dup 0)))]
   ""
-  "bclr\t%2, %0.B"
+  "bclr\t%1, %0.B"
   [(set_attr "length" "3")
    (set_attr "timings" "34")]
 )
 
-(define_expand "insv"
-  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand") ;; Destination
-		         (match_operand    1 "immediate_operand")    ;; # of bits to set
-			 (match_operand    2 "immediate_operand"))   ;; Starting bit
-	(match_operand	              3 "immediate_operand"))]       ;; Bits to insert
+(define_insn "*insv_imm"
+  [(set (zero_extract:SI
+	  (match_operand:SI 0 "register_operand" "+r")
+	  (const_int 1)
+	  (match_operand:SI 1 "rx_shift_operand" "ri"))
+	(match_operand:SI 2 "const_int_operand" ""))]
   ""
-  {
-    if (rx_expand_insv (operands))
-      DONE;
-    FAIL;
-  }
+{
+  if (INTVAL (operands[2]) & 1)
+    return "bset\t%1, %0";
+  else
+    return "bclr\t%1, %0";
+}
+  [(set_attr "length" "3")]
 )
+
+(define_insn_and_split "rx_insv_reg"
+  [(set (zero_extract:SI
+	  (match_operand:SI 0 "register_operand" "+r")
+	  (const_int 1)
+	  (match_operand:SI 1 "const_int_operand" ""))
+	(match_operand:SI 2 "register_operand" "r"))
+   (clobber (reg:CC CC_REG))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
+	(match_dup 3))]
+{
+  rtx flags, x;
+
+  /* Emit tst #1, op2.  */
+  flags = gen_rtx_REG (CC_ZSmode, CC_REG);
+  x = gen_rtx_AND (SImode, operands[2], const1_rtx);
+  x = gen_rtx_COMPARE (CC_ZSmode, x, const0_rtx);
+  x = gen_rtx_SET (VOIDmode, flags, x);
+  emit_insn (x);
+
+  /* Emit bmne.  */
+  operands[3] = gen_rtx_NE (SImode, flags, const0_rtx);
+})
+
+(define_insn_and_split "*insv_cond"
+  [(set (zero_extract:SI
+	  (match_operand:SI 0 "register_operand" "+r")
+	  (const_int 1)
+	  (match_operand:SI 1 "const_int_operand" ""))
+	(match_operator:SI 4 "comparison_operator"
+	  [(match_operand:SI 2 "register_operand" "r")
+	   (match_operand:SI 3 "rx_source_operand" "riQ")]))
+   (clobber (reg:CC CC_REG))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
+	(match_dup 4))]
+{
+  rtx flags, x;
+
+  flags = gen_rtx_REG (CCmode, CC_REG);
+  x = gen_rtx_COMPARE (CCmode, operands[2], operands[3]);
+  x = gen_rtx_SET (VOIDmode, flags, x);
+  emit_insn (x);
+
+  operands[4] = gen_rtx_fmt_ee (GET_CODE (operands[4]), SImode,
+			        flags, const0_rtx);
+})
+
+(define_insn "*bmcc"
+  [(set (zero_extract:SI
+	  (match_operand:SI 0 "register_operand" "+r")
+	  (const_int 1)
+	  (match_operand:SI 1 "const_int_operand" ""))
+	(match_operator:SI 2 "comparison_operator"
+	  [(reg CC_REG) (const_int 0)]))]
+  "reload_completed"
+  "bm%B2\t%1, %0"
+  [(set_attr "length" "3")]
+)
+
+;; Work around the fact that X=Y<0 is preferentially expanded as a shift.
+(define_insn_and_split "*insv_cond_lt"
+  [(set (zero_extract:SI
+	  (match_operand:SI 0 "register_operand" "+r")
+	  (const_int 1)
+	  (match_operand:SI 1 "const_int_operand" ""))
+	(match_operator:SI 3 "rshift_operator"
+	  [(match_operand:SI 2 "register_operand" "r")
+	   (const_int 31)]))
+   (clobber (reg:CC CC_REG))]
+  ""
+  "#"
+  ""
+  [(parallel [(set (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
+		   (lt:SI (match_dup 2) (const_int 0)))
+	      (clobber (reg:CC CC_REG))])]
+  ""
+)
+
+(define_expand "insv"
+  [(set (zero_extract:SI
+	  (match_operand:SI 0 "register_operand")	;; Destination
+	  (match_operand:SI 1 "const_int_operand")	;; # of bits to set
+	  (match_operand:SI 2 "nonmemory_operand"))	;; Starting bit
+	(match_operand:SI   3 "nonmemory_operand"))]	;; Bits to insert
+  ""
+{
+  /* We only handle single-bit inserts.  */
+  if (!CONST_INT_P (operands[1]) || INTVAL (operands[1]) != 1)
+    FAIL;
+
+  /* Either the bit to insert or the position must be constant.  */
+  if (CONST_INT_P (operands[3]))
+    operands[3] = GEN_INT (INTVAL (operands[3]) & 1);
+  else if (CONST_INT_P (operands[2]))
+    {
+      emit_insn (gen_rx_insv_reg (operands[0], operands[2], operands[3]));
+      DONE;
+    }
+  else
+    FAIL;
+})
 
 ;; Atomic exchange operation.
 
