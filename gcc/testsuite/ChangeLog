@@ -1,3 +1,8 @@
+2011-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/47299
+	* gcc.c-torture/execute/pr47299.c: New test.
+
 2011-01-17  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-virtual.C: New.

@@ -1,6 +1,6 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -7631,10 +7631,10 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	      if (optab_handler (this_optab, mode) != CODE_FOR_nothing)
 		{
 		  if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
-		    expand_operands (treeop0, treeop1, subtarget, &op0, &op1,
+		    expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
 				     EXPAND_NORMAL);
 		  else
-		    expand_operands (treeop0, treeop1, subtarget, &op1, &op0,
+		    expand_operands (treeop0, treeop1, NULL_RTX, &op1, &op0,
 				     EXPAND_NORMAL);
 		  goto binop3;
 		}
@@ -7652,7 +7652,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	  optab other_optab = zextend_p ? smul_widen_optab : umul_widen_optab;
 	  this_optab = zextend_p ? umul_widen_optab : smul_widen_optab;
 
-	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
+	  if (mode == GET_MODE_2XWIDER_MODE (innermode)
+	      && TREE_CODE (treeop0) != INTEGER_CST)
 	    {
 	      if (optab_handler (this_optab, mode) != CODE_FOR_nothing)
 		{
