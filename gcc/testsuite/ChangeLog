@@ -1,3 +1,8 @@
+2011-01-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47240
+	* gfortran.dg/proc_ptr_comp_29.f90: New.
+
 2011-01-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR testsuite/41146

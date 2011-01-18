@@ -1,3 +1,10 @@
+2011-01-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47240
+	* resolve.c (expression_rank): Fix rank of procedure poiner components.
+	* trans-expr.c (gfc_conv_procedure_call): Take care of procedure
+	pointer components as actual arguments.
+
 2011-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/47331
