@@ -230,6 +230,7 @@ static void spu_unique_section (tree, int);
 static rtx spu_expand_load (rtx, rtx, rtx, int);
 static void spu_trampoline_init (rtx, tree, rtx);
 static void spu_conditional_register_usage (void);
+static bool spu_ref_may_alias_errno (ao_ref *);
 
 /* Which instruction set architecture to use.  */
 int spu_arch;
@@ -490,6 +491,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE spu_conditional_register_usage
+
+#undef TARGET_REF_MAY_ALIAS_ERRNO
+#define TARGET_REF_MAY_ALIAS_ERRNO spu_ref_may_alias_errno
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -7148,6 +7152,30 @@ spu_function_profiler (FILE * file, int labelno ATTRIBUTE_UNUSED)
 {
   fprintf (file, "# profile\n");
   fprintf (file, "brsl $75,  _mcount\n");
+}
+
+/* Implement targetm.ref_may_alias_errno.  */
+static bool
+spu_ref_may_alias_errno (ao_ref *ref)
+{
+  tree base = ao_ref_base (ref);
+
+  /* With SPU newlib, errno is defined as something like
+         _impure_data._errno
+     The default implementation of this target macro does not
+     recognize such expressions, so special-code for it here.  */
+
+  if (TREE_CODE (base) == VAR_DECL
+      && !TREE_STATIC (base)
+      && DECL_EXTERNAL (base)
+      && TREE_CODE (TREE_TYPE (base)) == RECORD_TYPE
+      && strcmp (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (base)),
+		 "_impure_data") == 0
+      /* _errno is the first member of _impure_data.  */
+      && ref->offset == 0)
+    return true;
+
+  return default_ref_may_alias_errno (ref);
 }
 
 #include "gt-spu.h"
