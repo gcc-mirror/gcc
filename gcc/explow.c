@@ -1148,6 +1148,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 {
   HOST_WIDE_INT stack_usage_size = -1;
   rtx final_label, final_target, target;
+  unsigned extra_align = 0;
   bool must_align;
 
   /* If we're asking for zero bytes, it doesn't matter what we point
@@ -1231,21 +1232,25 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
      that might result from the alignment operation.  */
 
   must_align = (crtl->preferred_stack_boundary < required_align);
-#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET)
-  must_align = true;
-#endif
-
   if (must_align)
     {
-      unsigned extra, extra_align;
-
       if (required_align > PREFERRED_STACK_BOUNDARY)
 	extra_align = PREFERRED_STACK_BOUNDARY;
       else if (required_align > STACK_BOUNDARY)
 	extra_align = STACK_BOUNDARY;
       else
 	extra_align = BITS_PER_UNIT;
-      extra = (required_align - extra_align) / BITS_PER_UNIT;
+    }
+
+  /* ??? STACK_POINTER_OFFSET is always defined now.  */
+#if defined (STACK_DYNAMIC_OFFSET) || defined (STACK_POINTER_OFFSET)
+  must_align = true;
+  extra_align = BITS_PER_UNIT;
+#endif
+
+  if (must_align)
+    {
+      unsigned extra = (required_align - extra_align) / BITS_PER_UNIT;
 
       size = plus_constant (size, extra);
       size = force_operand (size, NULL_RTX);

@@ -1,3 +1,10 @@
+2011-01-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/46894
+	* explow.c (allocate_dynamic_stack_space): Do not assume more than
+	BITS_PER_UNIT alignment if STACK_DYNAMIC_OFFSET or STACK_POINTER_OFFSET
+	are defined.
+
 2011-01-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR tree-optimization/47179
