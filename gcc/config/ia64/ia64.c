@@ -2007,7 +2007,10 @@ ia64_expand_unpack (rtx operands[3], bool unsignedp, bool highp)
       gcc_assert (!neg);
     }
 
-  emit_insn (gen (gen_lowpart (mode, operands[0]), operands[1], x));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen (gen_lowpart (mode, operands[0]), x, operands[1]));
+  else
+    emit_insn (gen (gen_lowpart (mode, operands[0]), operands[1], x));
 }
 
 /* Emit an integral vector widening sum operations.  */
@@ -2058,8 +2061,16 @@ ia64_expand_widen_sum (rtx operands[3], bool unsignedp)
   h = gen_reg_rtx (wmode);
   s = gen_reg_rtx (wmode);
 
-  emit_insn (unpack_l (gen_lowpart (mode, l), operands[1], x));
-  emit_insn (unpack_h (gen_lowpart (mode, h), operands[1], x));
+  if (TARGET_BIG_ENDIAN)
+    {
+      emit_insn (unpack_l (gen_lowpart (mode, l), x, operands[1]));
+      emit_insn (unpack_h (gen_lowpart (mode, h), x, operands[1]));
+    }
+  else
+    {
+      emit_insn (unpack_l (gen_lowpart (mode, l), operands[1], x));
+      emit_insn (unpack_h (gen_lowpart (mode, h), operands[1], x));
+    }
   emit_insn (plus (s, l, operands[2]));
   emit_insn (plus (operands[0], h, s));
 }
@@ -2082,7 +2093,10 @@ ia64_expand_widen_mul_v4hi (rtx operands[3], bool unsignedp, bool highp)
   emit_insn (mulhigh (h, operands[1], operands[2], GEN_INT (16)));
 
   interl = highp ? gen_vec_interleave_highv4hi : gen_vec_interleave_lowv4hi;
-  emit_insn (interl (gen_lowpart (V4HImode, operands[0]), l, h));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (interl (gen_lowpart (V4HImode, operands[0]), h, l));
+  else
+    emit_insn (interl (gen_lowpart (V4HImode, operands[0]), l, h));
 }
 
 /* Emit a signed or unsigned V8QI dot product operation.  */
@@ -2115,14 +2129,28 @@ ia64_expand_dot_prod_v8qi (rtx operands[4], bool unsignedp)
   h1 = gen_reg_rtx (V4HImode);
   h2 = gen_reg_rtx (V4HImode);
 
-  emit_insn (gen_vec_interleave_lowv8qi
-	     (gen_lowpart (V8QImode, l1), operands[1], x1));
-  emit_insn (gen_vec_interleave_lowv8qi
-	     (gen_lowpart (V8QImode, l2), operands[2], x2));
-  emit_insn (gen_vec_interleave_highv8qi
-	     (gen_lowpart (V8QImode, h1), operands[1], x1));
-  emit_insn (gen_vec_interleave_highv8qi
-	     (gen_lowpart (V8QImode, h2), operands[2], x2));
+  if (TARGET_BIG_ENDIAN)
+    {
+      emit_insn (gen_vec_interleave_lowv8qi
+		 (gen_lowpart (V8QImode, l1), x1, operands[1]));
+      emit_insn (gen_vec_interleave_lowv8qi
+		 (gen_lowpart (V8QImode, l2), x2, operands[2]));
+      emit_insn (gen_vec_interleave_highv8qi
+		 (gen_lowpart (V8QImode, h1), x1, operands[1]));
+      emit_insn (gen_vec_interleave_highv8qi
+		 (gen_lowpart (V8QImode, h2), x2, operands[2]));
+    }
+  else
+    {
+      emit_insn (gen_vec_interleave_lowv8qi
+		 (gen_lowpart (V8QImode, l1), operands[1], x1));
+      emit_insn (gen_vec_interleave_lowv8qi
+		 (gen_lowpart (V8QImode, l2), operands[2], x2));
+      emit_insn (gen_vec_interleave_highv8qi
+		 (gen_lowpart (V8QImode, h1), operands[1], x1));
+      emit_insn (gen_vec_interleave_highv8qi
+		 (gen_lowpart (V8QImode, h2), operands[2], x2));
+    }
 
   p1 = gen_reg_rtx (V2SImode);
   p2 = gen_reg_rtx (V2SImode);

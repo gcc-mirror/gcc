@@ -370,7 +370,7 @@
   [(set (match_operand:V2SI 0 "gr_register_operand" "")
 	(mult:V2SI (match_operand:V2SI 1 "gr_register_operand" "r")
 		   (match_operand:V2SI 2 "gr_register_operand" "r")))]
-  ""
+  "!TARGET_BIG_ENDIAN"
 {
   rtx t0, t1, t2, t3, t4, t5, t6, t7, x;
   rtx op1h = gen_lowpart (V4HImode, operands[1]);
@@ -709,7 +709,13 @@
 		     (const_int 2) (const_int 10)
 		     (const_int 3) (const_int 11)])))]
   ""
-  "unpack1.l %0 = %r2, %r1"
+{
+  /* Recall that vector elements are numbered in memory order.  */
+  if (TARGET_BIG_ENDIAN)
+    return "%,unpack1.l %0 = %r1, %r2";
+  else
+    return "%,unpack1.l %0 = %r2, %r1";
+}
   [(set_attr "itanium_class" "mmshf")])
 
 (define_insn "vec_interleave_highv8qi"
@@ -723,7 +729,13 @@
 		     (const_int 6) (const_int 14)
 		     (const_int 7) (const_int 15)])))]
   ""
-  "unpack1.h %0 = %r2, %r1"
+{
+  /* Recall that vector elements are numbered in memory order.  */
+  if (TARGET_BIG_ENDIAN)
+    return "%,unpack1.h %0 = %r1, %r2";
+  else
+    return "%,unpack1.h %0 = %r2, %r1";
+}
   [(set_attr "itanium_class" "mmshf")])
 
 (define_insn "mix1_r"
@@ -857,7 +869,10 @@
   ""
 {
   rtx temp = gen_reg_rtx (V8QImode);
-  emit_insn (gen_mix1_r (temp, operands[1], operands[2]));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_mix1_l (temp, operands[2], operands[1]));
+  else
+    emit_insn (gen_mix1_r (temp, operands[1], operands[2]));
   emit_insn (gen_mux1_alt (operands[0], temp));
   DONE;
 })
@@ -869,7 +884,10 @@
   ""
 {
   rtx temp = gen_reg_rtx (V8QImode);
-  emit_insn (gen_mix1_l (temp, operands[1], operands[2]));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_mix1_r (temp, operands[2], operands[1]));
+  else
+    emit_insn (gen_mix1_l (temp, operands[1], operands[2]));
   emit_insn (gen_mux1_alt (operands[0], temp));
   DONE;
 })
@@ -885,7 +903,13 @@
 		     (const_int 1)
 		     (const_int 5)])))]
   ""
-  "unpack2.l %0 = %r2, %r1"
+{
+  /* Recall that vector elements are numbered in memory order.  */
+  if (TARGET_BIG_ENDIAN)
+    return "%,unpack2.l %0 = %r1, %r2";
+  else
+    return "%,unpack2.l %0 = %r2, %r1";
+}
   [(set_attr "itanium_class" "mmshf")])
 
 (define_insn "vec_interleave_highv4hi"
@@ -899,7 +923,13 @@
 		     (const_int 3)
 		     (const_int 7)])))]
   ""
-  "unpack2.h %0 = %r2, %r1"
+{
+  /* Recall that vector elements are numbered in memory order.  */
+  if (TARGET_BIG_ENDIAN)
+    return "%,unpack2.h %0 = %r1, %r2";
+  else
+    return "%,unpack2.h %0 = %r2, %r1";
+}
   [(set_attr "itanium_class" "mmshf")])
 
 (define_insn "mix2_r"
@@ -958,13 +988,13 @@
 		     (const_int 2)
 		     (const_int 1)
 		     (const_int 3)])))]
-  "")
+  "!TARGET_BIG_ENDIAN")
 
 (define_expand "vec_extract_evenv4hi"
   [(match_operand:V4HI 0 "gr_register_operand")
    (match_operand:V4HI 1 "gr_reg_or_0_operand")
    (match_operand:V4HI 2 "gr_reg_or_0_operand")]
-  ""
+  "!TARGET_BIG_ENDIAN"
 {
   rtx temp = gen_reg_rtx (V4HImode);
   emit_insn (gen_mix2_r (temp, operands[1], operands[2]));
@@ -976,7 +1006,7 @@
   [(match_operand:V4HI 0 "gr_register_operand")
    (match_operand:V4HI 1 "gr_reg_or_0_operand")
    (match_operand:V4HI 2 "gr_reg_or_0_operand")]
-  ""
+  "!TARGET_BIG_ENDIAN"
 {
   rtx temp = gen_reg_rtx (V4HImode);
   emit_insn (gen_mix2_l (temp, operands[1], operands[2]));
@@ -1002,7 +1032,13 @@
 	  (parallel [(const_int 0)
 		     (const_int 2)])))]
   ""
-  "unpack4.l %0 = %r2, %r1"
+{
+  /* Recall that vector elements are numbered in memory order.  */
+  if (TARGET_BIG_ENDIAN)
+    return "%,unpack4.h %0 = %r1, %r2";
+  else
+    return "%,unpack4.l %0 = %r2, %r1";
+}
   [(set_attr "itanium_class" "mmshf")])
 
 ;; Note that mix4.l performs the exact same operation.
@@ -1015,14 +1051,20 @@
 	  (parallel [(const_int 1)
 		     (const_int 3)])))]
   ""
-  "unpack4.h %0 = %r2, %r1"
+{
+  /* Recall that vector elements are numbered in memory order.  */
+  if (TARGET_BIG_ENDIAN)
+    return "%,unpack4.l %0 = %r1, %r2";
+  else
+    return "%,unpack4.h %0 = %r2, %r1";
+}
   [(set_attr "itanium_class" "mmshf")])
 
 (define_expand "vec_extract_evenv2si"
   [(match_operand:V2SI 0 "gr_register_operand" "")
    (match_operand:V2SI 1 "gr_register_operand" "")
    (match_operand:V2SI 2 "gr_register_operand" "")]
-  ""
+  "!TARGET_BIG_ENDIAN"
 {
   emit_insn (gen_vec_interleave_lowv2si (operands[0], operands[1],
 					 operands[2]));
@@ -1033,7 +1075,7 @@
   [(match_operand:V2SI 0 "gr_register_operand" "")
    (match_operand:V2SI 1 "gr_register_operand" "")
    (match_operand:V2SI 2 "gr_register_operand" "")]
-  ""
+  "!TARGET_BIG_ENDIAN"
 {
   emit_insn (gen_vec_interleave_highv2si (operands[0], operands[1],
 					  operands[2]));
@@ -1397,7 +1439,7 @@
   [(match_operand:V2SF 0 "gr_register_operand" "")
    (match_operand:V2SF 1 "gr_register_operand" "")
    (match_operand:V2SF 2 "gr_register_operand" "")]
-  ""
+  "!TARGET_BIG_ENDIAN"
 {
   emit_insn (gen_vec_interleave_lowv2sf (operands[0], operands[1],
 					 operands[2]));
@@ -1408,7 +1450,7 @@
   [(match_operand:V2SF 0 "gr_register_operand" "")
    (match_operand:V2SF 1 "gr_register_operand" "")
    (match_operand:V2SF 2 "gr_register_operand" "")]
-  ""
+  "!TARGET_BIG_ENDIAN"
 {
   emit_insn (gen_vec_interleave_highv2sf (operands[0], operands[1],
 					  operands[2]));
@@ -1540,7 +1582,7 @@
   [(match_operand:V8QI 0 "gr_register_operand" "")
    (match_operand:V4HI 1 "gr_register_operand" "")
    (match_operand:V4HI 2 "gr_register_operand" "")]
-  ""
+  "!TARGET_BIG_ENDIAN"
 {
   rtx op1 = gen_lowpart(V8QImode, operands[1]);
   rtx op2 = gen_lowpart(V8QImode, operands[2]);
@@ -1552,7 +1594,7 @@
   [(match_operand:V4HI 0 "gr_register_operand" "")
    (match_operand:V2SI 1 "gr_register_operand" "")
    (match_operand:V2SI 2 "gr_register_operand" "")]
-  ""
+  "!TARGET_BIG_ENDIAN"
 {
   rtx op1 = gen_lowpart(V4HImode, operands[1]);
   rtx op2 = gen_lowpart(V4HImode, operands[2]);
