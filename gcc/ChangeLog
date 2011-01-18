@@ -1,3 +1,27 @@
+2011-01-18  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/46997
+	* ia64.c (ia64_expand_unpack): Fix code for TARGET_BIG_ENDIAN.
+	(a64_expand_widen_sum): Ditto.
+	* vect.md (mulv2si3): Disable for TARGET_BIG_ENDIAN.
+	(vec_extract_evenodd_help): Ditto.
+	(vec_extract_evenv4hi): Ditto.
+	(vec_extract_oddv4hi): Ditto.
+	(vec_extract_evenv2si): Ditto.
+	(vec_extract_oddv2si): Ditto.
+	(vec_extract_evenv2sf): Ditto.
+	(vec_extract_oddv2sf): Ditto.
+	(vec_pack_trunc_v4hi: Ditto.
+	(vec_pack_trunc_v2si): Ditto.
+	(vec_interleave_lowv8qi): Fix for TARGET_BIG_ENDIAN.
+	(vec_interleave_highv8qi): Ditto.
+	(mix1_r): Ditto.
+	(vec_extract_oddv8qi): Ditto.
+	(vec_interleave_lowv4hi): Ditto.
+	(vec_interleave_highv4hi): Ditto.
+	(vec_interleave_lowv2si): Ditto.
+	(vec_interleave_highv2si): Ditto.
+
 2011-01-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/extend.texi: Mention __float128 support on hppa HP-UX.
