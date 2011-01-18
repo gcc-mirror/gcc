@@ -1,3 +1,8 @@
+2011-01-18  Jie Zhang  <jie.zhang@analog.com>
+
+	* configure.ac (bfin-*-*): Remove gdb from noconfigdirs.
+	* configure: Regenerate.
+
 2011-01-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* ltmain.sh (relink): Use absolute path when hardcoding with -L.

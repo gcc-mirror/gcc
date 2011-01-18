@@ -711,7 +711,7 @@ case "${target}" in
     ;;
   bfin-*-*)
     unsupported_languages="$unsupported_languages java"
-    noconfigdirs="$noconfigdirs target-boehm-gc gdb"
+    noconfigdirs="$noconfigdirs target-boehm-gc"
     if test x${is_cross_compiler} != xno ; then
       target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
