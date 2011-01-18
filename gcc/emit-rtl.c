@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "params.h"
 #include "target.h"
+#include "tree-flow.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -1669,33 +1670,10 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	     || TREE_CODE (t) == SAVE_EXPR)
 	t = TREE_OPERAND (t, 0);
 
-      /* We may look through structure-like accesses for the purposes of
-	 examining TREE_THIS_NOTRAP, but not array-like accesses.  */
-      base = t;
-      while (TREE_CODE (base) == COMPONENT_REF
-	     || TREE_CODE (base) == REALPART_EXPR
-	     || TREE_CODE (base) == IMAGPART_EXPR
-	     || TREE_CODE (base) == BIT_FIELD_REF)
-	base = TREE_OPERAND (base, 0);
+      /* Note whether this expression can trap.  */
+      MEM_NOTRAP_P (ref) = !tree_could_trap_p (t);
 
-      if (TREE_CODE (base) == MEM_REF
-	  && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
-	base = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
-      if (DECL_P (base))
-	{
-	  if (CODE_CONTAINS_STRUCT (TREE_CODE (base), TS_DECL_WITH_VIS))
-	    MEM_NOTRAP_P (ref) = !DECL_WEAK (base);
-	  else
-	    MEM_NOTRAP_P (ref) = 1;
-	}
-      else if (TREE_CODE (base) == INDIRECT_REF
-	       || TREE_CODE (base) == MEM_REF
-	       || TREE_CODE (base) == TARGET_MEM_REF
-	       || TREE_CODE (base) == ARRAY_REF
-	       || TREE_CODE (base) == ARRAY_RANGE_REF)
-	MEM_NOTRAP_P (ref) = TREE_THIS_NOTRAP (base);
-
-      base = get_base_address (base);
+      base = get_base_address (t);
       if (base && DECL_P (base)
 	  && TREE_READONLY (base)
 	  && (TREE_STATIC (base) || DECL_EXTERNAL (base))

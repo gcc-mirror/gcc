@@ -1,3 +1,11 @@
+2011-01-18  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/47216
+	* emit-rtl.c: Include tree-flow.h.
+	(set_mem_attributes_minus_bitpos): Use tree_could_trap_p instead
+	of replicating it with different semantics.
+	* Makefile.in (emit-rtl.o): Adjust.
+
 2011-01-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         * config/arm/cortex-a9.md (cortex-a9-neon.md): Actually
