@@ -1,3 +1,7 @@
+2011-01-18  Mike Frysinger  <vapier@gentoo.org>
+
+	* .gitignore: New file.
+
 2010-12-08  Doug Evans  <dje@google.com>
 
 	* splay-tree.c (splay_tree_foreach_helper): Remove arg `sp',
