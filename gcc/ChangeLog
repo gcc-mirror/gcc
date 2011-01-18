@@ -1,3 +1,9 @@
+2011-01-18  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR tree-optimization/47179
+	* config/spu/spu.c (spu_ref_may_alias_errno): New function.
+	(TARGET_REF_MAY_ALIAS_ERRNO): Define.
+
 2011-01-18  Richard Guenther  <rguenther@suse.de>
 
 	PR rtl-optimization/47216
