@@ -1,3 +1,17 @@
+2011-01-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* doc/extend.texi: Mention __float128 support on hppa HP-UX.
+	* config/pa/pa-hpux.h (HPUX_LONG_DOUBLE_LIBRARY): Define to 1.
+	* config/pa/pa.c (pa_expand_builtin): New.  Include "langhooks.h".
+	(pa_c_mode_for_suffix): New.
+	(TARGET_EXPAND_BUILTIN): Define.
+	(TARGET_C_MODE_FOR_SUFFIX): Define.
+	(pa_builtins): Define.
+	(pa_init_builtins): Register __float128 type and init new support
+	builtins.
+	* config/pa/pa.h (HPUX_LONG_DOUBLE_LIBRARY): Define if not defined.
+	* config/pa/quadlib.c (_U_Qfcopysign): New.
+
 2011-01-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/46894
