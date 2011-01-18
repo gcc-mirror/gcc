@@ -1,3 +1,9 @@
+2011-01-18  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR testsuite/41146
+	* gcc.target/powerpc/asm-es-2.c: Adjust regular expression for
+	powerpc-apple-darwin9.
+
 2011-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/47299
@@ -75,7 +81,7 @@
 
 2011-01-13  Jan Hubicka  <jh@suse.cz>
 
-	PR tree-optimization/47276 
+	PR tree-optimization/47276
 	* gcc.dg/pr47276.c: New testcase.
 
 2011-01-15  Giovanni Funchal  <gafunchal@gmail.com>
@@ -201,7 +207,7 @@
 	* objc-obj-c++-shared/Object1-implementation.h: Add copyright header.
 	Amend implementation to use a TEST_SUITE_ADDITIONS category for both GNU
 	and NeXT runtimes.
-	* objc-obj-c++-shared/Object1.mm: Remove redundant header, update 
+	* objc-obj-c++-shared/Object1.mm: Remove redundant header, update
 	comments.
 	* objc-obj-c++-shared/Object1.m: Likewise.
 	* objc.dg/encode-3.m: Update header use.  Amend to be API2 compatible.
