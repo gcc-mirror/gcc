@@ -644,7 +644,7 @@ namespace __gnu_test
     template<typename _Tp, bool _IsLitp = std::is_literal_type<_Tp>::value>
       struct _Concept;
 
-    // NB: _Tp must be a literal type. 
+    // NB: _Tp must be a literal type.
     // Have to have user-defined default ctor for this to work.
     template<typename _Tp>
       struct _Concept<_Tp, true>
@@ -668,6 +668,24 @@ namespace __gnu_test
       {
 	_Concept<_Tp> c;
 	c.__constraint();
+      }
+  };
+
+  // Generator to test defaulted default constructor.
+  struct constexpr_defaulted_default_constructible
+  {
+    template<typename _Tp>
+      void
+      operator()()
+      {
+	struct _Concept
+	{
+	  void __constraint()
+	  { constexpr _Tp __v __attribute__((unused)) { }; }
+	};
+
+	void (_Concept::*__x)() __attribute__((unused))
+	  = &_Concept::__constraint;
       }
   };
 
