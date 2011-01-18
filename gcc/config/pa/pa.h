@@ -86,6 +86,11 @@ extern int flag_pa_unix;
 #define TARGET_HPUX_11_11 0
 #endif
 
+/* HP-UX long double library.  */
+#ifndef HPUX_LONG_DOUBLE_LIBRARY
+#define HPUX_LONG_DOUBLE_LIBRARY 0
+#endif
+
 /* The following three defines are potential target switches.  The current
    defines are optimal given the current capabilities of GAS and GNU ld.  */
 

@@ -934,6 +934,7 @@ typedef _Complex float __attribute__((mode(XC))) _Complex80;
 
 Not all targets support additional floating point types.  @code{__float80}
 and @code{__float128} types are supported on i386, x86_64 and ia64 targets.
+The @code{__float128} type is supported on hppa HP-UX targets.
 
 @node Half-Precision
 @section Half-Precision Floating Point

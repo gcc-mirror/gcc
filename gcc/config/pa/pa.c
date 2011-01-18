@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "langhooks.h"
 #include "df.h"
 
 /* Return nonzero if there is a bypass for the output of 
@@ -129,6 +130,7 @@ static void pa_asm_out_constructor (rtx, int);
 static void pa_asm_out_destructor (rtx, int);
 #endif
 static void pa_init_builtins (void);
+static rtx pa_expand_builtin (tree, rtx, rtx, enum machine_mode mode, int);
 static rtx hppa_builtin_saveregs (void);
 static void hppa_va_start (tree, rtx);
 static tree hppa_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
@@ -151,7 +153,7 @@ static void output_deferred_profile_counters (void) ATTRIBUTE_UNUSED;
 #ifdef ASM_OUTPUT_EXTERNAL_REAL
 static void pa_hpux_file_end (void);
 #endif
-#ifdef HPUX_LONG_DOUBLE_LIBRARY
+#if HPUX_LONG_DOUBLE_LIBRARY
 static void pa_hpux_init_libfuncs (void);
 #endif
 static rtx pa_struct_value_rtx (tree, int);
@@ -181,6 +183,7 @@ static bool pa_print_operand_punct_valid_p (unsigned char);
 static rtx pa_internal_arg_pointer (void);
 static bool pa_can_eliminate (const int, const int);
 static void pa_conditional_register_usage (void);
+static enum machine_mode pa_c_mode_for_suffix (char);
 static section *pa_function_section (tree, enum node_frequency, bool, bool);
 
 /* The following extra sections are only used for SOM.  */
@@ -317,6 +320,9 @@ static const struct default_options pa_option_optimization_table[] =
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS pa_init_builtins
 
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN pa_expand_builtin
+
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST hppa_register_move_cost
 #undef TARGET_RTX_COSTS
@@ -327,7 +333,7 @@ static const struct default_options pa_option_optimization_table[] =
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG pa_reorg
 
-#ifdef HPUX_LONG_DOUBLE_LIBRARY
+#if HPUX_LONG_DOUBLE_LIBRARY
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS pa_hpux_init_libfuncs
 #endif
@@ -389,6 +395,8 @@ static const struct default_options pa_option_optimization_table[] =
 #define TARGET_CAN_ELIMINATE pa_can_eliminate
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE pa_conditional_register_usage
+#undef TARGET_C_MODE_FOR_SUFFIX
+#define TARGET_C_MODE_FOR_SUFFIX pa_c_mode_for_suffix
 #undef TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION pa_function_section
 
@@ -598,6 +606,17 @@ pa_option_override (void)
   init_machine_status = pa_init_machine_status;
 }
 
+enum pa_builtins
+{
+  PA_BUILTIN_COPYSIGNQ,
+  PA_BUILTIN_FABSQ,
+  PA_BUILTIN_INFQ,
+  PA_BUILTIN_HUGE_VALQ,
+  PA_BUILTIN_max
+};
+
+static GTY(()) tree pa_builtins[(int) PA_BUILTIN_max];
+
 static void
 pa_init_builtins (void)
 {
@@ -613,6 +632,86 @@ pa_init_builtins (void)
   if (built_in_decls [BUILT_IN_FINITEF])
     set_user_assembler_name (built_in_decls [BUILT_IN_FINITEF], "_Isfinitef");
 #endif
+
+  if (HPUX_LONG_DOUBLE_LIBRARY)
+    {
+      tree decl, ftype;
+
+      /* Under HPUX, the __float128 type is a synonym for "long double".  */
+      (*lang_hooks.types.register_builtin_type) (long_double_type_node,
+						 "__float128");
+
+      /* TFmode support builtins.  */
+      ftype = build_function_type_list (long_double_type_node,
+					long_double_type_node,
+					NULL_TREE);
+      decl = add_builtin_function ("__builtin_fabsq", ftype,
+				   PA_BUILTIN_FABSQ, BUILT_IN_MD,
+				   "_U_Qfabs", NULL_TREE);
+      TREE_READONLY (decl) = 1;
+      pa_builtins[PA_BUILTIN_FABSQ] = decl;
+
+      ftype = build_function_type_list (long_double_type_node,
+					long_double_type_node,
+					long_double_type_node,
+					NULL_TREE);
+      decl = add_builtin_function ("__builtin_copysignq", ftype,
+				   PA_BUILTIN_COPYSIGNQ, BUILT_IN_MD,
+				   "_U_Qfcopysign", NULL_TREE);
+      TREE_READONLY (decl) = 1;
+      pa_builtins[PA_BUILTIN_COPYSIGNQ] = decl;
+
+      ftype = build_function_type (long_double_type_node, void_list_node);
+      decl = add_builtin_function ("__builtin_infq", ftype,
+				   PA_BUILTIN_INFQ, BUILT_IN_MD,
+				   NULL, NULL_TREE);
+      pa_builtins[PA_BUILTIN_INFQ] = decl;
+
+      decl = add_builtin_function ("__builtin_huge_valq", ftype,
+                                   PA_BUILTIN_HUGE_VALQ, BUILT_IN_MD,
+                                   NULL, NULL_TREE);
+      pa_builtins[PA_BUILTIN_HUGE_VALQ] = decl;
+    }
+}
+
+static rtx
+pa_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
+		   enum machine_mode mode ATTRIBUTE_UNUSED,
+		   int ignore ATTRIBUTE_UNUSED)
+{
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+
+  switch (fcode)
+    {
+    case PA_BUILTIN_FABSQ:
+    case PA_BUILTIN_COPYSIGNQ:
+      return expand_call (exp, target, ignore);
+
+    case PA_BUILTIN_INFQ:
+    case PA_BUILTIN_HUGE_VALQ:
+      {
+	enum machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
+	REAL_VALUE_TYPE inf;
+	rtx tmp;
+
+	real_inf (&inf);
+	tmp = CONST_DOUBLE_FROM_REAL_VALUE (inf, target_mode);
+
+	tmp = validize_mem (force_const_mem (target_mode, tmp));
+
+	if (target == 0)
+	  target = gen_reg_rtx (target_mode);
+
+	emit_move_insn (target, tmp);
+	return target;
+      }
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return NULL_RTX;
 }
 
 /* Function to init struct machine_function.
@@ -5522,7 +5621,7 @@ output_deferred_plabels (void)
     }
 }
 
-#ifdef HPUX_LONG_DOUBLE_LIBRARY
+#if HPUX_LONG_DOUBLE_LIBRARY
 /* Initialize optabs to point to HPUX long double emulation routines.  */
 static void
 pa_hpux_init_libfuncs (void)
@@ -10241,6 +10340,20 @@ pa_conditional_register_usage (void)
     }
   if (flag_pic)
     fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;
+}
+
+/* Target hook for c_mode_for_suffix.  */
+
+static enum machine_mode
+pa_c_mode_for_suffix (char suffix)
+{
+  if (HPUX_LONG_DOUBLE_LIBRARY)
+    {
+      if (suffix == 'q')
+	return TFmode;
+    }
+
+  return VOIDmode;
 }
 
 /* Target hook for function_section.  */
