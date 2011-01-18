@@ -4863,6 +4863,10 @@ expression_rank (gfc_expr *e)
 
   for (ref = e->ref; ref; ref = ref->next)
     {
+      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.proc_pointer
+	  && ref->u.c.component->attr.function && !ref->next)
+	rank = ref->u.c.component->as ? ref->u.c.component->as->rank : 0;
+
       if (ref->type != REF_ARRAY)
 	continue;
 
