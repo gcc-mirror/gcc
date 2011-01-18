@@ -47,7 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp>
     struct default_delete
     {
-      constexpr default_delete() { }
+      constexpr default_delete() = default;
 
       template<typename _Up, typename = typename
 	       std::enable_if<std::is_convertible<_Up*, _Tp*>::value>::type>
@@ -68,7 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp>
     struct default_delete<_Tp[]>
     {
-      constexpr default_delete() { }
+      constexpr default_delete() = default;
 
       void
       operator()(_Tp* __ptr) const
