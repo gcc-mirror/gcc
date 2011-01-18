@@ -1,3 +1,9 @@
+2011-01-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config/arm/cortex-a9.md (cortex-a9-neon.md): Actually
+        include.
+        (cortex_a9_dp): Handle neon types correctly.
+
 2011-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/47299
