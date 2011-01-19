@@ -1,5 +1,19 @@
 2011-01-19  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/constraints.md ("z"): New constraint.
+	* config/mn10300/mn10300.h (MDR_REGNUM): Remove.
+	(FIXED_REGISTERS): Don't fix MDR.
+	(CALL_USED_REGSITERS): Reformat nicely.
+	(REG_ALLOC_ORDER): Add MDR.
+	(enum regclass): Add MDR_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Update to match.
+	(IRA_COVER_CLASSES): Add MDR_REGS.
+	(REGNO_REG_CLASS): Handle MDR_REG.
+	* config/mn10300/mn10300.c (mn10300_secondary_reload): Handle MDR_REGS.
+	(mn10300_register_move_cost): Likewise.
+	* config/mn10300/mn10300.md (MDR_REG): New.
+	(*movsi_internal): Handle moves to/from MDR_REGS.
+
 	* config/mn10300/mn10300.c (mn10300_print_operand_address): Handle
 	POST_MODIFY.
 	(mn10300_secondary_reload): Tidy combination reload classes.

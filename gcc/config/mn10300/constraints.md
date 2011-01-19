@@ -35,6 +35,9 @@
 (define_register_constraint "y" "SP_REGS"
   "An SP register (if available).")
 
+(define_register_constraint "z" "MDR_REGS"
+  "The MDR register.")
+
 (define_register_constraint "x" "TARGET_AM33 ? EXTENDED_REGS : NO_REGS"
   "An extended register.")
 
