@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009, 2011 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -78,7 +78,6 @@
       mcache-size=8  :-lgcc_cache8k; \
                      :-lgcc_cache64k}"
 
-/* Turn off warnings in the assembler too. */
 #undef ASM_SPEC
-#define ASM_SPEC  "%{w:-W}"
+#define ASM_SPEC  ""
 
