@@ -7177,7 +7177,7 @@ struct cfg_hooks gimple_cfg_hooks = {
   gimple_can_merge_blocks_p,	/* can_merge_blocks_p  */
   gimple_merge_blocks,		/* merge_blocks  */
   gimple_predict_edge,		/* predict_edge  */
-  gimple_predicted_by_p,		/* predicted_by_p  */
+  gimple_predicted_by_p,	/* predicted_by_p  */
   gimple_can_duplicate_bb_p,	/* can_duplicate_block_p  */
   gimple_duplicate_bb,		/* duplicate_block  */
   gimple_split_edge,		/* split_edge  */
@@ -7185,7 +7185,7 @@ struct cfg_hooks gimple_cfg_hooks = {
   NULL,				/* tidy_fallthru_edge  */
   gimple_block_ends_with_call_p,/* block_ends_with_call_p */
   gimple_block_ends_with_condjump_p, /* block_ends_with_condjump_p */
-  gimple_flow_call_edges_add,     /* flow_call_edges_add */
+  gimple_flow_call_edges_add,   /* flow_call_edges_add */
   gimple_execute_on_growing_pred,	/* execute_on_growing_pred */
   gimple_execute_on_shrinking_pred, /* execute_on_shrinking_pred */
   gimple_duplicate_loop_to_header_edge, /* duplicate loop for trees */
