@@ -59,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SPEC "\
 %(endian_spec) \
 %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32*} %{mips64*} \
-%{shared} %{non_shared} %{call_shared} \
+%{shared} \
 %{mabi=n32:-melf32%{EB:b}%{EL:l}tsmipn32} \
 %{mabi=64:-melf64%{EB:b}%{EL:l}tsmip} \
 %{mabi=32:-melf32%{EB:b}%{EL:l}tsmip}"

@@ -47,8 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{mips4} \
-%{shared} %{non_shared} \
-%{call_shared} \
+%{shared} \
  %(endian_spec) \
   %{!shared: \
     %{!static: \

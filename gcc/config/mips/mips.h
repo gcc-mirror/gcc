@@ -1150,7 +1150,7 @@ enum mips_code_readable_setting {
 #define LINK_SPEC "\
 %(endian_spec) \
 %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32*} %{mips64*} \
-%{shared} %{non_shared}"
+%{shared}"
 #endif  /* LINK_SPEC defined */
 
 
