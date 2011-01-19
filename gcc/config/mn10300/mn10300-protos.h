@@ -26,6 +26,7 @@
 #ifdef RTX_CODE
 extern rtx   mn10300_legitimize_pic_address (rtx, rtx);
 extern int   mn10300_legitimate_pic_operand_p (rtx);
+extern rtx   mn10300_legitimize_reload_address (rtx, Mmode, int, int, int);
 extern bool  mn10300_function_value_regno_p (const unsigned int);
 extern int   mn10300_get_live_callee_saved_regs (void);
 extern bool  mn10300_hard_regno_mode_ok (unsigned int, Mmode);
@@ -40,6 +41,7 @@ extern int   mn10300_store_multiple_operation (rtx, Mmode);
 extern int   mn10300_symbolic_operand (rtx, Mmode);
 #endif /* RTX_CODE */
 
+extern bool  mn10300_regno_in_class_p (unsigned, int, bool);
 extern int   mn10300_can_use_return_insn (void);
 extern void  mn10300_expand_prologue (void);
 extern void  mn10300_expand_epilogue (void);
