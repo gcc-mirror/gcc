@@ -157,7 +157,7 @@ extern enum processor_type mn10300_tune_cpu;
 #define LAST_EXTENDED_REGNUM  17
 #define FIRST_FP_REGNUM       18
 #define LAST_FP_REGNUM        49
-#define MDR_REGNUM            50
+/* #define MDR_REG            50 */
 /* #define CC_REG             51 */
 #define FIRST_ARGUMENT_REGNUM  0
 
@@ -182,9 +182,17 @@ extern enum processor_type mn10300_tune_cpu;
    and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS \
-  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 \
-  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	 \
-  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1 \
+  { 0, 0, 0, 0,				/* data regs */		\
+    0, 0, 0, 0,				/* addr regs */		\
+    1,					/* arg reg */		\
+    1,					/* sp reg */		\
+    0, 0, 0, 0, 0, 0, 0, 0,		/* extended regs */	\
+    0, 0,				/* fp regs (18-19) */	\
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/* fp regs (20-29) */	\
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/* fp regs (30-39) */	\
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/* fp regs (40-49) */	\
+    0,					/* mdr reg */		\
+    1					/* cc reg */		\
   }
 
 /* 1 for registers not available across function calls.
@@ -196,9 +204,17 @@ extern enum processor_type mn10300_tune_cpu;
    like.  */
 
 #define CALL_USED_REGISTERS \
-  { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 \
-  , 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	 \
-  , 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 \
+  { 1, 1, 0, 0,				/* data regs */		\
+    1, 1, 0, 0,				/* addr regs */		\
+    1,					/* arg reg */		\
+    1,					/* sp reg */		\
+    1, 1, 1, 1, 0, 0, 0, 0,		/* extended regs */	\
+    1, 1,				/* fp regs (18-19) */	\
+    1, 1, 0, 0, 0, 0, 0, 0, 0, 0,	/* fp regs (20-29) */	\
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1,	/* fp regs (30-39) */	\
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	/* fp regs (40-49) */	\
+    1,					/* mdr reg */		\
+    1					/* cc reg */		\
   }
 
 /* Note: The definition of CALL_REALLY_USED_REGISTERS is not
@@ -211,7 +227,7 @@ extern enum processor_type mn10300_tune_cpu;
 #define REG_ALLOC_ORDER \
   { 0, 1, 4, 5, 2, 3, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 8, 9 \
   , 42, 43, 44, 45, 46, 47, 48, 49, 34, 35, 36, 37, 38, 39, 40, 41 \
-  , 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 51 \
+  , 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 50, 51 \
   }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -262,7 +278,7 @@ extern enum processor_type mn10300_tune_cpu;
 enum reg_class
 {
   NO_REGS, DATA_REGS, ADDRESS_REGS, SP_REGS, SP_OR_ADDRESS_REGS,
-  EXTENDED_REGS, FP_REGS, FP_ACC_REGS, CC_REGS,
+  EXTENDED_REGS, FP_REGS, FP_ACC_REGS, CC_REGS, MDR_REGS,
   GENERAL_REGS, SP_OR_GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -270,10 +286,10 @@ enum reg_class
 
 /* Give names of register classes as strings for dump file.  */
 
-#define REG_CLASS_NAMES					   	\
+#define REG_CLASS_NAMES					   		\
 { "NO_REGS", "DATA_REGS", "ADDRESS_REGS", "SP_REGS", "SP_OR_ADDRESS_REGS", \
-  "EXTENDED_REGS", "FP_REGS", "FP_ACC_REGS", "CC_REGS",		\
-  "GENERAL_REGS", "SP_OR_GENERAL_REGS", "ALL_REGS", "LIM_REGS"	\
+  "EXTENDED_REGS", "FP_REGS", "FP_ACC_REGS", "CC_REGS", "MDR_REGS",	\
+  "GENERAL_REGS", "SP_OR_GENERAL_REGS", "ALL_REGS", "LIM_REGS"		\
 }
 
 /* Define which registers fit in which classes.
@@ -290,6 +306,7 @@ enum reg_class
   { 0xfffc0000, 0x3ffff },/* FP_REGS */				\
   { 0x03fc0000, 0 },	  /* FP_ACC_REGS */			\
   { 0x00000000, 0x80000 },/* CC_REGS */				\
+  { 0x00000000, 0x40000 },/* MDR_REGS */			\
   { 0x0003fdff, 0 }, 	  /* GENERAL_REGS */			\
   { 0x0003ffff, 0 },      /* SP_OR_GENERAL_REGS */		\
   { 0xffffffff, 0xfffff } /* ALL_REGS */			\
@@ -305,7 +322,7 @@ enum reg_class
 
 #define IRA_COVER_CLASSES					\
 {								\
-  GENERAL_REGS, FP_REGS, LIM_REG_CLASSES			\
+  GENERAL_REGS, FP_REGS, MDR_REGS, LIM_REG_CLASSES		\
 }
 
 /* The same information, inverted:
@@ -319,6 +336,7 @@ enum reg_class
    (REGNO) == STACK_POINTER_REGNUM ? SP_REGS :	     \
    (REGNO) <= LAST_EXTENDED_REGNUM ? EXTENDED_REGS : \
    (REGNO) <= LAST_FP_REGNUM ? FP_REGS :	     \
+   (REGNO) == MDR_REG ? MDR_REGS :		     \
    (REGNO) == CC_REG ? CC_REGS :		     \
    NO_REGS)
 

@@ -1416,6 +1416,12 @@ mn10300_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       return NO_REGS;
     }
 
+  /* We can only move MDR to/from a data register.  */
+  if (rclass == MDR_REGS && xclass != DATA_REGS)
+    return DATA_REGS;
+  if (xclass == MDR_REGS && rclass != DATA_REGS)
+    return DATA_REGS;
+
   /* We can't load/store an FP register from a constant address.  */
   if (TARGET_AM33_2
       && (rclass == FP_REGS || xclass == FP_REGS)
@@ -2256,6 +2262,8 @@ mn10300_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
   test = from;
   if (to == SP_REGS)
     scratch = (TARGET_AM33 ? GENERAL_REGS : ADDRESS_REGS);
+  else if (to == MDR_REGS)
+    scratch = DATA_REGS;
   else if (to == FP_REGS && to != from)
     scratch = GENERAL_REGS;
   else
@@ -2263,6 +2271,8 @@ mn10300_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
       test = to;
       if (from == SP_REGS)
 	scratch = (TARGET_AM33 ? GENERAL_REGS : ADDRESS_REGS);
+      else if (from == MDR_REGS)
+	scratch = DATA_REGS;
       else if (from == FP_REGS && to != from)
 	scratch = GENERAL_REGS;
     }
