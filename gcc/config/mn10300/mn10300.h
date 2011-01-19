@@ -53,8 +53,6 @@
     }						\
   while (0)
 
-extern GTY(()) int mn10300_unspec_int_label_counter;
-
 enum processor_type
 {
   PROCESSOR_MN10300,
