@@ -496,47 +496,39 @@ static basic_block
 find_return_bb (void)
 {
   edge e;
-  edge_iterator ei;
   basic_block return_bb = EXIT_BLOCK_PTR;
+  gimple_stmt_iterator bsi;
+  bool found_return = false;
+  tree retval = NULL_TREE;
 
-  if (EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 1)
-    FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-      {
-	gimple_stmt_iterator bsi;
-	bool found_return = false;
-	tree retval = NULL_TREE;
+  if (!single_pred_p (EXIT_BLOCK_PTR))
+    return return_bb;
 
-	for (bsi = gsi_last_bb (e->src); !gsi_end_p (bsi); gsi_prev (&bsi))
-	  {
-	    gimple stmt = gsi_stmt (bsi);
-	    if (gimple_code (stmt) == GIMPLE_LABEL
-		|| is_gimple_debug (stmt))
-	      ;
-	    else if (gimple_code (stmt) == GIMPLE_ASSIGN
-		     && found_return
-		     && gimple_assign_single_p (stmt)
-		     && (auto_var_in_fn_p (gimple_assign_rhs1 (stmt),
-					   current_function_decl)
-			 || is_gimple_min_invariant
-			      (gimple_assign_rhs1 (stmt)))
-		     && retval == gimple_assign_lhs (stmt))
-	      ;
-	    else if (gimple_code (stmt) == GIMPLE_RETURN)
-	      {
-		found_return = true;
-		retval = gimple_return_retval (stmt);
-	      }
-	    else
-	      break;
-	  }
-	if (gsi_end_p (bsi) && found_return)
-	  {
-	    if (retval)
-	      return e->src;
-	    else
-	      return_bb = e->src;
-	  }
-      }
+  e = single_pred_edge (EXIT_BLOCK_PTR);
+  for (bsi = gsi_last_bb (e->src); !gsi_end_p (bsi); gsi_prev (&bsi))
+    {
+      gimple stmt = gsi_stmt (bsi);
+      if (gimple_code (stmt) == GIMPLE_LABEL || is_gimple_debug (stmt))
+	;
+      else if (gimple_code (stmt) == GIMPLE_ASSIGN
+	       && found_return
+	       && gimple_assign_single_p (stmt)
+	       && (auto_var_in_fn_p (gimple_assign_rhs1 (stmt),
+				     current_function_decl)
+		   || is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
+	       && retval == gimple_assign_lhs (stmt))
+	;
+      else if (gimple_code (stmt) == GIMPLE_RETURN)
+	{
+	  found_return = true;
+	  retval = gimple_return_retval (stmt);
+	}
+      else
+	break;
+    }
+  if (gsi_end_p (bsi) && found_return)
+    return_bb = e->src;
+
   return return_bb;
 }
 
