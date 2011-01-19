@@ -9988,6 +9988,8 @@ Field_reference_expression::do_get_tree(Translate_context* context)
       field = DECL_CHAIN(field);
       gcc_assert(field != NULL_TREE);
     }
+  if (TREE_TYPE(field) == error_mark_node)
+    return error_mark_node;
   return build3(COMPONENT_REF, TREE_TYPE(field), struct_tree, field,
 		NULL_TREE);
 }
