@@ -1,3 +1,9 @@
+2011-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/47303
+	* decl2.c (finish_anon_union): Only call mangle_decl if TREE_STATIC
+	or DECL_EXTERNAL.
+
 2011-01-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47067
