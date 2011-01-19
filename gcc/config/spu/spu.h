@@ -406,7 +406,7 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define SLOW_BYTE_ACCESS 0
 
-#define MOVE_RATIO(speed) 32
+#define MOVE_RATIO(speed) ((speed)? 32 : 4)
 
 #define NO_FUNCTION_CSE
 
