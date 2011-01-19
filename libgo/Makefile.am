@@ -1095,7 +1095,7 @@ else
 if LIBGO_IS_SOLARIS
 syscall_socket_os_file = syscalls/socket_solaris.go
 else
-syscall_socket_os_file = syscalls_socket_bsd.go
+syscall_socket_os_file = syscalls/socket_bsd.go
 endif
 endif
 

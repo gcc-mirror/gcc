@@ -1427,7 +1427,7 @@ go_testing_script_files = \
 # Declare libc_strerror_r which is the Go name for strerror_r.
 # RTEMS uses newlib in which strerror_r returns char *.
 @LIBGO_IS_RTEMS_TRUE@syscall_errstr_decl_file = syscalls/errstr_decl_rtems.go
-@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@syscall_socket_os_file = syscalls_socket_bsd.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@syscall_socket_os_file = syscalls/socket_bsd.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@syscall_socket_os_file = syscalls/socket_solaris.go
 
 # Define socket sizes and types.
