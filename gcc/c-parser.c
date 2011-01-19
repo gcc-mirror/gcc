@@ -4759,7 +4759,9 @@ c_parser_for_statement (c_parser *parser)
 {
   tree block, cond, incr, save_break, save_cont, body;
   /* The following are only used when parsing an ObjC foreach statement.  */
-  tree object_expression, collection_expression;
+  tree object_expression;
+  /* Silence the bogus uninitialized warning.  */
+  tree collection_expression = NULL;
   location_t loc = c_parser_peek_token (parser)->location;
   location_t for_loc = c_parser_peek_token (parser)->location;
   bool is_foreach_statement = false;
