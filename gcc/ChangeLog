@@ -1,5 +1,20 @@
 2011-01-19  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.md (UNSPEC_EXT): New.
+	(throughput_42_latency_43): New reservation.
+	(mulsidi3, umulsidi3): New expanders.
+	(mulsidi3_internal): Rewrite from old mulsidi3 pattern.  Expose
+	the MDR register to allocation; separately allocate the low and
+	high parts of the DImode result.
+	(umulsidi3_internal): Similarly.
+	(*am33_mulsi3, *mn10300_mulsi3): Merge into ...
+	(*mulsi3): ... here.  Clobber MDR as a scratch as necessary.
+	(udivsi3, umodsi3): Remove.
+	(udivmodsi4, divmodsi4): New expanders.
+	(*udivmodsi4): Rename from udivmodsi4.  Expose MDR properly.
+	(*divmodsi4): Simiarly.
+	(ext_internal): New.
+
 	* config/mn10300/constraints.md ("z"): New constraint.
 	* config/mn10300/mn10300.h (MDR_REGNUM): Remove.
 	(FIXED_REGISTERS): Don't fix MDR.
