@@ -32,13 +32,16 @@ extern int   mn10300_get_live_callee_saved_regs (void);
 extern bool  mn10300_hard_regno_mode_ok (unsigned int, Mmode);
 extern bool  mn10300_legitimate_constant_p (rtx);
 extern bool  mn10300_modes_tieable (Mmode, Mmode);
-extern Cstar mn10300_output_cmp (rtx, rtx);
+extern Cstar mn10300_output_add (rtx[3], bool);
 extern void  mn10300_print_operand (FILE *, rtx, int);
 extern void  mn10300_print_operand_address (FILE *, rtx);
 extern void  mn10300_print_reg_list (FILE *, int);
-extern Mmode mn10300_select_cc_mode (rtx);
+extern Mmode mn10300_select_cc_mode (enum rtx_code, rtx, rtx);
 extern int   mn10300_store_multiple_operation (rtx, Mmode);
 extern int   mn10300_symbolic_operand (rtx, Mmode);
+extern void  mn10300_split_cbranch (Mmode, rtx, rtx);
+extern int   mn10300_split_and_operand_count (rtx);
+extern bool  mn10300_match_ccmode (rtx, Mmode);
 #endif /* RTX_CODE */
 
 extern bool  mn10300_regno_in_class_p (unsigned, int, bool);

@@ -1,5 +1,71 @@
 2011-01-19  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300-modes.def (CCZN, CCZNC): New modes.
+	* config/mn10300/mn10300.c (CC_FLAG_Z): New.
+	(CC_FLAG_N, CC_FLAG_C, CC_FLAG_V): New.
+	(cc_flags_for_mode, cc_flags_for_code): New.
+	(mn10300_print_operand) ['B']: Use nc/ns for GE/LT when the
+	overflow flag is not valid.  Validate that the flags we need
+	for the comparison are valid.
+	(mn10300_output_cmp): Remove.
+	(mn10300_output_add): New.
+	(mn10300_select_cc_mode): Use cc_flags_for_code.
+	(mn10300_split_cbranch): New.
+	(mn10300_match_ccmode): New.
+	(mn10300_split_and_operand_count): New.
+	* config/mn10300/mn10300.h (SELECT_CC_MODE): Pass all of the arguments
+	to the function.
+	* config/mn10300/mn10300.md (*am33_addsi3, *mn10300_addsi3): Merge...
+	(addsi3): ... here.  Use mn10300_output_add.
+	(*addsi3_flags): New.
+	(*am33_subsi3, *mn10300_subsi3): Merge...
+	(subsi3): ... here.  Use attribute isa.
+	(*subsi3_flags): New.
+	(negsi2): Rewrite from expander to insn_and_split.  Use NOT+INC
+	when possible.
+	(*am33_andsi3, *mn10300_andsi3): Merge...
+	(andsi3): ... here.
+	(*andsi3_flags): New.
+	(andsi3 splitters): New.
+	(*am33_iorsi3, *mn10300_iorsi3): Merge...
+	(iorsi3): ... here.
+	(*iorsi3_flags): New.
+	(*am33_xorsi3, *mn10300_xorsi3): Merge...
+	(xorsi3): ... here.
+	(*xorsi3_flags): New.
+	(*am33_cmpsi2, *mn10300_cmplsi2): Merge...
+	(one_cmplsi2): ... here.
+	(*one_cmplsi2_flags): New.
+	(*cbranchsi4_cmp): Rename from cbranchsi4_post_reload.  Use "r"
+	instead of "dax" in constraints.  Use mn10300_split_cbranch.
+	(*cmpsi): Rename from cmpsi.  Do not use mn10300_output_cmp.  Do not
+	use matching constraints to eliminate a self-comparison.
+	(*integer_conditional_branch): Rename from integer_conditional_branch.
+	Use int_mode_flags to match CC_REG.
+	(*cbranchsi4_btst, *btstsi): New.
+	(*cbranchsf4_cmp): Rename from *cbranchsf4_post_reload.  Use
+	mn10300_split_cbranch.
+	(*am33_cmpsf): Rename from am33_cmpsf.
+	(*float_conditional_branch): Rename from float_conditional_branch.
+	(*zero_extendqisi2_am33, *zero_extendqisi2_mn10300): Merge...
+	(zero_extendqisi2): ... here.
+	(*zero_extendhisi2_am33, *zero_extendhisi2_mn10300): Merge...
+	(zero_extendhisi2): ... here.
+	(*extendqisi2_am33, *extendqisi2_mn10300): Merge...
+	(extendqisi2): ... here.
+	(*extendhisi2_am33, *extendhisi2_mn10300): Merge...
+	(extendhisi2): ... here.
+	(*am33_ashlsi3, *mn10300_ashlsi3): Merge...
+	(ashlsi3): ... here.
+	(*am33_lshrsi3, *mn10300_lshrsi3): Merge...
+	(lshrsi3): ... here.
+	(*am33_ashrisi3, *mn10300_ashrsi3): Merge...
+	(ashrsi3): ... here.
+	(consecutive add peephole): Remove.
+	* config/mn10300/predicates.md (label_ref_operand): New.
+	(int_mode_flags): New.
+	(CCZN_comparison_operator): New.
+
 	* config/mn10300/mn10300.md (UNSPEC_EXT): New.
 	(throughput_42_latency_43): New reservation.
 	(mulsidi3, umulsidi3): New expanders.

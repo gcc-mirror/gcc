@@ -600,7 +600,7 @@ do {									     \
 /* Non-global SYMBOL_REFs have SYMBOL_REF_FLAG enabled.  */
 #define MN10300_GLOBAL_P(X) (! SYMBOL_REF_FLAG (X))
 
-#define SELECT_CC_MODE(OP, X, Y)  mn10300_select_cc_mode (X)
+#define SELECT_CC_MODE(OP, X, Y)  mn10300_select_cc_mode (OP, X, Y)
 #define REVERSIBLE_CC_MODE(MODE)  0
 
 /* Nonzero if access to memory by bytes or half words is no faster
