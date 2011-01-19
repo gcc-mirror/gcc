@@ -5396,7 +5396,11 @@ Binary_expression::do_type()
       {
 	Type* left_type = this->left_->type();
 	Type* right_type = this->right_->type();
-	if (!left_type->is_abstract() && left_type->named_type() != NULL)
+	if (left_type->is_error_type())
+	  return left_type;
+	else if (right_type->is_error_type())
+	  return right_type;
+	else if (!left_type->is_abstract() && left_type->named_type() != NULL)
 	  return left_type;
 	else if (!right_type->is_abstract() && right_type->named_type() != NULL)
 	  return right_type;
