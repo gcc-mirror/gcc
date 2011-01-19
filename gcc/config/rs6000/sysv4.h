@@ -1,6 +1,7 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009, 2010  Free Software Foundation, Inc.
+   2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -642,21 +643,6 @@ extern int fixuplabelno;
 %(link_target) \
 %(link_os)"
 
-/* For now, turn off shared libraries by default.  */
-#ifndef SHARED_LIB_SUPPORT
-#define NO_SHARED_LIB_SUPPORT
-#endif
-
-#ifndef NO_SHARED_LIB_SUPPORT
-/* Shared libraries are default.  */
-#define LINK_SHLIB_SPEC "\
-%{!static: %(link_path) %{!R*:%{L*:-R %*}}} \
-%{mshlib: } \
-%{static:-dn -Bstatic} \
-%{shared:-G -dy -z text} \
-%{symbolic:-Bsymbolic -G -dy -z text}"
-
-#else
 /* Shared libraries are not default.  */
 #define LINK_SHLIB_SPEC "\
 %{mshlib: %(link_path) } \
@@ -664,7 +650,6 @@ extern int fixuplabelno;
 %{static: } \
 %{shared:-G -dy -z text %(link_path) } \
 %{symbolic:-Bsymbolic -G -dy -z text %(link_path) }"
-#endif
 
 /* Override the default target of the linker.  */
 #define	LINK_TARGET_SPEC "\
