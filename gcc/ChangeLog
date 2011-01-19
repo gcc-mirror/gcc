@@ -1,3 +1,20 @@
+2011-01-19  Richard Henderson  <rth@redhat.com>
+
+	* config/mn10300/mn10300.md (*am33_movqi, *mn10300_movqi): Merge into
+	(*movqi_internal): ... here.
+	(*am33_movhi, *mn10300_movhi): Merge into...
+	(*movhi_internal): ... here.
+	(*movsi_internal): Use "r" instead of "dax" in constraints.  Use "A"
+	as the source/destination of moves from/to SP.
+	(movsf): Only allow for AM33-2.
+	(*movsf_internal): Use "r" instead of "dax"; use "F" instead of 
+	any integer constant constraint.  Only allow for AM33-2.  Tidy
+	all of the alternative outputs.
+	(movdi, movdf, *am33_2_movdf, *mn10300_movdf): Remove.
+	(udivmodsi4): Delete expander and promote *udivmodsi4.  Disallow
+	for MN103.
+	(udivsi3, umodsi3): New patterns for MN103 only.
+
 2011-01-19  Joern Rennecke  <amylaar@spamcop.net>
 
 	* doc/tm.texi.in: Spell out that a lack of register class unions
