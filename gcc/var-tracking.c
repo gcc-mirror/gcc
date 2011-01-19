@@ -805,6 +805,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	       && hard_frame_pointer_adjustment != -1
 	       && cfa_base_rtx)
 	return compute_cfa_pointer (hard_frame_pointer_adjustment);
+      gcc_checking_assert (loc != virtual_incoming_args_rtx);
       return loc;
     case MEM:
       mem = loc;

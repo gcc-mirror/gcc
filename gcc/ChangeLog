@@ -1,5 +1,14 @@
 2011-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/47079
+	PR debug/46724
+	* function.c (instantiate_expr): Instantiate incoming rtl of
+	implicit arguments, and recurse on VALUE_EXPRs.
+	(instantiate_decls): Instantiate rtl and VALUE_EXPR of result.
+	* var-tracking.c (adjust_mems): Reject virtual_incoming_args_rtx.
+
+2011-01-19  Alexandre Oliva  <aoliva@redhat.com>
+
 	* c-parser.c (c_parser_for_statement): Initialize
 	collection_expression.
 
