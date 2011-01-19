@@ -43,6 +43,11 @@
       || XEXP (op, 1) == stack_pointer_rtx;
 })
 
+(define_predicate "reg_or_am33_const_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_test "TARGET_AM33")
+	    (match_operand 0 "immediate_operand"))))
+
 (define_predicate "label_ref_operand"
   (match_code "label_ref"))
 
