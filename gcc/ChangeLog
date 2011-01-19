@@ -1,3 +1,9 @@
+2011-01-19  Joern Rennecke  <amylaar@spamcop.net>
+
+	* doc/tm.texi.in: Spell out that a lack of register class unions
+	can lead to ICEs.
+	* doc/tm.texi: Regenerate.
+
 2011-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/47337

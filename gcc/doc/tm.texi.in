@@ -2331,7 +2331,9 @@ You should define a class for the union of two classes whenever some
 instruction allows both classes.  For example, if an instruction allows
 either a floating point (coprocessor) register or a general register for a
 certain operand, you should define a class @code{FLOAT_OR_GENERAL_REGS}
-which includes both of them.  Otherwise you will get suboptimal code.
+which includes both of them.  Otherwise you will get suboptimal code,
+or even internal compiler errors when reload cannot find a register in the
+the class computed via @code{reg_class_subunion}.
 
 You must also specify certain redundant information about the register
 classes: for each class, which classes contain it and which ones are
