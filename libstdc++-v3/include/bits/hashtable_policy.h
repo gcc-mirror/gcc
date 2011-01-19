@@ -31,7 +31,7 @@
 #ifndef _HASHTABLE_POLICY_H
 #define _HASHTABLE_POLICY_H 1
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
 namespace __detail
 {
@@ -979,6 +979,6 @@ namespace __detail
     }
 } // namespace __detail
 
-_GLIBCXX_END_NESTED_NAMESPACE // namespace std
+_GLIBCXX_END_NAMESPACE // namespace std
 
 #endif // _HASHTABLE_POLICY_H
