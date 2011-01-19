@@ -1,3 +1,8 @@
+2011-01-19  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47291
+    	* g++.dg/debug/dwarf2/template-params-10.C: New test.
+
 2011-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/46240

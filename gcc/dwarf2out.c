@@ -6196,6 +6196,12 @@ static GTY(()) struct dwarf_file_data * file_table_last_lookup;
 
 static GTY(()) VEC(die_arg_entry,gc) *tmpl_value_parm_die_table;
 
+/* Instances of generic types for which we need to generate debug
+   info that describe their generic parameters and arguments. That
+   generation needs to happen once all types are properly laid out so
+   we do it at the end of compilation.  */
+static GTY(()) VEC(tree,gc) *generic_type_instances;
+
 /* Offset from the "steady-state frame pointer" to the frame base,
    within the current function.  */
 static HOST_WIDE_INT frame_pointer_fb_offset;
@@ -6490,6 +6496,9 @@ static inline void add_AT_vms_delta (dw_die_ref, enum dwarf_attribute,
 				     const char *, const char *);
 static void append_entry_to_tmpl_value_parm_die_table (dw_die_ref, tree);
 static void gen_remaining_tmpl_value_param_die_attribute (void);
+static bool generic_type_p (tree);
+static void schedule_generic_params_dies_gen (tree t);
+static void gen_scheduled_generic_parms_dies (void);
 
 /* Section names used to hold DWARF debugging information.  */
 #ifndef DEBUG_INFO_SECTION
@@ -20147,7 +20156,7 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
   /* Generate child dies for template paramaters.  */
   if (debug_info_level > DINFO_LEVEL_TERSE
       && COMPLETE_TYPE_P (type))
-    gen_generic_params_dies (type);
+    schedule_generic_params_dies_gen (type);
 
   /* If this type has been completed, then give it a byte_size attribute and
      then give a list of members.  */
@@ -21574,6 +21583,33 @@ append_entry_to_tmpl_value_parm_die_table (dw_die_ref die, tree arg)
 		 &entry);
 }
 
+/* Return TRUE if T is an instance of generic type, FALSE
+   otherwise.  */
+
+static bool
+generic_type_p (tree t)
+{
+  if (t == NULL_TREE || !TYPE_P (t))
+    return false;
+  return lang_hooks.get_innermost_generic_parms (t) != NULL_TREE;
+}
+
+/* Schedule the generation of the generic parameter dies for the
+  instance of generic type T. The proper generation itself is later
+  done by gen_scheduled_generic_parms_dies. */
+
+static void
+schedule_generic_params_dies_gen (tree t)
+{
+  if (!generic_type_p (t))
+    return;
+
+  if (generic_type_instances == NULL)
+    generic_type_instances = VEC_alloc (tree, gc, 256);
+
+  VEC_safe_push (tree, gc, generic_type_instances, t);
+}
+
 /* Add a DW_AT_const_value attribute to DIEs that were scheduled
    by append_entry_to_tmpl_value_parm_die_table. This function must
    be called after function DIEs have been generated.  */
@@ -21589,6 +21625,24 @@ gen_remaining_tmpl_value_param_die_attribute (void)
       FOR_EACH_VEC_ELT (die_arg_entry, tmpl_value_parm_die_table, i, e)
 	tree_add_const_value_attribute (e->die, e->arg);
     }
+}
+
+/* Generate generic parameters DIEs for instances of generic types
+   that have been previously scheduled by
+   schedule_generic_params_dies_gen. This function must be called
+   after all the types of the CU have been laid out.  */
+
+static void
+gen_scheduled_generic_parms_dies (void)
+{
+  unsigned i;
+  tree t;
+
+  if (generic_type_instances == NULL)
+    return;
+  
+  FOR_EACH_VEC_ELT (tree, generic_type_instances, i, t)
+    gen_generic_params_dies (t);
 }
 
 
@@ -23153,6 +23207,7 @@ dwarf2out_finish (const char *filename)
   htab_t comdat_type_table;
   unsigned int i;
 
+  gen_scheduled_generic_parms_dies ();
   gen_remaining_tmpl_value_param_die_attribute ();
 
   /* Add the name for the main input file now.  We delayed this from
