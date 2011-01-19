@@ -7948,7 +7948,9 @@ Type::find_field_or_method(const Type* type,
 	  || pf->type()->deref()->is_undefined())
 	continue;
 
-      Named_type* fnt = pf->type()->deref()->named_type();
+      Named_type* fnt = pf->type()->named_type();
+      if (fnt == NULL)
+	fnt = pf->type()->deref()->named_type();
       gcc_assert(fnt != NULL);
 
       int sublevel = level == NULL ? 1 : *level + 1;
