@@ -1,3 +1,7 @@
+2011-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-split.c: Spelling fixes.
+
 2011-01-19  Richard Henderson  <rth@redhat.com>
 
 	* config/mn10300/mn10300.md (mulsi3): Use reg_or_am33_const_operand.
