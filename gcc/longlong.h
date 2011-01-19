@@ -718,6 +718,43 @@ UDItype __umulsidi3 (USItype, USItype);
 #endif /* __mc88110__ */
 #endif /* __m88000__ */
 
+#if defined (__mn10300__)
+# if defined (__AM33__)
+#  define count_leading_zeros(COUNT,X)	((COUNT) = __builtin_clz (X))
+#  define umul_ppmm(w1, w0, u, v)		\
+    asm("mulu %3,%2,%1,%0" : "=r"(w0), "=r"(w1) : "r"(u), "r"(v))
+#  define smul_ppmm(w1, w0, u, v)		\
+    asm("mul %3,%2,%1,%0" : "=r"(w0), "=r"(w1) : "r"(u), "r"(v))
+# else
+#  define umul_ppmm(w1, w0, u, v)		\
+    asm("nop; nop; mulu %3,%0" : "=d"(w0), "=z"(w1) : "%0"(u), "d"(v))
+#  define smul_ppmm(w1, w0, u, v)		\
+    asm("nop; nop; mul %3,%0" : "=d"(w0), "=z"(w1) : "%0"(u), "d"(v))
+# endif
+# define add_ssaaaa(sh, sl, ah, al, bh, bl)	\
+  do {						\
+    DWunion __s, __a, __b;			\
+    __a.s.low = (al); __a.s.high = (ah);	\
+    __b.s.low = (bl); __b.s.high = (bh);	\
+    __s.ll = __a.ll + __b.ll;			\
+    (sl) = __s.s.low; (sh) = __s.s.high;	\
+  } while (0)
+# define sub_ddmmss(sh, sl, ah, al, bh, bl)	\
+  do {						\
+    DWunion __s, __a, __b;			\
+    __a.s.low = (al); __a.s.high = (ah);	\
+    __b.s.low = (bl); __b.s.high = (bh);	\
+    __s.ll = __a.ll - __b.ll;			\
+    (sl) = __s.s.low; (sh) = __s.s.high;	\
+  } while (0)
+# define udiv_qrnnd(q, r, nh, nl, d)		\
+  asm("divu %2,%0" : "=D"(q), "=z"(r) : "D"(d), "0"(nl), "1"(nh))
+# define sdiv_qrnnd(q, r, nh, nl, d)		\
+  asm("div %2,%0" : "=D"(q), "=z"(r) : "D"(d), "0"(nl), "1"(nh))
+# define UMUL_TIME 3
+# define UDIV_TIME 38
+#endif
+
 #if defined (__mips__) && W_TYPE_SIZE == 32
 #define umul_ppmm(w1, w0, u, v)						\
   do {									\

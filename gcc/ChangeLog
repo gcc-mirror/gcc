@@ -3,6 +3,12 @@
 	* config/mn10300/mn10300.md (mulsi3): Use reg_or_am33_const_operand.
 	(*mulsi3): Likewise.
 
+	* longlong.h [__mn10300__] (count_leading_zeros): New.
+	[__mn10300__] (umul_ppmm, smul_ppmm): New.
+	[__mn10300__] (add_ssaaaa, subddmmss): New.
+	[__mn10300__] (udiv_qrnnd, sdiv_qrnnd): New.
+	[__mn10300__] (UMUL_TIME, UDIV_TIME): New.
+
 2011-01-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.h (MOVE_RATIO): Return 4 in the !speed case.
