@@ -1,6 +1,6 @@
 // <chrono> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -223,6 +223,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	// 20.8.3.1 construction / copy / destroy
 	constexpr duration() : __r() { }
 
+	constexpr duration(const duration&) = default;
+
 	template<typename _Rep2, typename = typename
 	       enable_if<is_convertible<_Rep2, rep>::value
 			 && (treat_as_floating_point<rep>::value
@@ -238,7 +240,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  : __r(duration_cast<duration>(__d).count()) { }
 
 	~duration() = default;
-	duration(const duration&) = default;
 	duration& operator=(const duration&) = default;
 
 	// 20.8.3.2 observer

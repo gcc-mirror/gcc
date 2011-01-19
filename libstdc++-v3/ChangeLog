@@ -1,3 +1,10 @@
+2011-01-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/images/confdeps.png: Regenerate.
+
+	* include/std/chrono (duration): Mark copy constructor constexpr.
+	* testsuite/20_util/duration/cons/constexpr.cc: Add test.
+
 2011-01-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/unique_ptr.h (default_delete<>::default_delete()):
