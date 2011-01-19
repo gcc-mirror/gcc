@@ -1,3 +1,8 @@
+2011-01-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-parser.c (c_parser_for_statement): Initialize
+	collection_expression.
+
 2011-01-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/spu/spu-elf.h (ASM_SPEC): Remove %{w:-W}.
