@@ -1,5 +1,11 @@
 2011-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/46240
+	* tree-into-ssa.c (maybe_register_def): Do not attempt to add
+	debug bind stmt on merge edges.
+
+2011-01-19  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/47079
 	PR debug/46724
 	* function.c (instantiate_expr): Instantiate incoming rtl of
