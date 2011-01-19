@@ -1,5 +1,9 @@
 2011-01-19  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/spu/spu-elf.h (ASM_SPEC): Remove %{w:-W}.
+
+2011-01-19  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/rs6000/sysv4.h (LINK_PATH_SPEC): Remove.
 	(LINK_SHLIB_SPEC): Don't use %(link_path).
 	(SUBTARGET_EXTRA_SPECS): Remove link_path.
