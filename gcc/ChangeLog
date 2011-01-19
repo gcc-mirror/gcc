@@ -1,5 +1,13 @@
 2011-01-19  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.c (mn10300_can_use_retf_insn): New.
+	(mn10300_can_use_rets_insn): Rename from mn10300_can_use_return_insn.
+	(mn10300_expand_epilogue): Use it.  Compute REG_SAVE_BYTES once.
+	* config/mn10300/mn10300-protos.h: Update.
+	* config/mn10300/mn10300.md (return): Use mn10300_can_use_retf_insn.
+	(return_ret): Likewise.  Rename from return_internal_regs.
+	(return_internal): Remove.
+
 	* config/mn10300/mn10300.c (mn10300_unspec_int_label_counter): Remove.
 	(mn10300_asm_output_addr_const_extra): Don't handle UNSPEC_INT_LABEL.
 	(mn10300_legitimate_constant_p): Likewise.

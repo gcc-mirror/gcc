@@ -45,7 +45,8 @@ extern bool  mn10300_match_ccmode (rtx, Mmode);
 #endif /* RTX_CODE */
 
 extern bool  mn10300_regno_in_class_p (unsigned, int, bool);
-extern int   mn10300_can_use_return_insn (void);
+extern bool  mn10300_can_use_rets_insn (void);
+extern bool  mn10300_can_use_retf_insn (void);
 extern void  mn10300_expand_prologue (void);
 extern void  mn10300_expand_epilogue (void);
 extern int   mn10300_initial_offset (int, int);

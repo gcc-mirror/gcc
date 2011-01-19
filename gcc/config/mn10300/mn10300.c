@@ -623,8 +623,33 @@ mn10300_print_reg_list (FILE *file, int mask)
   fputc (']', file);
 }
 
-int
-mn10300_can_use_return_insn (void)
+/* If the MDR register is never clobbered, we can use the RETF instruction
+   which takes the address from the MDR register.  This is 3 cycles faster
+   than having to load the address from the stack.  */
+
+bool
+mn10300_can_use_retf_insn (void)
+{
+  /* Don't bother if we're not optimizing.  In this case we won't
+     have proper access to df_regs_ever_live_p.  */
+  if (!optimize)
+    return false;
+
+  /* EH returns alter the saved return address; MDR is not current.  */
+  if (crtl->calls_eh_return)
+    return false;
+
+  /* Obviously not if MDR is ever clobbered.  */
+  if (df_regs_ever_live_p (MDR_REG))
+    return false;
+
+  /* ??? Careful not to use this during expand_epilogue etc.  */
+  gcc_assert (!in_sequence_p ());
+  return leaf_function_p ();
+}
+
+bool
+mn10300_can_use_rets_insn (void)
 {
   return !mn10300_initial_offset (ARG_POINTER_REGNUM, STACK_POINTER_REGNUM);
 }
@@ -995,6 +1020,7 @@ void
 mn10300_expand_epilogue (void)
 {
   HOST_WIDE_INT size = mn10300_frame_size ();
+  int reg_save_bytes = REG_SAVE_BYTES;
   
   if (TARGET_AM33_2 && fp_regs_to_save ())
     {
@@ -1026,14 +1052,14 @@ mn10300_expand_epilogue (void)
 	  this_strategy_size = SIZE_FMOV_SP (size, num_regs_to_save);
 	  /* If size is too large, we'll have to adjust SP with an
 		 add.  */
-	  if (size + 4 * num_regs_to_save + REG_SAVE_BYTES > 255)
+	  if (size + 4 * num_regs_to_save + reg_save_bytes > 255)
 	    {
 	      /* Insn: add size + 4 * num_regs_to_save, sp.  */
 	      this_strategy_size += SIZE_ADD_SP (size + 4 * num_regs_to_save);
 	    }
 	  /* If we don't have to restore any non-FP registers,
 		 we'll be able to save one byte by using rets.  */
-	  if (! REG_SAVE_BYTES)
+	  if (! reg_save_bytes)
 	    this_strategy_size--;
 
 	  if (this_strategy_size < strategy_size)
@@ -1060,14 +1086,14 @@ mn10300_expand_epilogue (void)
 	     When size is close to 32Kb, we may be able to adjust SP
 	     with an imm16 add instruction while still using fmov
 	     (d8,sp).  */
-	  if (size + 4 * num_regs_to_save + REG_SAVE_BYTES > 255)
+	  if (size + 4 * num_regs_to_save + reg_save_bytes > 255)
 	    {
 	      /* Insn: add size + 4 * num_regs_to_save
-				+ REG_SAVE_BYTES - 252,sp.  */
+				+ reg_save_bytes - 252,sp.  */
 	      this_strategy_size = SIZE_ADD_SP (size + 4 * num_regs_to_save
-						+ REG_SAVE_BYTES - 252);
+						+ reg_save_bytes - 252);
 	      /* Insn: fmov (##,sp),fs#, fo each fs# to be restored.  */
-	      this_strategy_size += SIZE_FMOV_SP (252 - REG_SAVE_BYTES
+	      this_strategy_size += SIZE_FMOV_SP (252 - reg_save_bytes
 						  - 4 * num_regs_to_save,
 						  num_regs_to_save);
 	      /* We're going to use ret to release the FP registers
@@ -1096,14 +1122,14 @@ mn10300_expand_epilogue (void)
 	      this_strategy_size += 3 * num_regs_to_save;
 	      /* If size is large enough, we may be able to save a
 		 couple of bytes.  */
-	      if (size + 4 * num_regs_to_save + REG_SAVE_BYTES > 255)
+	      if (size + 4 * num_regs_to_save + reg_save_bytes > 255)
 		{
 		  /* Insn: mov a1,sp.  */
 		  this_strategy_size += 2;
 		}
 	      /* If we don't have to restore any non-FP registers,
 		 we'll be able to save one byte by using rets.  */
-	      if (! REG_SAVE_BYTES)
+	      if (! reg_save_bytes)
 		this_strategy_size--;
 
 	      if (this_strategy_size < strategy_size)
@@ -1129,8 +1155,8 @@ mn10300_expand_epilogue (void)
 	      emit_insn (gen_addsi3 (stack_pointer_rtx,
 				     stack_pointer_rtx,
 				     GEN_INT (size + 4 * num_regs_to_save
-					      + REG_SAVE_BYTES - 252)));
-	      size = 252 - REG_SAVE_BYTES - 4 * num_regs_to_save;
+					      + reg_save_bytes - 252)));
+	      size = 252 - reg_save_bytes - 4 * num_regs_to_save;
 	      break;
 
 	    case restore_a1:
@@ -1176,7 +1202,7 @@ mn10300_expand_epilogue (void)
       /* If we were using the restore_a1 strategy and the number of
 	 bytes to be released won't fit in the `ret' byte, copy `a1'
 	 to `sp', to avoid having to use `add' to adjust it.  */
-      if (! frame_pointer_needed && reg && size + REG_SAVE_BYTES > 255)
+      if (! frame_pointer_needed && reg && size + reg_save_bytes > 255)
 	{
 	  emit_move_insn (stack_pointer_rtx, XEXP (reg, 0));
 	  size = 0;
@@ -1203,7 +1229,7 @@ mn10300_expand_epilogue (void)
       emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
       size = 0;
     }
-  else if (size + REG_SAVE_BYTES > 255)
+  else if (size + reg_save_bytes > 255)
     {
       emit_insn (gen_addsi3 (stack_pointer_rtx,
 			     stack_pointer_rtx,
@@ -1212,15 +1238,10 @@ mn10300_expand_epilogue (void)
     }
 
   /* Adjust the stack and restore callee-saved registers, if any.  */
-  if (size || df_regs_ever_live_p (2) || df_regs_ever_live_p (3)
-      || df_regs_ever_live_p (6) || df_regs_ever_live_p (7)
-      || df_regs_ever_live_p (14) || df_regs_ever_live_p (15)
-      || df_regs_ever_live_p (16) || df_regs_ever_live_p (17)
-      || frame_pointer_needed)
-    emit_jump_insn (gen_return_internal_regs
-		    (GEN_INT (size + REG_SAVE_BYTES)));
+  if (mn10300_can_use_rets_insn ())
+    emit_jump_insn (gen_rtx_RETURN (VOIDmode));
   else
-    emit_jump_insn (gen_return_internal ());
+    emit_jump_insn (gen_return_ret (GEN_INT (size + REG_SAVE_BYTES)));
 }
 
 /* Recognize the PARALLEL rtx generated by mn10300_gen_multiple_store().
