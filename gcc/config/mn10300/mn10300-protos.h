@@ -35,7 +35,6 @@ extern Cstar mn10300_output_cmp (rtx, rtx);
 extern void  mn10300_print_operand (FILE *, rtx, int);
 extern void  mn10300_print_operand_address (FILE *, rtx);
 extern void  mn10300_print_reg_list (FILE *, int);
-extern Rclas mn10300_secondary_reload_class (Rclas, Mmode, rtx);
 extern Mmode mn10300_select_cc_mode (rtx);
 extern int   mn10300_store_multiple_operation (rtx, Mmode);
 extern int   mn10300_symbolic_operand (rtx, Mmode);
