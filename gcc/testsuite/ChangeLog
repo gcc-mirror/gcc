@@ -1,3 +1,8 @@
+2011-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/47337
+	* gcc.c-torture/execute/pr47337.c: New test.
+
 2011-01-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR testsuite/45342

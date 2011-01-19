@@ -1,5 +1,9 @@
 2011-01-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/47337
+	* dce.c (check_argument_store): New function.
+	(find_call_stack_args): Ignore debug insns.  Use check_argument_store.
+
 	PR tree-optimization/47290
 	* tree-eh.c (infinite_empty_loop_p): New function.
 	(cleanup_empty_eh): Use it.
