@@ -495,26 +495,38 @@ mn10300_print_operand_address (FILE *file, rtx addr)
   switch (GET_CODE (addr))
     {
     case POST_INC:
-      mn10300_print_operand_address (file, XEXP (addr, 0));
+      mn10300_print_operand (file, XEXP (addr, 0), 0);
       fputc ('+', file);
       break;
+
+    case POST_MODIFY:
+      mn10300_print_operand (file, XEXP (addr, 0), 0);
+      fputc ('+', file);
+      fputc (',', file);
+      mn10300_print_operand (file, XEXP (addr, 1), 0);
+      break;
+
     case REG:
       mn10300_print_operand (file, addr, 0);
       break;
     case PLUS:
       {
-	rtx base, index;
-	if (REG_P (XEXP (addr, 0))
-	    && REG_OK_FOR_BASE_P (XEXP (addr, 0)))
-	  base = XEXP (addr, 0), index = XEXP (addr, 1);
-	else if (REG_P (XEXP (addr, 1))
-	    && REG_OK_FOR_BASE_P (XEXP (addr, 1)))
-	  base = XEXP (addr, 1), index = XEXP (addr, 0);
-      	else
-	  gcc_unreachable ();
+	rtx base = XEXP (addr, 0);
+	rtx index = XEXP (addr, 1);
+	
+	if (REG_P (index) && !REG_OK_FOR_INDEX_P (index))
+	  {
+	    rtx x = base;
+	    base = index;
+	    index = x;
+
+	    gcc_assert (REG_P (index) && REG_OK_FOR_INDEX_P (index));
+	  }
+	gcc_assert (REG_OK_FOR_BASE_P (base));
+
 	mn10300_print_operand (file, index, 0);
 	fputc (',', file);
-	mn10300_print_operand (file, base, 0);;
+	mn10300_print_operand (file, base, 0);
 	break;
       }
     case SYMBOL_REF:
@@ -1395,8 +1407,7 @@ mn10300_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   if (in_p
       && rclass != SP_REGS
       && rclass != SP_OR_ADDRESS_REGS
-      && rclass != SP_OR_EXTENDED_REGS
-      && rclass != SP_OR_ADDRESS_OR_EXTENDED_REGS
+      && rclass != SP_OR_GENERAL_REGS
       && GET_CODE (x) == PLUS
       && (XEXP (x, 0) == stack_pointer_rtx
 	  || XEXP (x, 1) == stack_pointer_rtx))
@@ -1422,7 +1433,7 @@ mn10300_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	addr = XEXP (x, 0);
 
       if (addr && CONSTANT_ADDRESS_P (addr))
-	return DATA_OR_EXTENDED_REGS;
+	return GENERAL_REGS;
     }
 
   /* Otherwise assume no secondary reloads are needed.  */
@@ -1954,51 +1965,99 @@ mn10300_legitimate_pic_operand_p (rtx x)
 static bool
 mn10300_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
-  if (CONSTANT_ADDRESS_P (x)
-      && (! flag_pic || mn10300_legitimate_pic_operand_p (x)))
-    return TRUE;
+  rtx base, index;
+
+  if (CONSTANT_ADDRESS_P (x))
+    return !flag_pic || mn10300_legitimate_pic_operand_p (x);
 
   if (RTX_OK_FOR_BASE_P (x, strict))
-    return TRUE;
+    return true;
 
-  if (TARGET_AM33
-      && GET_CODE (x) == POST_INC
-      && RTX_OK_FOR_BASE_P (XEXP (x, 0), strict)
-      && (mode == SImode || mode == SFmode || mode == HImode))
-    return TRUE;
-
-  if (GET_CODE (x) == PLUS)
+  if (TARGET_AM33 && (mode == SImode || mode == SFmode || mode == HImode))
     {
-      rtx base = 0, index = 0;
-
-      if (REG_P (XEXP (x, 0))
-	  && REGNO_STRICT_OK_FOR_BASE_P (REGNO (XEXP (x, 0)), strict))
-	{
-	  base = XEXP (x, 0);
-	  index = XEXP (x, 1);
-	}
-
-      if (REG_P (XEXP (x, 1))
-	  && REGNO_STRICT_OK_FOR_BASE_P (REGNO (XEXP (x, 1)), strict))
-	{
-	  base = XEXP (x, 1);
-	  index = XEXP (x, 0);
-	}
-
-      if (base != 0 && index != 0)
-	{
-	  if (CONST_INT_P (index))
-	    return TRUE;
-	  if (GET_CODE (index) == CONST
-	      && GET_CODE (XEXP (index, 0)) != PLUS
-	      && (! flag_pic
- 		  || (mn10300_legitimate_pic_operand_p (index)
-		      && GET_MODE_SIZE (mode) == 4)))
-	    return TRUE;
-	}
+      if (GET_CODE (x) == POST_INC)
+	return RTX_OK_FOR_BASE_P (XEXP (x, 0), strict);
+      if (GET_CODE (x) == POST_MODIFY)
+	return (RTX_OK_FOR_BASE_P (XEXP (x, 0), strict)
+		&& CONSTANT_ADDRESS_P (XEXP (x, 1)));
     }
 
-  return FALSE;
+  if (GET_CODE (x) != PLUS)
+    return false;
+
+  base = XEXP (x, 0);
+  index = XEXP (x, 1);
+
+  if (!REG_P (base))
+    return false;
+  if (REG_P (index))
+    {
+      /* ??? Without AM33 generalized (Ri,Rn) addressing, reg+reg
+	 addressing is hard to satisfy.  */
+      if (!TARGET_AM33)
+	return false;
+
+      return (REGNO_GENERAL_P (REGNO (base), strict)
+	      && REGNO_GENERAL_P (REGNO (index), strict));
+    }
+
+  if (!REGNO_STRICT_OK_FOR_BASE_P (REGNO (base), strict))
+    return false;
+
+  if (CONST_INT_P (index))
+    return IN_RANGE (INTVAL (index), -1 - 0x7fffffff, 0x7fffffff);
+
+  if (CONSTANT_ADDRESS_P (index))
+    return !flag_pic || mn10300_legitimate_pic_operand_p (index);
+
+  return false;
+}
+
+bool
+mn10300_regno_in_class_p (unsigned regno, int rclass, bool strict)
+{
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    {
+      if (!strict)
+	return true;
+      if (!reg_renumber)
+	return false;
+      regno = reg_renumber[regno];
+    }
+  return TEST_HARD_REG_BIT (reg_class_contents[rclass], regno);
+}
+
+rtx
+mn10300_legitimize_reload_address (rtx x,
+				   enum machine_mode mode ATTRIBUTE_UNUSED,
+				   int opnum, int type,
+				   int ind_levels ATTRIBUTE_UNUSED)
+{
+  bool any_change = false;
+
+  /* See above re disabling reg+reg addressing for MN103.  */
+  if (!TARGET_AM33)
+    return NULL_RTX;
+
+  if (GET_CODE (x) != PLUS)
+    return NULL_RTX;
+
+  if (XEXP (x, 0) == stack_pointer_rtx)
+    {
+      push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
+		   GENERAL_REGS, GET_MODE (x), VOIDmode, 0, 0,
+		   opnum, (enum reload_type) type);
+      any_change = true;
+    }
+  if (XEXP (x, 1) == stack_pointer_rtx)
+    {
+      push_reload (XEXP (x, 1), NULL_RTX, &XEXP (x, 1), NULL,
+		   GENERAL_REGS, GET_MODE (x), VOIDmode, 0, 0,
+		   opnum, (enum reload_type) type);
+      any_change = true;
+    }
+
+  return any_change ? x : NULL_RTX;
 }
 
 /* Used by LEGITIMATE_CONSTANT_P().  Returns TRUE if X is a valid

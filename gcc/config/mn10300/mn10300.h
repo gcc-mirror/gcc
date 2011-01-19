@@ -261,12 +261,9 @@ extern enum processor_type mn10300_tune_cpu;
 
 enum reg_class
 {
-  NO_REGS, DATA_REGS, ADDRESS_REGS, SP_REGS,
-  DATA_OR_ADDRESS_REGS, SP_OR_ADDRESS_REGS,
-  EXTENDED_REGS, DATA_OR_EXTENDED_REGS, ADDRESS_OR_EXTENDED_REGS,
-  SP_OR_EXTENDED_REGS, SP_OR_ADDRESS_OR_EXTENDED_REGS,
-  FP_REGS, FP_ACC_REGS, CC_REGS,
-  GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
+  NO_REGS, DATA_REGS, ADDRESS_REGS, SP_REGS, SP_OR_ADDRESS_REGS,
+  EXTENDED_REGS, FP_REGS, FP_ACC_REGS, CC_REGS,
+  GENERAL_REGS, SP_OR_GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -274,13 +271,9 @@ enum reg_class
 /* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES					   	\
-{ "NO_REGS", "DATA_REGS", "ADDRESS_REGS",			\
-  "SP_REGS", "DATA_OR_ADDRESS_REGS", "SP_OR_ADDRESS_REGS",	\
-  "EXTENDED_REGS",						\
-  "DATA_OR_EXTENDED_REGS", "ADDRESS_OR_EXTENDED_REGS",		\
-  "SP_OR_EXTENDED_REGS", "SP_OR_ADDRESS_OR_EXTENDED_REGS",	\
-  "FP_REGS", "FP_ACC_REGS", "CC_REGS",				\
-  "GENERAL_REGS", "ALL_REGS", "LIM_REGS"			\
+{ "NO_REGS", "DATA_REGS", "ADDRESS_REGS", "SP_REGS", "SP_OR_ADDRESS_REGS", \
+  "EXTENDED_REGS", "FP_REGS", "FP_ACC_REGS", "CC_REGS",		\
+  "GENERAL_REGS", "SP_OR_GENERAL_REGS", "ALL_REGS", "LIM_REGS"	\
 }
 
 /* Define which registers fit in which classes.
@@ -292,17 +285,13 @@ enum reg_class
   { 0x0000000f, 0 },	  /* DATA_REGS */			\
   { 0x000001f0, 0 },	  /* ADDRESS_REGS */			\
   { 0x00000200, 0 },	  /* SP_REGS */				\
-  { 0x000001ff, 0 },	  /* DATA_OR_ADDRESS_REGS */		\
   { 0x000003f0, 0 },	  /* SP_OR_ADDRESS_REGS */		\
   { 0x0003fc00, 0 },	  /* EXTENDED_REGS */			\
-  { 0x0003fc0f, 0 },	  /* DATA_OR_EXTENDED_REGS */		\
-  { 0x0003fdf0, 0 },	  /* ADDRESS_OR_EXTENDED_REGS */	\
-  { 0x0003fe00, 0 },	  /* SP_OR_EXTENDED_REGS */		\
-  { 0x0003fff0, 0 },	  /* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
   { 0xfffc0000, 0x3ffff },/* FP_REGS */				\
   { 0x03fc0000, 0 },	  /* FP_ACC_REGS */			\
   { 0x00000000, 0x80000 },/* CC_REGS */				\
   { 0x0003fdff, 0 }, 	  /* GENERAL_REGS */			\
+  { 0x0003ffff, 0 },      /* SP_OR_GENERAL_REGS */		\
   { 0xffffffff, 0xfffff } /* ALL_REGS */			\
 }
 
@@ -334,8 +323,10 @@ enum reg_class
    NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
-#define INDEX_REG_CLASS DATA_OR_EXTENDED_REGS
-#define BASE_REG_CLASS  SP_OR_ADDRESS_REGS
+#define INDEX_REG_CLASS \
+  (TARGET_AM33 ? GENERAL_REGS : DATA_REGS)
+#define BASE_REG_CLASS \
+  (TARGET_AM33 ? SP_OR_GENERAL_REGS : SP_OR_ADDRESS_REGS)
 
 /* Macros to check register numbers against specific register classes.  */
 
@@ -364,50 +355,31 @@ enum reg_class
 # define REG_STRICT 1
 #endif
 
-# define REGNO_IN_RANGE_P(regno,min,max,strict) \
-  (IN_RANGE ((regno), (min), (max)) 		\
-   || ((strict)					\
-       ? (reg_renumber				\
-	  && reg_renumber[(regno)] >= (min)	\
-	  && reg_renumber[(regno)] <= (max))	\
-       : (regno) >= FIRST_PSEUDO_REGISTER))
-
 #define REGNO_DATA_P(regno, strict) \
-  (REGNO_IN_RANGE_P ((regno), FIRST_DATA_REGNUM, LAST_DATA_REGNUM, \
-		     (strict)))
+  mn10300_regno_in_class_p (regno, DATA_REGS, strict)
 #define REGNO_ADDRESS_P(regno, strict) \
-  (REGNO_IN_RANGE_P ((regno), FIRST_ADDRESS_REGNUM, LAST_ADDRESS_REGNUM, \
-		     (strict)))
-#define REGNO_SP_P(regno, strict) \
-  (REGNO_IN_RANGE_P ((regno), STACK_POINTER_REGNUM, STACK_POINTER_REGNUM, \
-		     (strict)))
+  mn10300_regno_in_class_p (regno, ADDRESS_REGS, strict)
 #define REGNO_EXTENDED_P(regno, strict) \
-  (REGNO_IN_RANGE_P ((regno), FIRST_EXTENDED_REGNUM, LAST_EXTENDED_REGNUM, \
-		     (strict)))
-#define REGNO_AM33_P(regno, strict) \
-  (REGNO_DATA_P ((regno), (strict)) || REGNO_ADDRESS_P ((regno), (strict)) \
-   || REGNO_EXTENDED_P ((regno), (strict)))
-#define REGNO_FP_P(regno, strict) \
-  (REGNO_IN_RANGE_P ((regno), FIRST_FP_REGNUM, LAST_FP_REGNUM, (strict)))
+  mn10300_regno_in_class_p (regno, EXTENDED_REGS, strict)
+#define REGNO_GENERAL_P(regno, strict) \
+  mn10300_regno_in_class_p (regno, GENERAL_REGS, strict)
 
 #define REGNO_STRICT_OK_FOR_BASE_P(regno, strict) \
-  (REGNO_SP_P ((regno), (strict)) \
-   || REGNO_ADDRESS_P ((regno), (strict)) \
-   || REGNO_EXTENDED_P ((regno), (strict)))
+  mn10300_regno_in_class_p (regno, BASE_REG_CLASS, strict)
 #define REGNO_OK_FOR_BASE_P(regno) \
   (REGNO_STRICT_OK_FOR_BASE_P ((regno), REG_STRICT))
 #define REG_OK_FOR_BASE_P(X) \
   (REGNO_OK_FOR_BASE_P (REGNO (X)))
 
 #define REGNO_STRICT_OK_FOR_BIT_BASE_P(regno, strict) \
-  (REGNO_SP_P ((regno), (strict)) || REGNO_ADDRESS_P ((regno), (strict)))
+  mn10300_regno_in_class_p (regno, ADDRESS_REGS, strict)
 #define REGNO_OK_FOR_BIT_BASE_P(regno) \
   (REGNO_STRICT_OK_FOR_BIT_BASE_P ((regno), REG_STRICT))
 #define REG_OK_FOR_BIT_BASE_P(X) \
   (REGNO_OK_FOR_BIT_BASE_P (REGNO (X)))
 
 #define REGNO_STRICT_OK_FOR_INDEX_P(regno, strict) \
-  (REGNO_DATA_P ((regno), (strict)) || REGNO_EXTENDED_P ((regno), (strict)))
+  mn10300_regno_in_class_p (regno, INDEX_REG_CLASS, strict)
 #define REGNO_OK_FOR_INDEX_P(regno) \
   (REGNO_STRICT_OK_FOR_INDEX_P ((regno), REG_STRICT))
 #define REG_OK_FOR_INDEX_P(X) \
@@ -557,7 +529,15 @@ struct cum_arg
 #define MAX_REGS_PER_ADDRESS 2
 
 
-#define HAVE_POST_INCREMENT (TARGET_AM33)
+/* We have post-increments.  */
+#define HAVE_POST_INCREMENT	TARGET_AM33
+#define HAVE_POST_MODIFY_DISP	TARGET_AM33
+
+/* ... But we don't want to use them for block moves.  Small offsets are
+   just as effective, at least for inline block move sizes, and appears
+   to produce cleaner code.  */
+#define USE_LOAD_POST_INCREMENT(M)	0
+#define USE_STORE_POST_INCREMENT(M)	0
 
 /* Accept either REG or SUBREG where a register is valid.  */
 
@@ -568,6 +548,15 @@ struct cum_arg
        && REGNO_STRICT_OK_FOR_BASE_P (REGNO (SUBREG_REG (X)),	\
  				      (strict))))
 
+#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_L,WIN)		     \
+do {									     \
+  rtx new_x = mn10300_legitimize_reload_address (X, MODE, OPNUM, TYPE, IND_L); \
+  if (new_x)								     \
+    {									     \
+      X = new_x;							     \
+      goto WIN;								     \
+    }									     \
+} while (0)
 
 
 /* Nonzero if the constant value X is a legitimate general operand.

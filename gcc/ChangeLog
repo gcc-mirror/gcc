@@ -1,5 +1,33 @@
 2011-01-19  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.c (mn10300_print_operand_address): Handle
+	POST_MODIFY.
+	(mn10300_secondary_reload): Tidy combination reload classes.
+	(mn10300_legitimate_address_p): Allow post-modify and reg+reg
+	addresses for AM33.  Allow symbolic offsets for reg+imm.
+	(mn10300_regno_in_class_p): New.
+	(mn10300_legitimize_reload_address): New.
+	* config/mn10300/mn10300.h (enum reg_class): Remove
+	DATA_OR_ADDRESS_REGS, DATA_OR_EXTENDED_REGS, ADDRESS_OR_EXTENDED_REGS,
+	SP_OR_EXTENDED_REGS, SP_OR_ADDRESS_OR_EXTENDED_REGS.  Add
+	SP_OR_GENERAL_REGS.
+	(REG_CLASS_NAMES): Update to match.
+	(REG_CLASS_CONTENTS): Likewise.
+	(INDEX_REG_CLASS): Use GENERAL_REGS for AM33.
+	(BASE_REG_CLASS): Use SP_OR_GENERAL_REGS for AM33.
+	(REGNO_IN_RANGE_P): Remove.
+	(REGNO_DATA_P): Use mn10300_regno_in_class_p.
+	(REGNO_ADDRESS_P, REGNO_EXTENDED_P): Likewise.
+	(REGNO_STRICT_OK_FOR_BASE_P): Likewise.
+	(REGNO_STRICT_OK_FOR_BIT_BASE_P): Likewise.
+	(REGNO_STRICT_OK_FOR_INDEX_P): Likewise.
+	(REGNO_SP_P, REGNO_AM33_P, REGNO_FP_P): Remove.
+	(REGNO_GENERAL_P): New.
+	(HAVE_POST_MODIFY_DISP): New.
+	(USE_LOAD_POST_INCREMENT, USE_STORE_POST_INCREMENT): New.
+	(LEGITIMIZE_RELOAD_ADDRESS): New.
+	* config/mn10300/mn10300-protos.h: Update.
+
 	* config/mn10300/mn10300.c (mn10300_preferred_reload_class): Allow
 	DATA_REGS for AM33 stack-pointer destination.
 	(mn10300_preferred_output_reload_class): Likewise.
