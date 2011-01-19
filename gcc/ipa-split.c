@@ -46,7 +46,7 @@ along with GCC; see the file COPYING3.  If not see
      }
 
    When func becomes inlinable and when cheap_test is often true, inlining func,
-   but not fund.part leads to performance imrovement similar as inlining
+   but not fund.part leads to performance improvement similar as inlining
    original func while the code size growth is smaller.
 
    The pass is organized in three stages:
@@ -112,7 +112,7 @@ struct split_point
   /* Size of the partitions.  */
   unsigned int header_time, header_size, split_time, split_size;
 
-  /* SSA names that need to be passed into spit funciton.  */
+  /* SSA names that need to be passed into spit function.  */
   bitmap ssa_names_to_pass;
 
   /* Basic block where we split (that will become entry point of new function.  */
@@ -285,7 +285,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   edge_iterator ei;
   gimple_stmt_iterator bsi;
   unsigned int i;
-  int incomming_freq = 0;
+  int incoming_freq = 0;
   tree retval;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -293,16 +293,16 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
 
   FOR_EACH_EDGE (e, ei, current->entry_bb->preds)
     if (!bitmap_bit_p (current->split_bbs, e->src->index))
-      incomming_freq += EDGE_FREQUENCY (e);
+      incoming_freq += EDGE_FREQUENCY (e);
 
   /* Do not split when we would end up calling function anyway.  */
-  if (incomming_freq
+  if (incoming_freq
       >= (ENTRY_BLOCK_PTR->frequency
 	  * PARAM_VALUE (PARAM_PARTIAL_INLINING_ENTRY_PROBABILITY) / 100))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "  Refused: incomming frequency is too large.\n");
+		 "  Refused: incoming frequency is too large.\n");
       return;
     }
 
@@ -313,8 +313,8 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
       return;
     }
 
-  /* Verify that PHI args on entry are either virutal or all their operands
-     incomming from header are the same.  */
+  /* Verify that PHI args on entry are either virtual or all their operands
+     incoming from header are the same.  */
   for (bsi = gsi_start_phis (current->entry_bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
       gimple stmt = gsi_stmt (bsi);
@@ -540,7 +540,7 @@ find_return_bb (void)
   return return_bb;
 }
 
-/* Given return basicblock RETURN_BB, see where return value is really
+/* Given return basic block RETURN_BB, see where return value is really
    stored.  */
 static tree
 find_retval (basic_block return_bb)
@@ -703,7 +703,7 @@ visit_bb (basic_block bb, basic_block return_bb,
 						   mark_nonssa_use,
 						   mark_nonssa_use);
     }
-  /* Record also uses comming from PHI operand in return BB.  */
+  /* Record also uses coming from PHI operand in return BB.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (e->dest == return_bb)
       {
@@ -741,11 +741,11 @@ typedef struct
   bitmap bbs_visited;
 
   /* Last examined edge in DFS walk.  Since we walk unoriented graph,
-     the value is up to sum of incomming and outgoing edges of BB.  */
+     the value is up to sum of incoming and outgoing edges of BB.  */
   unsigned int edge_num;
 
   /* Stack entry index of earliest BB reachable from current BB
-     or any BB visited later in DFS valk.  */
+     or any BB visited later in DFS walk.  */
   int earliest;
 
   /* Overall time and size of all BBs reached from this BB in DFS walk.  */
@@ -888,8 +888,8 @@ find_split_points (int overall_time, int overall_size)
 		   && (intptr_t)dest->aux < entry->earliest)
 	    entry->earliest = (intptr_t)dest->aux;
 	}
-      /* We are done with examing the edges. pop off the value from stack and
-	 merge stuff we cummulate during the walk.  */
+      /* We are done with examining the edges.  Pop off the value from stack
+	 and merge stuff we accumulate during the walk.  */
       else if (entry->bb != ENTRY_BLOCK_PTR)
 	{
 	  stack_entry *prev = VEC_index (stack_entry, stack,
@@ -1254,7 +1254,7 @@ execute_split_functions (void)
   if (node->local.disregard_inline_limits)
     {
       if (dump_file)
-	fprintf (dump_file, "Not splitting: disregading inline limits.\n");
+	fprintf (dump_file, "Not splitting: disregarding inline limits.\n");
       return 0;
     }
   /* This can be relaxed; most of versioning tests actually prevents
