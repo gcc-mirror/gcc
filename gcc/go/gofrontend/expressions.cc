@@ -10609,6 +10609,10 @@ Struct_construction_expression::do_determine_type(const Type_context*)
 	  (*pv)->determine_type(&subcontext);
 	}
     }
+  // Extra values are an error we will report elsewhere; we still want
+  // to determine the type to avoid knockon errors.
+  for (; pv != this->vals_->end(); ++pv)
+    (*pv)->determine_type_no_context();
 }
 
 // Check types.
