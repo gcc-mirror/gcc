@@ -1657,12 +1657,12 @@ Parse::init_vars_from_map(const Typed_identifier_list* vars, Type* type,
   else if (!val_no->is_sink())
     {
       if (val_no->is_variable())
-	val_no->var_value()->add_preinit_statement(s);
+	val_no->var_value()->add_preinit_statement(this->gogo_, s);
     }
   else if (!no->is_sink())
     {
       if (no->is_variable())
-	no->var_value()->add_preinit_statement(s);
+	no->var_value()->add_preinit_statement(this->gogo_, s);
     }
   else
     {
@@ -1670,7 +1670,7 @@ Parse::init_vars_from_map(const Typed_identifier_list* vars, Type* type,
       // the map is nil.
       Named_object* dummy = this->create_dummy_global(Type::lookup_bool_type(),
 						      NULL, location);
-      dummy->var_value()->add_preinit_statement(s);
+      dummy->var_value()->add_preinit_statement(this->gogo_, s);
     }
 
   return true;
@@ -1724,18 +1724,18 @@ Parse::init_vars_from_receive(const Typed_identifier_list* vars, Type* type,
   else if (!val_no->is_sink())
     {
       if (val_no->is_variable())
-	val_no->var_value()->add_preinit_statement(s);
+	val_no->var_value()->add_preinit_statement(this->gogo_, s);
     }
   else if (!no->is_sink())
     {
       if (no->is_variable())
-	no->var_value()->add_preinit_statement(s);
+	no->var_value()->add_preinit_statement(this->gogo_, s);
     }
   else
     {
       Named_object* dummy = this->create_dummy_global(Type::lookup_bool_type(),
 						      NULL, location);
-      dummy->var_value()->add_preinit_statement(s);
+      dummy->var_value()->add_preinit_statement(this->gogo_, s);
     }
 
   return true;
@@ -1790,17 +1790,17 @@ Parse::init_vars_from_type_guard(const Typed_identifier_list* vars,
   else if (!val_no->is_sink())
     {
       if (val_no->is_variable())
-	val_no->var_value()->add_preinit_statement(s);
+	val_no->var_value()->add_preinit_statement(this->gogo_, s);
     }
   else if (!no->is_sink())
     {
       if (no->is_variable())
-	no->var_value()->add_preinit_statement(s);
+	no->var_value()->add_preinit_statement(this->gogo_, s);
     }
   else
     {
       Named_object* dummy = this->create_dummy_global(type, NULL, location);
-      dummy->var_value()->add_preinit_statement(s);
+      dummy->var_value()->add_preinit_statement(this->gogo_, s);
     }
 
   return true;
