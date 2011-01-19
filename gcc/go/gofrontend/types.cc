@@ -482,6 +482,15 @@ bool
 Type::are_assignable(const Type* lhs, const Type* rhs, std::string* reason)
 {
   // Do some checks first.  Make sure the types are defined.
+  if (rhs != NULL
+      && rhs->forwarded()->forward_declaration_type() == NULL
+      && rhs->is_void_type())
+    {
+      if (reason != NULL)
+	*reason = "non-value used as value";
+      return false;
+    }
+
   if (lhs != NULL && lhs->forwarded()->forward_declaration_type() == NULL)
     {
       // Any value may be assigned to the blank identifier.
