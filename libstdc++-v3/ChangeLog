@@ -1,3 +1,8 @@
+2011-01-19  Graham Reed  <greed@pobox.com>
+
+	PR libstdc++/47354
+	* src/bitmap_allocator.cc (free_list::_M_get): Lock mutex.
+
 2011-01-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/images/confdeps.png: Regenerate.
