@@ -2348,6 +2348,10 @@ class Const_expression : public Expression
   name() const
   { return this->constant_->name(); }
 
+  // Check that the initializer does not refer to the constant itself.
+  void
+  check_for_init_loop();
+
  protected:
   Expression*
   do_lower(Gogo*, Named_object*, int);
@@ -2610,6 +2614,40 @@ Const_expression::do_determine_type(const Type_context* context)
     }
 }
 
+// Check for a loop in which the initializer of a constant refers to
+// the constant itself.
+
+void
+Const_expression::check_for_init_loop()
+{
+  if (this->type_ != NULL && this->type_->is_error_type())
+    return;
+
+  if (this->seen_)
+    {
+      this->report_error(_("constant refers to itself"));
+      this->type_ = Type::make_error_type();
+      return;
+    }
+
+  Expression* init = this->constant_->const_value()->expr();
+  Find_named_object find_named_object(this->constant_);
+
+  this->seen_ = true;
+  Expression::traverse(&init, &find_named_object);
+  this->seen_ = false;
+
+  if (find_named_object.found())
+    {
+      if (this->type_ == NULL || !this->type_->is_error_type())
+	{
+	  this->report_error(_("constant refers to itself"));
+	  this->type_ = Type::make_error_type();
+	}
+      return;
+    }
+}
+
 // Check types of a const reference.
 
 void
@@ -2618,15 +2656,7 @@ Const_expression::do_check_types(Gogo*)
   if (this->type_ != NULL && this->type_->is_error_type())
     return;
 
-  Expression* init = this->constant_->const_value()->expr();
-  Find_named_object find_named_object(this->constant_);
-  Expression::traverse(&init, &find_named_object);
-  if (find_named_object.found())
-    {
-      this->report_error(_("constant refers to itself"));
-      this->type_ = Type::make_error_type();
-      return;
-    }
+  this->check_for_init_loop();
 
   if (this->type_ == NULL || this->type_->is_abstract())
     return;
@@ -2754,9 +2784,19 @@ Find_named_object::expression(Expression** pexpr)
   switch ((*pexpr)->classification())
     {
     case Expression::EXPRESSION_CONST_REFERENCE:
-      if (static_cast<Const_expression*>(*pexpr)->named_object() == this->no_)
-	break;
-      return TRAVERSE_CONTINUE;
+      {
+	Const_expression* ce = static_cast<Const_expression*>(*pexpr);
+	if (ce->named_object() == this->no_)
+	  break;
+
+	// We need to check a constant initializer explicitly, as
+	// loops here will not be caught by the loop checking for
+	// variable initializers.
+	ce->check_for_init_loop();
+
+	return TRAVERSE_CONTINUE;
+      }
+
     case Expression::EXPRESSION_VAR_REFERENCE:
       if ((*pexpr)->var_expression()->named_object() == this->no_)
 	break;
