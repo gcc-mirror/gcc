@@ -1784,8 +1784,21 @@ instantiate_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   if (! EXPR_P (t))
     {
       *walk_subtrees = 0;
-      if (DECL_P (t) && DECL_RTL_SET_P (t))
-	instantiate_decl_rtl (DECL_RTL (t));
+      if (DECL_P (t))
+	{
+	  if (DECL_RTL_SET_P (t))
+	    instantiate_decl_rtl (DECL_RTL (t));
+	  if (TREE_CODE (t) == PARM_DECL && DECL_NAMELESS (t)
+	      && DECL_INCOMING_RTL (t))
+	    instantiate_decl_rtl (DECL_INCOMING_RTL (t));
+	  if ((TREE_CODE (t) == VAR_DECL
+	       || TREE_CODE (t) == RESULT_DECL)
+	      && DECL_HAS_VALUE_EXPR_P (t))
+	    {
+	      tree v = DECL_VALUE_EXPR (t);
+	      walk_tree (&v, instantiate_expr, NULL, NULL);
+	    }
+	}
     }
   return NULL;
 }
@@ -1828,6 +1841,18 @@ instantiate_decls (tree fndecl)
     {
       instantiate_decl_rtl (DECL_RTL (decl));
       instantiate_decl_rtl (DECL_INCOMING_RTL (decl));
+      if (DECL_HAS_VALUE_EXPR_P (decl))
+	{
+	  tree v = DECL_VALUE_EXPR (decl);
+	  walk_tree (&v, instantiate_expr, NULL, NULL);
+	}
+    }
+
+  if ((decl = DECL_RESULT (fndecl))
+      && TREE_CODE (decl) == RESULT_DECL)
+    {
+      if (DECL_RTL_SET_P (decl))
+	instantiate_decl_rtl (DECL_RTL (decl));
       if (DECL_HAS_VALUE_EXPR_P (decl))
 	{
 	  tree v = DECL_VALUE_EXPR (decl);
