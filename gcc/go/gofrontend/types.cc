@@ -4883,7 +4883,7 @@ Array_type::array_type_descriptor(Gogo* gogo, Named_type* name)
 
   ++p;
   gcc_assert(p->field_name() == "len");
-  vals->push_back(this->length_);
+  vals->push_back(Expression::make_cast(p->type(), this->length_, bloc));
 
   ++p;
   gcc_assert(p == fields->end());
