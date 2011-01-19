@@ -416,9 +416,6 @@ enum reg_class
 #define LIMIT_RELOAD_CLASS(MODE, CLASS) \
   (!TARGET_AM33 && (MODE == QImode || MODE == HImode) ? DATA_REGS : CLASS)
 
-#define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
-  mn10300_secondary_reload_class(CLASS,MODE,IN)
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 

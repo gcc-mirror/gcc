@@ -1,5 +1,17 @@
 2011-01-19  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.c (mn10300_preferred_reload_class): Allow
+	DATA_REGS for AM33 stack-pointer destination.
+	(mn10300_preferred_output_reload_class): Likewise.
+	(mn10300_secondary_reload): Rearrange mn10300_secondary_reload_class
+	into a form appropriate for ...
+	(TARGET_SECONDARY_RELOAD): New.
+	* config/mn10300/mn10300.h (SECONDARY_RELOAD_CLASS): Remove.
+	* config/mn10300/mn10300-protos.h: Update.
+	* config/mn10300/mn10300.md (reload_plus_sp_const): Rename from
+	reload_insi; use the "A" constraint for the scratch; handle AM33
+	moves of sp to non-address registers.
+
 	* config/mn10300/mn10300.md (*am33_movqi, *mn10300_movqi): Merge into
 	(*movqi_internal): ... here.
 	(*am33_movhi, *mn10300_movhi): Merge into...
