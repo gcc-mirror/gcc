@@ -1,3 +1,8 @@
+2011-01-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/46240
+	* g++.dg/debug/pr46240.cc: New.
+
 2011-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/47303
