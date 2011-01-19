@@ -148,7 +148,6 @@ along with GCC; see the file COPYING3.  If not see
    %{EB:-m elf32bmip} \
    %(endian_spec) \
    %{G*} %{mips1} %{mips2} %{mips3} %{mips4} %{mips32} %{mips32r2} %{mips64} \
-   %{call_shared} \
    %(netbsd_link_spec)"
 
 #define NETBSD_ENTRY_POINT "__start"

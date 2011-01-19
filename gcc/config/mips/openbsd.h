@@ -77,9 +77,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_SPEC
 #define LINK_SPEC \
   "%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
-   %{shared} %{non_shared} \
-   %{call_shared} \
-   %{!shared: %{!non_shared: %{!call_shared: -non_shared}}} \
+   %{shared} \
+   %{!shared: -non_shared} \
    -dynamic-linker /usr/libexec/ld.so \
    %{!nostdlib:%{!r:%{!e*:-e __start}}} -dc -dp \
    %{static:-Bstatic} %{!static:-Bdynamic} %{assert*}"
