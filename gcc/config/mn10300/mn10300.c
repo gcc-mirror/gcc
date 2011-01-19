@@ -44,10 +44,6 @@
 #include "target-def.h"
 #include "df.h"
 
-/* This is used by GOTaddr2picreg to uniquely identify
-   UNSPEC_INT_LABELs.  */
-int mn10300_unspec_int_label_counter;
-
 /* This is used in the am33_2.0-linux-gnu port, in which global symbol
    names are not prefixed by underscores, to tell whether to prefix a
    label with a plus sign or not, so that the assembler can tell
@@ -544,10 +540,6 @@ mn10300_asm_output_addr_const_extra (FILE *file, rtx x)
     {
       switch (XINT (x, 1))
 	{
-	case UNSPEC_INT_LABEL:
-	  asm_fprintf (file, ".%LLIL" HOST_WIDE_INT_PRINT_DEC,
-		       INTVAL (XVECEXP (x, 0, 0)));
-	  break;
 	case UNSPEC_PIC:
 	  /* GLOBAL_OFFSET_TABLE or local symbols, no suffix.  */
 	  output_addr_const (file, XVECEXP (x, 0, 0));
@@ -634,24 +626,7 @@ mn10300_print_reg_list (FILE *file, int mask)
 int
 mn10300_can_use_return_insn (void)
 {
-  /* size includes the fixed stack space needed for function calls.  */
-  int size = get_frame_size () + crtl->outgoing_args_size;
-
-  /* And space for the return pointer.  */
-  size += crtl->outgoing_args_size ? 4 : 0;
-
-  return (reload_completed
-	  && size == 0
-	  && !df_regs_ever_live_p (2)
-	  && !df_regs_ever_live_p (3)
-	  && !df_regs_ever_live_p (6)
-	  && !df_regs_ever_live_p (7)
-	  && !df_regs_ever_live_p (14)
-	  && !df_regs_ever_live_p (15)
-	  && !df_regs_ever_live_p (16)
-	  && !df_regs_ever_live_p (17)
-	  && fp_regs_to_save () == 0
-	  && !frame_pointer_needed);
+  return !mn10300_initial_offset (ARG_POINTER_REGNUM, STACK_POINTER_REGNUM);
 }
 
 /* Returns the set of live, callee-saved registers as a bitmask.  The
@@ -760,11 +735,7 @@ mn10300_gen_multiple_store (unsigned int mask)
 void
 mn10300_expand_prologue (void)
 {
-  HOST_WIDE_INT size;
-
-  /* SIZE includes the fixed stack space needed for function calls.  */
-  size = get_frame_size () + crtl->outgoing_args_size;
-  size += (crtl->outgoing_args_size ? 4 : 0);
+  HOST_WIDE_INT size = mn10300_frame_size ();
 
   /* If we use any of the callee-saved registers, save them now.  */
   mn10300_gen_multiple_store (mn10300_get_live_callee_saved_regs ());
@@ -1017,17 +988,13 @@ mn10300_expand_prologue (void)
 			      GEN_INT (-size))));
 
   if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
-    emit_insn (gen_GOTaddr2picreg ());
+    emit_insn (gen_load_pic ());
 }
 
 void
 mn10300_expand_epilogue (void)
 {
-  HOST_WIDE_INT size;
-
-  /* SIZE includes the fixed stack space needed for function calls.  */
-  size = get_frame_size () + crtl->outgoing_args_size;
-  size += (crtl->outgoing_args_size ? 4 : 0);
+  HOST_WIDE_INT size = mn10300_frame_size ();
   
   if (TARGET_AM33_2 && fp_regs_to_save ())
     {
@@ -1442,54 +1409,37 @@ mn10300_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 }
 
 int
+mn10300_frame_size (void)
+{
+  /* size includes the fixed stack space needed for function calls.  */
+  int size = get_frame_size () + crtl->outgoing_args_size;
+
+  /* And space for the return pointer.  */
+  size += crtl->outgoing_args_size ? 4 : 0;
+
+  return size;
+}
+
+int
 mn10300_initial_offset (int from, int to)
 {
+  int diff = 0;
+
+  gcc_assert (from == ARG_POINTER_REGNUM || from == FRAME_POINTER_REGNUM);
+  gcc_assert (to == FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM);
+
+  if (to == STACK_POINTER_REGNUM)
+    diff = mn10300_frame_size ();
+
   /* The difference between the argument pointer and the frame pointer
      is the size of the callee register save area.  */
-  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+  if (from == ARG_POINTER_REGNUM)
     {
-      if (df_regs_ever_live_p (2) || df_regs_ever_live_p (3)
-	  || df_regs_ever_live_p (6) || df_regs_ever_live_p (7)
-	  || df_regs_ever_live_p (14) || df_regs_ever_live_p (15)
-	  || df_regs_ever_live_p (16) || df_regs_ever_live_p (17)
-	  || fp_regs_to_save ()
-	  || frame_pointer_needed)
-	return REG_SAVE_BYTES
-	  + 4 * fp_regs_to_save ();
-      else
-	return 0;
+      diff += REG_SAVE_BYTES;
+      diff += 4 * fp_regs_to_save ();
     }
 
-  /* The difference between the argument pointer and the stack pointer is
-     the sum of the size of this function's frame, the callee register save
-     area, and the fixed stack space needed for function calls (if any).  */
-  if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    {
-      if (df_regs_ever_live_p (2) || df_regs_ever_live_p (3)
-	  || df_regs_ever_live_p (6) || df_regs_ever_live_p (7)
-	  || df_regs_ever_live_p (14) || df_regs_ever_live_p (15)
-	  || df_regs_ever_live_p (16) || df_regs_ever_live_p (17)
-	  || fp_regs_to_save ()
-	  || frame_pointer_needed)
-	return (get_frame_size () + REG_SAVE_BYTES
-		+ 4 * fp_regs_to_save ()
-		+ (crtl->outgoing_args_size
-		   ? crtl->outgoing_args_size + 4 : 0));
-      else
-	return (get_frame_size ()
-		+ (crtl->outgoing_args_size
-		   ? crtl->outgoing_args_size + 4 : 0));
-    }
-
-  /* The difference between the frame pointer and stack pointer is the sum
-     of the size of this function's frame and the fixed stack space needed
-     for function calls (if any).  */
-  if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-    return (get_frame_size ()
-	    + (crtl->outgoing_args_size
-	       ? crtl->outgoing_args_size + 4 : 0));
-
-  gcc_unreachable ();
+  return diff;
 }
 
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
@@ -2087,7 +2037,6 @@ mn10300_legitimate_constant_p (rtx x)
 	{
 	  switch (XINT (x, 1))
 	    {
-	    case UNSPEC_INT_LABEL:
 	    case UNSPEC_PIC:
 	    case UNSPEC_GOT:
 	    case UNSPEC_GOTOFF:

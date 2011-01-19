@@ -1,5 +1,24 @@
 2011-01-19  Richard Henderson  <rth@redhat.com>
 
+	* config/mn10300/mn10300.c (mn10300_unspec_int_label_counter): Remove.
+	(mn10300_asm_output_addr_const_extra): Don't handle UNSPEC_INT_LABEL.
+	(mn10300_legitimate_constant_p): Likewise.
+	(mn10300_can_use_return_insn): Use mn10300_initial_offset.
+	(mn10300_frame_size): New.
+	(mn10300_expand_prologue): Use it.
+	(mn10300_expand_epilogue): Likewise.
+	(mn10300_initial_offset): Likewise.
+	* config/mn10300/mn10300-protos.h: Update.
+	* config/mn10300/mn10300.h (mn10300_unspec_int_label_counter): Remove.
+	* config/mn10300/mn10300.md (UNSPEC_INT_LABEL): Remove.
+	(prologue, epilogue, return_internal): Tidy output code.
+	(mn10300_store_multiple_operation, return): Likewise.
+	(int_label, pop_pic_reg, GOTaddr2picreg): Remove.
+	(am33_loadPC, mn10300_loadPC, call_next_insn): Remove.
+	(add_GOT_to_pic_reg, add_GOT_to_any_reg): Remove.
+	(load_pic, am33_load_pic): New.
+	(mn10300_load_pic0, mn10300_load_pic1): New.
+
 	* config/mn10300/mn10300-modes.def (CCZN, CCZNC): New modes.
 	* config/mn10300/mn10300.c (CC_FLAG_Z): New.
 	(CC_FLAG_N, CC_FLAG_C, CC_FLAG_V): New.
