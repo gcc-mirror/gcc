@@ -1,5 +1,8 @@
 2011-01-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* ipa-split.c (find_return_bb): Use single_pred_p/single_pred_edge,
+	simplify.
+
 	* ipa-split.c: Spelling fixes.
 
 2011-01-19  Richard Henderson  <rth@redhat.com>
