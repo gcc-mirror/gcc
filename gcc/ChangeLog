@@ -1,3 +1,8 @@
+2011-01-19  Richard Henderson  <rth@redhat.com>
+
+	* config/mn10300/mn10300.md (mulsi3): Use reg_or_am33_const_operand.
+	(*mulsi3): Likewise.
+
 2011-01-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.h (MOVE_RATIO): Return 4 in the !speed case.
