@@ -1,5 +1,10 @@
 2011-01-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	PR testsuite/45342
+	* gcc.dg/tls/thr-cse-1.c: Fix match on spu-*.*.
+
+2011-01-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	PR tree-optimization/46021
 	* gcc.dg/tree-ssa/20040204-1.c: Do not XFAIL on spu-*-*.
 
