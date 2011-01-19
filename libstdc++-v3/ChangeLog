@@ -1,3 +1,8 @@
+2011-01-19  Graham Reed  <greed@pobox.com>
+
+	PR libstdc++/47354
+	* src/bitmap_allocator.cc (free_list::_M_get): Lock mutex.
+
 2010-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libstdc++.exp (v3-build_support): Delete
