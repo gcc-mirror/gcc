@@ -35,7 +35,7 @@
 
 #include <bits/hashtable_policy.h>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+_GLIBCXX_BEGIN_NAMESPACE(std)
 
   // Class template _Hashtable, class definition.
 
@@ -1229,6 +1229,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	}
     }
 
-_GLIBCXX_END_NESTED_NAMESPACE // namespace std
+_GLIBCXX_END_NAMESPACE // namespace std
 
 #endif // _HASHTABLE_H
