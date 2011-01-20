@@ -15783,7 +15783,7 @@ $as_echo "$ac_sectionLDflags" >&6; }
 if test "${enable_symvers+set}" = set; then :
   enableval=$enable_symvers;
       case "$enableval" in
-       yes|no|gnu|sun) ;;
+       yes|no|gnu*|sun) ;;
        *) as_fn_error "Unknown argument to enable/disable symvers" "$LINENO" 5 ;;
                           esac
 
