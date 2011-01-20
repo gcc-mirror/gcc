@@ -1,3 +1,12 @@
+2011-01-20  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/xtensa/xtensa.h (GO_IF_MODE_DEPENDENT_ADDRESS): Remove.
+	* config/xtensa/xtensa-protos.h (constantpool_address_p): Remove.
+	* config/xtensa/xtensa.c (TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+	(xtensa_mode_dependent_address_p): New function.
+	(constantpool_address_p): Make static. Change return type to bool.
+	Change argument type to const_rtx. Use CONST_INT_P predicate.
+
 2011-01-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/46583
