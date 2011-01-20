@@ -490,11 +490,16 @@ remove_unused_scope_block_p (tree scope)
 	 can be considered dead.  We only want to keep around blocks user can
 	 breakpoint into and ask about value of optimized out variables.
 
-	 Similarly we need to keep around types at least until all variables of
-	 all nested blocks are gone.  We track no information on whether given
-	 type is used or not.  */
+	 Similarly we need to keep around types at least until all
+	 variables of all nested blocks are gone.  We track no
+	 information on whether given type is used or not, so we have
+	 to keep them even when not emitting debug information,
+	 otherwise we may end up remapping variables and their (local)
+	 types in different orders depending on whether debug
+	 information is being generated.  */
 
-      else if (debug_info_level == DINFO_LEVEL_NORMAL
+      else if (TREE_CODE (*t) == TYPE_DECL
+	       || debug_info_level == DINFO_LEVEL_NORMAL
 	       || debug_info_level == DINFO_LEVEL_VERBOSE)
 	;
       else

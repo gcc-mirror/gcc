@@ -1,3 +1,8 @@
+2011-01-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/46583
+	* tree-ssa-live.c (remove_unused_scope_block_p): Keep type decls.
+
 2011-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/47283
