@@ -1,3 +1,26 @@
+2011-01-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.md (define_attr type): Rename f_load
+	and f_store to f_fpa_load and f_fpa_store. Update.
+	(write_conflict): Deal with rename fallout.
+	(*push_fp_multi): Likewise.
+	* config/arm/fpa.md (f_load): Use f_fpa_load.
+	(f_store): Use f_fpa_store.
+	(*movsf_fpa): Likewise.
+	(*movdf_fpa): Likewise.
+	(*movxf_fpa): Likewise.
+	(*thumb2_movsf_fpa): Likewise.
+	(*thumb2_movdf_fpa): Likewise.
+	(*thumb2_movxf_fpa): Likewise.
+	* config/arm/vfp.md (*thumb2_movdf_vfp): Fix attribute to
+	f_loadd and f_stored.
+	(*thumb2_movdi_vfp): Likewise.
+	(*thumb2_movsf_vfp): Fix attribute to f_loads.
+	(*thumb2_movsi_vfp): Likewise.
+	* config/arm/cortex-m4-fpu.md (cortex_m4_f_load):
+	Use f_loads instead of f_load.
+	* config/arm/cortex-a5.md (cortex_a5_f_loads): Remove f_load.
+
 2011-01-20  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/xtensa/xtensa.h (GO_IF_MODE_DEPENDENT_ADDRESS): Remove.

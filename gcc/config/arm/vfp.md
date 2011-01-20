@@ -124,7 +124,7 @@
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "*,*,*,*,load1,load1,store1,store1,r_2_f,f_2_r,fcpys,f_load,f_store")
+   (set_attr "type" "*,*,*,*,load1,load1,store1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
    (set_attr "insn" "mov,mov,mvn,mov,*,*,*,*,*,*,*,*,*")
    (set_attr "pool_range"     "*,*,*,*,1020,4096,*,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
@@ -200,7 +200,7 @@
       abort ();
     }
   "
-  [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarithd,f_load,f_store")
+  [(set_attr "type" "*,load2,store2,r_2_f,f_2_r,ffarithd,f_loadd,f_stored")
    (set (attr "length") (cond [(eq_attr "alternative" "0,1,2") (const_int 8)
 			       (eq_attr "alternative" "5")
 				(if_then_else
@@ -391,7 +391,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "type"
-     "r_2_f,f_2_r,fconsts,f_load,f_store,load1,store1,fcpys,*")
+     "r_2_f,f_2_r,fconsts,f_loads,f_stores,load1,store1,fcpys,*")
    (set_attr "insn" "*,*,*,*,*,*,*,*,mov")
    (set_attr "pool_range" "*,*,*,1020,*,4092,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,0,*,*,*")]
@@ -478,7 +478,7 @@
     }
   "
   [(set_attr "type"
-     "r_2_f,f_2_r,fconstd,load2,store2,f_load,f_store,ffarithd,*")
+     "r_2_f,f_2_r,fconstd,load2,store2,f_loadd,f_stored,ffarithd,*")
    (set (attr "length") (cond [(eq_attr "alternative" "3,4,8") (const_int 8)
 			       (eq_attr "alternative" "7")
 				(if_then_else
