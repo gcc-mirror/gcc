@@ -1,3 +1,7 @@
+2011-01-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/diagnostics.xml: Replace note about C++0x concepts.
+
 2011-01-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/36104 part three
