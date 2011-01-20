@@ -1,3 +1,9 @@
+2011-01-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/47370
+	* tree-inline.c (remap_gimple_op_r): Recurse manually for
+	the pointer operand of MEM_REFs.
+
 2011-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/46130
