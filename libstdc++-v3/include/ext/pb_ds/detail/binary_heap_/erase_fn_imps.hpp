@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -66,7 +67,7 @@ clear()
   m_size = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 void
@@ -74,7 +75,6 @@ PB_DS_CLASS_C_DEC::
 erase_at(entry_pointer a_entries, size_type i, false_type)
 {
   a_entries[i]->~value_type();
-
   s_value_allocator.deallocate(a_entries[i], 1);
 }
 
@@ -90,11 +90,12 @@ PB_DS_CLASS_C_DEC::
 pop()
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ASSERT(!empty());
+  _GLIBCXX_DEBUG_ASSERT(!empty());
 
   erase_at(m_a_entries, 0, s_no_throw_copies_ind);
 
-  std::pop_heap(m_a_entries, m_a_entries + m_size, static_cast<entry_cmp& >(*this));
+  std::pop_heap(m_a_entries, m_a_entries + m_size,
+		static_cast<entry_cmp& >(*this));
 
   resize_for_erase_if_needed();
 
@@ -102,7 +103,7 @@ pop()
   --m_size;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 template<typename Pred>
@@ -112,12 +113,7 @@ erase_if(Pred pred)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
-    typedef
-    typename entry_pred<
-    value_type,
-    Pred,
-    simple_value,
-    Allocator>::type
+  typedef typename entry_pred<value_type, Pred, simple_value, Allocator>::type
     pred_t;
 
   const size_type left = partition(pred_t(pred));
@@ -149,11 +145,12 @@ erase_if(Pred pred)
 
   m_size = left;
 
-  std::make_heap(m_a_entries, m_a_entries + m_size, static_cast<entry_cmp& >(*this));
+  std::make_heap(m_a_entries, m_a_entries + m_size,
+		 static_cast<entry_cmp& >(*this));
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 
-    return ersd;
+  return ersd;
 }
 
 PB_DS_CLASS_T_DEC
@@ -162,7 +159,7 @@ PB_DS_CLASS_C_DEC::
 erase(point_iterator it)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    _GLIBCXX_DEBUG_ASSERT(!empty());
+  _GLIBCXX_DEBUG_ASSERT(!empty());
 
   const size_type fix_pos = it.m_p_e - m_a_entries;
 
@@ -181,7 +178,7 @@ erase(point_iterator it)
     fix(m_a_entries + fix_pos);
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
-    }
+}
 
 PB_DS_CLASS_T_DEC
 inline void
@@ -231,16 +228,15 @@ partition(Pred pred)
       else if (pred(m_a_entries[right]))
 	--right;
       else
-        {
+	{
 	  _GLIBCXX_DEBUG_ASSERT(left < right);
 
 	  std::swap(m_a_entries[left], m_a_entries[right]);
 
 	  ++left;
 	  --right;
-        }
+	}
     }
 
   return left;
 }
-

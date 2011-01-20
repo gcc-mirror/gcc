@@ -5,7 +5,7 @@
 
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -45,11 +45,21 @@
 #include <regression/common_type.hpp>
 
 #ifndef ITERATIONS
-#define ITERATIONS 5000
+# ifdef _GLIBCXX_DEBUG
+#  define ITERATIONS 100
+# else
+#  define ITERATIONS 5000
 #endif
+#endif
+
 #ifndef KEYS
-#define KEYS 10000
+# ifdef _GLIBCXX_DEBUG
+#  define KEYS 200
+# else
+#  define KEYS 10000
+# endif
 #endif
+
 int
 main(int argc, char* a_p_argv[])
 {
@@ -57,7 +67,6 @@ main(int argc, char* a_p_argv[])
   typedef trie_set_tl_t map_tl_t;
 
   return rand_regression_test(ITERATIONS, KEYS,
-			      "trie_no_data_map_rand_regression_test", 
+			      "trie_no_data_map_rand_regression_test",
 			      map_tl_t());
 }
-
