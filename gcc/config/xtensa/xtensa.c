@@ -126,6 +126,7 @@ static rtx fixup_subreg_mem (rtx);
 static struct machine_function * xtensa_init_machine_status (void);
 static rtx xtensa_legitimize_tls_address (rtx);
 static rtx xtensa_legitimize_address (rtx, rtx, enum machine_mode);
+static bool xtensa_mode_dependent_address_p (const_rtx);
 static bool xtensa_return_in_msb (const_tree);
 static void printx (FILE *, signed int);
 static void xtensa_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -160,6 +161,8 @@ static rtx xtensa_static_chain (const_tree, bool);
 static void xtensa_asm_trampoline_template (FILE *);
 static void xtensa_trampoline_init (rtx, tree, rtx);
 static bool xtensa_output_addr_const_extra (FILE *, rtx);
+
+static bool constantpool_address_p (const_rtx addr);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
   REG_ALLOC_ORDER;
@@ -201,6 +204,8 @@ static const struct default_options xtensa_option_optimization_table[] =
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS xtensa_legitimize_address
+#undef TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P xtensa_mode_dependent_address_p
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xtensa_rtx_costs
@@ -494,10 +499,10 @@ smalloffset_mem_p (rtx op)
 }
 
 
-int
-constantpool_address_p (rtx addr)
+static bool
+constantpool_address_p (const_rtx addr)
 {
-  rtx sym = addr;
+  const_rtx sym = addr;
 
   if (GET_CODE (addr) == CONST)
     {
@@ -506,21 +511,21 @@ constantpool_address_p (rtx addr)
       /* Only handle (PLUS (SYM, OFFSET)) form.  */
       addr = XEXP (addr, 0);
       if (GET_CODE (addr) != PLUS)
-	return FALSE;
+	return false;
 
       /* Make sure the address is word aligned.  */
       offset = XEXP (addr, 1);
-      if ((GET_CODE (offset) != CONST_INT)
+      if ((!CONST_INT_P (offset))
 	  || ((INTVAL (offset) & 3) != 0))
-	return FALSE;
+	return false;
 
       sym = XEXP (addr, 0);
     }
 
   if ((GET_CODE (sym) == SYMBOL_REF)
       && CONSTANT_POOL_ADDRESS_P (sym))
-    return TRUE;
-  return FALSE;
+    return true;
+  return false;
 }
 
 
@@ -1937,6 +1942,21 @@ xtensa_legitimize_address (rtx x,
   return x;
 }
 
+/* Worker function for TARGET_MODE_DEPENDENT_ADDRESS_P.
+
+   Treat constant-pool references as "mode dependent" since they can
+   only be accessed with SImode loads.  This works around a bug in the
+   combiner where a constant pool reference is temporarily converted
+   to an HImode load, which is then assumed to zero-extend based on
+   our definition of LOAD_EXTEND_OP.  This is wrong because the high
+   bits of a 16-bit value in the constant pool are now sign-extended
+   by default.  */
+
+static bool
+xtensa_mode_dependent_address_p (const_rtx addr)
+{
+  return constantpool_address_p (addr);
+}
 
 /* Helper for xtensa_tls_referenced_p.  */
 

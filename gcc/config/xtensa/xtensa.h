@@ -695,20 +695,6 @@ typedef struct xtensa_args
    && GET_CODE (X) != LABEL_REF						\
    && GET_CODE (X) != CONST)
 
-/* Treat constant-pool references as "mode dependent" since they can
-   only be accessed with SImode loads.  This works around a bug in the
-   combiner where a constant pool reference is temporarily converted
-   to an HImode load, which is then assumed to zero-extend based on
-   our definition of LOAD_EXTEND_OP.  This is wrong because the high
-   bits of a 16-bit value in the constant pool are now sign-extended
-   by default.  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)			\
-  do {									\
-    if (constantpool_address_p (ADDR))					\
-      goto LABEL;							\
-  } while (0)
-
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE (SImode)
