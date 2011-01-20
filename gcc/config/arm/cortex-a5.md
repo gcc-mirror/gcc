@@ -270,7 +270,7 @@
 
 (define_insn_reservation "cortex_a5_f_loadd" 5
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "f_load,f_loadd"))
+       (eq_attr "type" "f_loadd"))
   "cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_f_stores" 0
@@ -280,7 +280,7 @@
 
 (define_insn_reservation "cortex_a5_f_stored" 0
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "f_store,f_stored"))
+       (eq_attr "type" "f_stored"))
   "cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1")
 
 ;; Load-to-use for floating-point values has a penalty of one cycle,
