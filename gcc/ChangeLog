@@ -1,3 +1,10 @@
+2011-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46130
+	* ipa-split.c (consider_split): If return_bb contains non-virtual
+	PHIs other than for retval or if split_function would not adjust it,
+	refuse to split.
+
 2011-01-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47167
