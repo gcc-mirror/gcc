@@ -1,6 +1,7 @@
 ## Linker script for GNU namespace versioning.
 ##
-## Copyright (C) 2002, 2003, 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
+## Copyright (C) 2002, 2003, 2004, 2005, 2007, 2009, 2011
+## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ##
@@ -19,7 +20,7 @@
 ## with this library; see the file COPYING3.  If not see
 ## <http://www.gnu.org/licenses/>.
 
-GLIBCXX_3.7 {
+GLIBCXX_5.0 {
 
   global:
 
@@ -29,6 +30,15 @@ GLIBCXX_3.7 {
       std::_6::*;
       std::*
     };
+
+    # locale
+    _ZNSt2_69has_facetINS_*;
+
+    # hash 
+    _ZNSt2_68__detail12__prime_listE;
+
+    # thread/mutex/condition_variable/future
+    __once_proxy;
 
     # operator new(size_t)
     _Znw[jm];
@@ -87,7 +97,12 @@ GLIBCXX_3.7 {
     _ZN9__gnu_cxx2_69free_list6_M_getE[jm];
     _ZN9__gnu_cxx2_69free_list8_M_clearEv;
 
+    # __gnu_cxx::stdio_sync_filebuf
+    _ZTVN9__gnu_cxx2_618stdio_sync_filebufI[cw]St2_611char_traitsI[cw]EEE;
+    _ZN9__gnu_cxx2_618stdio_sync_filebufI[cw]NSt2_611char_traitsI[cw]EEE[5-9]*;
+
     # debug mode
+# xxx cxx1998?
     _ZN10__gnu_norm15_List_node_base4hook*;
     _ZN10__gnu_norm15_List_node_base4swap*;
     _ZN10__gnu_norm15_List_node_base6unhookEv;
@@ -106,8 +121,8 @@ GLIBCXX_3.7 {
     _ZN11__gnu_debug19_Safe_sequence_base22_M_revalidate_singularEv;
     _ZN11__gnu_debug19_Safe_sequence_base7_M_swapERS0_;
 
-    _ZN11__gnu_debug19_Safe_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
-    _ZN11__gnu_debug19_Safe_iterator_base16_M_attach_singleEPNS_19_Safe_sequence_baseEb;
+    _ZN11__gnu_debug19_Safe_iterator_base9_M_attach*;
+    _ZN11__gnu_debug19_Safe_iterator_base16_M_attach_single*;
     _ZN11__gnu_debug19_Safe_iterator_base9_M_detachEv;
     _ZN11__gnu_debug19_Safe_iterator_base16_M_detach_singleEv;
     _ZN11__gnu_debug19_Safe_iterator_base12_M_get_mutexEv;
@@ -127,7 +142,7 @@ GLIBCXX_3.7 {
 
 
 # Symbols in the support library (libsupc++) have their own tag.
-CXXABI_1.7 {
+CXXABI_2.0 {
 
   global:
     __cxa_allocate_exception;
@@ -165,6 +180,41 @@ CXXABI_1.7 {
     __gxx_personality_sj0;
     __dynamic_cast;
 
+    # std::exception_ptr
+    _ZNSt15__exception_ptr13exception_ptrC1Ev;
+    _ZNSt15__exception_ptr13exception_ptrC2Ev;
+    _ZNSt15__exception_ptr13exception_ptrC1ERKS0_;
+    _ZNSt15__exception_ptr13exception_ptrC2ERKS0_;
+    _ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE;
+    _ZNSt15__exception_ptr13exception_ptrC2EMS0_FvvE;
+    _ZNSt15__exception_ptr13exception_ptrD1Ev;
+    _ZNSt15__exception_ptr13exception_ptrD2Ev;
+    _ZNSt15__exception_ptr13exception_ptraSERKS0_;
+    _ZNKSt15__exception_ptr13exception_ptrcvMS0_FvvEEv;
+    _ZNKSt15__exception_ptr13exception_ptrntEv;
+    _ZNKSt15__exception_ptr13exception_ptr20__cxa_exception_typeEv;
+    _ZNSt15__exception_ptr13exception_ptr4swapERS0_;
+    _ZNSt15__exception_ptreqERKNS_13exception_ptrES2_;
+    _ZNSt15__exception_ptrneERKNS_13exception_ptrES2_;
+
+    _ZSt17current_exceptionv;
+    _ZSt17rethrow_exceptionNSt15__exception_ptr13exception_ptrE;
+
+    # std::bad_function_call.
+    _ZNSt17bad_function_callD*;
+    _ZTISt17bad_function_call;
+    _ZTSSt17bad_function_call;
+    _ZTVSt17bad_function_call;
+
+    # Default function.
+    _ZSt11_Hash_bytesPKv*;
+
+    # FNV hash.
+    _ZSt15_Fnv_hash_bytesPKv*;
+
+    # __gnu_cxx::_verbose_terminate_handler()
+    _ZN9__gnu_cxx2_627__verbose_terminate_handlerEv;
+
     # *_type_info classes, ctor and dtor
     _ZN10__cxxabiv117__array_type_info*;
     _ZN10__cxxabiv117__class_type_info*;
@@ -186,18 +236,6 @@ CXXABI_1.7 {
     _ZNK10__cxxabiv120__si_class_type_info*;
     _ZNK10__cxxabiv121__vmi_class_type_info*;
 
-    # virtual table
-    _ZTVN10__cxxabiv117__array_type_infoE;
-    _ZTVN10__cxxabiv117__class_type_infoE;
-    _ZTVN10__cxxabiv116__enum_type_infoE;
-    _ZTVN10__cxxabiv120__function_type_infoE;
-    _ZTVN10__cxxabiv123__fundamental_type_infoE;
-    _ZTVN10__cxxabiv117__pbase_type_infoE;
-    _ZTVN10__cxxabiv129__pointer_to_member_type_infoE;
-    _ZTVN10__cxxabiv119__pointer_type_infoE;
-    _ZTVN10__cxxabiv120__si_class_type_infoE;
-    _ZTVN10__cxxabiv121__vmi_class_type_infoE;
-
     # typeinfo structure
     _ZTI[a-z];
     _ZTIP[a-z];
@@ -212,6 +250,8 @@ CXXABI_1.7 {
     _ZTIN10__cxxabiv119__pointer_type_infoE;
     _ZTIN10__cxxabiv120__si_class_type_infoE;
     _ZTIN10__cxxabiv121__vmi_class_type_infoE;
+    _ZTIN10__cxxabiv115__forced_unwindE;
+    _ZTIN10__cxxabiv119__foreign_exceptionE;
     _ZTIN10__cxxabiv115__forced_unwindE;
     _ZTIN10__cxxabiv119__foreign_exceptionE;
 
@@ -230,8 +270,35 @@ CXXABI_1.7 {
     _ZTSN10__cxxabiv120__si_class_type_infoE;
     _ZTSN10__cxxabiv121__vmi_class_type_infoE;
 
-    # __gnu_cxx::_verbose_terminate_handler()
-    _ZN9__gnu_cxx2_627__verbose_terminate_handlerEv;
+    # typeinfo for char16_t and char32_t
+    _ZTIDs;
+    _ZTIPDs;
+    _ZTIPKDs;
+    _ZTIDi;
+    _ZTIPDi;
+    _ZTIPKDi;
+
+    # typeinfo for decimal floating point types
+    _ZTID[fde];
+    _ZTIPD[fde];
+    _ZTIPKD[fde];
+
+    # typeinfo for decltype(nullptr)
+    _ZTIDn;
+    _ZTIPDn;
+    _ZTIPKDn;
+
+    # virtual table
+    _ZTVN10__cxxabiv117__array_type_infoE;
+    _ZTVN10__cxxabiv117__class_type_infoE;
+    _ZTVN10__cxxabiv116__enum_type_infoE;
+    _ZTVN10__cxxabiv120__function_type_infoE;
+    _ZTVN10__cxxabiv123__fundamental_type_infoE;
+    _ZTVN10__cxxabiv117__pbase_type_infoE;
+    _ZTVN10__cxxabiv129__pointer_to_member_type_infoE;
+    _ZTVN10__cxxabiv119__pointer_type_infoE;
+    _ZTVN10__cxxabiv120__si_class_type_infoE;
+    _ZTVN10__cxxabiv121__vmi_class_type_infoE;
 
   local:
     *;
