@@ -1,3 +1,8 @@
+2011-01-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/36104
+	* acinclude.m4 (LIBGOMP_ENABLE_SYMVERS): Accept gnu variants.
+
 2011-01-16  Gerald Pfeifer
 
 	* configure.tgt (*-*-freebsd*): Add -lpthread to XLDFLAGS.

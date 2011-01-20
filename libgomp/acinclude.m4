@@ -223,7 +223,7 @@ AC_DEFUN([LIBGOMP_ENABLE_SYMVERS], [
 
 LIBGOMP_ENABLE(symvers,yes,[=STYLE],
   [enables symbol versioning of the shared library],
-  [permit yes|no|gnu|sun])
+  [permit yes|no|gnu*|sun])
 
 # If we never went through the LIBGOMP_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
