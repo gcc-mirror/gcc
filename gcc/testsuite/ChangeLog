@@ -1,5 +1,8 @@
 2011-01-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/47283
+	* g++.dg/debug/pr47283.C: New test.
+
 	PR testsuite/47371
 	* gcc.target/i386/headmerge-1.c: Tighten up scan-assembler regex.
 	* gcc.target/i386/headmerge-2.c: Likewise.

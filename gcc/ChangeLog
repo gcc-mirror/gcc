@@ -1,3 +1,10 @@
+2011-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47283
+	* cfgexpand.c (expand_debug_expr): Instead of generating
+	(mem (debug_implicit_ptr)) for MEM_REFs use COMPONENT_REF
+	etc. handling.
+
 2011-01-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/47370
