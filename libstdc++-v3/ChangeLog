@@ -1,3 +1,23 @@
+2011-01-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_load_check_resize_trigger_imp.hpp: Adjust assert condition.
+	* include/ext/pb_ds/detail/pat_trie_/
+	constructors_destructor_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/binary_heap_/erase_fn_imps.hpp: Format.
+	* include/ext/pb_ds/detail/ov_tree_map_/debug_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/debug_map_base.hpp: Use never_adjustor.
+
+	* testsuite/ext/pb_ds/regression/hash_data_map_rand.cc: Adjust
+	iterations downward when testing in debug mode.
+	* testsuite/ext/pb_ds/regression/trie_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/hash_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/tree_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/regression/trie_no_data_map_rand.cc: Same.
+	* testsuite/ext/pb_ds/example/hash_illegal_resize.cc: Use SIZE,
+	reduce in debug mode.
+
 2011-01-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/36104 part two

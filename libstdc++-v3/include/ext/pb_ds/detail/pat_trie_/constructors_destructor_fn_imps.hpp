@@ -77,7 +77,7 @@ PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 #ifdef _GLIBCXX_DEBUG
   debug_base(other),
-#endif 
+#endif
   synth_e_access_traits(other),
   node_update(other),
   m_p_head(s_head_allocator.allocate(1)),
@@ -88,8 +88,8 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
   _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
     if (other.m_p_head->m_p_parent == 0)
       {
-        _GLIBCXX_DEBUG_ONLY(assert_valid();)
-        return;
+	_GLIBCXX_DEBUG_ONLY(assert_valid();)
+	return;
       }
   __try
     {
@@ -205,7 +205,7 @@ recursive_copy_node(const_node_pointer p_other_nd)
 			    pref_begin(a_p_children[0]));
 
   --child_i;
-  _GLIBCXX_DEBUG_ASSERT(child_i > 1);
+  _GLIBCXX_DEBUG_ASSERT(child_i >= 1);
   do
     p_ret->add_child(a_p_children[child_i], pref_begin(a_p_children[child_i]),
 		     pref_end(a_p_children[child_i]), this);

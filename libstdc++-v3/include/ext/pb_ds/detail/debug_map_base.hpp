@@ -33,7 +33,7 @@
 // representation about the suitability of this software for any
 // purpose. It is provided "as is" without express or implied
 // warranty.
- 
+
 /**
  * @file debug_map_base.hpp
  * Contains a debug-mode base for all maps.
@@ -58,7 +58,7 @@ namespace __gnu_pbds
     // Need std::pair ostream extractor.
     template<typename _CharT, typename _Traits, typename _Tp1, typename _Tp2>
     inline std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits>& __out, 
+    operator<<(std::basic_ostream<_CharT, _Traits>& __out,
 	       const std::pair<_Tp1, _Tp2>& p)
     { return (__out << '(' << p.first << ',' << p.second << ')'); }
 
@@ -72,11 +72,14 @@ namespace __gnu_pbds
     class debug_map_base
     {
     private:
-      typedef typename std::allocator< Key> key_allocator;
-
-      typedef typename key_allocator::size_type size_type;
-
-      typedef Const_Key_Reference const_key_reference;
+      typedef typename std::allocator<Key> 		key_allocator;
+      typedef typename key_allocator::size_type 	size_type;
+      typedef Const_Key_Reference 			const_key_reference;
+      typedef std::__norm::list<Key> 		       	key_set;
+      typedef typename key_set::iterator 		key_set_iterator;
+      typedef typename key_set::const_iterator 		const_key_set_iterator;
+      typedef __gnu_cxx::throw_allocator_random<Key>	key_db_allocator;
+      typedef typename key_db_allocator::never_adjustor	never_adjustor;
 
     protected:
       debug_map_base();
@@ -114,14 +117,8 @@ namespace __gnu_pbds
       join(PB_DS_CLASS_C_DEC& other);
 
     private:
-      typedef std::list< Key> 			key_set;
-      typedef typename key_set::iterator 	key_set_iterator;
-      typedef typename key_set::const_iterator 	const_key_set_iterator;
-
-#ifdef _GLIBCXX_DEBUG
       void
       assert_valid() const;
-#endif 
 
       const_key_set_iterator
       find(const_key_reference r_key) const;
@@ -154,26 +151,24 @@ namespace __gnu_pbds
     insert_new(const_key_reference r_key)
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
-      // XXX FIXME: Adapt for __gnu_cxx::throw_allocator_random.
-      //__gnu_cxx::throw_allocator<char> alloc;
-      // const double orig_throw_prob = alloc.get_probability();
-      // alloc.set_probability(0);
+
       if (find(r_key) != m_key_set.end())
 	{
-	  std::cerr << "insert_new" << r_key << std::endl;
-	  std::abort();
+	  std::cerr << "insert_new key already present " << r_key << std::endl;
+	  std::abort;
 	}
 
+      never_adjustor never;
       __try
 	{
 	  m_key_set.push_back(r_key);
 	}
       __catch(...)
 	{
-	  std::cerr << "insert_new" << r_key << std::endl;
+	  std::cerr << "insert_new " << r_key << std::endl;
 	  std::abort();
 	}
-      // alloc.set_probability(orig_throw_prob);
+
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
@@ -210,10 +205,10 @@ namespace __gnu_pbds
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
       if (find(r_key) == m_key_set.end())
-        {
-          std::cerr << "check_key_exists" << r_key << std::endl;
-          std::abort();
-        }
+	{
+	  std::cerr << "check_key_exists " << r_key << std::endl;
+	  std::abort();
+	}
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
@@ -224,12 +219,12 @@ namespace __gnu_pbds
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
       if (find(r_key) != m_key_set.end())
-        {
+	{
 	  using std::cerr;
 	  using std::endl;
-	  cerr << "check_key_does_not_exist" << r_key << endl;
-          std::abort();
-        }
+	  cerr << "check_key_does_not_exist " << r_key << endl;
+	  std::abort();
+	}
     }
 
     PB_DS_CLASS_T_DEC
@@ -241,7 +236,7 @@ namespace __gnu_pbds
       const size_type key_set_size = m_key_set.size();
       if (size != key_set_size)
 	{
-	  std::cerr << "check_size " << size 
+	  std::cerr << "check_size " << size
 		    << " " << key_set_size << std::endl;
 	  std::abort();
 	}
@@ -267,7 +262,7 @@ namespace __gnu_pbds
       typedef const_key_set_iterator iterator_type;
       for (iterator_type it = m_key_set.begin(); it != m_key_set.end(); ++it)
 	if (m_eq(*it, r_key))
-          return it;
+	  return it;
       return m_key_set.end();
     }
 
@@ -281,14 +276,13 @@ namespace __gnu_pbds
       while (it != m_key_set.end())
 	{
 	  if (m_eq(*it, r_key))
-            return it;
+	    return it;
 	  ++it;
 	}
       return it;
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
      }
 
-#ifdef _GLIBCXX_DEBUG
     PB_DS_CLASS_T_DEC
     void
     PB_DS_CLASS_C_DEC::
@@ -308,7 +302,6 @@ namespace __gnu_pbds
 	  ++prime_it;
 	}
     }
-#endif 
 
     PB_DS_CLASS_T_DEC
     template<typename Cmp_Fn>
@@ -316,21 +309,16 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     split(const_key_reference r_key, Cmp_Fn cmp_fn, PB_DS_CLASS_C_DEC& other)
     {
-      // XXX FIXME: Adapt for __gnu_cxx::throw_allocator_random.
-      // __gnu_cxx::throw_allocator<char> alloc;
-      // const double orig_throw_prob = alloc.get_probability();
-      // alloc.set_probability(0);
       other.clear();
       key_set_iterator it = m_key_set.begin();
       while (it != m_key_set.end())
-        if (cmp_fn(r_key, * it))
+	if (cmp_fn(r_key, * it))
 	  {
-            other.insert_new(*it);
-            it = m_key_set.erase(it);
+	    other.insert_new(*it);
+	    it = m_key_set.erase(it);
 	  }
-        else
+	else
 	  ++it;
-      // alloc.set_probability(orig_throw_prob);
     }
 
     PB_DS_CLASS_T_DEC
@@ -338,10 +326,6 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     join(PB_DS_CLASS_C_DEC& other)
     {
-      // XXX FIXME: Adapt for __gnu_cxx::throw_allocator_random.
-      // __gnu_cxx::throw_allocator<char> alloc;
-      // const double orig_throw_prob = alloc.get_probability();
-      // alloc.set_probability(0);
       key_set_iterator it = other.m_key_set.begin();
       while (it != other.m_key_set.end())
 	{
@@ -349,7 +333,6 @@ namespace __gnu_pbds
 	  it = other.m_key_set.erase(it);
 	}
       _GLIBCXX_DEBUG_ASSERT(other.m_key_set.empty());
-      // alloc.set_probability(orig_throw_prob);
     }
 
 #undef PB_DS_CLASS_T_DEC
@@ -358,7 +341,6 @@ namespace __gnu_pbds
 } // namespace detail
 } // namespace __gnu_pbds
 
-#endif 
+#endif
 
-#endif 
-
+#endif

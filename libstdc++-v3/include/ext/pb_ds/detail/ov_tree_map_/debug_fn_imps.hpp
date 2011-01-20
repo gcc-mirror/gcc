@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -46,7 +46,6 @@ PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
   std::cout << "av1" << std::endl;
-
   if (m_a_values == 0 || m_end_it == 0 || m_size == 0)
     _GLIBCXX_DEBUG_ASSERT(m_a_values == 0 &&  m_end_it == 0 && m_size == 0);
 
@@ -63,7 +62,7 @@ assert_iterators() const
   debug_base::check_size(m_size);
   size_type iterated_num = 0;
   const_iterator prev_it = end();
-  _GLIBCXX_DEBUG_ASSERT( m_end_it == m_a_values + m_size);
+  _GLIBCXX_DEBUG_ASSERT(m_end_it == m_a_values + m_size);
   for (const_iterator it = begin(); it != end(); ++it)
     {
       ++iterated_num;
