@@ -1,5 +1,12 @@
 2011-01-20  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/36104 part three
+	* src/hashtable_c++0x.cc: Adjust namespace macros.
+	* testsuite/util/testsuite_rvalref.h: Don't forward declare hash.
+	* config/abi/pre/gnu-versioned-namespace.ver: Update.
+
+2011-01-20  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/ext/pb_ds/detail/resize_policy/
 	hash_load_check_resize_trigger_imp.hpp: Adjust assert condition.
 	* include/ext/pb_ds/detail/pat_trie_/

@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing utilities for the rvalue reference.
 //
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -174,10 +174,12 @@ namespace __gnu_test
   
 } // namespace __gnu_test
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+#include <bits/functional_hash.h>
+
 namespace std
 {
-  template<typename _Tp> struct hash;
-
   /// std::hash specialization for type_index.
   template<>
     struct hash<__gnu_test::rvalstruct>
@@ -190,5 +192,6 @@ namespace std
       { return __rvs.val; }
     };
 }
+#endif
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H
