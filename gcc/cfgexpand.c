@@ -2567,6 +2567,13 @@ expand_debug_expr (tree exp)
 
       if (TREE_CODE (exp) == MEM_REF)
 	{
+	  if (GET_CODE (op0) == DEBUG_IMPLICIT_PTR
+	      || (GET_CODE (op0) == PLUS
+		  && GET_CODE (XEXP (op0, 0)) == DEBUG_IMPLICIT_PTR))
+	    /* (mem (debug_implicit_ptr)) might confuse aliasing.
+	       Instead just use get_inner_reference.  */
+	    goto component_ref;
+
 	  op1 = expand_debug_expr (TREE_OPERAND (exp, 1));
 	  if (!op1 || !CONST_INT_P (op1))
 	    return NULL;
@@ -2605,6 +2612,7 @@ expand_debug_expr (tree exp)
 
       return op0;
 
+    component_ref:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
     case COMPONENT_REF:
