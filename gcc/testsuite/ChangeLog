@@ -1,3 +1,9 @@
+2011-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/46130
+	* gcc.dg/pr46130-1.c: New test.
+	* gcc.dg/pr46130-2.c: New test.
+
 2011-01-19  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47291
