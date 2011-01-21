@@ -1,5 +1,10 @@
 2011-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/45566
+	* g++.dg/tree-prof/partition3.C: New test.
+
+	* g++.dg/tree-prof/tree-prof.exp: Fix a comment.
+
 	PR rtl-optimization/47366
 	* g++.dg/opt/pr47366.C: New test.
 
