@@ -1681,7 +1681,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    tree result = vn_reference_lookup_pieces (newvuse, ref->set,
 						      ref->type,
 						      newoperands,
-						      &newref, true);
+						      &newref, VN_WALK);
 	    if (result)
 	      VEC_free (vn_reference_op_s, heap, newoperands);
 
@@ -2594,6 +2594,10 @@ compute_antic (void)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Starting iteration %d\n", num_iterations);
+      /* ???  We need to clear our PHI translation cache here as the
+         ANTIC sets shrink and we restrict valid translations to
+	 those having operands with leaders in ANTIC.  Same below
+	 for PA ANTIC computation.  */
       num_iterations++;
       changed = false;
       for (i = n_basic_blocks - NUM_FIXED_BLOCKS - 1; i >= 0; i--)
@@ -3607,11 +3611,23 @@ do_regular_insertion (basic_block block, basic_block dom)
 	     already existing along every predecessor, and
 	     it's defined by some predecessor, it is
 	     partially redundant.  */
-	  if (!cant_insert && !all_same && by_some && do_insertion
-	      && dbg_cnt (treepre_insert))
+	  if (!cant_insert && !all_same && by_some)
 	    {
-	      if (insert_into_preds_of_block (block, get_expression_id (expr),
-					      avail))
+	      if (!do_insertion)
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Skipping partial redundancy for "
+			       "expression ");
+		      print_pre_expr (dump_file, expr);
+		      fprintf (dump_file, " (%04d), no redundancy on to be "
+			       "optimized for speed edge\n", val);
+		    }
+		}
+	      else if (dbg_cnt (treepre_insert)
+		       && insert_into_preds_of_block (block,
+						      get_expression_id (expr),
+						      avail))
 		new_stuff = true;
 	    }
 	  /* If all edges produce the same value and that value is
@@ -3999,7 +4015,7 @@ compute_avail (void)
 		copy_reference_ops_from_call (stmt, &ops);
 		vn_reference_lookup_pieces (gimple_vuse (stmt), 0,
 					    gimple_expr_type (stmt),
-					    ops, &ref, false);
+					    ops, &ref, VN_NOWALK);
 		VEC_free (vn_reference_op_s, heap, ops);
 		if (!ref)
 		  continue;
@@ -4069,7 +4085,7 @@ compute_avail (void)
 
 		      vn_reference_lookup (gimple_assign_rhs1 (stmt),
 					   gimple_vuse (stmt),
-					   true, &ref);
+					   VN_WALK, &ref);
 		      if (!ref)
 			continue;
 
@@ -4313,7 +4329,7 @@ eliminate (void)
 	      tree rhs = gimple_assign_rhs1 (stmt);
 	      tree val;
 	      val = vn_reference_lookup (gimple_assign_lhs (stmt),
-					 gimple_vuse (stmt), true, NULL);
+					 gimple_vuse (stmt), VN_WALK, NULL);
 	      if (TREE_CODE (rhs) == SSA_NAME)
 		rhs = VN_INFO (rhs)->valnum;
 	      if (val

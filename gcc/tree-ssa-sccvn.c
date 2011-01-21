@@ -1243,6 +1243,7 @@ vn_reference_lookup_1 (vn_reference_t vr, vn_reference_t *vnresult)
 }
 
 static tree *last_vuse_ptr;
+static vn_lookup_kind vn_walk_kind;
 
 /* Callback for walk_non_aliased_vuses.  Adjusts the vn_reference_t VR_
    with the current VUSE and performs the expression lookup.  */
@@ -1379,7 +1380,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 
   /* For aggregate copies translate the reference through them if
      the copy kills ref.  */
-  else if (gimple_assign_single_p (def_stmt)
+  else if (vn_walk_kind == VN_WALKREWRITE
+	   && gimple_assign_single_p (def_stmt)
 	   && (DECL_P (gimple_assign_rhs1 (def_stmt))
 	       || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == MEM_REF
 	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
@@ -1473,7 +1475,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 tree
 vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
 			    VEC (vn_reference_op_s, heap) *operands,
-			    vn_reference_t *vnresult, bool maywalk)
+			    vn_reference_t *vnresult, vn_lookup_kind kind)
 {
   struct vn_reference_s vr1;
   vn_reference_t tmp;
@@ -1501,10 +1503,11 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
 
   vn_reference_lookup_1 (&vr1, vnresult);
   if (!*vnresult
-      && maywalk
+      && kind != VN_NOWALK
       && vr1.vuse)
     {
       ao_ref r;
+      vn_walk_kind = kind;
       if (ao_ref_init_from_vn_reference (&r, set, type, vr1.operands))
 	*vnresult =
 	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
@@ -1527,7 +1530,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
    stored in the hashtable if one exists.  */
 
 tree
-vn_reference_lookup (tree op, tree vuse, bool maywalk,
+vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 		     vn_reference_t *vnresult)
 {
   VEC (vn_reference_op_s, heap) *operands;
@@ -1545,12 +1548,13 @@ vn_reference_lookup (tree op, tree vuse, bool maywalk,
   if ((cst = fully_constant_vn_reference_p (&vr1)))
     return cst;
 
-  if (maywalk
+  if (kind != VN_NOWALK
       && vr1.vuse)
     {
       vn_reference_t wvnresult;
       ao_ref r;
       ao_ref_init (&r, op);
+      vn_walk_kind = kind;
       wvnresult =
 	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
 						vn_reference_lookup_2,
@@ -2257,14 +2261,14 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
 
   last_vuse = gimple_vuse (stmt);
   last_vuse_ptr = &last_vuse;
-  result = vn_reference_lookup (op, gimple_vuse (stmt), true, NULL);
+  result = vn_reference_lookup (op, gimple_vuse (stmt), VN_WALKREWRITE, NULL);
   last_vuse_ptr = NULL;
 
   /* If we have a VCE, try looking up its operand as it might be stored in
      a different type.  */
   if (!result && TREE_CODE (op) == VIEW_CONVERT_EXPR)
     result = vn_reference_lookup (TREE_OPERAND (op, 0), gimple_vuse (stmt),
-    				  true, NULL);
+    				  VN_WALKREWRITE, NULL);
 
   /* We handle type-punning through unions by value-numbering based
      on offset and size of the access.  Be prepared to handle a
@@ -2375,7 +2379,7 @@ visit_reference_op_store (tree lhs, tree op, gimple stmt)
      Otherwise, the vdefs for the store are used when inserting into
      the table, since the store generates a new memory state.  */
 
-  result = vn_reference_lookup (lhs, gimple_vuse (stmt), false, NULL);
+  result = vn_reference_lookup (lhs, gimple_vuse (stmt), VN_NOWALK, NULL);
 
   if (result)
     {

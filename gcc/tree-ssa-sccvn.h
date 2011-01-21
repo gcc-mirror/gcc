@@ -187,10 +187,11 @@ void copy_reference_ops_from_ref (tree, VEC(vn_reference_op_s, heap) **);
 void copy_reference_ops_from_call (gimple, VEC(vn_reference_op_s, heap) **);
 bool ao_ref_init_from_vn_reference (ao_ref *, alias_set_type, tree,
 				    VEC (vn_reference_op_s, heap) *);
+typedef enum { VN_NOWALK, VN_WALK, VN_WALKREWRITE } vn_lookup_kind;
 tree vn_reference_lookup_pieces (tree, alias_set_type, tree,
 				 VEC (vn_reference_op_s, heap) *,
-				 vn_reference_t *, bool);
-tree vn_reference_lookup (tree, tree, bool, vn_reference_t *);
+				 vn_reference_t *, vn_lookup_kind);
+tree vn_reference_lookup (tree, tree, vn_lookup_kind, vn_reference_t *);
 vn_reference_t vn_reference_insert (tree, tree, tree);
 vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, tree,
 					   VEC (vn_reference_op_s, heap) *,

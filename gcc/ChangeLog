@@ -1,3 +1,20 @@
+2011-01-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47365
+	* tree-ssa-sccvn.h (vn_lookup_kind): Declare.
+	(vn_reference_lookup_pieces): Adjust.
+	(vn_reference_lookup): Likewise.
+	* tree-ssa-sccvn.c (vn_walk_kind): New static global.
+	(vn_reference_lookup_3): Only look through kills if in
+	VN_WALKREWRITE mode.
+	(vn_reference_lookup_pieces): Adjust.
+	(vn_reference_lookup): Likewise.
+	(visit_reference_op_load): Likewise.
+	(visit_reference_op_store): Likewise.
+	* tree-ssa-pre.c (phi_translate_1): Use VN_WALK mode.
+	(compute_avail): Likewise.
+	(eliminate): Likewise.
+
 2011-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-ssa-live.c (remove_unused_scope_block_p): Don't remove
