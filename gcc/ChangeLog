@@ -1,5 +1,10 @@
 2011-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/45566
+	* except.c (convert_to_eh_region_ranges): Emit queued no-region
+	notes from other section in hot/cold partitioning even if
+	last_action is -3.  Increment call_site_base.
+
 	PR rtl-optimization/47366
 	* fwprop.c (forward_propagate_into): Return bool.  If
 	any changes are made, -fnon-call-exceptions is used and

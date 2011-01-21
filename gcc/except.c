@@ -2421,30 +2421,33 @@ convert_to_eh_region_ranges (void)
 	if (last_action != this_action
 	    || last_landing_pad != this_landing_pad)
 	  {
+	    /* If there is a queued no-action region in the other section
+	       with hot/cold partitioning, emit it now.  */
+	    if (first_no_action_insn_before_switch)
+	      {
+		gcc_assert (this_action != -1
+			    && last_action == (first_no_action_insn
+					       ? -1 : -3));
+		call_site = add_call_site (NULL_RTX, 0, 0);
+		note = emit_note_before (NOTE_INSN_EH_REGION_BEG,
+					 first_no_action_insn_before_switch);
+		NOTE_EH_HANDLER (note) = call_site;
+		note = emit_note_after (NOTE_INSN_EH_REGION_END,
+					last_no_action_insn_before_switch);
+		NOTE_EH_HANDLER (note) = call_site;
+		gcc_assert (last_action != -3
+			    || (last_action_insn
+				== last_no_action_insn_before_switch));
+		first_no_action_insn_before_switch = NULL_RTX;
+		last_no_action_insn_before_switch = NULL_RTX;
+		call_site_base++;
+	      }
 	    /* If we'd not seen a previous action (-3) or the previous
 	       action was must-not-throw (-2), then we do not need an
 	       end note.  */
 	    if (last_action >= -1)
 	      {
 		/* If we delayed the creation of the begin, do it now.  */
-		if (first_no_action_insn_before_switch)
-		  {
-		    call_site = add_call_site (NULL_RTX, 0, 0);
-		    note
-		      = emit_note_before (NOTE_INSN_EH_REGION_BEG,
-					  first_no_action_insn_before_switch);
-		    NOTE_EH_HANDLER (note) = call_site;
-		    if (first_no_action_insn)
-		      {
-			note
-			  = emit_note_after (NOTE_INSN_EH_REGION_END,
-					     last_no_action_insn_before_switch);
-			NOTE_EH_HANDLER (note) = call_site;
-		      }
-		    else
-		      gcc_assert (last_action_insn
-				  == last_no_action_insn_before_switch);
-		  }
 		if (first_no_action_insn)
 		  {
 		    call_site = add_call_site (NULL_RTX, 0, cur_sec);
