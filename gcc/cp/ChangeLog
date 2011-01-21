@@ -1,3 +1,9 @@
+2011-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47041
+	* semantics.c (build_constexpr_constructor_member_initializers):
+	Handle trivial copy.
+
 2011-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/47388
