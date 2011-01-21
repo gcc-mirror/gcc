@@ -1,6 +1,6 @@
 // <list> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -60,12 +60,9 @@
 
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
-#include <bits/stl_list.h>
 #include <bits/range_access.h>
-
-#ifndef _GLIBCXX_EXPORT_TEMPLATE
-# include <bits/list.tcc>
-#endif
+#include <bits/stl_list.h>
+#include <bits/list.tcc>
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/list>

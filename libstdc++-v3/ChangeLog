@@ -1,3 +1,26 @@
+2011-01-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_EXPORT_TEMPLATE): Remove.
+	* include/debug/safe_sequence.h: Same.
+	* include/debug/safe_iterator.h: Same.
+	* include/std/forward_list: Same.
+	* include/std/deque: Same.
+	* include/std/list: Same.
+	* include/std/random: Same.
+	* include/std/streambuf: Same.
+	* include/std/fstream: Same.
+	* include/std/istream: Same.
+	* include/std/string: Same.
+	* include/std/ostream: Same.
+	* include/std/sstream: Same.
+	* include/ext/vstring.h: Same.
+	* include/bits/basic_ios.h: Same.
+	* include/bits/locale_classes.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/valarray_array.h: Same.
+	* include/bits/locale_facets_nonio.h: Same.
+	* include/tr1/random: Same.
+
 2011-01-20  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/diagnostics.xml: Replace note about C++0x concepts.

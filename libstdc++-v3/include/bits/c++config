@@ -359,10 +359,6 @@ namespace std
 #define _GLIBCXX_PSEUDO_VISIBILITY(V)
 #endif
 
-// Allow use of "export template." This is currently not a feature
-// that g++ supports.
-// #define _GLIBCXX_EXPORT_TEMPLATE 1
-
 // Allow use of the GNU syntax extension, "extern template." This
 // extension is fully documented in the g++ manual, but in a nutshell,
 // it inhibits all implicit instantiations and is used throughout the
