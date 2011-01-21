@@ -22931,8 +22931,9 @@ ix86_local_alignment (tree exp, enum machine_mode mode,
       && TARGET_SSE)
     {
       if (AGGREGATE_TYPE_P (type)
-	   && (TYPE_MAIN_VARIANT (type)
-	       != TYPE_MAIN_VARIANT (va_list_type_node))
+	   && (va_list_type_node == NULL_TREE
+	       || (TYPE_MAIN_VARIANT (type)
+		   != TYPE_MAIN_VARIANT (va_list_type_node)))
 	   && TYPE_SIZE (type)
 	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	   && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 16
@@ -33682,7 +33683,7 @@ ix86_canonical_va_list_type (tree type)
   else if (POINTER_TYPE_P (type) && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
     type = TREE_TYPE (type);
 
-  if (TARGET_64BIT)
+  if (TARGET_64BIT && va_list_type_node != NULL_TREE)
     {
       wtype = va_list_type_node;
 	  gcc_assert (wtype != NULL_TREE);

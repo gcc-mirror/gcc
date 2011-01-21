@@ -1,3 +1,9 @@
+2011-01-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR bootstrap/47215
+	* decl.c (java_init_decl_processing): Remove
+	va_list_type_node related type initializations.
+
 2011-01-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR bootstrap/47215
