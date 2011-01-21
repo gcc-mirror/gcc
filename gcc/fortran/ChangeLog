@@ -1,5 +1,12 @@
 2011-01-21  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/47394
+	* error.c (gfc_error_now, gfc_fatal_error, gfc_error_check):
+	Use defined instead of magic number exit status codes.
+	* scanner.c (include_line, gfc_new_file): Ditto.
+
+2011-01-21  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/47377
 	* expr.c (gfc_check_pointer_assign): Reject expr data-targets
 	without pointer attribute.
