@@ -1,5 +1,8 @@
 2011-01-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46552
+	* g++.dg/cpp0x/constexpr-regress2.C: New.
+
 	* g++.dg/cpp0x/constexpr-stmtexpr.C: New.
 
 2011-01-21  Jeff Law <law@redhat.com>

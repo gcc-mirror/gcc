@@ -1,5 +1,8 @@
 2011-01-21  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46552
+	* semantics.c (cxx_eval_constant_expression): Handle OFFSET_REF.
+
 	PR c++/46977
 	* semantics.c (potential_constant_expression_1): Split out from
 	potential_constant_expression.  Add want_rval parm.  Handle
