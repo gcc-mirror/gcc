@@ -1,3 +1,8 @@
+2011-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47355
+	* g++.dg/opt/pr47355.C: New test.
+
 2011-01-21  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pr47392.c: Make test non-static instead of
