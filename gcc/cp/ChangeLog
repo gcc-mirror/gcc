@@ -1,3 +1,10 @@
+2011-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/47388
+	* semantics.c (begin_for_stmt): If -fno-for-scope, don't
+	assume init must be NULL if scope is NULL.
+	(begin_range_for_stmt): Likewise.
+
 2011-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46552
