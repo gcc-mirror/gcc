@@ -1,5 +1,5 @@
 /* Subroutines for the C front end on the POWER and PowerPC architectures.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    Contributed by Zack Weinberg <zack@codesourcery.com>
@@ -383,6 +383,20 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     {
       builtin_define ("__LONG_DOUBLE_128__");
       builtin_define ("__LONGDOUBLE128");
+    }
+
+  switch (TARGET_CMODEL)
+    {
+      /* Deliberately omit __CMODEL_SMALL__ since that was the default
+	 before --mcmodel support was added.  */
+    case CMODEL_MEDIUM:
+      builtin_define ("__CMODEL_MEDIUM__");
+      break;
+    case CMODEL_LARGE:
+      builtin_define ("__CMODEL_LARGE__");
+      break;
+    default:
+      break;
     }
 
   switch (rs6000_current_abi)

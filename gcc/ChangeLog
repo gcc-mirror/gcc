@@ -1,3 +1,8 @@
+2011-01-21  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Add
+	builtin_define __CMODEL_MEDIUM__ and __CMODEL_LARGE__.
+
 2011-01-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.md (define_attr type): Rename f_load
