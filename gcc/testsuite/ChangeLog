@@ -1,5 +1,9 @@
 2011-01-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/47388
+	* g++.dg/cpp0x/range-for10.C: New test.
+	* g++.dg/template/for1.C: New test.
+
 	PR middle-end/45566
 	* g++.dg/tree-prof/partition3.C: New test.
 
