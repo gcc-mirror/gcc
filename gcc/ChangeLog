@@ -1,3 +1,13 @@
+2011-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/47366
+	* fwprop.c (forward_propagate_into): Return bool.  If
+	any changes are made, -fnon-call-exceptions is used and
+	REG_EH_REGION note is present, call purge_dead_edges
+	and return true if it purged anything.
+	(fwprop_addr): Adjust callers, call cleanup_cfg (0) if
+	any EH edges were purged.
+
 2011-01-21  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/41619
