@@ -1,3 +1,8 @@
+2011-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-live.c (remove_unused_scope_block_p): Don't remove
+	DECL_IGNORED_P non-reg vars if they are used.
+
 2011-01-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR bootstrap/47215
