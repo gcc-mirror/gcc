@@ -256,16 +256,6 @@ flush_if_preconnected (stream * s)
 }
 
 
-/* get_oserror()-- Get the most recent operating system error.  For
- * unix, this is errno. */
-
-const char *
-get_oserror (void)
-{
-  return strerror (errno);
-}
-
-
 /********************************************************************
 Raw I/O functions (read, write, seek, tell, truncate, close).
 
