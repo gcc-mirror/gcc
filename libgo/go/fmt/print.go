@@ -26,6 +26,7 @@ var (
 	bytesBytes      = []byte("[]byte{")
 	widthBytes      = []byte("%!(BADWIDTH)")
 	precBytes       = []byte("%!(BADPREC)")
+	noVerbBytes     = []byte("%!(NOVERB)")
 )
 
 // State represents the printer state passed to custom formatters.
@@ -117,12 +118,7 @@ func (p *pp) Flag(b int) bool {
 }
 
 func (p *pp) add(c int) {
-	if c < utf8.RuneSelf {
-		p.buf.WriteByte(byte(c))
-	} else {
-		w := utf8.EncodeRune(c, p.runeBuf[0:])
-		p.buf.Write(p.runeBuf[0:w])
-	}
+	p.buf.WriteRune(c)
 }
 
 // Implement Write so we can call Fprintf on a pp (through State), for
@@ -300,7 +296,7 @@ func (p *pp) fmtC(c int64) {
 	if int64(rune) != c {
 		rune = utf8.RuneError
 	}
-	w := utf8.EncodeRune(rune, p.runeBuf[0:utf8.UTFMax])
+	w := utf8.EncodeRune(p.runeBuf[0:utf8.UTFMax], rune)
 	p.fmt.pad(p.runeBuf[0:w])
 }
 
@@ -316,6 +312,8 @@ func (p *pp) fmtInt64(v int64, verb int, value interface{}) {
 		p.fmt.integer(v, 8, signed, ldigits)
 	case 'x':
 		p.fmt.integer(v, 16, signed, ldigits)
+	case 'U':
+		p.fmtUnicode(v)
 	case 'X':
 		p.fmt.integer(v, 16, signed, udigits)
 	default:
@@ -323,13 +321,30 @@ func (p *pp) fmtInt64(v int64, verb int, value interface{}) {
 	}
 }
 
-// fmt_sharpHex64 formats a uint64 in hexadecimal and prefixes it with 0x by
+// fmt0x64 formats a uint64 in hexadecimal and prefixes it with 0x by
 // temporarily turning on the sharp flag.
 func (p *pp) fmt0x64(v uint64) {
 	sharp := p.fmt.sharp
 	p.fmt.sharp = true // turn on 0x
 	p.fmt.integer(int64(v), 16, unsigned, ldigits)
 	p.fmt.sharp = sharp
+}
+
+// fmtUnicode formats a uint64 in U+1234 form by
+// temporarily turning on the unicode flag and tweaking the precision.
+func (p *pp) fmtUnicode(v int64) {
+	precPresent := p.fmt.precPresent
+	prec := p.fmt.prec
+	if !precPresent {
+		// If prec is already set, leave it alone; otherwise 4 is minimum.
+		p.fmt.prec = 4
+		p.fmt.precPresent = true
+	}
+	p.fmt.unicode = true // turn on U+
+	p.fmt.integer(int64(v), 16, unsigned, udigits)
+	p.fmt.unicode = false
+	p.fmt.prec = prec
+	p.fmt.precPresent = precPresent
 }
 
 func (p *pp) fmtUint64(v uint64, verb int, goSyntax bool, value interface{}) {
@@ -558,25 +573,11 @@ func (p *pp) printField(field interface{}, verb int, plus, goSyntax bool, depth 
 	case bool:
 		p.fmtBool(f, verb, field)
 		return false
-	case float:
-		if floatBits == 32 {
-			p.fmtFloat32(float32(f), verb, field)
-		} else {
-			p.fmtFloat64(float64(f), verb, field)
-		}
-		return false
 	case float32:
 		p.fmtFloat32(f, verb, field)
 		return false
 	case float64:
 		p.fmtFloat64(f, verb, field)
-		return false
-	case complex:
-		if complexBits == 64 {
-			p.fmtComplex64(complex64(f), verb, field)
-		} else {
-			p.fmtComplex128(complex128(f), verb, field)
-		}
 		return false
 	case complex64:
 		p.fmtComplex64(complex64(f), verb, field)
@@ -802,19 +803,22 @@ func intFromArg(a []interface{}, end, i, fieldnum int) (num int, isInt bool, new
 }
 
 func (p *pp) doPrintf(format string, a []interface{}) {
-	end := len(format) - 1
+	end := len(format)
 	fieldnum := 0 // we process one field per non-trivial format
-	for i := 0; i <= end; {
-		c, w := utf8.DecodeRuneInString(format[i:])
-		if c != '%' || i == end {
-			if w == 1 {
-				p.buf.WriteByte(byte(c))
-			} else {
-				p.buf.WriteString(format[i : i+w])
-			}
-			i += w
-			continue
+	for i := 0; i < end; {
+		lasti := i
+		for i < end && format[i] != '%' {
+			i++
 		}
+		if i > lasti {
+			p.buf.WriteString(format[lasti:i])
+		}
+		if i >= end {
+			// done processing format string
+			break
+		}
+
+		// Process one verb
 		i++
 		// flags and widths
 		p.fmt.clearflags()
@@ -836,7 +840,7 @@ func (p *pp) doPrintf(format string, a []interface{}) {
 			}
 		}
 		// do we have width?
-		if format[i] == '*' {
+		if i < end && format[i] == '*' {
 			p.fmt.wid, p.fmt.widPresent, i, fieldnum = intFromArg(a, end, i, fieldnum)
 			if !p.fmt.widPresent {
 				p.buf.Write(widthBytes)
@@ -855,7 +859,11 @@ func (p *pp) doPrintf(format string, a []interface{}) {
 				p.fmt.prec, p.fmt.precPresent, i = parsenum(format, i+1, end)
 			}
 		}
-		c, w = utf8.DecodeRuneInString(format[i:])
+		if i >= end {
+			p.buf.Write(noVerbBytes)
+			continue
+		}
+		c, w := utf8.DecodeRuneInString(format[i:])
 		i += w
 		// percent is special - absorbs no operand
 		if c == '%' {

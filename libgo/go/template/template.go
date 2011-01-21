@@ -44,9 +44,11 @@
 	is present, ZZZ is executed between iterations of XXX.
 
 		{field}
+		{field1 field2 ...}
 		{field|formatter}
+		{field1 field2...|formatter}
 
-	Insert the value of the field into the output. Field is
+	Insert the value of the fields into the output. Each field is
 	first looked for in the cursor, as in .section and .repeated.
 	If it is not found, the search continues in outer sections
 	until the top level is reached.
@@ -55,9 +57,11 @@
 	map passed to the template set up routines or in the default
 	set ("html","str","") and is used to process the data for
 	output.  The formatter function has signature
-		func(wr io.Writer, data interface{}, formatter string)
-	where wr is the destination for output, data is the field
-	value, and formatter is its name at the invocation site.
+		func(wr io.Writer, formatter string, data ...interface{})
+	where wr is the destination for output, data holds the field
+	values at the instantiation, and formatter is its name at
+	the invocation site.  The default formatter just concatenates
+	the string representations of the fields.
 */
 package template
 
@@ -69,6 +73,8 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"unicode"
+	"utf8"
 )
 
 // Errors returned during parsing and execution.  Users may extract the information and reformat
@@ -101,7 +107,7 @@ const (
 
 // FormatterMap is the type describing the mapping from formatter
 // names to the functions that implement them.
-type FormatterMap map[string]func(io.Writer, interface{}, string)
+type FormatterMap map[string]func(io.Writer, string, ...interface{})
 
 // Built-in formatters.
 var builtins = FormatterMap{
@@ -123,11 +129,11 @@ type literalElement struct {
 	text []byte
 }
 
-// A variable to be evaluated
+// A variable invocation to be evaluated
 type variableElement struct {
 	linenum   int
-	name      string
-	formatter string // TODO(r): implement pipelines
+	word      []string // The fields in the invocation.
+	formatter string   // TODO(r): implement pipelines
 }
 
 // A .section block, possibly with a .or
@@ -192,6 +198,12 @@ func (t *Template) execError(st *state, line int, err string, args ...interface{
 // The line number comes from the template state.
 func (t *Template) parseError(err string, args ...interface{}) {
 	panic(&Error{t.linenum, fmt.Sprintf(err, args...)})
+}
+
+// Is this an exported - upper case - name?
+func isExported(name string) bool {
+	rune, _ := utf8.DecodeRuneInString(name)
+	return unicode.IsUpper(rune)
 }
 
 // -- Lexical analysis
@@ -350,7 +362,7 @@ func (t *Template) analyze(item []byte) (tok int, w []string) {
 		t.parseError("empty directive")
 		return
 	}
-	if len(w) == 1 && w[0][0] != '.' {
+	if len(w) > 0 && w[0][0] != '.' {
 		tok = tokVariable
 		return
 	}
@@ -393,16 +405,18 @@ func (t *Template) analyze(item []byte) (tok int, w []string) {
 // -- Parsing
 
 // Allocate a new variable-evaluation element.
-func (t *Template) newVariable(name_formatter string) (v *variableElement) {
-	name := name_formatter
+func (t *Template) newVariable(words []string) (v *variableElement) {
+	// The words are tokenized elements from the {item}. The last one may be of
+	// the form "|fmt".  For example: {a b c|d}
 	formatter := ""
-	bar := strings.Index(name_formatter, "|")
+	lastWord := words[len(words)-1]
+	bar := strings.Index(lastWord, "|")
 	if bar >= 0 {
-		name = name_formatter[0:bar]
-		formatter = name_formatter[bar+1:]
+		words[len(words)-1] = lastWord[0:bar]
+		formatter = lastWord[bar+1:]
 	}
 	// Probably ok, so let's build it.
-	v = &variableElement{t.linenum, name, formatter}
+	v = &variableElement{t.linenum, words, formatter}
 
 	// We could remember the function address here and avoid the lookup later,
 	// but it's more dynamic to let the user change the map contents underfoot.
@@ -448,7 +462,7 @@ func (t *Template) parseSimple(item []byte) (done bool, tok int, w []string) {
 		}
 		return
 	case tokVariable:
-		t.elems.Push(t.newVariable(w[0]))
+		t.elems.Push(t.newVariable(w))
 		return
 	}
 	return false, tok, w
@@ -582,7 +596,7 @@ func (t *Template) parse() {
 
 // Evaluate interfaces and pointers looking for a value that can look up the name, via a
 // struct field, method, or map key, and return the result of the lookup.
-func lookup(v reflect.Value, name string) reflect.Value {
+func (t *Template) lookup(st *state, v reflect.Value, name string) reflect.Value {
 	for v != nil {
 		typ := v.Type()
 		if n := v.Type().NumMethod(); n > 0 {
@@ -590,6 +604,9 @@ func lookup(v reflect.Value, name string) reflect.Value {
 				m := typ.Method(i)
 				mtyp := m.Type
 				if m.Name == name && mtyp.NumIn() == 1 && mtyp.NumOut() == 1 {
+					if !isExported(name) {
+						t.execError(st, t.linenum, "name not exported: %s in type %s", name, st.data.Type())
+					}
 					return v.Method(i).Call(nil)[0]
 				}
 			}
@@ -600,6 +617,9 @@ func lookup(v reflect.Value, name string) reflect.Value {
 		case *reflect.InterfaceValue:
 			v = av.Elem()
 		case *reflect.StructValue:
+			if !isExported(name) {
+				t.execError(st, t.linenum, "name not exported: %s in type %s", name, st.data.Type())
+			}
 			return av.FieldByName(name)
 		case *reflect.MapValue:
 			return av.Elem(reflect.NewValue(name))
@@ -632,14 +652,14 @@ loop:
 // The value coming in (st.data) might need indirecting to reach
 // a struct while the return value is not indirected - that is,
 // it represents the actual named field.
-func (st *state) findVar(s string) reflect.Value {
+func (t *Template) findVar(st *state, s string) reflect.Value {
 	if s == "@" {
 		return st.data
 	}
 	data := st.data
 	for _, elem := range strings.Split(s, ".", -1) {
 		// Look up field; data must be a struct or map.
-		data = lookup(data, elem)
+		data = t.lookup(st, data, elem)
 		if data == nil {
 			return nil
 		}
@@ -667,12 +687,12 @@ func empty(v reflect.Value) bool {
 	case *reflect.SliceValue:
 		return v.Len() == 0
 	}
-	return true
+	return false
 }
 
 // Look up a variable or method, up through the parent if necessary.
 func (t *Template) varValue(name string, st *state) reflect.Value {
-	field := st.findVar(name)
+	field := t.findVar(st, name)
 	if field == nil {
 		if st.parent == nil {
 			t.execError(st, t.linenum, "name not found: %s in type %s", name, st.data.Type())
@@ -686,20 +706,24 @@ func (t *Template) varValue(name string, st *state) reflect.Value {
 // If it has a formatter attached ({var|formatter}) run that too.
 func (t *Template) writeVariable(v *variableElement, st *state) {
 	formatter := v.formatter
-	val := t.varValue(v.name, st).Interface()
+	// Turn the words of the invocation into values.
+	val := make([]interface{}, len(v.word))
+	for i, word := range v.word {
+		val[i] = t.varValue(word, st).Interface()
+	}
 	// is it in user-supplied map?
 	if t.fmap != nil {
 		if fn, ok := t.fmap[formatter]; ok {
-			fn(st.wr, val, formatter)
+			fn(st.wr, formatter, val...)
 			return
 		}
 	}
 	// is it in builtin map?
 	if fn, ok := builtins[formatter]; ok {
-		fn(st.wr, val, formatter)
+		fn(st.wr, formatter, val...)
 		return
 	}
-	t.execError(st, v.linenum, "missing formatter %s for variable %s", formatter, v.name)
+	t.execError(st, v.linenum, "missing formatter %s for variable %s", formatter, v.word[0])
 }
 
 // Execute element i.  Return next index to execute.

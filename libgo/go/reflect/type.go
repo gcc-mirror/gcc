@@ -265,10 +265,8 @@ const (
 	Uint32
 	Uint64
 	Uintptr
-	Float
 	Float32
 	Float64
-	Complex
 	Complex64
 	Complex128
 	Array
@@ -307,9 +305,10 @@ var kindNames = []string{
 	Uint32:        "uint32",
 	Uint64:        "uint64",
 	Uintptr:       "uintptr",
-	Float:         "float",
 	Float32:       "float32",
 	Float64:       "float64",
+	Complex64:     "complex64",
+	Complex128:    "complex128",
 	Array:         "array",
 	Chan:          "chan",
 	Func:          "func",
@@ -551,7 +550,7 @@ func (t *StructType) fieldByNameFunc(match func(string) bool, mark map[*StructTy
 	var fi int // field index
 	n := 0     // number of matching fields at depth fd
 L:
-	for i, _ := range t.fields {
+	for i := range t.fields {
 		f := t.Field(i)
 		d := inf
 		switch {
@@ -702,9 +701,9 @@ func runtimeToType(v *runtime.Type) Type {
 		r = (*IntType)(unsafe.Pointer(v))
 	case Uint, Uint8, Uint16, Uint32, Uint64, Uintptr:
 		r = (*UintType)(unsafe.Pointer(v))
-	case Float, Float32, Float64:
+	case Float32, Float64:
 		r = (*FloatType)(unsafe.Pointer(v))
-	case Complex, Complex64, Complex128:
+	case Complex64, Complex128:
 		r = (*ComplexType)(unsafe.Pointer(v))
 	case Array:
 		r = (*ArrayType)(unsafe.Pointer(v))

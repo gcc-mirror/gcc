@@ -7,7 +7,6 @@
 // Test of recover for run-time errors.
 
 // TODO(rsc):
-//	integer divide by zero?
 //	null pointer accesses
 
 package main
@@ -15,7 +14,6 @@ package main
 import (
 	"os"
 	"strings"
-	"syscall"
 )
 
 var x = make([]byte, 10)
@@ -60,7 +58,7 @@ func test3() {
 func test4() {
 	defer mustRecover("interface")
 	var x interface{} = 1
-	println(x.(float))
+	println(x.(float32))
 }
 
 type T struct {
@@ -83,10 +81,6 @@ func test6() {
 }
 
 func test7() {
-	if syscall.ARCH == "arm" || syscall.OS == "nacl" {
-		// ARM doesn't have integer divide trap yet
-		return
-	}
 	defer mustRecover("divide by zero")
 	var x, y int
 	println(x / y)

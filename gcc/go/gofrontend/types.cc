@@ -194,9 +194,9 @@ Type::make_non_abstract_type()
     case TYPE_INTEGER:
       return Type::lookup_integer_type("int");
     case TYPE_FLOAT:
-      return Type::lookup_float_type("float");
+      return Type::lookup_float_type("float64");
     case TYPE_COMPLEX:
-      return Type::lookup_complex_type("complex");
+      return Type::lookup_complex_type("complex128");
     case TYPE_STRING:
       return Type::lookup_string_type();
     case TYPE_BOOLEAN:
@@ -1872,8 +1872,7 @@ Float_type::create_abstract_float_type()
 {
   static Float_type* abstract_type;
   if (abstract_type == NULL)
-    abstract_type = new Float_type(true, FLOAT_TYPE_SIZE,
-				   RUNTIME_TYPE_KIND_FLOAT);
+    abstract_type = new Float_type(true, 64, RUNTIME_TYPE_KIND_FLOAT64);
   return abstract_type;
 }
 
@@ -2029,8 +2028,7 @@ Complex_type::create_abstract_complex_type()
 {
   static Complex_type* abstract_type;
   if (abstract_type == NULL)
-    abstract_type = new Complex_type(true, FLOAT_TYPE_SIZE * 2,
-				     RUNTIME_TYPE_KIND_FLOAT);
+    abstract_type = new Complex_type(true, 128, RUNTIME_TYPE_KIND_COMPLEX128);
   return abstract_type;
 }
 

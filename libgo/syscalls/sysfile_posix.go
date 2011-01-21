@@ -16,6 +16,7 @@ func libc_open(name *byte, mode int, perm Mode_t) int __asm__ ("open");
 func libc_close(fd int) int __asm__ ("close");
 func libc_read(fd int, buf *byte, count Size_t) Ssize_t __asm__ ("read");
 func libc_write(fd int, buf *byte, count Size_t) Ssize_t __asm__ ("write");
+func libc_fsync(fd int) int __asm__ ("fsync")
 func libc_pipe(filedes *int) int __asm__("pipe");
 func libc_stat(name *byte, buf *Stat_t) int __asm__ ("stat");
 func libc_fstat(fd int, buf *Stat_t) int __asm__ ("fstat");
@@ -85,6 +86,13 @@ func Write(fd int, p []byte) (n int, errno int) {
   if r == -1 { errno = GetErrno() }
   n = int(r);
   return;
+}
+
+func Fsync(fd int) (errno int) {
+	if libc_fsync(fd) < 0 {
+		errno = GetErrno()
+	}
+	return
 }
 
 func Pread(fd int, p []byte, offset int64) (n int, errno int) {

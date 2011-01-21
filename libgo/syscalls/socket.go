@@ -146,9 +146,11 @@ func libc_getpeername(fd int, sa *RawSockaddrAny, len *Socklen_t) int __asm__ ("
 func libc_recv(fd int, buf *byte, len Size_t, flags int) Ssize_t __asm__ ("recv");
 func libc_recvfrom(fd int, buf *byte, len Size_t, flags int,
 	from *RawSockaddrAny, fromlen *Socklen_t) Ssize_t __asm__("recvfrom");
+func libc_recvmsg(fd int, msg *Msghdr, flags int) Ssize_t __asm__("recvmsg")
 func libc_send(fd int, buf *byte, len Size_t, flags int) Ssize_t __asm__("send");
 func libc_sendto(fd int, buf *byte, len Size_t, flags int,
 	to *RawSockaddrAny, tolen Socklen_t) Ssize_t __asm__("sendto");
+func libc_sendmsg(fd int, msg *Msghdr, flags int) Ssize_t __asm__("sendmsg")
 func libc_shutdown(fd int, how int) int __asm__ ("shutdown");
 
 func Accept(fd int) (nfd int, sa Sockaddr, errno int) {
@@ -265,6 +267,58 @@ func Recvfrom(fd int, p []byte, flags int) (n int, from Sockaddr, errno int) {
 	return;
 }
 
+func (iov *Iovec) SetLen(length int) {
+	iov.Len = Iovec_len_t(length)
+}
+
+func (msghdr *Msghdr) SetControllen(length int) {
+	msghdr.Controllen = Msghdr_controllen_t(length)
+}
+
+func Recvmsg(fd int, p, oob []byte, flags int) (n, oobn int, recvflags int, from Sockaddr, errno int) {
+	var msg Msghdr
+	var rsa RawSockaddrAny
+	msg.Name = (*byte)(unsafe.Pointer(&rsa))
+	msg.Namelen = uint32(SizeofSockaddrAny)
+	var iov Iovec
+	if len(p) > 0 {
+		iov.Base = (*byte)(unsafe.Pointer(&p[0]))
+		iov.SetLen(len(p))
+	}
+	var dummy byte
+	if len(oob) > 0 {
+		// receive at least one normal byte
+		if len(p) == 0 {
+			iov.Base = &dummy
+			iov.SetLen(1)
+		}
+		msg.Control = (*byte)(unsafe.Pointer(&oob[0]))
+		msg.SetControllen(len(oob))
+	}
+	msg.Iov = &iov
+	msg.Iovlen = 1
+	if n, errno = recvmsg(fd, &msg, flags); errno != 0 {
+		return
+	}
+	oobn = int(msg.Controllen)
+	recvflags = int(msg.Flags)
+	// source address is only specified if the socket is unconnected
+	if rsa.Addr.Family != 0 {
+		from, errno = anyToSockaddr(&rsa)
+	}
+	return
+}
+
+func recvmsg(s int, msg *Msghdr, flags int) (n int, errno int) {
+	r := libc_recvmsg(s, msg, flags)
+	if r < 0 {
+		errno = GetErrno()
+	} else {
+		n = int(r)
+	}
+	return
+}
+
 func Sendto(fd int, p []byte, flags int, to Sockaddr) (errno int) {
 	ptr, n, err := to.sockaddr();
 	if err != 0 {
@@ -275,6 +329,49 @@ func Sendto(fd int, p []byte, flags int, to Sockaddr) (errno int) {
 	r := libc_sendto(fd, _p0, Size_t(len(p)), flags, ptr, n);
 	if r == -1 { errno = GetErrno(); }
 	return;
+}
+
+func Sendmsg(fd int, p, oob []byte, to Sockaddr, flags int) (errno int) {
+	var ptr *RawSockaddrAny
+	var nsock Socklen_t
+	if to != nil {
+		var err int
+		ptr, nsock, err = to.sockaddr()
+		if err != 0 {
+			return err
+		}
+	}
+	var msg Msghdr
+	msg.Name = (*byte)(unsafe.Pointer(ptr))
+	msg.Namelen = uint32(nsock)
+	var iov Iovec
+	if len(p) > 0 {
+		iov.Base = (*byte)(unsafe.Pointer(&p[0]))
+		iov.SetLen(len(p))
+	}
+	var dummy byte
+	if len(oob) > 0 {
+		// send at least one normal byte
+		if len(p) == 0 {
+			iov.Base = &dummy
+			iov.SetLen(1)
+		}
+		msg.Control = (*byte)(unsafe.Pointer(&oob[0]))
+		msg.SetControllen(len(oob))
+	}
+	msg.Iov = &iov
+	msg.Iovlen = 1
+	if errno = sendmsg(fd, &msg, flags); errno != 0 {
+		return
+	}
+	return
+}
+
+func sendmsg(s int, msg *Msghdr, flags int) (errno int) {
+	if libc_sendmsg(s, msg, flags) < 0 {
+		errno = GetErrno()
+	}
+	return
 }
 
 func Shutdown(fd int, how int) (errno int) {

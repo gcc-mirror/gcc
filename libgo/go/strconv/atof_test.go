@@ -24,6 +24,7 @@ var atoftests = []atofTest{
 	{"1x", "0", os.EINVAL},
 	{"1.1.", "0", os.EINVAL},
 	{"1e23", "1e+23", nil},
+	{"1E23", "1e+23", nil},
 	{"100000000000000000000000", "1e+23", nil},
 	{"1e-100", "1e-100", nil},
 	{"123456700", "1.234567e+08", nil},
@@ -36,6 +37,16 @@ var atoftests = []atofTest{
 	{"-0", "-0", nil},
 	{"1e-20", "1e-20", nil},
 	{"625e-3", "0.625", nil},
+
+	// NaNs
+	{"nan", "NaN", nil},
+	{"NaN", "NaN", nil},
+	{"NAN", "NaN", nil},
+
+	// Infs
+	{"inf", "+Inf", nil},
+	{"-Inf", "-Inf", nil},
+	{"+INF", "+Inf", nil},
 
 	// largest float64
 	{"1.7976931348623157e308", "1.7976931348623157e+308", nil},
@@ -139,15 +150,6 @@ func testAtof(t *testing.T, opt bool) {
 					test.in, out32, err, test.out, test.err, out)
 			}
 		}
-
-		if FloatSize == 64 || float64(float32(out)) == out {
-			outf, err := Atof(test.in)
-			outs := Ftoa(outf, 'g', -1)
-			if outs != test.out || !reflect.DeepEqual(err, test.err) {
-				t.Errorf("Ftoa(%v) = %v, %v want %v, %v  # %v",
-					test.in, outf, err, test.out, test.err, out)
-			}
-		}
 	}
 	SetOptimize(oldopt)
 }
@@ -156,26 +158,26 @@ func TestAtof(t *testing.T) { testAtof(t, true) }
 
 func TestAtofSlow(t *testing.T) { testAtof(t, false) }
 
-func BenchmarkAtofDecimal(b *testing.B) {
+func BenchmarkAtof64Decimal(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atof("33909")
+		Atof64("33909")
 	}
 }
 
-func BenchmarkAtofFloat(b *testing.B) {
+func BenchmarkAtof64Float(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atof("339.7784")
+		Atof64("339.7784")
 	}
 }
 
-func BenchmarkAtofFloatExp(b *testing.B) {
+func BenchmarkAtof64FloatExp(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atof("-5.09e75")
+		Atof64("-5.09e75")
 	}
 }
 
-func BenchmarkAtofBig(b *testing.B) {
+func BenchmarkAtof64Big(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		Atof("123456789123456789123456789")
+		Atof64("123456789123456789123456789")
 	}
 }

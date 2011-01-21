@@ -100,9 +100,9 @@ operator<(const Import_init& i1, const Import_init& i2)
 class Gogo
 {
  public:
-  // Create the IR, passing in the sizes of the types "int", "float",
-  // and "uintptr" in bits.
-  Gogo(int int_type_size, int float_type_size, int pointer_size);
+  // Create the IR, passing in the sizes of the types "int" and
+  // "uintptr" in bits.
+  Gogo(int int_type_size, int pointer_size);
 
   // Get the package name.
   const std::string&

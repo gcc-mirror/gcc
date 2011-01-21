@@ -7,17 +7,19 @@ package os_test
 import (
 	. "os"
 	"testing"
+	"runtime"
 	"syscall"
 )
 
 func TestMkdirAll(t *testing.T) {
-	// Create new dir, in _obj so it will get
+	// Create new dir, in _test so it will get
 	// cleaned up by make if not by us.
-	path := "_obj/_TestMkdirAll_/dir/./dir2"
+	path := "_test/_TestMkdirAll_/dir/./dir2"
 	err := MkdirAll(path, 0777)
 	if err != nil {
 		t.Fatalf("MkdirAll %q: %s", path, err)
 	}
+	defer RemoveAll("_test/_TestMkdirAll_")
 
 	// Already exists, should succeed.
 	err = MkdirAll(path, 0777)
@@ -35,7 +37,7 @@ func TestMkdirAll(t *testing.T) {
 	// Can't make directory named after file.
 	err = MkdirAll(fpath, 0777)
 	if err == nil {
-		t.Fatalf("MkdirAll %q: no error")
+		t.Fatalf("MkdirAll %q: no error", fpath)
 	}
 	perr, ok := err.(*PathError)
 	if !ok {
@@ -49,7 +51,7 @@ func TestMkdirAll(t *testing.T) {
 	ffpath := fpath + "/subdir"
 	err = MkdirAll(ffpath, 0777)
 	if err == nil {
-		t.Fatalf("MkdirAll %q: no error")
+		t.Fatalf("MkdirAll %q: no error", ffpath)
 	}
 	perr, ok = err.(*PathError)
 	if !ok {
@@ -58,13 +60,11 @@ func TestMkdirAll(t *testing.T) {
 	if perr.Path != fpath {
 		t.Fatalf("MkdirAll %q returned wrong error path: %q not %q", ffpath, perr.Path, fpath)
 	}
-
-	RemoveAll("_obj/_TestMkdirAll_")
 }
 
 func TestRemoveAll(t *testing.T) {
 	// Work directory.
-	path := "_obj/_TestRemoveAll_"
+	path := "_test/_TestRemoveAll_"
 	fpath := path + "/file"
 	dpath := path + "/dir"
 
@@ -130,23 +130,17 @@ func TestRemoveAll(t *testing.T) {
 		if err = Chmod(dpath, 0); err != nil {
 			t.Fatalf("Chmod %q 0: %s", dpath, err)
 		}
-		if err = RemoveAll(path); err == nil {
-			_, err := Lstat(path)
-			if err == nil {
-				t.Errorf("Can lstat %q after supposed RemoveAll", path)
-			}
-			t.Fatalf("RemoveAll %q succeeded with chmod 0 subdirectory", path, err)
-		}
-		perr, ok := err.(*PathError)
-		if !ok {
-			t.Fatalf("RemoveAll %q returned %T not *PathError", path, err)
-		}
-		if perr.Path != dpath {
-			t.Fatalf("RemoveAll %q failed at %q not %q", path, perr.Path, dpath)
-		}
-		if err = Chmod(dpath, 0777); err != nil {
-			t.Fatalf("Chmod %q 0777: %s", dpath, err)
-		}
+
+		// No error checking here: either RemoveAll
+		// will or won't be able to remove dpath;
+		// either way we want to see if it removes fpath
+		// and path/zzz.  Reasons why RemoveAll might
+		// succeed in removing dpath as well include:
+		//	* running as root
+		//	* running on a file system without permissions (FAT)
+		RemoveAll(path)
+		Chmod(dpath, 0777)
+
 		for _, s := range []string{fpath, path + "/zzz"} {
 			if _, err := Lstat(s); err == nil {
 				t.Fatalf("Lstat %q succeeded after partial RemoveAll", s)
@@ -158,5 +152,30 @@ func TestRemoveAll(t *testing.T) {
 	}
 	if _, err := Lstat(path); err == nil {
 		t.Fatalf("Lstat %q succeeded after RemoveAll (final)", path)
+	}
+}
+
+func TestMkdirAllWithSymlink(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Log("Skipping test: symlinks don't exist under Windows")
+		return
+	}
+
+	err := Mkdir("_test/dir", 0755)
+	if err != nil {
+		t.Fatal(`Mkdir "_test/dir":`, err)
+	}
+	defer RemoveAll("_test/dir")
+
+	err = Symlink("dir", "_test/link")
+	if err != nil {
+		t.Fatal(`Symlink "dir", "_test/link":`, err)
+	}
+	defer RemoveAll("_test/link")
+
+	path := "_test/link/foo"
+	err = MkdirAll(path, 0755)
+	if err != nil {
+		t.Errorf("MkdirAll %q: %s", path, err)
 	}
 }

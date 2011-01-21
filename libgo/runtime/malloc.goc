@@ -267,9 +267,14 @@ runtime_allocmcache(void)
 	return c;
 }
 
+extern int32 runtime_sizeof_C_MStats
+  __asm__ ("libgo_runtime.runtime.Sizeof_C_MStats");
+
 void
 runtime_mallocinit(void)
 {
+	runtime_sizeof_C_MStats = sizeof(MStats);
+
 	runtime_initfintab();
 	runtime_Mprof_Init();
 

@@ -29,7 +29,7 @@ func TypeFromNative(t reflect.Type) Type {
 	var nt *NamedType
 	if t.Name() != "" {
 		name := t.PkgPath() + "·" + t.Name()
-		nt = &NamedType{token.Position{}, name, nil, true, make(map[string]Method)}
+		nt = &NamedType{token.NoPos, name, nil, true, make(map[string]Method)}
 		evalTypes[t] = nt
 	}
 
@@ -43,8 +43,6 @@ func TypeFromNative(t reflect.Type) Type {
 			et = Float32Type
 		case reflect.Float64:
 			et = Float64Type
-		case reflect.Float:
-			et = FloatType
 		}
 	case *reflect.IntType:
 		switch t.Kind() {

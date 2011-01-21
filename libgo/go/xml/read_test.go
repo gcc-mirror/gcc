@@ -230,3 +230,100 @@ func TestFieldName(t *testing.T) {
 		}
 	}
 }
+
+const pathTestString = `
+<result>
+    <before>1</before>
+    <items>
+        <item1>
+            <value>A</value>
+        </item1>
+        <item2>
+            <value>B</value>
+        </item2>
+        <Item1>
+            <Value>C</Value>
+            <Value>D</Value>
+        </Item1>
+    </items>
+    <after>2</after>
+</result>
+`
+
+type PathTestItem struct {
+	Value string
+}
+
+type PathTestA struct {
+	Items         []PathTestItem ">item1"
+	Before, After string
+}
+
+type PathTestB struct {
+	Other         []PathTestItem "items>Item1"
+	Before, After string
+}
+
+type PathTestC struct {
+	Values1       []string "items>item1>value"
+	Values2       []string "items>item2>value"
+	Before, After string
+}
+
+type PathTestSet struct {
+	Item1 []PathTestItem
+}
+
+type PathTestD struct {
+	Other         PathTestSet "items>"
+	Before, After string
+}
+
+var pathTests = []interface{}{
+	&PathTestA{Items: []PathTestItem{{"A"}, {"D"}}, Before: "1", After: "2"},
+	&PathTestB{Other: []PathTestItem{{"A"}, {"D"}}, Before: "1", After: "2"},
+	&PathTestC{Values1: []string{"A", "C", "D"}, Values2: []string{"B"}, Before: "1", After: "2"},
+	&PathTestD{Other: PathTestSet{Item1: []PathTestItem{{"A"}, {"D"}}}, Before: "1", After: "2"},
+}
+
+func TestUnmarshalPaths(t *testing.T) {
+	for _, pt := range pathTests {
+		p := reflect.MakeZero(reflect.NewValue(pt).Type()).(*reflect.PtrValue)
+		p.PointTo(reflect.MakeZero(p.Type().(*reflect.PtrType).Elem()))
+		v := p.Interface()
+		if err := Unmarshal(StringReader(pathTestString), v); err != nil {
+			t.Fatalf("Unmarshal: %s", err)
+		}
+		if !reflect.DeepEqual(v, pt) {
+			t.Fatalf("have %#v\nwant %#v", v, pt)
+		}
+	}
+}
+
+type BadPathTestA struct {
+	First  string "items>item1"
+	Other  string "items>item2"
+	Second string "items>"
+}
+
+type BadPathTestB struct {
+	Other  string "items>item2>value"
+	First  string "items>item1"
+	Second string "items>item1>value"
+}
+
+var badPathTests = []struct {
+	v, e interface{}
+}{
+	{&BadPathTestA{}, &TagPathError{reflect.Typeof(BadPathTestA{}), "First", "items>item1", "Second", "items>"}},
+	{&BadPathTestB{}, &TagPathError{reflect.Typeof(BadPathTestB{}), "First", "items>item1", "Second", "items>item1>value"}},
+}
+
+func TestUnmarshalBadPaths(t *testing.T) {
+	for _, tt := range badPathTests {
+		err := Unmarshal(StringReader(pathTestString), tt.v)
+		if !reflect.DeepEqual(err, tt.e) {
+			t.Fatalf("Unmarshal with %#v didn't fail properly: %#v", tt.v, err)
+		}
+	}
+}

@@ -5,8 +5,6 @@
 package tls
 
 import (
-	"crypto/hmac"
-	"crypto/rc4"
 	"crypto/rsa"
 	"crypto/subtle"
 	"crypto/x509"
@@ -23,19 +21,21 @@ func (c *Conn) clientHandshake() os.Error {
 
 	hello := &clientHelloMsg{
 		vers:               maxVersion,
-		cipherSuites:       []uint16{TLS_RSA_WITH_RC4_128_SHA},
+		cipherSuites:       c.config.cipherSuites(),
 		compressionMethods: []uint8{compressionNone},
 		random:             make([]byte, 32),
 		ocspStapling:       true,
 		serverName:         c.config.ServerName,
+		supportedCurves:    []uint16{curveP256, curveP384, curveP521},
+		supportedPoints:    []uint8{pointFormatUncompressed},
 	}
 
-	t := uint32(c.config.Time())
+	t := uint32(c.config.time())
 	hello.random[0] = byte(t >> 24)
 	hello.random[1] = byte(t >> 16)
 	hello.random[2] = byte(t >> 8)
 	hello.random[3] = byte(t)
-	_, err := io.ReadFull(c.config.Rand, hello.random[4:])
+	_, err := io.ReadFull(c.config.rand(), hello.random[4:])
 	if err != nil {
 		c.sendAlert(alertInternalError)
 		return os.ErrorString("short read from Rand")
@@ -61,9 +61,13 @@ func (c *Conn) clientHandshake() os.Error {
 	c.vers = vers
 	c.haveVers = true
 
-	if serverHello.cipherSuite != TLS_RSA_WITH_RC4_128_SHA ||
-		serverHello.compressionMethod != compressionNone {
+	if serverHello.compressionMethod != compressionNone {
 		return c.sendAlert(alertUnexpectedMessage)
+	}
+
+	suite, suiteId := mutualCipherSuite(c.config.cipherSuites(), serverHello.cipherSuite)
+	if suite == nil {
+		return c.sendAlert(alertHandshakeFailure)
 	}
 
 	msg, err = c.readHandshake()
@@ -128,8 +132,7 @@ func (c *Conn) clientHandshake() os.Error {
 		cur = parent
 	}
 
-	pub, ok := certs[0].PublicKey.(*rsa.PublicKey)
-	if !ok {
+	if _, ok := certs[0].PublicKey.(*rsa.PublicKey); !ok {
 		return c.sendAlert(alertUnsupportedCertificate)
 	}
 
@@ -154,6 +157,23 @@ func (c *Conn) clientHandshake() os.Error {
 	msg, err = c.readHandshake()
 	if err != nil {
 		return err
+	}
+
+	keyAgreement := suite.ka()
+
+	skx, ok := msg.(*serverKeyExchangeMsg)
+	if ok {
+		finishedHash.Write(skx.marshal())
+		err = keyAgreement.processServerKeyExchange(c.config, hello, serverHello, certs[0], skx)
+		if err != nil {
+			c.sendAlert(alertUnexpectedMessage)
+			return err
+		}
+
+		msg, err = c.readHandshake()
+		if err != nil {
+			return err
+		}
 	}
 
 	transmitCert := false
@@ -213,29 +233,22 @@ func (c *Conn) clientHandshake() os.Error {
 		c.writeRecord(recordTypeHandshake, certMsg.marshal())
 	}
 
-	ckx := new(clientKeyExchangeMsg)
-	preMasterSecret := make([]byte, 48)
-	preMasterSecret[0] = byte(hello.vers >> 8)
-	preMasterSecret[1] = byte(hello.vers)
-	_, err = io.ReadFull(c.config.Rand, preMasterSecret[2:])
+	preMasterSecret, ckx, err := keyAgreement.generateClientKeyExchange(c.config, hello, certs[0])
 	if err != nil {
-		return c.sendAlert(alertInternalError)
+		c.sendAlert(alertInternalError)
+		return err
 	}
-
-	ckx.ciphertext, err = rsa.EncryptPKCS1v15(c.config.Rand, pub, preMasterSecret)
-	if err != nil {
-		return c.sendAlert(alertInternalError)
+	if ckx != nil {
+		finishedHash.Write(ckx.marshal())
+		c.writeRecord(recordTypeHandshake, ckx.marshal())
 	}
-
-	finishedHash.Write(ckx.marshal())
-	c.writeRecord(recordTypeHandshake, ckx.marshal())
 
 	if cert != nil {
 		certVerify := new(certificateVerifyMsg)
 		var digest [36]byte
 		copy(digest[0:16], finishedHash.serverMD5.Sum())
 		copy(digest[16:36], finishedHash.serverSHA1.Sum())
-		signed, err := rsa.SignPKCS1v15(c.config.Rand, c.config.Certificates[0].PrivateKey, rsa.HashMD5SHA1, digest[0:])
+		signed, err := rsa.SignPKCS1v15(c.config.rand(), c.config.Certificates[0].PrivateKey, rsa.HashMD5SHA1, digest[0:])
 		if err != nil {
 			return c.sendAlert(alertInternalError)
 		}
@@ -245,13 +258,12 @@ func (c *Conn) clientHandshake() os.Error {
 		c.writeRecord(recordTypeHandshake, certVerify.marshal())
 	}
 
-	suite := cipherSuites[0]
-	masterSecret, clientMAC, serverMAC, clientKey, serverKey :=
-		keysFromPreMasterSecret11(preMasterSecret, hello.random, serverHello.random, suite.hashLength, suite.cipherKeyLength)
+	masterSecret, clientMAC, serverMAC, clientKey, serverKey, clientIV, serverIV :=
+		keysFromPreMasterSecret10(preMasterSecret, hello.random, serverHello.random, suite.macLen, suite.keyLen, suite.ivLen)
 
-	cipher, _ := rc4.NewCipher(clientKey)
-
-	c.out.prepareCipherSpec(cipher, hmac.NewSHA1(clientMAC))
+	clientCipher := suite.cipher(clientKey, clientIV, false /* not for reading */ )
+	clientHash := suite.mac(clientMAC)
+	c.out.prepareCipherSpec(clientCipher, clientHash)
 	c.writeRecord(recordTypeChangeCipherSpec, []byte{1})
 
 	finished := new(finishedMsg)
@@ -259,8 +271,9 @@ func (c *Conn) clientHandshake() os.Error {
 	finishedHash.Write(finished.marshal())
 	c.writeRecord(recordTypeHandshake, finished.marshal())
 
-	cipher2, _ := rc4.NewCipher(serverKey)
-	c.in.prepareCipherSpec(cipher2, hmac.NewSHA1(serverMAC))
+	serverCipher := suite.cipher(serverKey, serverIV, true /* for reading */ )
+	serverHash := suite.mac(serverMAC)
+	c.in.prepareCipherSpec(serverCipher, serverHash)
 	c.readRecord(recordTypeChangeCipherSpec)
 	if c.err != nil {
 		return c.err
@@ -282,6 +295,6 @@ func (c *Conn) clientHandshake() os.Error {
 	}
 
 	c.handshakeComplete = true
-	c.cipherSuite = TLS_RSA_WITH_RC4_128_SHA
+	c.cipherSuite = suiteId
 	return nil
 }

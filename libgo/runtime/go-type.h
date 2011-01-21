@@ -38,22 +38,20 @@
 #define GO_UINT32 10
 #define GO_UINT64 11
 #define GO_UINTPTR 12
-#define GO_FLOAT 13
-#define GO_FLOAT32 14
-#define GO_FLOAT64 15
-#define GO_COMPLEX 16
-#define GO_COMPLEX64 17
-#define GO_COMPLEX128 18
-#define GO_ARRAY 19
-#define GO_CHAN 20
-#define GO_FUNC 21
-#define GO_INTERFACE 22
-#define GO_MAP 23
-#define GO_PTR 24
-#define GO_SLICE 25
-#define GO_STRING 26
-#define GO_STRUCT 27
-#define GO_UNSAFE_POINTER 28
+#define GO_FLOAT32 13
+#define GO_FLOAT64 14
+#define GO_COMPLEX64 15
+#define GO_COMPLEX128 16
+#define GO_ARRAY 17
+#define GO_CHAN 18
+#define GO_FUNC 19
+#define GO_INTERFACE 20
+#define GO_MAP 21
+#define GO_PTR 22
+#define GO_SLICE 23
+#define GO_STRING 24
+#define GO_STRUCT 25
+#define GO_UNSAFE_POINTER 26
 
 /* For each Go type the compiler constructs one of these structures.
    This is used for type reflectin, interfaces, maps, and reference

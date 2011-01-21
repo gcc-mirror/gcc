@@ -6,12 +6,12 @@ package net
 
 import (
 	"os"
+	"runtime"
 	"sync"
 	"syscall"
+	"time"
 	"unsafe"
 )
-
-// BUG(brainman): The Windows implementation does not implement SetTimeout.
 
 // IO completion result parameters.
 type ioResult struct {
@@ -28,15 +28,14 @@ type netFD struct {
 	closing bool
 
 	// immutable until Close
-	sysfd   int
-	family  int
-	proto   int
-	sysfile *os.File
-	cr      chan *ioResult
-	cw      chan *ioResult
-	net     string
-	laddr   Addr
-	raddr   Addr
+	sysfd  int
+	family int
+	proto  int
+	cr     chan *ioResult
+	cw     chan *ioResult
+	net    string
+	laddr  Addr
+	raddr  Addr
 
 	// owned by client
 	rdeadline_delta int64
@@ -79,6 +78,8 @@ type ioPacket struct {
 
 	// Link to the io owner.
 	c chan *ioResult
+
+	w *syscall.WSABuf
 }
 
 func (s *pollServer) getCompletedIO() (ov *syscall.Overlapped, result *ioResult, err os.Error) {
@@ -126,6 +127,8 @@ func startServer() {
 		panic("Start pollServer: " + err.String() + "\n")
 	}
 	pollserver = p
+
+	go timeoutIO()
 }
 
 var initErr os.Error
@@ -143,20 +146,13 @@ func newFD(fd, family, proto int, net string, laddr, raddr Addr) (f *netFD, err 
 		sysfd:  fd,
 		family: family,
 		proto:  proto,
-		cr:     make(chan *ioResult),
-		cw:     make(chan *ioResult),
+		cr:     make(chan *ioResult, 1),
+		cw:     make(chan *ioResult, 1),
 		net:    net,
 		laddr:  laddr,
 		raddr:  raddr,
 	}
-	var ls, rs string
-	if laddr != nil {
-		ls = laddr.String()
-	}
-	if raddr != nil {
-		rs = raddr.String()
-	}
-	f.sysfile = os.NewFile(fd, net+":"+ls+"->"+rs)
+	runtime.SetFinalizer(f, (*netFD).Close)
 	return f, nil
 }
 
@@ -178,15 +174,16 @@ func (fd *netFD) decref() {
 		// can handle the extra OS processes.  Otherwise we'll need to
 		// use the pollserver for Close too.  Sigh.
 		syscall.SetNonblock(fd.sysfd, false)
-		fd.sysfile.Close()
-		fd.sysfile = nil
+		closesocket(fd.sysfd)
 		fd.sysfd = -1
+		// no need for a finalizer anymore
+		runtime.SetFinalizer(fd, nil)
 	}
 	fd.sysmu.Unlock()
 }
 
 func (fd *netFD) Close() os.Error {
-	if fd == nil || fd.sysfile == nil {
+	if fd == nil || fd.sysfd == -1 {
 		return os.EINVAL
 	}
 
@@ -205,6 +202,80 @@ func newWSABuf(p []byte) *syscall.WSABuf {
 	return &syscall.WSABuf{uint32(len(p)), p0}
 }
 
+func waitPacket(fd *netFD, pckt *ioPacket, mode int) (r *ioResult) {
+	var delta int64
+	if mode == 'r' {
+		delta = fd.rdeadline_delta
+	}
+	if mode == 'w' {
+		delta = fd.wdeadline_delta
+	}
+	if delta <= 0 {
+		return <-pckt.c
+	}
+
+	select {
+	case r = <-pckt.c:
+	case <-time.After(delta):
+		a := &arg{f: cancel, fd: fd, pckt: pckt, c: make(chan int)}
+		ioChan <- a
+		<-a.c
+		r = <-pckt.c
+		if r.errno == 995 { // IO Canceled
+			r.errno = syscall.EWOULDBLOCK
+		}
+	}
+	return r
+}
+
+const (
+	read = iota
+	readfrom
+	write
+	writeto
+	cancel
+)
+
+type arg struct {
+	f     int
+	fd    *netFD
+	pckt  *ioPacket
+	done  *uint32
+	flags *uint32
+	rsa   *syscall.RawSockaddrAny
+	size  *int32
+	sa    *syscall.Sockaddr
+	c     chan int
+}
+
+var ioChan chan *arg = make(chan *arg)
+
+func timeoutIO() {
+	// CancelIO only cancels all pending input and output (I/O) operations that are
+	// issued by the calling thread for the specified file, does not cancel I/O
+	// operations that other threads issue for a file handle. So we need do all timeout
+	// I/O in single OS thread.
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+	for {
+		o := <-ioChan
+		var e int
+		switch o.f {
+		case read:
+			e = syscall.WSARecv(uint32(o.fd.sysfd), o.pckt.w, 1, o.done, o.flags, &o.pckt.o, nil)
+		case readfrom:
+			e = syscall.WSARecvFrom(uint32(o.fd.sysfd), o.pckt.w, 1, o.done, o.flags, o.rsa, o.size, &o.pckt.o, nil)
+		case write:
+			e = syscall.WSASend(uint32(o.fd.sysfd), o.pckt.w, 1, o.done, uint32(0), &o.pckt.o, nil)
+		case writeto:
+			e = syscall.WSASendto(uint32(o.fd.sysfd), o.pckt.w, 1, o.done, 0, *o.sa, &o.pckt.o, nil)
+		case cancel:
+			_, e = syscall.CancelIo(uint32(o.fd.sysfd))
+		}
+		o.c <- e
+	}
+}
+
 func (fd *netFD) Read(p []byte) (n int, err os.Error) {
 	if fd == nil {
 		return 0, os.EINVAL
@@ -213,15 +284,23 @@ func (fd *netFD) Read(p []byte) (n int, err os.Error) {
 	defer fd.rio.Unlock()
 	fd.incref()
 	defer fd.decref()
-	if fd.sysfile == nil {
+	if fd.sysfd == -1 {
 		return 0, os.EINVAL
 	}
 	// Submit receive request.
 	var pckt ioPacket
 	pckt.c = fd.cr
+	pckt.w = newWSABuf(p)
 	var done uint32
 	flags := uint32(0)
-	e := syscall.WSARecv(uint32(fd.sysfd), newWSABuf(p), 1, &done, &flags, &pckt.o, nil)
+	var e int
+	if fd.rdeadline_delta > 0 {
+		a := &arg{f: read, fd: fd, pckt: &pckt, done: &done, flags: &flags, c: make(chan int)}
+		ioChan <- a
+		e = <-a.c
+	} else {
+		e = syscall.WSARecv(uint32(fd.sysfd), pckt.w, 1, &done, &flags, &pckt.o, nil)
+	}
 	switch e {
 	case 0:
 		// IO completed immediately, but we need to get our completion message anyway.
@@ -231,7 +310,7 @@ func (fd *netFD) Read(p []byte) (n int, err os.Error) {
 		return 0, &OpError{"WSARecv", fd.net, fd.laddr, os.Errno(e)}
 	}
 	// Wait for our request to complete.
-	r := <-pckt.c
+	r := waitPacket(fd, &pckt, 'r')
 	if r.errno != 0 {
 		err = &OpError{"WSARecv", fd.net, fd.laddr, os.Errno(r.errno)}
 	}
@@ -243,8 +322,51 @@ func (fd *netFD) Read(p []byte) (n int, err os.Error) {
 }
 
 func (fd *netFD) ReadFrom(p []byte) (n int, sa syscall.Sockaddr, err os.Error) {
-	var r syscall.Sockaddr
-	return 0, r, nil
+	if fd == nil {
+		return 0, nil, os.EINVAL
+	}
+	if len(p) == 0 {
+		return 0, nil, nil
+	}
+	fd.rio.Lock()
+	defer fd.rio.Unlock()
+	fd.incref()
+	defer fd.decref()
+	if fd.sysfd == -1 {
+		return 0, nil, os.EINVAL
+	}
+	// Submit receive request.
+	var pckt ioPacket
+	pckt.c = fd.cr
+	pckt.w = newWSABuf(p)
+	var done uint32
+	flags := uint32(0)
+	var rsa syscall.RawSockaddrAny
+	l := int32(unsafe.Sizeof(rsa))
+	var e int
+	if fd.rdeadline_delta > 0 {
+		a := &arg{f: readfrom, fd: fd, pckt: &pckt, done: &done, flags: &flags, rsa: &rsa, size: &l, c: make(chan int)}
+		ioChan <- a
+		e = <-a.c
+	} else {
+		e = syscall.WSARecvFrom(uint32(fd.sysfd), pckt.w, 1, &done, &flags, &rsa, &l, &pckt.o, nil)
+	}
+	switch e {
+	case 0:
+		// IO completed immediately, but we need to get our completion message anyway.
+	case syscall.ERROR_IO_PENDING:
+		// IO started, and we have to wait for it's completion.
+	default:
+		return 0, nil, &OpError{"WSARecvFrom", fd.net, fd.laddr, os.Errno(e)}
+	}
+	// Wait for our request to complete.
+	r := waitPacket(fd, &pckt, 'r')
+	if r.errno != 0 {
+		err = &OpError{"WSARecvFrom", fd.net, fd.laddr, os.Errno(r.errno)}
+	}
+	n = int(r.qty)
+	sa, _ = rsa.Sockaddr()
+	return
 }
 
 func (fd *netFD) Write(p []byte) (n int, err os.Error) {
@@ -255,14 +377,22 @@ func (fd *netFD) Write(p []byte) (n int, err os.Error) {
 	defer fd.wio.Unlock()
 	fd.incref()
 	defer fd.decref()
-	if fd.sysfile == nil {
+	if fd.sysfd == -1 {
 		return 0, os.EINVAL
 	}
 	// Submit send request.
 	var pckt ioPacket
 	pckt.c = fd.cw
+	pckt.w = newWSABuf(p)
 	var done uint32
-	e := syscall.WSASend(uint32(fd.sysfd), newWSABuf(p), 1, &done, uint32(0), &pckt.o, nil)
+	var e int
+	if fd.wdeadline_delta > 0 {
+		a := &arg{f: write, fd: fd, pckt: &pckt, done: &done, c: make(chan int)}
+		ioChan <- a
+		e = <-a.c
+	} else {
+		e = syscall.WSASend(uint32(fd.sysfd), pckt.w, 1, &done, uint32(0), &pckt.o, nil)
+	}
 	switch e {
 	case 0:
 		// IO completed immediately, but we need to get our completion message anyway.
@@ -272,7 +402,7 @@ func (fd *netFD) Write(p []byte) (n int, err os.Error) {
 		return 0, &OpError{"WSASend", fd.net, fd.laddr, os.Errno(e)}
 	}
 	// Wait for our request to complete.
-	r := <-pckt.c
+	r := waitPacket(fd, &pckt, 'w')
 	if r.errno != 0 {
 		err = &OpError{"WSASend", fd.net, fd.laddr, os.Errno(r.errno)}
 	}
@@ -281,11 +411,51 @@ func (fd *netFD) Write(p []byte) (n int, err os.Error) {
 }
 
 func (fd *netFD) WriteTo(p []byte, sa syscall.Sockaddr) (n int, err os.Error) {
-	return 0, nil
+	if fd == nil {
+		return 0, os.EINVAL
+	}
+	if len(p) == 0 {
+		return 0, nil
+	}
+	fd.wio.Lock()
+	defer fd.wio.Unlock()
+	fd.incref()
+	defer fd.decref()
+	if fd.sysfd == -1 {
+		return 0, os.EINVAL
+	}
+	// Submit send request.
+	var pckt ioPacket
+	pckt.c = fd.cw
+	pckt.w = newWSABuf(p)
+	var done uint32
+	var e int
+	if fd.wdeadline_delta > 0 {
+		a := &arg{f: writeto, fd: fd, pckt: &pckt, done: &done, sa: &sa, c: make(chan int)}
+		ioChan <- a
+		e = <-a.c
+	} else {
+		e = syscall.WSASendto(uint32(fd.sysfd), pckt.w, 1, &done, 0, sa, &pckt.o, nil)
+	}
+	switch e {
+	case 0:
+		// IO completed immediately, but we need to get our completion message anyway.
+	case syscall.ERROR_IO_PENDING:
+		// IO started, and we have to wait for it's completion.
+	default:
+		return 0, &OpError{"WSASendTo", fd.net, fd.laddr, os.Errno(e)}
+	}
+	// Wait for our request to complete.
+	r := waitPacket(fd, &pckt, 'w')
+	if r.errno != 0 {
+		err = &OpError{"WSASendTo", fd.net, fd.laddr, os.Errno(r.errno)}
+	}
+	n = int(r.qty)
+	return
 }
 
 func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (nfd *netFD, err os.Error) {
-	if fd == nil || fd.sysfile == nil {
+	if fd == nil || fd.sysfd == -1 {
 		return nil, os.EINVAL
 	}
 	fd.incref()
@@ -320,21 +490,21 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (nfd *netFD, err os.
 	case syscall.ERROR_IO_PENDING:
 		// IO started, and we have to wait for it's completion.
 	default:
-		syscall.Close(s)
+		closesocket(s)
 		return nil, &OpError{"AcceptEx", fd.net, fd.laddr, os.Errno(e)}
 	}
 
 	// Wait for peer connection.
 	r := <-pckt.c
 	if r.errno != 0 {
-		syscall.Close(s)
+		closesocket(s)
 		return nil, &OpError{"AcceptEx", fd.net, fd.laddr, os.Errno(r.errno)}
 	}
 
 	// Inherit properties of the listening socket.
 	e = syscall.SetsockoptInt(s, syscall.SOL_SOCKET, syscall.SO_UPDATE_ACCEPT_CONTEXT, fd.sysfd)
 	if e != 0 {
-		syscall.Close(s)
+		closesocket(s)
 		return nil, &OpError{"Setsockopt", fd.net, fd.laddr, os.Errno(r.errno)}
 	}
 
@@ -349,21 +519,18 @@ func (fd *netFD) accept(toAddr func(syscall.Sockaddr) Addr) (nfd *netFD, err os.
 		sysfd:  s,
 		family: fd.family,
 		proto:  fd.proto,
-		cr:     make(chan *ioResult),
-		cw:     make(chan *ioResult),
+		cr:     make(chan *ioResult, 1),
+		cw:     make(chan *ioResult, 1),
 		net:    fd.net,
 		laddr:  laddr,
 		raddr:  raddr,
 	}
-	var ls, rs string
-	if laddr != nil {
-		ls = laddr.String()
-	}
-	if raddr != nil {
-		rs = raddr.String()
-	}
-	f.sysfile = os.NewFile(s, fd.net+":"+ls+"->"+rs)
+	runtime.SetFinalizer(f, (*netFD).Close)
 	return f, nil
+}
+
+func closesocket(s int) (errno int) {
+	return syscall.Closesocket(int32(s))
 }
 
 func init() {
@@ -377,4 +544,12 @@ func init() {
 func (fd *netFD) dup() (f *os.File, err os.Error) {
 	// TODO: Implement this
 	return nil, os.NewSyscallError("dup", syscall.EWINDOWS)
+}
+
+func (fd *netFD) ReadMsg(p []byte, oob []byte) (n, oobn, flags int, sa syscall.Sockaddr, err os.Error) {
+	return 0, 0, 0, nil, os.EAFNOSUPPORT
+}
+
+func (fd *netFD) WriteMsg(p []byte, oob []byte, sa syscall.Sockaddr) (n int, oobn int, err os.Error) {
+	return 0, 0, os.EAFNOSUPPORT
 }

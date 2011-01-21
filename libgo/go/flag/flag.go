@@ -7,7 +7,7 @@
 
 	Usage:
 
-	1) Define flags using flag.String(), Bool(), Int(), etc. Example:
+	Define flags using flag.String(), Bool(), Int(), etc. Example:
 		import "flag"
 		var ip *int = flag.Int("flagname", 1234, "help message for flagname")
 	If you like, you can bind the flag to a variable using the Var() functions.
@@ -20,17 +20,18 @@
 		flag.Var(&flagVal, "name", "help message for flagname")
 	For such flags, the default value is just the initial value of the variable.
 
-	2) After all flags are defined, call
+	After all flags are defined, call
 		flag.Parse()
 	to parse the command line into the defined flags.
 
-	3) Flags may then be used directly. If you're using the flags themselves,
+	Flags may then be used directly. If you're using the flags themselves,
 	they are all pointers; if you bind to variables, they're values.
 		fmt.Println("ip has value ", *ip);
 		fmt.Println("flagvar has value ", flagvar);
 
-	4) After parsing, flag.Arg(i) is the i'th argument after the flags.
-	Args are indexed from 0 up to flag.NArg().
+	After parsing, the arguments after the flag are available as the
+	slice flag.Args() or individually as flag.Arg(i).
+	The arguments are indexed from 0 up to flag.NArg().
 
 	Command line flag syntax:
 		-flag
@@ -48,6 +49,19 @@
 
 	Integer flags accept 1234, 0664, 0x1234 and may be negative.
 	Boolean flags may be 1, 0, t, f, true, false, TRUE, FALSE, True, False.
+
+	It is safe to call flag.Parse multiple times, possibly after changing
+	os.Args.  This makes it possible to implement command lines with
+	subcommands that enable additional flags, as in:
+
+		flag.Bool(...)  // global options
+		flag.Parse()  // parse leading command
+		subcmd := flag.Args(0)
+		switch subcmd {
+			// add per-subcommand options
+		}
+		os.Args = flag.Args()
+		flag.Parse()
 */
 package flag
 
@@ -152,22 +166,6 @@ func (s *stringValue) Set(val string) bool {
 
 func (s *stringValue) String() string { return fmt.Sprintf("%s", *s) }
 
-// -- Float Value
-type floatValue float
-
-func newFloatValue(val float, p *float) *floatValue {
-	*p = val
-	return (*floatValue)(p)
-}
-
-func (f *floatValue) Set(s string) bool {
-	v, err := strconv.Atof(s)
-	*f = floatValue(v)
-	return err == nil
-}
-
-func (f *floatValue) String() string { return fmt.Sprintf("%v", *f) }
-
 // -- Float64 Value
 type float64Value float64
 
@@ -200,9 +198,9 @@ type Flag struct {
 }
 
 type allFlags struct {
-	actual    map[string]*Flag
-	formal    map[string]*Flag
-	first_arg int // 0 is the program name, 1 is first arg
+	actual map[string]*Flag
+	formal map[string]*Flag
+	args   []string // arguments after flags
 }
 
 var flags *allFlags
@@ -275,18 +273,17 @@ func NFlag() int { return len(flags.actual) }
 // Arg returns the i'th command-line argument.  Arg(0) is the first remaining argument
 // after flags have been processed.
 func Arg(i int) string {
-	i += flags.first_arg
-	if i < 0 || i >= len(os.Args) {
+	if i < 0 || i >= len(flags.args) {
 		return ""
 	}
-	return os.Args[i]
+	return flags.args[i]
 }
 
 // NArg is the number of arguments remaining after flags have been processed.
-func NArg() int { return len(os.Args) - flags.first_arg }
+func NArg() int { return len(flags.args) }
 
 // Args returns the non-flag command-line arguments.
-func Args() []string { return os.Args[flags.first_arg:] }
+func Args() []string { return flags.args }
 
 // BoolVar defines a bool flag with specified name, default value, and usage string.
 // The argument p points to a bool variable in which to store the value of the flag.
@@ -372,20 +369,6 @@ func String(name, value string, usage string) *string {
 	return p
 }
 
-// FloatVar defines a float flag with specified name, default value, and usage string.
-// The argument p points to a float variable in which to store the value of the flag.
-func FloatVar(p *float, name string, value float, usage string) {
-	Var(newFloatValue(value, p), name, usage)
-}
-
-// Float defines a float flag with specified name, default value, and usage string.
-// The return value is the address of a float variable that stores the value of the flag.
-func Float(name string, value float, usage string) *float {
-	p := new(float)
-	FloatVar(p, name, value, usage)
-	return p
-}
-
 // Float64Var defines a float64 flag with specified name, default value, and usage string.
 // The argument p points to a float64 variable in which to store the value of the flag.
 func Float64Var(p *float64, name string, value float64, usage string) {
@@ -414,23 +397,20 @@ func Var(value Value, name string, usage string) {
 }
 
 
-func (f *allFlags) parseOne(index int) (ok bool, next int) {
-	s := os.Args[index]
-	f.first_arg = index // until proven otherwise
-	if len(s) == 0 {
-		return false, -1
+func (f *allFlags) parseOne() (ok bool) {
+	if len(f.args) == 0 {
+		return false
 	}
-	if s[0] != '-' {
-		return false, -1
+	s := f.args[0]
+	if len(s) == 0 || s[0] != '-' || len(s) == 1 {
+		return false
 	}
 	num_minuses := 1
-	if len(s) == 1 {
-		return false, index
-	}
 	if s[1] == '-' {
 		num_minuses++
 		if len(s) == 2 { // "--" terminates the flags
-			return false, index + 1
+			f.args = f.args[1:]
+			return false
 		}
 	}
 	name := s[num_minuses:]
@@ -440,6 +420,7 @@ func (f *allFlags) parseOne(index int) (ok bool, next int) {
 	}
 
 	// it's a flag. does it have an argument?
+	f.args = f.args[1:]
 	has_value := false
 	value := ""
 	for i := 1; i < len(name); i++ { // equals cannot be first
@@ -456,22 +437,21 @@ func (f *allFlags) parseOne(index int) (ok bool, next int) {
 		fmt.Fprintf(os.Stderr, "flag provided but not defined: -%s\n", name)
 		fail()
 	}
-	if f, ok := flag.Value.(*boolValue); ok { // special case: doesn't need an arg
+	if fv, ok := flag.Value.(*boolValue); ok { // special case: doesn't need an arg
 		if has_value {
-			if !f.Set(value) {
-				fmt.Fprintf(os.Stderr, "invalid boolean value %t for flag: -%s\n", value, name)
+			if !fv.Set(value) {
+				fmt.Fprintf(os.Stderr, "invalid boolean value %q for flag: -%s\n", value, name)
 				fail()
 			}
 		} else {
-			f.Set("true")
+			fv.Set("true")
 		}
 	} else {
 		// It must have a value, which might be the next argument.
-		if !has_value && index < len(os.Args)-1 {
+		if !has_value && len(f.args) > 0 {
 			// value is the next arg
 			has_value = true
-			index++
-			value = os.Args[index]
+			value, f.args = f.args[0], f.args[1:]
 		}
 		if !has_value {
 			fmt.Fprintf(os.Stderr, "flag needs an argument: -%s\n", name)
@@ -479,54 +459,22 @@ func (f *allFlags) parseOne(index int) (ok bool, next int) {
 		}
 		ok = flag.Value.Set(value)
 		if !ok {
-			fmt.Fprintf(os.Stderr, "invalid value %s for flag: -%s\n", value, name)
+			fmt.Fprintf(os.Stderr, "invalid value %q for flag: -%s\n", value, name)
 			fail()
 		}
 	}
 	flags.actual[name] = flag
-	return true, index + 1
+	return true
 }
 
 // Parse parses the command-line flags.  Must be called after all flags are defined
 // and before any are accessed by the program.
 func Parse() {
-	for i := 1; i < len(os.Args); {
-		ok, next := flags.parseOne(i)
-		if next > 0 {
-			flags.first_arg = next
-			i = next
-		}
-		if !ok {
-			break
-		}
+	flags.args = os.Args[1:]
+	for flags.parseOne() {
 	}
 }
 
-// ResetForTesting clears all flag state and sets the usage function as directed.
-// After calling ResetForTesting, parse errors in flag handling will panic rather
-// than exit the program.
-// For testing only!
-func ResetForTesting(usage func()) {
-	flags = &allFlags{make(map[string]*Flag), make(map[string]*Flag), 1}
-	Usage = usage
-	panicOnError = true
-}
-
-// ParseForTesting parses the flag state using the provided arguments. It
-// should be called after 1) ResetForTesting and 2) setting up the new flags.
-// The return value reports whether the parse was error-free.
-// For testing only!
-func ParseForTesting(args []string) (result bool) {
-	defer func() {
-		if recover() != nil {
-			result = false
-		}
-	}()
-	os.Args = args
-	Parse()
-	return true
-}
-
 func init() {
-	flags = &allFlags{make(map[string]*Flag), make(map[string]*Flag), 1}
+	flags = &allFlags{make(map[string]*Flag), make(map[string]*Flag), os.Args[1:]}
 }

@@ -18,14 +18,9 @@ package suffixarray
 
 import (
 	"bytes"
-	"container/vector"
+	"regexp"
 	"sort"
 )
-
-// BUG(gri): For larger data (10MB) which contains very long (say 100000)
-// contiguous sequences of identical bytes, index creation time will be extremely slow.
-
-// TODO(gri): Use a more sophisticated algorithm to create the suffix array.
 
 
 // Index implements a suffix array for fast substring search.
@@ -36,16 +31,17 @@ type Index struct {
 
 
 // New creates a new Index for data.
-// Index creation time is approximately O(N*log(N)) for N = len(data).
-//
+// Index creation time is O(N*log(N)) for N = len(data).
 func New(data []byte) *Index {
-	sa := make([]int, len(data))
-	for i, _ := range sa {
-		sa[i] = i
-	}
-	x := &Index{data, sa}
-	sort.Sort((*index)(x))
-	return x
+	return &Index{data, qsufsort(data)}
+}
+
+
+// Bytes returns the data over which the index was created.
+// It must not be modified.
+//
+func (x *Index) Bytes() []byte {
+	return x.data
 }
 
 
@@ -54,21 +50,8 @@ func (x *Index) at(i int) []byte {
 }
 
 
-// Binary search according to "A Method of Programming", E.W. Dijkstra.
 func (x *Index) search(s []byte) int {
-	i, j := 0, len(x.sa)
-	// i < j for non-empty x
-	for i+1 < j {
-		// 0 <= i < j <= len(x.sa) && (x.at(i) <= s < x.at(j) || (s is not in x))
-		h := i + (j-i)/2 // i < h < j
-		if bytes.Compare(x.at(h), s) <= 0 {
-			i = h
-		} else { // s < x.at(h)
-			j = h
-		}
-	}
-	// i+1 == j for non-empty x
-	return i
+	return sort.Search(len(x.sa), func(i int) bool { return bytes.Compare(x.at(i), s) >= 0 })
 }
 
 
@@ -78,34 +61,122 @@ func (x *Index) search(s []byte) int {
 // Lookup time is O((log(N) + len(result))*len(s)) where N is the
 // size of the indexed data.
 //
-func (x *Index) Lookup(s []byte, n int) []int {
-	var res vector.IntVector
-
+func (x *Index) Lookup(s []byte, n int) (result []int) {
 	if len(s) > 0 && n != 0 {
 		// find matching suffix index i
 		i := x.search(s)
-		// x.at(i) <= s < x.at(i+1)
-
-		// ignore the first suffix if it is < s
-		if i < len(x.sa) && bytes.Compare(x.at(i), s) < 0 {
-			i++
-		}
+		// x.at(i-1) < s <= x.at(i)
 
 		// collect the following suffixes with matching prefixes
-		for (n < 0 || len(res) < n) && i < len(x.sa) && bytes.HasPrefix(x.at(i), s) {
-			res.Push(x.sa[i])
+		for (n < 0 || len(result) < n) && i < len(x.sa) && bytes.HasPrefix(x.at(i), s) {
+			result = append(result, x.sa[i])
 			i++
 		}
 	}
-
-	return res
+	return
 }
 
 
-// index is used to hide the sort.Interface
-type index Index
+// FindAllIndex returns a sorted list of non-overlapping matches of the
+// regular expression r, where a match is a pair of indices specifying
+// the matched slice of x.Bytes(). If n < 0, all matches are returned
+// in successive order. Otherwise, at most n matches are returned and
+// they may not be successive. The result is nil if there are no matches,
+// or if n == 0.
+//
+func (x *Index) FindAllIndex(r *regexp.Regexp, n int) (result [][]int) {
+	// a non-empty literal prefix is used to determine possible
+	// match start indices with Lookup
+	prefix, complete := r.LiteralPrefix()
+	lit := []byte(prefix)
 
-func (x *index) Len() int           { return len(x.sa) }
-func (x *index) Less(i, j int) bool { return bytes.Compare(x.at(i), x.at(j)) < 0 }
-func (x *index) Swap(i, j int)      { x.sa[i], x.sa[j] = x.sa[j], x.sa[i] }
-func (a *index) at(i int) []byte    { return a.data[a.sa[i]:] }
+	// worst-case scenario: no literal prefix
+	if prefix == "" {
+		return r.FindAllIndex(x.data, n)
+	}
+
+	// if regexp is a literal just use Lookup and convert its
+	// result into match pairs
+	if complete {
+		// Lookup returns indices that may belong to overlapping matches.
+		// After eliminating them, we may end up with fewer than n matches.
+		// If we don't have enough at the end, redo the search with an
+		// increased value n1, but only if Lookup returned all the requested
+		// indices in the first place (if it returned fewer than that then
+		// there cannot be more).
+		for n1 := n; ; n1 += 2 * (n - len(result)) /* overflow ok */ {
+			indices := x.Lookup(lit, n1)
+			if len(indices) == 0 {
+				return
+			}
+			sort.SortInts(indices)
+			pairs := make([]int, 2*len(indices))
+			result = make([][]int, len(indices))
+			count := 0
+			prev := 0
+			for _, i := range indices {
+				if count == n {
+					break
+				}
+				// ignore indices leading to overlapping matches
+				if prev <= i {
+					j := 2 * count
+					pairs[j+0] = i
+					pairs[j+1] = i + len(lit)
+					result[count] = pairs[j : j+2]
+					count++
+					prev = i + len(lit)
+				}
+			}
+			result = result[0:count]
+			if len(result) >= n || len(indices) != n1 {
+				// found all matches or there's no chance to find more
+				// (n and n1 can be negative)
+				break
+			}
+		}
+		if len(result) == 0 {
+			result = nil
+		}
+		return
+	}
+
+	// regexp has a non-empty literal prefix; Lookup(lit) computes
+	// the indices of possible complete matches; use these as starting
+	// points for anchored searches
+	// (regexp "^" matches beginning of input, not beginning of line)
+	r = regexp.MustCompile("^" + r.String()) // compiles because r compiled
+
+	// same comment about Lookup applies here as in the loop above
+	for n1 := n; ; n1 += 2 * (n - len(result)) /* overflow ok */ {
+		indices := x.Lookup(lit, n1)
+		if len(indices) == 0 {
+			return
+		}
+		sort.SortInts(indices)
+		result = result[0:0]
+		prev := 0
+		for _, i := range indices {
+			if len(result) == n {
+				break
+			}
+			m := r.FindIndex(x.data[i:]) // anchored search - will not run off
+			// ignore indices leading to overlapping matches
+			if m != nil && prev <= i {
+				m[0] = i // correct m
+				m[1] += i
+				result = append(result, m)
+				prev = m[1]
+			}
+		}
+		if len(result) >= n || len(indices) != n1 {
+			// found all matches or there's no chance to find more
+			// (n and n1 can be negative)
+			break
+		}
+	}
+	if len(result) == 0 {
+		result = nil
+	}
+	return
+}

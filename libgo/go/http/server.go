@@ -181,7 +181,9 @@ func (c *conn) readRequest() (w *response, err os.Error) {
 	w.SetHeader("Content-Type", "text/html; charset=utf-8")
 	w.SetHeader("Date", time.UTC().Format(TimeFormat))
 
-	if req.ProtoAtLeast(1, 1) {
+	if req.Method == "HEAD" {
+		// do nothing
+	} else if req.ProtoAtLeast(1, 1) {
 		// HTTP/1.1 or greater: use chunked transfer encoding
 		// to avoid closing the connection at EOF.
 		w.chunking = true
@@ -227,6 +229,10 @@ func (w *response) WriteHeader(code int) {
 		w.header["Transfer-Encoding"] = "", false
 		w.chunking = false
 	}
+	// Cannot use Content-Length with non-identity Transfer-Encoding.
+	if w.chunking {
+		w.header["Content-Length"] = "", false
+	}
 	if !w.req.ProtoAtLeast(1, 0) {
 		return
 	}
@@ -268,7 +274,7 @@ func (w *response) Write(data []byte) (n int, err os.Error) {
 		return 0, nil
 	}
 
-	if w.status == StatusNotModified {
+	if w.status == StatusNotModified || w.req.Method == "HEAD" {
 		// Must not have body.
 		return 0, ErrBodyNotAllowed
 	}
@@ -362,6 +368,7 @@ func (w *response) finishRequest() {
 		io.WriteString(w.conn.buf, "\r\n")
 	}
 	w.conn.buf.Flush()
+	w.req.Body.Close()
 }
 
 // Flush implements the ResponseWriter.Flush method.
@@ -451,58 +458,63 @@ func NotFoundHandler() Handler { return HandlerFunc(NotFound) }
 // Redirect replies to the request with a redirect to url,
 // which may be a path relative to the request path.
 func Redirect(w ResponseWriter, r *Request, url string, code int) {
-	// RFC2616 recommends that a short note "SHOULD" be included in the
-	// response because older user agents may not understand 301/307.
-	note := "<a href=\"%v\">" + statusText[code] + "</a>.\n"
-	if r.Method == "POST" {
-		note = ""
-	}
+	if u, err := ParseURL(url); err == nil {
+		// If url was relative, make absolute by
+		// combining with request path.
+		// The browser would probably do this for us,
+		// but doing it ourselves is more reliable.
 
-	u, err := ParseURL(url)
-	if err != nil {
-		goto finish
-	}
-
-	// If url was relative, make absolute by
-	// combining with request path.
-	// The browser would probably do this for us,
-	// but doing it ourselves is more reliable.
-
-	// NOTE(rsc): RFC 2616 says that the Location
-	// line must be an absolute URI, like
-	// "http://www.google.com/redirect/",
-	// not a path like "/redirect/".
-	// Unfortunately, we don't know what to
-	// put in the host name section to get the
-	// client to connect to us again, so we can't
-	// know the right absolute URI to send back.
-	// Because of this problem, no one pays attention
-	// to the RFC; they all send back just a new path.
-	// So do we.
-	oldpath := r.URL.Path
-	if oldpath == "" { // should not happen, but avoid a crash if it does
-		oldpath = "/"
-	}
-	if u.Scheme == "" {
-		// no leading http://server
-		if url == "" || url[0] != '/' {
-			// make relative path absolute
-			olddir, _ := path.Split(oldpath)
-			url = olddir + url
+		// NOTE(rsc): RFC 2616 says that the Location
+		// line must be an absolute URI, like
+		// "http://www.google.com/redirect/",
+		// not a path like "/redirect/".
+		// Unfortunately, we don't know what to
+		// put in the host name section to get the
+		// client to connect to us again, so we can't
+		// know the right absolute URI to send back.
+		// Because of this problem, no one pays attention
+		// to the RFC; they all send back just a new path.
+		// So do we.
+		oldpath := r.URL.Path
+		if oldpath == "" { // should not happen, but avoid a crash if it does
+			oldpath = "/"
 		}
+		if u.Scheme == "" {
+			// no leading http://server
+			if url == "" || url[0] != '/' {
+				// make relative path absolute
+				olddir, _ := path.Split(oldpath)
+				url = olddir + url
+			}
 
-		// clean up but preserve trailing slash
-		trailing := url[len(url)-1] == '/'
-		url = path.Clean(url)
-		if trailing && url[len(url)-1] != '/' {
-			url += "/"
+			// clean up but preserve trailing slash
+			trailing := url[len(url)-1] == '/'
+			url = path.Clean(url)
+			if trailing && url[len(url)-1] != '/' {
+				url += "/"
+			}
 		}
 	}
 
-finish:
 	w.SetHeader("Location", url)
 	w.WriteHeader(code)
-	fmt.Fprintf(w, note, url)
+
+	// RFC2616 recommends that a short note "SHOULD" be included in the
+	// response because older user agents may not understand 301/307.
+	// Shouldn't send the response for POST or HEAD; that leaves GET.
+	if r.Method == "GET" {
+		note := "<a href=\"" + htmlEscape(url) + "\">" + statusText[code] + "</a>.\n"
+		fmt.Fprintln(w, note)
+	}
+}
+
+func htmlEscape(s string) string {
+	s = strings.Replace(s, "&", "&amp;", -1)
+	s = strings.Replace(s, "<", "&lt;", -1)
+	s = strings.Replace(s, ">", "&gt;", -1)
+	s = strings.Replace(s, "\"", "&quot;", -1)
+	s = strings.Replace(s, "'", "&apos;", -1)
+	return s
 }
 
 // Redirect to a fixed URL

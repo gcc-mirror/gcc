@@ -1,3 +1,9 @@
+2011-01-21  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_init): Omit float_type_size when calling
+	go_create_gogo.
+	* go-c.h: Update declaration of go_create_gogo.
+
 2011-01-13  Ian Lance Taylor  <iant@google.com>
 
 	* go-backend.c: Include "rtl.h" and "target.h".

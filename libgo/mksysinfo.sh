@@ -361,5 +361,31 @@ grep '^type _utsname ' gen-sysinfo.go | \
       -e 's/domainname/Domainname/' \
     >> ${OUT}
 
+# The iovec struct.
+iovec=`grep '^type _iovec ' gen-sysinfo.go`
+iovec_len=`echo $iovec | sed -n -e 's/^.*iov_len \([^ ]*\);.*$/\1/p'`
+echo "type Iovec_len_t $iovec_len" >> ${OUT}
+echo $iovec | \
+    sed -e 's/_iovec/Iovec/' \
+      -e 's/iov_base/Base/' \
+      -e 's/iov_len *[a-zA-Z0-9_]*/Len Iovec_len_t/' \
+    >> ${OUT}
+
+# The msghdr struct.
+msghdr=`grep '^type _msghdr ' gen-sysinfo.go`
+msghdr_controllen=`echo $msghdr | sed -n -e 's/^.*msg_controllen \([^ ]*\);.*$/\1/p'`
+echo "type Msghdr_controllen_t $msghdr_controllen" >> ${OUT}
+echo $msghdr | \
+    sed -e 's/_msghdr/Msghdr/' \
+      -e 's/msg_name/Name/' \
+      -e 's/msg_namelen/Namelen/' \
+      -e 's/msg_iov/Iov/' \
+      -e 's/msg_iovlen/Iovlen/' \
+      -e 's/_iovec/Iovec/' \
+      -e 's/msg_control/Control/' \
+      -e 's/msg_controllen *[a-zA-Z0-9_]*/Controllen Msghdr_controllen_t/' \
+      -e 's/msg_flags/Flags/' \
+    >> ${OUT}
+
 mv -f ${OUT} sysinfo.go
 exit $?

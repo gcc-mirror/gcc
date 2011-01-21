@@ -1932,7 +1932,7 @@ Float_expression::do_determine_type(const Type_context* context)
 	       || context->type->complex_type() != NULL))
     this->type_ = context->type;
   else if (!context->may_be_abstract)
-    this->type_ = Type::lookup_float_type("float");
+    this->type_ = Type::lookup_float_type("float64");
 }
 
 // Return true if the floating point value VAL fits in the range of
@@ -2185,7 +2185,7 @@ Complex_expression::do_determine_type(const Type_context* context)
 	   && context->type->complex_type() != NULL)
     this->type_ = context->type;
   else if (!context->may_be_abstract)
-    this->type_ = Type::lookup_complex_type("complex");
+    this->type_ = Type::lookup_complex_type("complex128");
 }
 
 // Return true if the complex value REAL/IMAG fits in the range of the
@@ -6473,7 +6473,7 @@ class Builtin_call_expression : public Call_expression
       BUILTIN_CAP,
       BUILTIN_CLOSE,
       BUILTIN_CLOSED,
-      BUILTIN_CMPLX,
+      BUILTIN_COMPLEX,
       BUILTIN_COPY,
       BUILTIN_IMAG,
       BUILTIN_LEN,
@@ -6501,7 +6501,7 @@ class Builtin_call_expression : public Call_expression
   real_imag_type(Type*);
 
   static Type*
-  cmplx_type(Type*);
+  complex_type(Type*);
 
   // A pointer back to the general IR structure.  This avoids a global
   // variable, or passing it around everywhere.
@@ -6532,8 +6532,8 @@ Builtin_call_expression::Builtin_call_expression(Gogo* gogo,
     this->code_ = BUILTIN_CLOSE;
   else if (name == "closed")
     this->code_ = BUILTIN_CLOSED;
-  else if (name == "cmplx")
-    this->code_ = BUILTIN_CMPLX;
+  else if (name == "complex")
+    this->code_ = BUILTIN_COMPLEX;
   else if (name == "copy")
     this->code_ = BUILTIN_COPY;
   else if (name == "imag")
@@ -6774,9 +6774,7 @@ Builtin_call_expression::real_imag_type(Type* arg_type)
     return NULL;
   while (nt->real_type()->named_type() != NULL)
     nt = nt->real_type()->named_type();
-  if (nt->name() == "complex")
-    return Type::lookup_float_type("float");
-  else if (nt->name() == "complex64")
+  if (nt->name() == "complex64")
     return Type::lookup_float_type("float32");
   else if (nt->name() == "complex128")
     return Type::lookup_float_type("float64");
@@ -6784,11 +6782,11 @@ Builtin_call_expression::real_imag_type(Type* arg_type)
     return NULL;
 }
 
-// Return the type of the cmplx function, given the type of one of the
+// Return the type of the complex function, given the type of one of the
 // argments.  Like real_imag_type, we have to map by name.
 
 Type*
-Builtin_call_expression::cmplx_type(Type* arg_type)
+Builtin_call_expression::complex_type(Type* arg_type)
 {
   if (arg_type == NULL || arg_type->is_abstract())
     return NULL;
@@ -6797,9 +6795,7 @@ Builtin_call_expression::cmplx_type(Type* arg_type)
     return NULL;
   while (nt->real_type()->named_type() != NULL)
     nt = nt->real_type()->named_type();
-  if (nt->name() == "float")
-    return Type::lookup_complex_type("complex");
-  else if (nt->name() == "float32")
+  if (nt->name() == "float32")
     return Type::lookup_complex_type("complex64");
   else if (nt->name() == "float64")
     return Type::lookup_complex_type("complex128");
@@ -6868,7 +6864,7 @@ Builtin_call_expression::do_is_constant() const
 	return arg->field_reference_expression() != NULL;
       }
 
-    case BUILTIN_CMPLX:
+    case BUILTIN_COMPLEX:
       {
 	const Expression_list* args = this->args();
 	if (args != NULL && args->size() == 2)
@@ -7053,7 +7049,7 @@ bool
 Builtin_call_expression::do_complex_constant_value(mpfr_t real, mpfr_t imag,
 						   Type** ptype) const
 {
-  if (this->code_ == BUILTIN_CMPLX)
+  if (this->code_ == BUILTIN_COMPLEX)
     {
       const Expression_list* args = this->args();
       if (args == NULL || args->size() != 2)
@@ -7078,7 +7074,7 @@ Builtin_call_expression::do_complex_constant_value(mpfr_t real, mpfr_t imag,
 	{
 	  mpfr_set(real, r, GMP_RNDN);
 	  mpfr_set(imag, i, GMP_RNDN);
-	  *ptype = Builtin_call_expression::cmplx_type(rtype);
+	  *ptype = Builtin_call_expression::complex_type(rtype);
 	  ret = true;
 	}
 
@@ -7154,7 +7150,7 @@ Builtin_call_expression::do_type()
 	return t;
       }
 
-    case BUILTIN_CMPLX:
+    case BUILTIN_COMPLEX:
       {
 	const Expression_list* args = this->args();
 	if (args == NULL || args->size() != 2)
@@ -7166,7 +7162,7 @@ Builtin_call_expression::do_type()
 	    if (t->is_abstract())
 	      t = t->make_non_abstract_type();
 	  }
-	t = Builtin_call_expression::cmplx_type(t);
+	t = Builtin_call_expression::complex_type(t);
 	if (t == NULL)
 	  t = Type::make_error_type();
 	return t;
@@ -7195,13 +7191,13 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
 
     case BUILTIN_REAL:
     case BUILTIN_IMAG:
-      arg_type = Builtin_call_expression::cmplx_type(context->type);
+      arg_type = Builtin_call_expression::complex_type(context->type);
       is_print = false;
       break;
 
-    case BUILTIN_CMPLX:
+    case BUILTIN_COMPLEX:
       {
-	// For the cmplx function the type of one operand can
+	// For the complex function the type of one operand can
 	// determine the type of the other, as in a binary expression.
 	arg_type = Builtin_call_expression::real_imag_type(context->type);
 	if (args != NULL && args->size() == 2)
@@ -7498,7 +7494,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	}
       break;
 
-    case BUILTIN_CMPLX:
+    case BUILTIN_COMPLEX:
       {
 	const Expression_list* args = this->args();
 	if (args == NULL || args->size() < 2)
@@ -7512,9 +7508,9 @@ Builtin_call_expression::do_check_types(Gogo*)
 	  this->set_is_error();
 	else if (!Type::are_identical(args->front()->type(),
 				      args->back()->type(), true, NULL))
-	  this->report_error(_("cmplx arguments must have identical types"));
+	  this->report_error(_("complex arguments must have identical types"));
 	else if (args->front()->type()->float_type() == NULL)
-	  this->report_error(_("cmplx arguments must have "
+	  this->report_error(_("complex arguments must have "
 			       "floating-point type"));
       }
       break;
@@ -8077,7 +8073,7 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 				 arg_tree);
       }
 
-    case BUILTIN_CMPLX:
+    case BUILTIN_COMPLEX:
       {
 	const Expression_list* args = this->args();
 	gcc_assert(args != NULL && args->size() == 2);

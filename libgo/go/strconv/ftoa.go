@@ -22,33 +22,21 @@ type floatInfo struct {
 var float32info = floatInfo{23, 8, -127}
 var float64info = floatInfo{52, 11, -1023}
 
-func floatsize() int {
-	// Figure out whether float is float32 or float64.
-	// 1e-35 is representable in both, but 1e-70
-	// is too small for a float32.
-	var f float = 1e-35
-	if f*f == 0 {
-		return 32
-	}
-	return 64
-}
-
-// Floatsize gives the size of the float type, either 32 or 64.
-var FloatSize = floatsize()
-
 // Ftoa32 converts the 32-bit floating-point number f to a string,
 // according to the format fmt and precision prec.
 //
 // The format fmt is one of
 // 'b' (-ddddp±ddd, a binary exponent),
 // 'e' (-d.dddde±dd, a decimal exponent),
-// 'f' (-ddd.dddd, no exponent), or
-// 'g' ('e' for large exponents, 'f' otherwise).
+// 'E' (-d.ddddE±dd, a decimal exponent),
+// 'f' (-ddd.dddd, no exponent),
+// 'g' ('e' for large exponents, 'f' otherwise), or
+// 'G' ('E' for large exponents, 'f' otherwise).
 //
 // The precision prec controls the number of digits
-// (excluding the exponent) printed by the 'e', 'f', and 'g' formats.
-// For 'e' and 'f' it is the number of digits after the decimal point.
-// For 'g' it is the total number of digits.
+// (excluding the exponent) printed by the 'e', 'E', 'f', 'g', and 'G' formats.
+// For 'e', 'E', and 'f' it is the number of digits after the decimal point.
+// For 'g' and 'G' it is the total number of digits.
 // The special precision -1 uses the smallest number of digits
 // necessary such that Atof32 will return f exactly.
 //
@@ -73,14 +61,6 @@ func FtoaN(f float64, fmt byte, prec int, n int) string {
 		return Ftoa32(float32(f), fmt, prec)
 	}
 	return Ftoa64(f, fmt, prec)
-}
-
-// Ftoa behaves as Ftoa32 or Ftoa64, depending on the size of the float type.
-func Ftoa(f float, fmt byte, prec int) string {
-	if FloatSize == 32 {
-		return Ftoa32(float32(f), fmt, prec)
-	}
-	return Ftoa64(float64(f), fmt, prec)
 }
 
 func genericFtoa(bits uint64, fmt byte, prec int, flt *floatInfo) string {

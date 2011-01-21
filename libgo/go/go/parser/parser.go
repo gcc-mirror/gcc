@@ -35,6 +35,7 @@ const (
 
 // The parser structure holds the parser's internal state.
 type parser struct {
+	file *token.File
 	scanner.ErrorVector
 	scanner scanner.Scanner
 
@@ -49,9 +50,9 @@ type parser struct {
 	lineComment *ast.CommentGroup // the last line comment
 
 	// Next token
-	pos token.Position // token position
-	tok token.Token    // one token look-ahead
-	lit []byte         // token literal
+	pos token.Pos   // token position
+	tok token.Token // one token look-ahead
+	lit []byte      // token literal
 
 	// Non-syntactic parser control
 	exprLev int // < 0: in control clause, >= 0: in expression
@@ -68,8 +69,9 @@ func scannerMode(mode uint) uint {
 }
 
 
-func (p *parser) init(filename string, src []byte, mode uint) {
-	p.scanner.Init(filename, src, p, scannerMode(mode))
+func (p *parser) init(fset *token.FileSet, filename string, src []byte, mode uint) {
+	p.file = fset.AddFile(filename, fset.Base(), len(src))
+	p.scanner.Init(p.file, src, p, scannerMode(mode))
 	p.mode = mode
 	p.trace = mode&Trace != 0 // for convenience (p.trace is used frequently)
 	p.next()
@@ -83,7 +85,8 @@ func (p *parser) printTrace(a ...interface{}) {
 	const dots = ". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . " +
 		". . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . "
 	const n = uint(len(dots))
-	fmt.Printf("%5d:%3d: ", p.pos.Line, p.pos.Column)
+	pos := p.file.Position(p.pos)
+	fmt.Printf("%5d:%3d: ", pos.Line, pos.Column)
 	i := 2 * p.indent
 	for ; i > n; i -= n {
 		fmt.Print(dots)
@@ -111,9 +114,9 @@ func un(p *parser) {
 func (p *parser) next0() {
 	// Because of one-token look-ahead, print the previous token
 	// when tracing as it provides a more readable output. The
-	// very first token (p.pos.Line == 0) is not initialized (it
-	// is token.ILLEGAL), so don't print it .
-	if p.trace && p.pos.Line > 0 {
+	// very first token (!p.pos.IsValid()) is not initialized
+	// (it is token.ILLEGAL), so don't print it .
+	if p.trace && p.pos.IsValid() {
 		s := p.tok.String()
 		switch {
 		case p.tok.IsLiteral():
@@ -132,7 +135,7 @@ func (p *parser) next0() {
 func (p *parser) consumeComment() (comment *ast.Comment, endline int) {
 	// /*-style comments may end on a different line than where they start.
 	// Scan the comment for '\n' chars and adjust endline accordingly.
-	endline = p.pos.Line
+	endline = p.file.Line(p.pos)
 	if p.lit[1] == '*' {
 		for _, b := range p.lit {
 			if b == '\n' {
@@ -155,8 +158,8 @@ func (p *parser) consumeComment() (comment *ast.Comment, endline int) {
 //
 func (p *parser) consumeCommentGroup() (comments *ast.CommentGroup, endline int) {
 	var list []*ast.Comment
-	endline = p.pos.Line
-	for p.tok == token.COMMENT && endline+1 >= p.pos.Line {
+	endline = p.file.Line(p.pos)
+	for p.tok == token.COMMENT && endline+1 >= p.file.Line(p.pos) {
 		var comment *ast.Comment
 		comment, endline = p.consumeComment()
 		list = append(list, comment)
@@ -188,18 +191,18 @@ func (p *parser) consumeCommentGroup() (comments *ast.CommentGroup, endline int)
 func (p *parser) next() {
 	p.leadComment = nil
 	p.lineComment = nil
-	line := p.pos.Line // current line
+	line := p.file.Line(p.pos) // current line
 	p.next0()
 
 	if p.tok == token.COMMENT {
 		var comment *ast.CommentGroup
 		var endline int
 
-		if p.pos.Line == line {
+		if p.file.Line(p.pos) == line {
 			// The comment is on same line as previous token; it
 			// cannot be a lead comment but may be a line comment.
 			comment, endline = p.consumeCommentGroup()
-			if p.pos.Line != endline {
+			if p.file.Line(p.pos) != endline {
 				// The next token is on a different line, thus
 				// the last comment group is a line comment.
 				p.lineComment = comment
@@ -212,7 +215,7 @@ func (p *parser) next() {
 			comment, endline = p.consumeCommentGroup()
 		}
 
-		if endline+1 == p.pos.Line {
+		if endline+1 == p.file.Line(p.pos) {
 			// The next token is following on the line immediately after the
 			// comment group, thus the last comment group is a lead comment.
 			p.leadComment = comment
@@ -221,9 +224,14 @@ func (p *parser) next() {
 }
 
 
-func (p *parser) errorExpected(pos token.Position, msg string) {
+func (p *parser) error(pos token.Pos, msg string) {
+	p.Error(p.file.Position(pos), msg)
+}
+
+
+func (p *parser) errorExpected(pos token.Pos, msg string) {
 	msg = "expected " + msg
-	if pos.Offset == p.pos.Offset {
+	if pos == p.pos {
 		// the error happened at the current position;
 		// make the error message more specific
 		if p.tok == token.SEMICOLON && p.lit[0] == '\n' {
@@ -235,16 +243,16 @@ func (p *parser) errorExpected(pos token.Position, msg string) {
 			}
 		}
 	}
-	p.Error(pos, msg)
+	p.error(pos, msg)
 }
 
 
-func (p *parser) expect(tok token.Token) token.Position {
+func (p *parser) expect(tok token.Token) token.Pos {
 	pos := p.pos
 	if p.tok != tok {
 		p.errorExpected(pos, "'"+tok.String()+"'")
 	}
-	p.next() // make progress in any case
+	p.next() // make progress
 	return pos
 }
 
@@ -316,9 +324,10 @@ func (p *parser) parseType() ast.Expr {
 	typ := p.tryType()
 
 	if typ == nil {
-		p.errorExpected(p.pos, "type")
+		pos := p.pos
+		p.errorExpected(pos, "type")
 		p.next() // make progress
-		return &ast.BadExpr{p.pos}
+		return &ast.BadExpr{pos, p.pos}
 	}
 
 	return typ
@@ -410,10 +419,10 @@ func (p *parser) parseFieldDecl() *ast.Field {
 	} else {
 		// ["*"] TypeName (AnonymousField)
 		typ = list[0] // we always have at least one element
-		if len(list) > 1 || !isTypeName(deref(typ)) {
+		if n := len(list); n > 1 || !isTypeName(deref(typ)) {
 			pos := typ.Pos()
 			p.errorExpected(pos, "anonymous field")
-			typ = &ast.BadExpr{pos}
+			typ = &ast.BadExpr{pos, list[n-1].End()}
 		}
 	}
 
@@ -461,11 +470,11 @@ func (p *parser) tryVarType(isParam bool) ast.Expr {
 		p.next()
 		typ := p.tryType() // don't use parseType so we can provide better error message
 		if typ == nil {
-			p.Error(pos, "'...' parameter is missing type")
-			typ = &ast.BadExpr{pos}
+			p.error(pos, "'...' parameter is missing type")
+			typ = &ast.BadExpr{pos, p.pos}
 		}
 		if p.tok != token.RPAREN {
-			p.Error(pos, "can use '...' with last parameter type only")
+			p.error(pos, "can use '...' with last parameter type only")
 		}
 		return &ast.Ellipsis{pos, typ}
 	}
@@ -476,9 +485,10 @@ func (p *parser) tryVarType(isParam bool) ast.Expr {
 func (p *parser) parseVarType(isParam bool) ast.Expr {
 	typ := p.tryVarType(isParam)
 	if typ == nil {
-		p.errorExpected(p.pos, "type")
+		pos := p.pos
+		p.errorExpected(pos, "type")
 		p.next() // make progress
-		typ = &ast.BadExpr{p.pos}
+		typ = &ast.BadExpr{pos, p.pos}
 	}
 	return typ
 }
@@ -618,7 +628,7 @@ func (p *parser) parseMethodSpec() *ast.Field {
 		// method
 		idents = []*ast.Ident{ident}
 		params, results := p.parseSignature()
-		typ = &ast.FuncType{noPos, params, results}
+		typ = &ast.FuncType{token.NoPos, params, results}
 	} else {
 		// embedded interface
 		typ = x
@@ -819,9 +829,10 @@ func (p *parser) parseOperand() ast.Expr {
 		}
 	}
 
-	p.errorExpected(p.pos, "operand")
+	pos := p.pos
+	p.errorExpected(pos, "operand")
 	p.next() // make progress
-	return &ast.BadExpr{p.pos}
+	return &ast.BadExpr{pos, p.pos}
 }
 
 
@@ -857,26 +868,27 @@ func (p *parser) parseIndexOrSlice(x ast.Expr) ast.Expr {
 		defer un(trace(p, "IndexOrSlice"))
 	}
 
-	p.expect(token.LBRACK)
+	lbrack := p.expect(token.LBRACK)
 	p.exprLev++
-	var index ast.Expr
+	var low, high ast.Expr
+	isSlice := false
 	if p.tok != token.COLON {
-		index = p.parseExpr()
+		low = p.parseExpr()
 	}
 	if p.tok == token.COLON {
+		isSlice = true
 		p.next()
-		var end ast.Expr
 		if p.tok != token.RBRACK {
-			end = p.parseExpr()
+			high = p.parseExpr()
 		}
-		x = &ast.SliceExpr{x, index, end}
-	} else {
-		x = &ast.IndexExpr{x, index}
 	}
 	p.exprLev--
-	p.expect(token.RBRACK)
+	rbrack := p.expect(token.RBRACK)
 
-	return x
+	if isSlice {
+		return &ast.SliceExpr{x, lbrack, low, high, rbrack}
+	}
+	return &ast.IndexExpr{x, lbrack, low, rbrack}
 }
 
 
@@ -888,7 +900,7 @@ func (p *parser) parseCallOrConversion(fun ast.Expr) *ast.CallExpr {
 	lparen := p.expect(token.LPAREN)
 	p.exprLev++
 	var list []ast.Expr
-	var ellipsis token.Position
+	var ellipsis token.Pos
 	for p.tok != token.RPAREN && p.tok != token.EOF && !ellipsis.IsValid() {
 		list = append(list, p.parseExpr())
 		if p.tok == token.ELLIPSIS {
@@ -977,7 +989,7 @@ func (p *parser) checkExpr(x ast.Expr) ast.Expr {
 		if t.Type == nil {
 			// the form X.(type) is only allowed in type switch expressions
 			p.errorExpected(x.Pos(), "expression")
-			x = &ast.BadExpr{x.Pos()}
+			x = &ast.BadExpr{x.Pos(), x.End()}
 		}
 	case *ast.CallExpr:
 	case *ast.StarExpr:
@@ -985,13 +997,13 @@ func (p *parser) checkExpr(x ast.Expr) ast.Expr {
 		if t.Op == token.RANGE {
 			// the range operator is only allowed at the top of a for statement
 			p.errorExpected(x.Pos(), "expression")
-			x = &ast.BadExpr{x.Pos()}
+			x = &ast.BadExpr{x.Pos(), x.End()}
 		}
 	case *ast.BinaryExpr:
 	default:
 		// all other nodes are not proper expressions
 		p.errorExpected(x.Pos(), "expression")
-		x = &ast.BadExpr{x.Pos()}
+		x = &ast.BadExpr{x.Pos(), x.End()}
 	}
 	return x
 }
@@ -1059,12 +1071,12 @@ func (p *parser) checkExprOrType(x ast.Expr) ast.Expr {
 		if t.Op == token.RANGE {
 			// the range operator is only allowed at the top of a for statement
 			p.errorExpected(x.Pos(), "expression")
-			x = &ast.BadExpr{x.Pos()}
+			x = &ast.BadExpr{x.Pos(), x.End()}
 		}
 	case *ast.ArrayType:
 		if len, isEllipsis := t.Len.(*ast.Ellipsis); isEllipsis {
-			p.Error(len.Pos(), "expected array length, found '...'")
-			x = &ast.BadExpr{x.Pos()}
+			p.error(len.Pos(), "expected array length, found '...'")
+			x = &ast.BadExpr{x.Pos(), x.End()}
 		}
 	}
 
@@ -1183,14 +1195,15 @@ func (p *parser) parseSimpleStmt(labelOk bool) ast.Stmt {
 	switch p.tok {
 	case token.COLON:
 		// labeled statement
+		colon := p.pos
 		p.next()
 		if labelOk && len(x) == 1 {
 			if label, isIdent := x[0].(*ast.Ident); isIdent {
-				return &ast.LabeledStmt{label, p.parseStmt()}
+				return &ast.LabeledStmt{label, colon, p.parseStmt()}
 			}
 		}
-		p.Error(x[0].Pos(), "illegal label declaration")
-		return &ast.BadStmt{x[0].Pos()}
+		p.error(x[0].Pos(), "illegal label declaration")
+		return &ast.BadStmt{x[0].Pos(), colon + 1}
 
 	case
 		token.DEFINE, token.ASSIGN, token.ADD_ASSIGN,
@@ -1205,13 +1218,13 @@ func (p *parser) parseSimpleStmt(labelOk bool) ast.Stmt {
 	}
 
 	if len(x) > 1 {
-		p.Error(x[0].Pos(), "only one expression allowed")
+		p.error(x[0].Pos(), "only one expression allowed")
 		// continue with first expression
 	}
 
 	if p.tok == token.INC || p.tok == token.DEC {
 		// increment or decrement
-		s := &ast.IncDecStmt{x[0], p.tok}
+		s := &ast.IncDecStmt{x[0], p.pos, p.tok}
 		p.next() // consume "++" or "--"
 		return s
 	}
@@ -1240,7 +1253,7 @@ func (p *parser) parseGoStmt() ast.Stmt {
 	call := p.parseCallExpr()
 	p.expectSemi()
 	if call == nil {
-		return &ast.BadStmt{pos}
+		return &ast.BadStmt{pos, pos + 2} // len("go")
 	}
 
 	return &ast.GoStmt{pos, call}
@@ -1256,7 +1269,7 @@ func (p *parser) parseDeferStmt() ast.Stmt {
 	call := p.parseCallExpr()
 	p.expectSemi()
 	if call == nil {
-		return &ast.BadStmt{pos}
+		return &ast.BadStmt{pos, pos + 5} // len("defer")
 	}
 
 	return &ast.DeferStmt{pos, call}
@@ -1303,8 +1316,8 @@ func (p *parser) makeExpr(s ast.Stmt) ast.Expr {
 	if es, isExpr := s.(*ast.ExprStmt); isExpr {
 		return p.checkExpr(es.X)
 	}
-	p.Error(s.Pos(), "expected condition, found simple statement")
-	return &ast.BadExpr{s.Pos()}
+	p.error(s.Pos(), "expected condition, found simple statement")
+	return &ast.BadExpr{s.Pos(), s.End()}
 }
 
 
@@ -1540,7 +1553,7 @@ func (p *parser) parseForStmt() ast.Stmt {
 		// possibly a for statement with a range clause; check assignment operator
 		if as.Tok != token.ASSIGN && as.Tok != token.DEFINE {
 			p.errorExpected(as.TokPos, "'=' or ':='")
-			return &ast.BadStmt{pos}
+			return &ast.BadStmt{pos, body.End()}
 		}
 		// check lhs
 		var key, value ast.Expr
@@ -1551,19 +1564,19 @@ func (p *parser) parseForStmt() ast.Stmt {
 			key = as.Lhs[0]
 		default:
 			p.errorExpected(as.Lhs[0].Pos(), "1 or 2 expressions")
-			return &ast.BadStmt{pos}
+			return &ast.BadStmt{pos, body.End()}
 		}
 		// check rhs
 		if len(as.Rhs) != 1 {
 			p.errorExpected(as.Rhs[0].Pos(), "1 expressions")
-			return &ast.BadStmt{pos}
+			return &ast.BadStmt{pos, body.End()}
 		}
 		if rhs, isUnary := as.Rhs[0].(*ast.UnaryExpr); isUnary && rhs.Op == token.RANGE {
 			// rhs is range expression; check lhs
 			return &ast.RangeStmt{pos, key, value, as.TokPos, as.Tok, rhs.X, body}
 		} else {
 			p.errorExpected(s2.Pos(), "range clause")
-			return &ast.BadStmt{pos}
+			return &ast.BadStmt{pos, body.End()}
 		}
 	} else {
 		// regular for statement
@@ -1621,9 +1634,10 @@ func (p *parser) parseStmt() (s ast.Stmt) {
 		s = &ast.EmptyStmt{p.pos}
 	default:
 		// no statement found
-		p.errorExpected(p.pos, "statement")
+		pos := p.pos
+		p.errorExpected(pos, "statement")
 		p.next() // make progress
-		s = &ast.BadStmt{p.pos}
+		s = &ast.BadStmt{pos, p.pos}
 	}
 
 	return
@@ -1718,7 +1732,7 @@ func (p *parser) parseGenDecl(keyword token.Token, f parseSpecFunction) *ast.Gen
 
 	doc := p.leadComment
 	pos := p.expect(keyword)
-	var lparen, rparen token.Position
+	var lparen, rparen token.Pos
 	var list []ast.Spec
 	if p.tok == token.LPAREN {
 		lparen = p.pos
@@ -1747,7 +1761,8 @@ func (p *parser) parseReceiver() *ast.FieldList {
 	// must have exactly one receiver
 	if par.NumFields() != 1 {
 		p.errorExpected(pos, "exactly one receiver")
-		par.List = []*ast.Field{&ast.Field{Type: &ast.BadExpr{noPos}}}
+		// TODO determine a better range for BadExpr below
+		par.List = []*ast.Field{&ast.Field{Type: &ast.BadExpr{pos, pos}}}
 		return par
 	}
 
@@ -1756,7 +1771,7 @@ func (p *parser) parseReceiver() *ast.FieldList {
 	base := deref(recv.Type)
 	if _, isIdent := base.(*ast.Ident); !isIdent {
 		p.errorExpected(base.Pos(), "(unqualified) identifier")
-		par.List = []*ast.Field{&ast.Field{Type: &ast.BadExpr{recv.Pos()}}}
+		par.List = []*ast.Field{&ast.Field{Type: &ast.BadExpr{recv.Pos(), recv.End()}}}
 	}
 
 	return par
@@ -1811,8 +1826,8 @@ func (p *parser) parseDecl() ast.Decl {
 	default:
 		pos := p.pos
 		p.errorExpected(pos, "declaration")
-		decl := &ast.BadDecl{pos}
-		p.next() // make progress in any case
+		p.next() // make progress
+		decl := &ast.BadDecl{pos, p.pos}
 		return decl
 	}
 
