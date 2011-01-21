@@ -1,3 +1,9 @@
+2011-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47355
+	* tree-eh.c (cleanup_empty_eh_merge_phis): Give up if
+	NOP has non-debug uses beyond PHIs in new_bb.
+
 2011-01-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/47106
