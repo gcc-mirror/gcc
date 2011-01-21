@@ -127,7 +127,7 @@
 ;; output (such as umull) make their results available in two cycles;
 ;; the least significant word is available before the most significant
 ;; word.  That fact is not modeled; instead, the instructions are
-;; described.as if the entire result was available at the end of the
+;; described as if the entire result was available at the end of the
 ;; cycle in which both words are available.
 
 ;; The "umull", "umlal", "smull", and "smlal" instructions all take
