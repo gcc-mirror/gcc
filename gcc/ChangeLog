@@ -1,5 +1,10 @@
 2011-01-21  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/47395
+	* tree.def (WIDEN_MULT_MINUS_EXPR): Fix printed name.
+
+2011-01-21  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/47365
 	* tree-ssa-sccvn.h (vn_lookup_kind): Declare.
 	(vn_reference_lookup_pieces): Adjust.
