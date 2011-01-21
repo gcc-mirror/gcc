@@ -1,3 +1,8 @@
+2011-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47391
+	* gcc.dg/pr47391.c: New test.
+
 2011-01-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/template/char1.C: Use signed char.

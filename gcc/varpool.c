@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -370,7 +370,7 @@ const_value_known_p (tree decl)
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
 
-  if (!TREE_READONLY (decl))
+  if (!TREE_READONLY (decl) || TREE_THIS_VOLATILE (decl))
     return false;
 
   /* Gimplifier takes away constructors of local vars  */

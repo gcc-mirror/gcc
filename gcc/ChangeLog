@@ -3,6 +3,10 @@
 	* tree-ssa-live.c (remove_unused_scope_block_p): Don't remove
 	DECL_IGNORED_P non-reg vars if they are used.
 
+	PR tree-optimization/47391
+	* varpool.c (const_value_known_p): Return false if
+	decl is volatile.
+
 2011-01-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR bootstrap/47215
