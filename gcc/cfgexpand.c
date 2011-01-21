@@ -1325,7 +1325,7 @@ account_used_vars_for_block (tree block, bool toplevel)
 
   /* Expand all variables at this level.  */
   for (t = BLOCK_VARS (block); t ; t = DECL_CHAIN (t))
-    if (TREE_USED (t))
+    if (var_ann (t) && var_ann (t)->used)
       size += expand_one_var (t, toplevel, false);
 
   /* Expand all variables at containing levels.  */
@@ -1389,9 +1389,10 @@ estimated_stack_frame_size (tree decl)
 
   FOR_EACH_LOCAL_DECL (cfun, ix, var)
     {
+      /* TREE_USED marks local variables that do not appear in lexical
+	 blocks.  We don't want to expand those that do twice.  */
       if (TREE_USED (var))
         size += expand_one_var (var, true, false);
-      TREE_USED (var) = 1;
     }
   size += account_used_vars_for_block (outer_block, true);
 

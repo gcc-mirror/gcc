@@ -1,3 +1,11 @@
+2011-01-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/47106
+	* cfgexpand.c (account_used_vars_for_block): Only account vars
+	that are annotated as used.
+	(estimated_stack_frame_size): Don't set TREE_USED.
+	* tree-dfa.c (create_var_ann): Mark variable as used.
+
 2011-01-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/47395
