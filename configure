@@ -1454,69 +1454,76 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
-  --enable-ld[=ARG]     build ld [ARG={default,yes,no}]
+  --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
   --disable-libquadmath   do not build libquadmath directory
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
   --enable-build-with-cxx build with C++ compiler instead of C compiler
-  --disable-ppl-version-check    disable check for PPL version
+  --disable-ppl-version-check
+                          disable check for PPL version
   --enable-cloog-backend[=BACKEND]
                           set the CLooG BACKEND used to either isl, ppl or
                           ppl-legacy (default)
   --disable-cloog-version-check
                           disable check for CLooG version
   --enable-lto            enable link time optimization support
-  --enable-stage1-languages[=all]   choose additional languages to build during
-                          stage1.  Mostly useful for compiler development.
-  --enable-objc-gc        enable use of Boehm's garbage collector with the
-                          GNU Objective-C runtime
+  --enable-stage1-languages[=all]
+                          choose additional languages to build during stage1.
+                          Mostly useful for compiler development
+  --enable-objc-gc        enable use of Boehm's garbage collector with the GNU
+                          Objective-C runtime
   --enable-bootstrap      enable bootstrapping [yes if native build]
   --enable-serial-[{host,target,build}-]configure
-                          force sequential configuration of
-                          sub-packages for the host, target or build
-                          machine, or all sub-packages
-  --enable-maintainer-mode enable make rules and dependencies not useful
-                          (and sometimes confusing) to the casual installer
-  --enable-stage1-checking[=all]   choose additional checking for stage1
-                          of the compiler
+                          force sequential configuration of sub-packages for
+                          the host, target or build machine, or all
+                          sub-packages
+  --enable-maintainer-mode
+                          enable make rules and dependencies not useful (and
+                          sometimes confusing) to the casual installer
+  --enable-stage1-checking[=all]
+                          choose additional checking for stage1 of the
+                          compiler
   --enable-werror         enable -Werror in bootstrap stage2 and later
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
-  --with-mpc=PATH        specify prefix directory for installed MPC package.
-                          Equivalent to --with-mpc-include=PATH/include
-                          plus --with-mpc-lib=PATH/lib
-  --with-mpc-include=PATH
-                          specify directory for installed MPC include files
-  --with-mpc-lib=PATH    specify directory for the installed MPC library
+  --with-mpc=PATH         specify prefix directory for installed MPC package.
+                          Equivalent to --with-mpc-include=PATH/include plus
+                          --with-mpc-lib=PATH/lib
+  --with-mpc-include=PATH specify directory for installed MPC include files
+  --with-mpc-lib=PATH     specify directory for the installed MPC library
   --with-mpfr-dir=PATH    this option has been REMOVED
   --with-mpfr=PATH        specify prefix directory for installed MPFR package.
-                          Equivalent to --with-mpfr-include=PATH/include
-                          plus --with-mpfr-lib=PATH/lib
+                          Equivalent to --with-mpfr-include=PATH/include plus
+                          --with-mpfr-lib=PATH/lib
   --with-mpfr-include=PATH
                           specify directory for installed MPFR include files
   --with-mpfr-lib=PATH    specify directory for the installed MPFR library
   --with-gmp-dir=PATH     this option has been REMOVED
-  --with-gmp=PATH         specify prefix directory for the installed GMP package.
-                          Equivalent to --with-gmp-include=PATH/include
-                          plus --with-gmp-lib=PATH/lib
+  --with-gmp=PATH         specify prefix directory for the installed GMP
+                          package. Equivalent to
+                          --with-gmp-include=PATH/include plus
+                          --with-gmp-lib=PATH/lib
   --with-gmp-include=PATH specify directory for installed GMP include files
   --with-gmp-lib=PATH     specify directory for the installed GMP library
-  --with-host-libstdcxx=L Use linker arguments L to link with libstdc++
-                          when linking with PPL
-  --with-stage1-ldflags=FLAGS Linker flags for stage1
-  -with-stage1-libs=LIBS      Libraries for stage1
-  --with-boot-libs=LIBS     Libraries for stage2 and later
-  --with-boot-ldflags=FLAGS Linker flags for stage2 and later
-  --with-ppl=PATH         Specify prefix directory for the installed PPL package
-                          Equivalent to --with-ppl-include=PATH/include
-                          plus --with-ppl-lib=PATH/lib
-  --with-ppl-include=PATH Specify directory for installed PPL include files
-  --with-ppl-lib=PATH     Specify the directory for the installed PPL library
+  --with-host-libstdcxx=L use linker arguments L to link with libstdc++ when
+                          linking with PPL
+  --with-stage1-ldflags=FLAGS
+                          linker flags for stage1
+  --with-stage1-libs=LIBS libraries for stage1
+  --with-boot-libs=LIBS   libraries for stage2 and later
+  --with-boot-ldflags=FLAGS
+                          linker flags for stage2 and later
+  --with-ppl=PATH         specify prefix directory for the installed PPL
+                          package. Equivalent to
+                          --with-ppl-include=PATH/include plus
+                          --with-ppl-lib=PATH/lib
+  --with-ppl-include=PATH specify directory for installed PPL include files
+  --with-ppl-lib=PATH     specify directory for the installed PPL library
   --with-cloog=PATH       Specify prefix directory for the installed CLooG-PPL
                           package. Equivalent to
                           --with-cloog-include=PATH/include plus
@@ -1528,9 +1535,9 @@ Optional Packages:
   --with-build-sysroot=SYSROOT
                           use sysroot as the system root during the build
   --with-debug-prefix-map='A=B C=D ...'
-                             map A to B, C to D ... in debug information
---with-build-config='NAME NAME2...'
-                          Use config/NAME.mk build configuration
+                          map A to B, C to D ... in debug information
+  --with-build-config='NAME NAME2...'
+                          use config/NAME.mk build configuration
   --with-build-time-tools=PATH
                           use given path to find target tools during the build
 
