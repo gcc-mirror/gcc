@@ -315,6 +315,15 @@ gc_stop_handler (int sig __attribute__ ((unused)))
       return;
     }
 
+  if (__sync_bool_compare_and_swap (&pm->holds_finlock, 1, 1))
+    {
+      /* Similarly, we can't interrupt the thread while it holds the
+	 finalizer lock.  Otherwise we can get into a deadlock when
+	 mark calls runtime_walkfintab.  */
+      __sync_bool_compare_and_swap (&pm->gcing_for_finlock, 0, 1);
+      return;
+    }
+
   stop_for_gc ();
 }
 
