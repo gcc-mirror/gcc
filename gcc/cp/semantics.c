@@ -7024,6 +7024,7 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
     case NON_DEPENDENT_EXPR:
     case BASELINK:
     case EXPR_STMT:
+    case OFFSET_REF:
       if (!allow_non_constant)
         error_at (EXPR_LOC_OR_HERE (t),
 		  "expression %qE is not a constant-expression", t);
