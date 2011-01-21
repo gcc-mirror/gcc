@@ -5159,6 +5159,7 @@ fold_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
      as two declarations of the same function, for example.  */
   if (processing_template_decl
       && !type_dependent_expression_p (expr)
+      && potential_constant_expression (expr)
       && !value_dependent_expression_p (expr))
     {
       HOST_WIDE_INT saved_processing_template_decl;
@@ -17964,11 +17965,11 @@ dependent_scope_p (tree scope)
    [temp.dep.constexpr].  EXPRESSION is already known to be a constant
    expression.  */
 
-/* FIXME this predicate is not appropriate for general expressions; the
-   predicates we want instead are "valid constant expression, value
-   dependent or not?", "really constant expression, not value dependent?"
-   and "instantiation-dependent?".  Try to integrate with
-   potential_constant_expression?
+/* Note that this predicate is not appropriate for general expressions;
+   only constant expressions (that satisfy potential_constant_expression)
+   can be tested for value dependence.
+
+   We should really also have a predicate for "instantiation-dependent".
 
    fold_non_dependent_expr: fold if constant and not type-dependent and not value-dependent.
      (what about instantiation-dependent constant-expressions?)
