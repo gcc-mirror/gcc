@@ -1,3 +1,12 @@
+2011-01-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/other/anon5.C: Skip on mips-sgi-irix*.
+
+	Backport from mainline:
+	2010-11-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/other/anon5.C: Skip on alpha*-dec-osf*.
+
 2011-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
