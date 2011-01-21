@@ -1,3 +1,8 @@
+2011-01-21  Jeff Law <law@redhat.com>
+
+	PR rtl-optimization/41619
+	* gcc.dg/pr41619.c: New.
+
 2011-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47355
