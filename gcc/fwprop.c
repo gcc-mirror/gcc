@@ -1,5 +1,5 @@
 /* RTL-based forward propagation pass for GNU compiler.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Paolo Bonzini and Steven Bosscher.
 
@@ -1315,9 +1315,10 @@ forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
 
 
 /* Given a use USE of an insn, if it has a single reaching
-   definition, try to forward propagate it into that insn.  */
+   definition, try to forward propagate it into that insn.
+   Return true if cfg cleanup will be needed.  */
 
-static void
+static bool
 forward_propagate_into (df_ref use)
 {
   df_ref def;
@@ -1325,22 +1326,22 @@ forward_propagate_into (df_ref use)
   rtx parent;
 
   if (DF_REF_FLAGS (use) & DF_REF_READ_WRITE)
-    return;
+    return false;
   if (DF_REF_IS_ARTIFICIAL (use))
-    return;
+    return false;
 
   /* Only consider uses that have a single definition.  */
   def = get_def_for_use (use);
   if (!def)
-    return;
+    return false;
   if (DF_REF_FLAGS (def) & DF_REF_READ_WRITE)
-    return;
+    return false;
   if (DF_REF_IS_ARTIFICIAL (def))
-    return;
+    return false;
 
   /* Do not propagate loop invariant definitions inside the loop.  */
   if (DF_REF_BB (def)->loop_father != DF_REF_BB (use)->loop_father)
-    return;
+    return false;
 
   /* Check if the use is still present in the insn!  */
   use_insn = DF_REF_INSN (use);
@@ -1350,19 +1351,26 @@ forward_propagate_into (df_ref use)
     parent = PATTERN (use_insn);
 
   if (!reg_mentioned_p (DF_REF_REG (use), parent))
-    return;
+    return false;
 
   def_insn = DF_REF_INSN (def);
   if (multiple_sets (def_insn))
-    return;
+    return false;
   def_set = single_set (def_insn);
   if (!def_set)
-    return;
+    return false;
 
   /* Only try one kind of propagation.  If two are possible, we'll
      do it on the following iterations.  */
-  if (!forward_propagate_and_simplify (use, def_insn, def_set))
-    forward_propagate_subreg (use, def_insn, def_set);
+  if (forward_propagate_and_simplify (use, def_insn, def_set)
+      || forward_propagate_subreg (use, def_insn, def_set))
+    {
+      if (cfun->can_throw_non_call_exceptions
+	  && find_reg_note (use_insn, REG_EH_REGION, NULL_RTX)
+	  && purge_dead_edges (DF_REF_BB (use)))
+	return true;
+    }
+  return false;
 }
 
 
@@ -1421,6 +1429,7 @@ static unsigned int
 fwprop (void)
 {
   unsigned i;
+  bool need_cleanup = false;
 
   fwprop_init ();
 
@@ -1438,10 +1447,12 @@ fwprop (void)
 	    || DF_REF_BB (use)->loop_father == NULL
 	    /* The outer most loop is not really a loop.  */
 	    || loop_outer (DF_REF_BB (use)->loop_father) == NULL)
-	  forward_propagate_into (use);
+	  need_cleanup |= forward_propagate_into (use);
     }
 
   fwprop_done ();
+  if (need_cleanup)
+    cleanup_cfg (0);
   return 0;
 }
 
@@ -1469,6 +1480,8 @@ static unsigned int
 fwprop_addr (void)
 {
   unsigned i;
+  bool need_cleanup = false;
+
   fwprop_init ();
 
   /* Go through all the uses.  df_uses_create will create new ones at the
@@ -1481,11 +1494,13 @@ fwprop_addr (void)
 	    && DF_REF_BB (use)->loop_father != NULL
 	    /* The outer most loop is not really a loop.  */
 	    && loop_outer (DF_REF_BB (use)->loop_father) != NULL)
-	  forward_propagate_into (use);
+	  need_cleanup |= forward_propagate_into (use);
     }
 
   fwprop_done ();
 
+  if (need_cleanup)
+    cleanup_cfg (0);
   return 0;
 }
 
