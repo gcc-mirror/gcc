@@ -513,9 +513,13 @@ build_vec_init_expr (tree type, tree init)
   SET_EXPR_LOCATION (init, input_location);
 
   if (current_function_decl
-      && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
-      && potential_constant_expression (elt_init, tf_warning_or_error))
-    VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    {
+      if (potential_constant_expression (elt_init))
+	VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
+      else if (!processing_template_decl)
+	require_potential_constant_expression (elt_init);
+    }
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
 
   init = build_target_expr (slot, init);

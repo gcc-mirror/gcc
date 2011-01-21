@@ -1,3 +1,17 @@
+2011-01-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46977
+	* semantics.c (potential_constant_expression_1): Split out from
+	potential_constant_expression.  Add want_rval parm.  Handle
+	template expression forms.  Don't enforce restriction on address
+	of automatic variable here.  Add a couple of diagnostics that
+	had been missing.
+	(require_potential_constant_expression): New entry point.
+	(build_data_member_initialization, register_constexpr_fundef): Adjust.
+	(maybe_constant_value): Check potential_constant_expression.
+	* pt.c (fold_non_dependent_expr_sfinae): Likewise.
+	* tree.c (build_vec_init_expr): Adjust.
+
 2011-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/47303
