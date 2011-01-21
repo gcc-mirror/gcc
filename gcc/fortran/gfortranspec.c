@@ -375,7 +375,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 You may redistribute copies of GNU Fortran\n\
 under the terms of the GNU General Public License.\n\
 For more information about these matters, see the file named COPYING\n\n"));
-	  exit (0);
+	  exit (SUCCESS_EXIT_CODE);
 	  break;
 
 	case OPTION_help:

@@ -1841,7 +1841,7 @@ include_line (gfc_char_t *line)
 
   filename = gfc_widechar_to_char (begin, -1);
   if (load_file (filename, NULL, false) == FAILURE)
-    exit (1);
+    exit (FATAL_EXIT_CODE);
 
   gfc_free (filename);
   return true;
@@ -2045,7 +2045,7 @@ gfc_new_file (void)
     printf ("%s:%3d %s\n", LOCATION_FILE (line_head->location),
 	    LOCATION_LINE (line_head->location), line_head->line);
 
-  exit (0);
+  exit (SUCCESS_EXIT_CODE);
 #endif
 
   return result;

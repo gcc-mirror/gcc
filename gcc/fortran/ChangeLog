@@ -1,3 +1,11 @@
+2011-01-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47394
+	* error.c (gfc_error_now, gfc_fatal_error, gfc_error_check):
+	Use defined instead of magic number exit status codes.
+	* scanner.c (include_line, gfc_new_file): Ditto.
+	* gfortranspec.c (lang_specific_driver): Ditto.
+
 2011-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline

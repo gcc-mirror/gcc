@@ -939,7 +939,7 @@ gfc_error_now (const char *gmsgid, ...)
   buffer_flag = i;
 
   if (flag_fatal_errors)
-    exit (1);
+    exit (FATAL_EXIT_CODE);
 }
 
 
@@ -956,7 +956,7 @@ gfc_fatal_error (const char *gmsgid, ...)
   error_print (_("Fatal Error:"), _(gmsgid), argp);
   va_end (argp);
 
-  exit (3);
+  exit (FATAL_EXIT_CODE);
 }
 
 
@@ -1019,7 +1019,7 @@ gfc_error_check (void)
       gfc_increment_error_count();
 
       if (flag_fatal_errors)
-	exit (1);
+	exit (FATAL_EXIT_CODE);
     }
 
   return rc;
