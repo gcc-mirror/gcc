@@ -137,9 +137,6 @@ create_var_ann (tree t)
   ann = ggc_alloc_cleared_var_ann_d ();
   *DECL_VAR_ANN_PTR (t) = ann;
 
-  /* Assume the variable is used, at least for now.  */
-  ann->used = true;
-
   return ann;
 }
 

@@ -1,3 +1,11 @@
+2011-01-21  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/47402
+	Temporarily revert:
+	2011-01-21  Alexandre Oliva  <aoliva@redhat.com>
+	PR debug/47106
+	* tree-dfa.c (create_var_ann): Mark variable as used.
+
 2011-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45566
