@@ -5607,7 +5607,20 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
     body = STATEMENT_LIST_HEAD (body)->stmt;
   body = BIND_EXPR_BODY (body);
   if (TREE_CODE (body) == CLEANUP_POINT_EXPR)
-    ok = build_data_member_initialization (body, &vec);
+    {
+      body = TREE_OPERAND (body, 0);
+      if (TREE_CODE (body) == EXPR_STMT)
+	body = TREE_OPERAND (body, 0);
+      if (TREE_CODE (body) == INIT_EXPR
+	  && (same_type_ignoring_top_level_qualifiers_p
+	      (TREE_TYPE (TREE_OPERAND (body, 0)),
+	       current_class_type)))
+	{
+	  /* Trivial copy.  */
+	  return TREE_OPERAND (body, 1);
+	}
+      ok = build_data_member_initialization (body, &vec);
+    }
   else if (TREE_CODE (body) == STATEMENT_LIST)
     {
       tree_stmt_iterator i;
