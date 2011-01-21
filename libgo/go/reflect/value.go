@@ -141,9 +141,7 @@ type FloatValue struct {
 
 // Get returns the underlying int value.
 func (v *FloatValue) Get() float64 {
-	switch v.typ.(*FloatType).Kind() {
-	case Float:
-		return float64(*(*float)(v.addr))
+	switch v.typ.Kind() {
 	case Float32:
 		return float64(*(*float32)(v.addr))
 	case Float64:
@@ -157,11 +155,9 @@ func (v *FloatValue) Set(x float64) {
 	if !v.canSet {
 		panic(cannotSet)
 	}
-	switch v.typ.(*FloatType).Kind() {
+	switch v.typ.Kind() {
 	default:
 		panic("reflect: invalid float kind")
-	case Float:
-		*(*float)(v.addr) = float(x)
 	case Float32:
 		*(*float32)(v.addr) = float32(x)
 	case Float64:
@@ -190,9 +186,7 @@ type ComplexValue struct {
 
 // Get returns the underlying complex value.
 func (v *ComplexValue) Get() complex128 {
-	switch v.typ.(*ComplexType).Kind() {
-	case Complex:
-		return complex128(*(*complex)(v.addr))
+	switch v.typ.Kind() {
 	case Complex64:
 		return complex128(*(*complex64)(v.addr))
 	case Complex128:
@@ -206,11 +200,9 @@ func (v *ComplexValue) Set(x complex128) {
 	if !v.canSet {
 		panic(cannotSet)
 	}
-	switch v.typ.(*ComplexType).Kind() {
+	switch v.typ.Kind() {
 	default:
 		panic("reflect: invalid complex kind")
-	case Complex:
-		*(*complex)(v.addr) = complex(x)
 	case Complex64:
 		*(*complex64)(v.addr) = complex64(x)
 	case Complex128:
@@ -228,7 +220,7 @@ type IntValue struct {
 
 // Get returns the underlying int value.
 func (v *IntValue) Get() int64 {
-	switch v.typ.(*IntType).Kind() {
+	switch v.typ.Kind() {
 	case Int:
 		return int64(*(*int)(v.addr))
 	case Int8:
@@ -248,7 +240,7 @@ func (v *IntValue) Set(x int64) {
 	if !v.canSet {
 		panic(cannotSet)
 	}
-	switch v.typ.(*IntType).Kind() {
+	switch v.typ.Kind() {
 	default:
 		panic("reflect: invalid int kind")
 	case Int:
@@ -306,7 +298,7 @@ type UintValue struct {
 
 // Get returns the underlying uuint value.
 func (v *UintValue) Get() uint64 {
-	switch v.typ.(*UintType).Kind() {
+	switch v.typ.Kind() {
 	case Uint:
 		return uint64(*(*uint)(v.addr))
 	case Uint8:
@@ -328,7 +320,7 @@ func (v *UintValue) Set(x uint64) {
 	if !v.canSet {
 		panic(cannotSet)
 	}
-	switch v.typ.(*UintType).Kind() {
+	switch v.typ.Kind() {
 	default:
 		panic("reflect: invalid uint kind")
 	case Uint:
@@ -400,11 +392,57 @@ type ArrayOrSliceValue interface {
 	addr() addr
 }
 
-// ArrayCopy copies the contents of src into dst until either
+// grow grows the slice s so that it can hold extra more values, allocating
+// more capacity if needed. It also returns the old and new slice lengths.
+func grow(s *SliceValue, extra int) (*SliceValue, int, int) {
+	i0 := s.Len()
+	i1 := i0 + extra
+	if i1 < i0 {
+		panic("append: slice overflow")
+	}
+	m := s.Cap()
+	if i1 <= m {
+		return s.Slice(0, i1), i0, i1
+	}
+	if m == 0 {
+		m = extra
+	} else {
+		for m < i1 {
+			if i0 < 1024 {
+				m += m
+			} else {
+				m += m / 4
+			}
+		}
+	}
+	t := MakeSlice(s.Type().(*SliceType), i1, m)
+	Copy(t, s)
+	return t, i0, i1
+}
+
+// Append appends the values x to a slice s and returns the resulting slice.
+// Each x must have the same type as s' element type.
+func Append(s *SliceValue, x ...Value) *SliceValue {
+	s, i0, i1 := grow(s, len(x))
+	for i, j := i0, 0; i < i1; i, j = i+1, j+1 {
+		s.Elem(i).SetValue(x[j])
+	}
+	return s
+}
+
+// AppendSlice appends a slice t to a slice s and returns the resulting slice.
+// The slices s and t must have the same element type.
+func AppendSlice(s, t *SliceValue) *SliceValue {
+	s, i0, i1 := grow(s, t.Len())
+	Copy(s.Slice(i0, i1), t)
+	return s
+}
+
+// Copy copies the contents of src into dst until either
 // dst has been filled or src has been exhausted.
 // It returns the number of elements copied.
 // The arrays dst and src must have the same element type.
-func ArrayCopy(dst, src ArrayOrSliceValue) int {
+func Copy(dst, src ArrayOrSliceValue) int {
 	// TODO: This will have to move into the runtime
 	// once the real gc goes in.
 	de := dst.Type().(ArrayOrSliceType).Elem()
@@ -439,7 +477,7 @@ func (v *ArrayValue) Set(x *ArrayValue) {
 		panic(cannotSet)
 	}
 	typesMustMatch(v.typ, x.typ)
-	ArrayCopy(v, x)
+	Copy(v, x)
 }
 
 // Set sets v to the value x.

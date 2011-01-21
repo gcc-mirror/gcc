@@ -74,22 +74,6 @@ scanblock(byte *b, int64 n)
 			obj = vp[i];
 			if(obj == nil)
 				continue;
-			if(runtime_mheap.closure_min != nil && runtime_mheap.closure_min <= (byte*)obj && (byte*)obj < runtime_mheap.closure_max) {
-				if((((uintptr)obj) & 63) != 0)
-					continue;
-	
-				// Looks like a Native Client closure.
-				// Actual pointer is pointed at by address in first instruction.
-				// Embedded pointer starts at byte 2.
-				// If it is f4f4f4f4 then that space hasn't been
-				// used for a closure yet (f4 is the HLT instruction).
-				// See nacl/386/closure.c for more.
-				void **pp;
-				pp = *(void***)((byte*)obj+2);
-				if(pp == (void**)0xf4f4f4f4)	// HLT... - not a closure after all
-					continue;
-				obj = *pp;
-			}
 			if(runtime_mheap.min <= (byte*)obj && (byte*)obj < runtime_mheap.max) {
 				if(runtime_mlookup(obj, (byte**)&obj, &size, nil, &refp)) {
 					ref = *refp;
@@ -213,6 +197,7 @@ sweepspan(MSpan *s)
 		case RefNone:
 			// Free large object.
 			mstats.alloc -= s->npages<<PageShift;
+			mstats.nfree++;
 			runtime_memclr(p, s->npages<<PageShift);
 			if(ref & RefProfiled)
 				runtime_MProf_Free(p, s->npages<<PageShift);
@@ -254,6 +239,7 @@ sweepspan(MSpan *s)
 			if(size > (int32)sizeof(uintptr))
 				((uintptr*)p)[1] = 1;	// mark as "needs to be zeroed"
 			mstats.alloc -= size;
+			mstats.nfree++;
 			mstats.by_size[s->sizeclass].nfree++;
 			runtime_MCache_Free(c, p, s->sizeclass, size);
 			break;
@@ -342,7 +328,8 @@ runtime_gc(int32 force __attribute__ ((unused)))
 
 	t1 = runtime_nanotime();
 	mstats.numgc++;
-	mstats.pause_ns += t1 - t0;
+	mstats.pause_ns[mstats.numgc%nelem(mstats.pause_ns)] = t1 - t0;
+	mstats.pause_total_ns += t1 - t0;
 	if(mstats.debuggc)
 		runtime_printf("pause %llu\n", (unsigned long long)t1-t0);
 	pthread_mutex_unlock(&gcsema);

@@ -344,7 +344,7 @@ func (d *decodeState) array(v reflect.Value) {
 				newcap = 4
 			}
 			newv := reflect.MakeSlice(sv.Type().(*reflect.SliceType), sv.Len(), newcap)
-			reflect.ArrayCopy(newv, sv)
+			reflect.Copy(newv, sv)
 			sv.Set(newv)
 		}
 		if i >= av.Len() && sv != nil {
@@ -749,7 +749,7 @@ func (d *decodeState) literalInterface() interface{} {
 		}
 		n, err := strconv.Atof64(string(item))
 		if err != nil {
-			d.saveError(&UnmarshalTypeError{"number " + string(item), reflect.Typeof(float64(0))})
+			d.saveError(&UnmarshalTypeError{"number " + string(item), reflect.Typeof(0.0)})
 		}
 		return n
 	}
@@ -831,13 +831,13 @@ func unquote(s []byte) (t string, ok bool) {
 					if dec := utf16.DecodeRune(rune, rune1); dec != unicode.ReplacementChar {
 						// A valid pair; consume.
 						r += 6
-						w += utf8.EncodeRune(dec, b[w:])
+						w += utf8.EncodeRune(b[w:], dec)
 						break
 					}
 					// Invalid surrogate; fall back to replacement rune.
 					rune = unicode.ReplacementChar
 				}
-				w += utf8.EncodeRune(rune, b[w:])
+				w += utf8.EncodeRune(b[w:], rune)
 			}
 
 		// Quote, control characters are invalid.
@@ -854,7 +854,7 @@ func unquote(s []byte) (t string, ok bool) {
 		default:
 			rune, size := utf8.DecodeRune(s[r:])
 			r += size
-			w += utf8.EncodeRune(rune, b[w:])
+			w += utf8.EncodeRune(b[w:], rune)
 		}
 	}
 	return string(b[0:w]), true

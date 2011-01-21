@@ -5,6 +5,7 @@
 package time
 
 import (
+	"os"
 	"sync"
 )
 
@@ -14,13 +15,16 @@ type Ticker struct {
 	C        <-chan int64 // The channel on which the ticks are delivered.
 	c        chan<- int64 // The same channel, but the end we use.
 	ns       int64
-	shutdown bool
+	shutdown chan bool // Buffered channel used to signal shutdown.
 	nextTick int64
 	next     *Ticker
 }
 
 // Stop turns off a ticker.  After Stop, no more ticks will be sent.
-func (t *Ticker) Stop() { t.shutdown = true }
+func (t *Ticker) Stop() {
+	// Make it non-blocking so multiple Stops don't block.
+	_ = t.shutdown <- true
+}
 
 // Tick is a convenience wrapper for NewTicker providing access to the ticking
 // channel only.  Useful for clients that have no need to shut down the ticker.
@@ -43,11 +47,12 @@ func (a *alarmer) set(ns int64) {
 	case a.wakeTime > ns:
 		// Next tick we expect is too late; shut down the late runner
 		// and (after fallthrough) start a new wakeLoop.
-		a.wakeMeAt <- -1
+		close(a.wakeMeAt)
 		fallthrough
 	case a.wakeMeAt == nil:
 		// There's no wakeLoop, start one.
-		a.wakeMeAt = make(chan int64, 10)
+		a.wakeMeAt = make(chan int64)
+		a.wakeUp = make(chan bool, 1)
 		go wakeLoop(a.wakeMeAt, a.wakeUp)
 		fallthrough
 	case a.wakeTime == 0:
@@ -69,19 +74,10 @@ func startTickerLoop() {
 
 // wakeLoop delivers ticks at scheduled times, sleeping until the right moment.
 // If another, earlier Ticker is created while it sleeps, tickerLoop() will start a new
-// wakeLoop but they will share the wakeUp channel and signal that this one
-// is done by giving it a negative time request.
+// wakeLoop and signal that this one is done by closing the wakeMeAt channel.
 func wakeLoop(wakeMeAt chan int64, wakeUp chan bool) {
-	for {
-		wakeAt := <-wakeMeAt
-		if wakeAt < 0 { // tickerLoop has started another wakeLoop
-			return
-		}
-		now := Nanoseconds()
-		if wakeAt > now {
-			Sleep(wakeAt - now)
-			now = Nanoseconds()
-		}
+	for wakeAt := range wakeMeAt {
+		Sleep(wakeAt - Nanoseconds())
 		wakeUp <- true
 	}
 }
@@ -92,9 +88,7 @@ func wakeLoop(wakeMeAt chan int64, wakeUp chan bool) {
 func tickerLoop() {
 	// Represents the next alarm to be delivered.
 	var alarm alarmer
-	// All wakeLoops deliver wakeups to this channel.
-	alarm.wakeUp = make(chan bool, 10)
-	var now, prevTime, wakeTime int64
+	var now, wakeTime int64
 	var tickers *Ticker
 	for {
 		select {
@@ -106,17 +100,13 @@ func tickerLoop() {
 			alarm.set(t.nextTick)
 		case <-alarm.wakeUp:
 			now = Nanoseconds()
-			// Ignore an old time due to a dying wakeLoop
-			if now < prevTime {
-				continue
-			}
 			wakeTime = now + 1e15 // very long in the future
 			var prev *Ticker = nil
 			// Scan list of tickers, delivering updates to those
 			// that need it and determining the next wake time.
 			// TODO(r): list should be sorted in time order.
 			for t := tickers; t != nil; t = t.next {
-				if t.shutdown {
+				if _, ok := <-t.shutdown; ok {
 					// Ticker is done; remove it from list.
 					if prev == nil {
 						tickers = t.next
@@ -147,12 +137,12 @@ func tickerLoop() {
 			if tickers != nil {
 				// Please send wakeup at earliest required time.
 				// If there are no tickers, don't bother.
+				alarm.wakeTime = wakeTime
 				alarm.wakeMeAt <- wakeTime
 			} else {
 				alarm.wakeTime = 0
 			}
 		}
-		prevTime = now
 	}
 }
 
@@ -160,13 +150,20 @@ var onceStartTickerLoop sync.Once
 
 // NewTicker returns a new Ticker containing a channel that will
 // send the time, in nanoseconds, every ns nanoseconds.  It adjusts the
-// intervals to make up for pauses in delivery of the ticks.
+// intervals to make up for pauses in delivery of the ticks. The value of
+// ns must be greater than zero; if not, NewTicker will panic.
 func NewTicker(ns int64) *Ticker {
 	if ns <= 0 {
-		return nil
+		panic(os.ErrorString("non-positive interval for NewTicker"))
 	}
 	c := make(chan int64, 1) //  See comment on send in tickerLoop
-	t := &Ticker{c, c, ns, false, Nanoseconds() + ns, nil}
+	t := &Ticker{
+		C:        c,
+		c:        c,
+		ns:       ns,
+		shutdown: make(chan bool, 1),
+		nextTick: Nanoseconds() + ns,
+	}
 	onceStartTickerLoop.Do(startTickerLoop)
 	// must be run in background so global Tickers can be created
 	go func() { newTicker <- t }()

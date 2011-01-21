@@ -58,11 +58,11 @@ func TestFullRune(t *testing.T) {
 		m := utf8map[i]
 		b := []byte(m.str)
 		if !FullRune(b) {
-			t.Errorf("FullRune(%q) (rune %04x) = false, want true", b, m.rune)
+			t.Errorf("FullRune(%q) (%U) = false, want true", b, m.rune)
 		}
 		s := m.str
 		if !FullRuneInString(s) {
-			t.Errorf("FullRuneInString(%q) (rune %04x) = false, want true", s, m.rune)
+			t.Errorf("FullRuneInString(%q) (%U) = false, want true", s, m.rune)
 		}
 		b1 := b[0 : len(b)-1]
 		if FullRune(b1) {
@@ -80,7 +80,7 @@ func TestEncodeRune(t *testing.T) {
 		m := utf8map[i]
 		b := []byte(m.str)
 		var buf [10]byte
-		n := EncodeRune(m.rune, buf[0:])
+		n := EncodeRune(buf[0:], m.rune)
 		b1 := buf[0:n]
 		if !bytes.Equal(b, b1) {
 			t.Errorf("EncodeRune(%#04x) = %q want %q", m.rune, b1, b)
@@ -166,13 +166,13 @@ func TestIntConversion(t *testing.T) {
 	for _, ts := range testStrings {
 		runes := []int(ts)
 		if RuneCountInString(ts) != len(runes) {
-			t.Error("%q: expected %d runes; got %d", ts, len(runes), RuneCountInString(ts))
+			t.Errorf("%q: expected %d runes; got %d", ts, len(runes), RuneCountInString(ts))
 			break
 		}
 		i := 0
 		for _, r := range ts {
 			if r != runes[i] {
-				t.Errorf("%q[%d]: expected %c (U+%04x); got %c (U+%04x)", ts, i, runes[i], runes[i], r, r)
+				t.Errorf("%q[%d]: expected %c (%U); got %c (%U)", ts, i, runes[i], runes[i], r, r)
 			}
 			i++
 		}
@@ -242,9 +242,9 @@ func testSequence(t *testing.T, s string) {
 // Check that negative runes encode as U+FFFD.
 func TestNegativeRune(t *testing.T) {
 	errorbuf := make([]byte, UTFMax)
-	errorbuf = errorbuf[0:EncodeRune(RuneError, errorbuf)]
+	errorbuf = errorbuf[0:EncodeRune(errorbuf, RuneError)]
 	buf := make([]byte, UTFMax)
-	buf = buf[0:EncodeRune(-1, buf)]
+	buf = buf[0:EncodeRune(buf, -1)]
 	if !bytes.Equal(buf, errorbuf) {
 		t.Errorf("incorrect encoding [% x] for -1; expected [% x]", buf, errorbuf)
 	}
@@ -289,14 +289,14 @@ func BenchmarkRuneCountTenJapaneseChars(b *testing.B) {
 func BenchmarkEncodeASCIIRune(b *testing.B) {
 	buf := make([]byte, UTFMax)
 	for i := 0; i < b.N; i++ {
-		EncodeRune('a', buf)
+		EncodeRune(buf, 'a')
 	}
 }
 
 func BenchmarkEncodeJapaneseRune(b *testing.B) {
 	buf := make([]byte, UTFMax)
 	for i := 0; i < b.N; i++ {
-		EncodeRune('本', buf)
+		EncodeRune(buf, '本')
 	}
 }
 

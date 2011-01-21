@@ -1112,6 +1112,33 @@ var jM3SC = []float64{
 	NaN(),
 }
 
+var vfldexpSC = []fi{
+	{0, 0},
+	{0, -1075},
+	{0, 1024},
+	{Copysign(0, -1), 0},
+	{Copysign(0, -1), -1075},
+	{Copysign(0, -1), 1024},
+	{Inf(1), 0},
+	{Inf(1), -1024},
+	{Inf(-1), 0},
+	{Inf(-1), -1024},
+	{NaN(), -1024},
+}
+var ldexpSC = []float64{
+	0,
+	0,
+	0,
+	Copysign(0, -1),
+	Copysign(0, -1),
+	Copysign(0, -1),
+	Inf(1),
+	Inf(1),
+	Inf(-1),
+	Inf(-1),
+	NaN(),
+}
+
 var vflgammaSC = []float64{
 	Inf(-1),
 	-3,
@@ -1440,6 +1467,65 @@ var yM3SC = []float64{
 	NaN(),
 }
 
+// arguments and expected results for boundary cases
+const (
+	SmallestNormalFloat64   = 2.2250738585072014e-308 // 2**-1022
+	LargestSubnormalFloat64 = SmallestNormalFloat64 - SmallestNonzeroFloat64
+)
+
+var vffrexpBC = []float64{
+	SmallestNormalFloat64,
+	LargestSubnormalFloat64,
+	SmallestNonzeroFloat64,
+	MaxFloat64,
+	-SmallestNormalFloat64,
+	-LargestSubnormalFloat64,
+	-SmallestNonzeroFloat64,
+	-MaxFloat64,
+}
+var frexpBC = []fi{
+	{0.5, -1021},
+	{0.99999999999999978, -1022},
+	{0.5, -1073},
+	{0.99999999999999989, 1024},
+	{-0.5, -1021},
+	{-0.99999999999999978, -1022},
+	{-0.5, -1073},
+	{-0.99999999999999989, 1024},
+}
+
+var vfldexpBC = []fi{
+	{SmallestNormalFloat64, -52},
+	{LargestSubnormalFloat64, -51},
+	{SmallestNonzeroFloat64, 1074},
+	{MaxFloat64, -(1023 + 1074)},
+	{1, -1075},
+	{-1, -1075},
+	{1, 1024},
+	{-1, 1024},
+}
+var ldexpBC = []float64{
+	SmallestNonzeroFloat64,
+	1e-323, // 2**-1073
+	1,
+	1e-323, // 2**-1073
+	0,
+	Copysign(0, -1),
+	Inf(1),
+	Inf(-1),
+}
+
+var logbBC = []float64{
+	-1022,
+	-1023,
+	-1074,
+	1023,
+	-1022,
+	-1023,
+	-1074,
+	1023,
+}
+
 func tolerance(a, b, e float64) bool {
 	d := a - b
 	if d < 0 {
@@ -1662,14 +1748,19 @@ func TestErfc(t *testing.T) {
 }
 
 func TestExp(t *testing.T) {
+	testExp(t, Exp, "Exp")
+	testExp(t, ExpGo, "ExpGo")
+}
+
+func testExp(t *testing.T, Exp func(float64) float64, name string) {
 	for i := 0; i < len(vf); i++ {
 		if f := Exp(vf[i]); !close(exp[i], f) {
-			t.Errorf("Exp(%g) = %g, want %g", vf[i], f, exp[i])
+			t.Errorf("%s(%g) = %g, want %g", name, vf[i], f, exp[i])
 		}
 	}
 	for i := 0; i < len(vfexpSC); i++ {
 		if f := Exp(vfexpSC[i]); !alike(expSC[i], f) {
-			t.Errorf("Exp(%g) = %g, want %g", vfexpSC[i], f, expSC[i])
+			t.Errorf("%s(%g) = %g, want %g", name, vfexpSC[i], f, expSC[i])
 		}
 	}
 }
@@ -1689,14 +1780,26 @@ func TestExpm1(t *testing.T) {
 }
 
 func TestExp2(t *testing.T) {
+	testExp2(t, Exp2, "Exp2")
+	testExp2(t, Exp2Go, "Exp2Go")
+}
+
+func testExp2(t *testing.T, Exp2 func(float64) float64, name string) {
 	for i := 0; i < len(vf); i++ {
 		if f := Exp2(vf[i]); !close(exp2[i], f) {
-			t.Errorf("Exp2(%g) = %g, want %g", vf[i], f, exp2[i])
+			t.Errorf("%s(%g) = %g, want %g", name, vf[i], f, exp2[i])
 		}
 	}
 	for i := 0; i < len(vfexpSC); i++ {
 		if f := Exp2(vfexpSC[i]); !alike(expSC[i], f) {
-			t.Errorf("Exp2(%g) = %g, want %g", vfexpSC[i], f, expSC[i])
+			t.Errorf("%s(%g) = %g, want %g", name, vfexpSC[i], f, expSC[i])
+		}
+	}
+	for n := -1074; n < 1024; n++ {
+		f := Exp2(float64(n))
+		vf := Ldexp(1, n)
+		if f != vf {
+			t.Errorf("%s(%d) = %g, want %g", name, n, f, vf)
 		}
 	}
 }
@@ -1775,6 +1878,11 @@ func TestFrexp(t *testing.T) {
 			t.Errorf("Frexp(%g) = %g, %d, want %g, %d", vffrexpSC[i], f, j, frexpSC[i].f, frexpSC[i].i)
 		}
 	}
+	for i := 0; i < len(vffrexpBC); i++ {
+		if f, j := Frexp(vffrexpBC[i]); !alike(frexpBC[i].f, f) || frexpBC[i].i != j {
+			t.Errorf("Frexp(%g) = %g, %d, want %g, %d", vffrexpBC[i], f, j, frexpBC[i].f, frexpBC[i].i)
+		}
+	}
 }
 
 func TestGamma(t *testing.T) {
@@ -1814,6 +1922,11 @@ func TestIlogb(t *testing.T) {
 	for i := 0; i < len(vflogbSC); i++ {
 		if e := Ilogb(vflogbSC[i]); ilogbSC[i] != e {
 			t.Errorf("Ilogb(%g) = %d, want %d", vflogbSC[i], e, ilogbSC[i])
+		}
+	}
+	for i := 0; i < len(vffrexpBC); i++ {
+		if e := Ilogb(vffrexpBC[i]); int(logbBC[i]) != e {
+			t.Errorf("Ilogb(%g) = %d, want %d", vffrexpBC[i], e, int(logbBC[i]))
 		}
 	}
 }
@@ -1874,6 +1987,21 @@ func TestLdexp(t *testing.T) {
 			t.Errorf("Ldexp(%g, %d) = %g, want %g", frexpSC[i].f, frexpSC[i].i, f, vffrexpSC[i])
 		}
 	}
+	for i := 0; i < len(vfldexpSC); i++ {
+		if f := Ldexp(vfldexpSC[i].f, vfldexpSC[i].i); !alike(ldexpSC[i], f) {
+			t.Errorf("Ldexp(%g, %d) = %g, want %g", vfldexpSC[i].f, vfldexpSC[i].i, f, ldexpSC[i])
+		}
+	}
+	for i := 0; i < len(vffrexpBC); i++ {
+		if f := Ldexp(frexpBC[i].f, frexpBC[i].i); !alike(vffrexpBC[i], f) {
+			t.Errorf("Ldexp(%g, %d) = %g, want %g", frexpBC[i].f, frexpBC[i].i, f, vffrexpBC[i])
+		}
+	}
+	for i := 0; i < len(vfldexpBC); i++ {
+		if f := Ldexp(vfldexpBC[i].f, vfldexpBC[i].i); !alike(ldexpBC[i], f) {
+			t.Errorf("Ldexp(%g, %d) = %g, want %g", vfldexpBC[i].f, vfldexpBC[i].i, f, ldexpBC[i])
+		}
+	}
 }
 
 func TestLgamma(t *testing.T) {
@@ -1917,6 +2045,11 @@ func TestLogb(t *testing.T) {
 			t.Errorf("Logb(%g) = %g, want %g", vflogbSC[i], f, logbSC[i])
 		}
 	}
+	for i := 0; i < len(vffrexpBC); i++ {
+		if e := Logb(vffrexpBC[i]); !alike(logbBC[i], e) {
+			t.Errorf("Ilogb(%g) = %g, want %g", vffrexpBC[i], e, logbBC[i])
+		}
+	}
 }
 
 func TestLog10(t *testing.T) {
@@ -1943,7 +2076,7 @@ func TestLog1p(t *testing.T) {
 			t.Errorf("Log1p(%g) = %g, want %g", a, f, log1p[i])
 		}
 	}
-	a := float64(9)
+	a := 9.0
 	if f := Log1p(a); f != Ln10 {
 		t.Errorf("Log1p(%g) = %g, want %g", a, f, Ln10)
 	}
@@ -2246,9 +2379,9 @@ type floatTest struct {
 
 var floatTests = []floatTest{
 	{float64(MaxFloat64), "MaxFloat64", "1.7976931348623157e+308"},
-	{float64(MinFloat64), "MinFloat64", "5e-324"},
+	{float64(SmallestNonzeroFloat64), "SmallestNonzeroFloat64", "5e-324"},
 	{float32(MaxFloat32), "MaxFloat32", "3.4028235e+38"},
-	{float32(MinFloat32), "MinFloat32", "1e-45"},
+	{float32(SmallestNonzeroFloat32), "SmallestNonzeroFloat32", "1e-45"},
 }
 
 func TestFloatMinMax(t *testing.T) {
@@ -2352,6 +2485,12 @@ func BenchmarkExp(b *testing.B) {
 	}
 }
 
+func BenchmarkExpGo(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ExpGo(.5)
+	}
+}
+
 func BenchmarkExpm1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Expm1(.5)
@@ -2361,6 +2500,12 @@ func BenchmarkExpm1(b *testing.B) {
 func BenchmarkExp2(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Exp2(.5)
+	}
+}
+
+func BenchmarkExp2Go(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Exp2Go(.5)
 	}
 }
 

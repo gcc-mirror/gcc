@@ -4,33 +4,13 @@
 
 package tls
 
-// The handshake goroutine reads handshake messages from the record processor
-// and outputs messages to be written on another channel. It updates the record
-// processor with the state of the connection via the control channel. In the
-// case of handshake messages that need synchronous processing (because they
-// affect the handling of the next record) the record processor knows about
-// them and either waits for a control message (Finished) or includes a reply
-// channel in the message (ChangeCipherSpec).
-
 import (
-	"crypto/hmac"
-	"crypto/rc4"
 	"crypto/rsa"
 	"crypto/subtle"
 	"crypto/x509"
 	"io"
 	"os"
 )
-
-type cipherSuite struct {
-	id                          uint16 // The number of this suite on the wire.
-	hashLength, cipherKeyLength int
-	// TODO(agl): need a method to create the cipher and hash interfaces.
-}
-
-var cipherSuites = []cipherSuite{
-	{TLS_RSA_WITH_RC4_128_SHA, 20, 16},
-}
 
 func (c *Conn) serverHandshake() os.Error {
 	config := c.config
@@ -54,16 +34,38 @@ func (c *Conn) serverHandshake() os.Error {
 
 	hello := new(serverHelloMsg)
 
-	// We only support a single ciphersuite so we look for it in the list
-	// of client supported suites.
-	//
-	// TODO(agl): Add additional cipher suites.
-	var suite *cipherSuite
+	supportedCurve := false
+Curves:
+	for _, curve := range clientHello.supportedCurves {
+		switch curve {
+		case curveP256, curveP384, curveP521:
+			supportedCurve = true
+			break Curves
+		}
+	}
 
+	supportedPointFormat := false
+	for _, pointFormat := range clientHello.supportedPoints {
+		if pointFormat == pointFormatUncompressed {
+			supportedPointFormat = true
+			break
+		}
+	}
+
+	ellipticOk := supportedCurve && supportedPointFormat
+
+	var suite *cipherSuite
+	var suiteId uint16
 	for _, id := range clientHello.cipherSuites {
-		for _, supported := range cipherSuites {
-			if supported.id == id {
-				suite = &supported
+		for _, supported := range config.cipherSuites() {
+			if id == supported {
+				suite = cipherSuites[id]
+				// Don't select a ciphersuite which we can't
+				// support for this client.
+				if suite.elliptic && !ellipticOk {
+					continue
+				}
+				suiteId = id
 				break
 			}
 		}
@@ -83,14 +85,14 @@ func (c *Conn) serverHandshake() os.Error {
 	}
 
 	hello.vers = vers
-	hello.cipherSuite = suite.id
-	t := uint32(config.Time())
+	hello.cipherSuite = suiteId
+	t := uint32(config.time())
 	hello.random = make([]byte, 32)
 	hello.random[0] = byte(t >> 24)
 	hello.random[1] = byte(t >> 16)
 	hello.random[2] = byte(t >> 8)
 	hello.random[3] = byte(t)
-	_, err = io.ReadFull(config.Rand, hello.random[4:])
+	_, err = io.ReadFull(config.rand(), hello.random[4:])
 	if err != nil {
 		return c.sendAlert(alertInternalError)
 	}
@@ -111,6 +113,18 @@ func (c *Conn) serverHandshake() os.Error {
 	certMsg.certificates = config.Certificates[0].Certificate
 	finishedHash.Write(certMsg.marshal())
 	c.writeRecord(recordTypeHandshake, certMsg.marshal())
+
+	keyAgreement := suite.ka()
+
+	skx, err := keyAgreement.generateServerKeyExchange(config, clientHello, hello)
+	if err != nil {
+		c.sendAlert(alertHandshakeFailure)
+		return err
+	}
+	if skx != nil {
+		finishedHash.Write(skx.marshal())
+		c.writeRecord(recordTypeHandshake, skx.marshal())
+	}
 
 	if config.AuthenticateClient {
 		// Request a client certificate
@@ -208,28 +222,18 @@ func (c *Conn) serverHandshake() os.Error {
 		finishedHash.Write(certVerify.marshal())
 	}
 
-	preMasterSecret := make([]byte, 48)
-	_, err = io.ReadFull(config.Rand, preMasterSecret[2:])
+	preMasterSecret, err := keyAgreement.processClientKeyExchange(config, ckx)
 	if err != nil {
-		return c.sendAlert(alertInternalError)
+		c.sendAlert(alertHandshakeFailure)
+		return err
 	}
 
-	err = rsa.DecryptPKCS1v15SessionKey(config.Rand, config.Certificates[0].PrivateKey, ckx.ciphertext, preMasterSecret)
-	if err != nil {
-		return c.sendAlert(alertHandshakeFailure)
-	}
-	// We don't check the version number in the premaster secret. For one,
-	// by checking it, we would leak information about the validity of the
-	// encrypted pre-master secret. Secondly, it provides only a small
-	// benefit against a downgrade attack and some implementations send the
-	// wrong version anyway. See the discussion at the end of section
-	// 7.4.7.1 of RFC 4346.
+	masterSecret, clientMAC, serverMAC, clientKey, serverKey, clientIV, serverIV :=
+		keysFromPreMasterSecret10(preMasterSecret, clientHello.random, hello.random, suite.macLen, suite.keyLen, suite.ivLen)
 
-	masterSecret, clientMAC, serverMAC, clientKey, serverKey :=
-		keysFromPreMasterSecret11(preMasterSecret, clientHello.random, hello.random, suite.hashLength, suite.cipherKeyLength)
-
-	cipher, _ := rc4.NewCipher(clientKey)
-	c.in.prepareCipherSpec(cipher, hmac.NewSHA1(clientMAC))
+	clientCipher := suite.cipher(clientKey, clientIV, true /* for reading */ )
+	clientHash := suite.mac(clientMAC)
+	c.in.prepareCipherSpec(clientCipher, clientHash)
 	c.readRecord(recordTypeChangeCipherSpec)
 	if err := c.error(); err != nil {
 		return err
@@ -265,8 +269,9 @@ func (c *Conn) serverHandshake() os.Error {
 
 	finishedHash.Write(clientFinished.marshal())
 
-	cipher2, _ := rc4.NewCipher(serverKey)
-	c.out.prepareCipherSpec(cipher2, hmac.NewSHA1(serverMAC))
+	serverCipher := suite.cipher(serverKey, serverIV, false /* not for reading */ )
+	serverHash := suite.mac(serverMAC)
+	c.out.prepareCipherSpec(serverCipher, serverHash)
 	c.writeRecord(recordTypeChangeCipherSpec, []byte{1})
 
 	finished := new(finishedMsg)
@@ -274,7 +279,7 @@ func (c *Conn) serverHandshake() os.Error {
 	c.writeRecord(recordTypeHandshake, finished.marshal())
 
 	c.handshakeComplete = true
-	c.cipherSuite = TLS_RSA_WITH_RC4_128_SHA
+	c.cipherSuite = suiteId
 
 	return nil
 }

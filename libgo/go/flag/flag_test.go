@@ -7,6 +7,7 @@ package flag_test
 import (
 	. "flag"
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -17,8 +18,7 @@ var (
 	test_uint    = Uint("test_uint", 0, "uint value")
 	test_uint64  = Uint64("test_uint64", 0, "uint64 value")
 	test_string  = String("test_string", "0", "string value")
-	test_float   = Float("test_float", 0, "float value")
-	test_float64 = Float("test_float64", 0, "float64 value")
+	test_float64 = Float64("test_float64", 0, "float64 value")
 )
 
 func boolString(s string) string {
@@ -47,7 +47,7 @@ func TestEverything(t *testing.T) {
 		}
 	}
 	VisitAll(visitor)
-	if len(m) != 8 {
+	if len(m) != 7 {
 		t.Error("VisitAll misses some flags")
 		for k, v := range m {
 			t.Log(k, *v)
@@ -68,11 +68,10 @@ func TestEverything(t *testing.T) {
 	Set("test_uint", "1")
 	Set("test_uint64", "1")
 	Set("test_string", "1")
-	Set("test_float", "1")
 	Set("test_float64", "1")
 	desired = "1"
 	Visit(visitor)
-	if len(m) != 8 {
+	if len(m) != 7 {
 		t.Error("Visit fails after set")
 		for k, v := range m {
 			t.Log(k, *v)
@@ -100,8 +99,7 @@ func TestParse(t *testing.T) {
 	uintFlag := Uint("uint", 0, "uint value")
 	uint64Flag := Uint64("uint64", 0, "uint64 value")
 	stringFlag := String("string", "0", "string value")
-	floatFlag := Float("float", 0, "float value")
-	float64Flag := Float("float64", 0, "float64 value")
+	float64Flag := Float64("float64", 0, "float64 value")
 	extra := "one-extra-argument"
 	args := []string{
 		"a.out",
@@ -112,7 +110,6 @@ func TestParse(t *testing.T) {
 		"-uint", "24",
 		"--uint64", "25",
 		"-string", "hello",
-		"--float", "3141.5",
 		"-float64", "2718e28",
 		extra,
 	}
@@ -139,9 +136,6 @@ func TestParse(t *testing.T) {
 	}
 	if *stringFlag != "hello" {
 		t.Error("string flag should be `hello`, is ", *stringFlag)
-	}
-	if *floatFlag != 3141.5 {
-		t.Error("float flag should be 3141.5, is ", *floatFlag)
 	}
 	if *float64Flag != 2718e28 {
 		t.Error("float64 flag should be 2718e28, is ", *float64Flag)
@@ -178,5 +172,23 @@ func TestUserDefined(t *testing.T) {
 	expect := "[1 2 3]"
 	if v.String() != expect {
 		t.Errorf("expected value %q got %q", expect, v.String())
+	}
+}
+
+func TestChangingArgs(t *testing.T) {
+	ResetForTesting(func() { t.Fatal("bad parse") })
+	oldArgs := os.Args
+	defer func() { os.Args = oldArgs }()
+	os.Args = []string{"cmd", "-before", "subcmd", "-after", "args"}
+	before := Bool("before", false, "")
+	Parse()
+	cmd := Arg(0)
+	os.Args = Args()
+	after := Bool("after", false, "")
+	Parse()
+	args := Args()
+
+	if !*before || cmd != "subcmd" || !*after || len(args) != 1 || args[0] != "args" {
+		t.Fatalf("expected true subcmd true [args] got %v %v %v %v", *before, cmd, *after, args)
 	}
 }

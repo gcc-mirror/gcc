@@ -704,8 +704,6 @@ Import::register_builtin_types(Gogo* gogo)
   this->register_builtin_type(gogo, "int", BUILTIN_INT);
   this->register_builtin_type(gogo, "uint", BUILTIN_UINT);
   this->register_builtin_type(gogo, "uintptr", BUILTIN_UINTPTR);
-  this->register_builtin_type(gogo, "float", BUILTIN_FLOAT);
-  this->register_builtin_type(gogo, "complex", BUILTIN_COMPLEX);
   this->register_builtin_type(gogo, "bool", BUILTIN_BOOL);
   this->register_builtin_type(gogo, "string", BUILTIN_STRING);
 }

@@ -283,6 +283,24 @@ func escape(c int) int {
 	return -1
 }
 
+func (p *parser) checkBackslash() int {
+	c := p.c()
+	if c == '\\' {
+		c = p.nextc()
+		switch {
+		case c == endOfFile:
+			p.error(ErrExtraneousBackslash)
+		case ispunct(c):
+			// c is as delivered
+		case escape(c) >= 0:
+			c = int(escaped[escape(c)])
+		default:
+			p.error(ErrBadBackslash)
+		}
+	}
+	return c
+}
+
 func (p *parser) charClass() *instr {
 	i := newCharClass()
 	cc := i.cclass
@@ -314,20 +332,8 @@ func (p *parser) charClass() *instr {
 			return i
 		case '-': // do this before backslash processing
 			p.error(ErrBadRange)
-		case '\\':
-			c = p.nextc()
-			switch {
-			case c == endOfFile:
-				p.error(ErrExtraneousBackslash)
-			case ispunct(c):
-				// c is as delivered
-			case escape(c) >= 0:
-				c = int(escaped[escape(c)])
-			default:
-				p.error(ErrBadBackslash)
-			}
-			fallthrough
 		default:
+			c = p.checkBackslash()
 			p.nextc()
 			switch {
 			case left < 0: // first of pair
@@ -345,14 +351,14 @@ func (p *parser) charClass() *instr {
 			}
 		}
 	}
-	return nil
+	panic("unreachable")
 }
 
 func (p *parser) term() (start, end *instr) {
 	switch c := p.c(); c {
 	case '|', endOfFile:
 		return nil, nil
-	case '*', '+':
+	case '*', '+', '?':
 		p.error(ErrBareClosure)
 	case ')':
 		if p.nlpar == 0 {
@@ -407,20 +413,8 @@ func (p *parser) term() (start, end *instr) {
 		}
 		bra.next = start
 		return bra, ebra
-	case '\\':
-		c = p.nextc()
-		switch {
-		case c == endOfFile:
-			p.error(ErrExtraneousBackslash)
-		case ispunct(c):
-			// c is as delivered
-		case escape(c) >= 0:
-			c = int(escaped[escape(c)])
-		default:
-			p.error(ErrBadBackslash)
-		}
-		fallthrough
 	default:
+		c = p.checkBackslash()
 		p.nextc()
 		start = &instr{kind: iChar, char: c}
 		p.re.add(start)
@@ -571,15 +565,20 @@ func (re *Regexp) doParse() {
 	}
 }
 
-// Extract regular text from the beginning of the pattern.
+// Extract regular text from the beginning of the pattern,
+// possibly after a leading iBOT.
 // That text can be used by doExecute to speed up matching.
 func (re *Regexp) setPrefix() {
 	var b []byte
 	var utf = make([]byte, utf8.UTFMax)
 	var inst *instr
-	// First instruction is start; skip that.
+	// First instruction is start; skip that.  Also skip any initial iBOT.
+	inst = re.inst[0].next
+	for inst.kind == iBOT {
+		inst = inst.next
+	}
 Loop:
-	for inst = re.inst[0].next; inst.kind != iEnd; inst = inst.next {
+	for ; inst.kind != iEnd; inst = inst.next {
 		// stop if this is not a char
 		if inst.kind != iChar {
 			break
@@ -590,13 +589,18 @@ Loop:
 		case iBOT, iEOT, iAlt:
 			break Loop
 		}
-		n := utf8.EncodeRune(inst.char, utf)
+		n := utf8.EncodeRune(utf, inst.char)
 		b = append(b, utf[0:n]...)
 	}
 	// point prefixStart instruction to first non-CHAR after prefix
 	re.prefixStart = inst
 	re.prefixBytes = b
 	re.prefix = string(b)
+}
+
+// String returns the source text used to compile the regular expression.
+func (re *Regexp) String() string {
+	return re.expr
 }
 
 // Compile parses a regular expression and returns, if successful, a Regexp
@@ -743,34 +747,46 @@ func (re *Regexp) doExecute(str string, bytestr []byte, pos int) []int {
 	if bytestr != nil {
 		end = len(bytestr)
 	}
+	anchored := re.inst[0].next.kind == iBOT
+	if anchored && pos > 0 {
+		return nil
+	}
 	// fast check for initial plain substring
-	prefixed := false // has this iteration begun by skipping a prefix?
 	if re.prefix != "" {
-		var advance int
-		if bytestr == nil {
-			advance = strings.Index(str[pos:], re.prefix)
+		advance := 0
+		if anchored {
+			if bytestr == nil {
+				if !strings.HasPrefix(str, re.prefix) {
+					return nil
+				}
+			} else {
+				if !bytes.HasPrefix(bytestr, re.prefixBytes) {
+					return nil
+				}
+			}
 		} else {
-			advance = bytes.Index(bytestr[pos:], re.prefixBytes)
+			if bytestr == nil {
+				advance = strings.Index(str[pos:], re.prefix)
+			} else {
+				advance = bytes.Index(bytestr[pos:], re.prefixBytes)
+			}
 		}
 		if advance == -1 {
 			return nil
 		}
-		pos += advance + len(re.prefix)
-		prefixed = true
+		pos += advance
 	}
 	arena := &matchArena{nil, 2 * (re.nbra + 1)}
-	for pos <= end {
-		if !found {
+	for startPos := pos; pos <= end; {
+		if !found && (pos == startPos || !anchored) {
 			// prime the pump if we haven't seen a match yet
 			match := arena.noMatch()
 			match.m[0] = pos
-			if prefixed {
-				s[out] = arena.addState(s[out], re.prefixStart, true, match, pos, end)
-				prefixed = false // next iteration should start at beginning of machine.
-			} else {
-				s[out] = arena.addState(s[out], re.start.next, false, match, pos, end)
-			}
+			s[out] = arena.addState(s[out], re.start.next, false, match, pos, end)
 			arena.free(match) // if addState saved it, ref was incremented
+		} else if len(s[out]) == 0 {
+			// machine has completed
+			break
 		}
 		in, out = out, in // old out state is new in state
 		// clear out old state
@@ -779,10 +795,6 @@ func (re *Regexp) doExecute(str string, bytestr []byte, pos int) []int {
 			arena.free(state.match)
 		}
 		s[out] = old[0:0] // truncate state vector
-		if found && len(s[in]) == 0 {
-			// machine has completed
-			break
-		}
 		charwidth := 1
 		c := endOfFile
 		if pos < end {
@@ -842,6 +854,24 @@ func (re *Regexp) doExecute(str string, bytestr []byte, pos int) []int {
 		final.match.m[0] -= len(re.prefix)
 	}
 	return final.match.m
+}
+
+// LiteralPrefix returns a literal string that must begin any match
+// of the regular expression re.  It returns the boolean true if the
+// literal string comprises the entire regular expression.
+func (re *Regexp) LiteralPrefix() (prefix string, complete bool) {
+	c := make([]int, len(re.inst)-2) // minus start and end.
+	// First instruction is start; skip that.
+	i := 0
+	for inst := re.inst[0].next; inst.kind != iEnd; inst = inst.next {
+		// stop if this is not a char
+		if inst.kind != iChar {
+			return string(c[:i]), false
+		}
+		c[i] = inst.char
+		i++
+	}
+	return string(c[:i]), true
 }
 
 // MatchString returns whether the Regexp matches the string s.

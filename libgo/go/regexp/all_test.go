@@ -38,6 +38,8 @@ type stringError struct {
 
 var bad_re = []stringError{
 	{`*`, ErrBareClosure},
+	{`+`, ErrBareClosure},
+	{`?`, ErrBareClosure},
 	{`(abc`, ErrUnmatchedLpar},
 	{`abc)`, ErrUnmatchedRpar},
 	{`x[a-z`, ErrUnmatchedLbkt},
@@ -47,7 +49,6 @@ var bad_re = []stringError{
 	{`a**`, ErrBadClosure},
 	{`a*+`, ErrBadClosure},
 	{`a??`, ErrBadClosure},
-	{`*`, ErrBareClosure},
 	{`\x`, ErrBadBackslash},
 }
 
@@ -229,18 +230,21 @@ func TestReplaceAllFunc(t *testing.T) {
 	}
 }
 
-type QuoteMetaTest struct {
-	pattern, output string
+type MetaTest struct {
+	pattern, output, literal string
+	isLiteral                bool
 }
 
-var quoteMetaTests = []QuoteMetaTest{
-	{``, ``},
-	{`foo`, `foo`},
-	{`!@#$%^&*()_+-=[{]}\|,<.>/?~`, `!@#\$%\^&\*\(\)_\+-=\[{\]}\\\|,<\.>/\?~`},
+var metaTests = []MetaTest{
+	{``, ``, ``, true},
+	{`foo`, `foo`, `foo`, true},
+	{`foo\.\$`, `foo\\\.\\\$`, `foo.$`, true}, // has meta but no operator
+	{`foo.\$`, `foo\.\\\$`, `foo`, false},     // has escaped operators and real operators
+	{`!@#$%^&*()_+-=[{]}\|,<.>/?~`, `!@#\$%\^&\*\(\)_\+-=\[{\]}\\\|,<\.>/\?~`, `!@#`, false},
 }
 
 func TestQuoteMeta(t *testing.T) {
-	for _, tc := range quoteMetaTests {
+	for _, tc := range metaTests {
 		// Verify that QuoteMeta returns the expected string.
 		quoted := QuoteMeta(tc.pattern)
 		if quoted != tc.output {
@@ -265,6 +269,20 @@ func TestQuoteMeta(t *testing.T) {
 				t.Errorf("QuoteMeta(`%s`).Replace(`%s`,`%s`) = `%s`; want `%s`",
 					tc.pattern, src, repl, replaced, expected)
 			}
+		}
+	}
+}
+
+func TestLiteralPrefix(t *testing.T) {
+	for _, tc := range metaTests {
+		// Literal method needs to scan the pattern.
+		re := MustCompile(tc.pattern)
+		str, complete := re.LiteralPrefix()
+		if complete != tc.isLiteral {
+			t.Errorf("LiteralPrefix(`%s`) = %t; want %t", tc.pattern, complete, tc.isLiteral)
+		}
+		if str != tc.literal {
+			t.Errorf("LiteralPrefix(`%s`) = `%s`; want `%s`", tc.pattern, str, tc.literal)
 		}
 	}
 }
@@ -358,5 +376,51 @@ func BenchmarkReplaceAll(b *testing.B) {
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		re.ReplaceAllString(x, "")
+	}
+}
+
+func BenchmarkAnchoredLiteralShortNonMatch(b *testing.B) {
+	b.StopTimer()
+	x := []byte("abcdefghijklmnopqrstuvwxyz")
+	re := MustCompile("^zbc(d|e)")
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		re.Match(x)
+	}
+}
+
+func BenchmarkAnchoredLiteralLongNonMatch(b *testing.B) {
+	b.StopTimer()
+	x := []byte("abcdefghijklmnopqrstuvwxyz")
+	for i := 0; i < 15; i++ {
+		x = append(x, x...)
+	}
+	re := MustCompile("^zbc(d|e)")
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		re.Match(x)
+	}
+}
+
+func BenchmarkAnchoredShortMatch(b *testing.B) {
+	b.StopTimer()
+	x := []byte("abcdefghijklmnopqrstuvwxyz")
+	re := MustCompile("^.bc(d|e)")
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		re.Match(x)
+	}
+}
+
+func BenchmarkAnchoredLongMatch(b *testing.B) {
+	b.StopTimer()
+	x := []byte("abcdefghijklmnopqrstuvwxyz")
+	for i := 0; i < 15; i++ {
+		x = append(x, x...)
+	}
+	re := MustCompile("^.bc(d|e)")
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		re.Match(x)
 	}
 }

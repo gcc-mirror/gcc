@@ -175,7 +175,7 @@ func RunBenchmarks(matchString func(pat, str string) (bool, os.Error), benchmark
 	for _, Benchmark := range benchmarks {
 		matched, err := matchString(*matchBenchmarks, Benchmark.Name)
 		if err != nil {
-			println("invalid regexp for -benchmarks:", err)
+			println("invalid regexp for -benchmarks:", err.String())
 			os.Exit(1)
 		}
 		if !matched {
@@ -189,7 +189,7 @@ func RunBenchmarks(matchString func(pat, str string) (bool, os.Error), benchmark
 
 // Benchmark benchmarks a single function. Useful for creating
 // custom benchmarks that do not use gotest.
-func Benchmark(name string, f func(b *B)) BenchmarkResult {
-	b := &B{benchmark: InternalBenchmark{name, f}}
+func Benchmark(f func(b *B)) BenchmarkResult {
+	b := &B{benchmark: InternalBenchmark{"", f}}
 	return b.run()
 }

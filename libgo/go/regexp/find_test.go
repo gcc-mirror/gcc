@@ -78,6 +78,7 @@ var findTests = []FindTest{
 	{`axxb$`, "axxcb", nil},
 	{`data`, "daXY data", build(1, 5, 9)},
 	{`da(.)a$`, "daXY data", build(1, 5, 9, 7, 8)},
+	{`zx+`, "zzx", build(1, 1, 3)},
 
 	// can backslash-escape any punctuation
 	{`\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\{\|\}\~`,
@@ -119,7 +120,11 @@ func build(n int, x ...int) [][]int {
 
 func TestFind(t *testing.T) {
 	for _, test := range findTests {
-		result := MustCompile(test.pat).Find([]byte(test.text))
+		re := MustCompile(test.pat)
+		if re.String() != test.pat {
+			t.Errorf("String() = `%s`; should be `%s`", re.String(), test.pat)
+		}
+		result := re.Find([]byte(test.text))
 		switch {
 		case len(test.matches) == 0 && len(result) == 0:
 			// ok

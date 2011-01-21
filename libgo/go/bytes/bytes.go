@@ -165,6 +165,25 @@ func IndexAny(s []byte, chars string) int {
 	return -1
 }
 
+// LastIndexAny interprets s as a sequence of UTF-8-encoded Unicode code
+// points.  It returns the byte index of the last occurrence in s of any of
+// the Unicode code points in chars.  It returns -1 if chars is empty or if
+// there is no code point in common.
+func LastIndexAny(s []byte, chars string) int {
+	if len(chars) > 0 {
+		for i := len(s); i > 0; {
+			rune, size := utf8.DecodeLastRune(s[0:i])
+			i -= size
+			for _, m := range chars {
+				if rune == m {
+					return i
+				}
+			}
+		}
+	}
+	return -1
+}
+
 // Generic split: splits after each instance of sep,
 // including sepSave bytes of sep in the subarrays.
 func genSplit(s, sep []byte, sepSave, n int) [][]byte {
@@ -328,7 +347,7 @@ func Map(mapping func(rune int) int, s []byte) []byte {
 				copy(nb, b[0:nbytes])
 				b = nb
 			}
-			nbytes += utf8.EncodeRune(rune, b[nbytes:maxbytes])
+			nbytes += utf8.EncodeRune(b[nbytes:maxbytes], rune)
 		}
 		i += wid
 	}
@@ -528,51 +547,9 @@ func TrimRight(s []byte, cutset string) []byte {
 }
 
 // TrimSpace returns a subslice of s by slicing off all leading and
-// trailing white space, as as defined by Unicode.
+// trailing white space, as defined by Unicode.
 func TrimSpace(s []byte) []byte {
 	return TrimFunc(s, unicode.IsSpace)
-}
-
-// How big to make a byte array when growing.
-// Heuristic: Scale by 50% to give n log n time.
-func resize(n int) int {
-	if n < 16 {
-		n = 16
-	}
-	return n + n/2
-}
-
-// Add appends the contents of t to the end of s and returns the result.
-// If s has enough capacity, it is extended in place; otherwise a
-// new array is allocated and returned.
-func Add(s, t []byte) []byte { // TODO
-	lens := len(s)
-	lent := len(t)
-	if lens+lent <= cap(s) {
-		s = s[0 : lens+lent]
-	} else {
-		news := make([]byte, lens+lent, resize(lens+lent))
-		copy(news, s)
-		s = news
-	}
-	copy(s[lens:lens+lent], t)
-	return s
-}
-
-// AddByte appends byte t to the end of s and returns the result.
-// If s has enough capacity, it is extended in place; otherwise a
-// new array is allocated and returned.
-func AddByte(s []byte, t byte) []byte { // TODO
-	lens := len(s)
-	if lens+1 <= cap(s) {
-		s = s[0 : lens+1]
-	} else {
-		news := make([]byte, lens+1, resize(lens+1))
-		copy(news, s)
-		s = news
-	}
-	s[lens] = t
-	return s
 }
 
 // Runes returns a slice of runes (Unicode code points) equivalent to s.

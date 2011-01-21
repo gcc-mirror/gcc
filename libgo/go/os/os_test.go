@@ -161,7 +161,7 @@ func testReaddirnames(dir string, contents []string, t *testing.T) {
 	}
 	s, err2 := file.Readdirnames(-1)
 	if err2 != nil {
-		t.Fatalf("readdirnames %q failed: %v", err2)
+		t.Fatalf("readdirnames %q failed: %v", dir, err2)
 	}
 	for _, m := range contents {
 		found := false
@@ -260,7 +260,7 @@ func TestReaddirnamesOneAtATime(t *testing.T) {
 	small := smallReaddirnames(file1, len(all)+100, t) // +100 in case we screw up
 	for i, n := range all {
 		if small[i] != n {
-			t.Errorf("small read %q %q mismatch: %v", small[i], n)
+			t.Errorf("small read %q mismatch: %v", small[i], n)
 		}
 	}
 }
@@ -344,7 +344,7 @@ func TestSymLink(t *testing.T) {
 		t.Fatalf("stat %q failed: %v", from, err)
 	}
 	if !fromstat.FollowedSymlink {
-		t.Fatalf("stat %q did not follow symlink")
+		t.Fatalf("stat %q did not follow symlink", from)
 	}
 	s, err := Readlink(from)
 	if err != nil {
@@ -859,13 +859,14 @@ func TestAppend(t *testing.T) {
 }
 
 func TestStatDirWithTrailingSlash(t *testing.T) {
-	// Create new dir, in _obj so it will get
+	// Create new dir, in _test so it will get
 	// cleaned up by make if not by us.
-	path := "_obj/_TestStatDirWithSlash_"
+	path := "_test/_TestStatDirWithSlash_"
 	err := MkdirAll(path, 0777)
 	if err != nil {
 		t.Fatalf("MkdirAll %q: %s", path, err)
 	}
+	defer RemoveAll(path)
 
 	// Stat of path should succeed.
 	_, err = Stat(path)
@@ -878,6 +879,4 @@ func TestStatDirWithTrailingSlash(t *testing.T) {
 	if err != nil {
 		t.Fatal("stat failed:", err)
 	}
-
-	RemoveAll("_obj/_TestMkdirAll_")
 }

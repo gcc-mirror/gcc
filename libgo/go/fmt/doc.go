@@ -26,6 +26,7 @@
 		%o	base 8
 		%x	base 16, with lower-case letters for a-f
 		%X	base 16, with upper-case letters for A-F
+		%U	unicode format: U+1234; same as "U+%x" with 4 digits default
 	Floating-point and complex constituents:
 		%e	scientific notation, e.g. -1234.456e+78
 		%E	scientific notation, e.g. -1234.456E+78
@@ -35,7 +36,8 @@
 	String and slice of bytes:
 		%s	the uninterpreted bytes of the string or slice
 		%q	a double-quoted string safely escaped with Go syntax
-		%x	base 16 notation with two characters per byte
+		%x	base 16, lower-case, two characters per byte
+		%X	base 16, upper-case, two characters per byte
 	Pointer:
 		%p	base 16 notation, with leading 0x
 
@@ -58,7 +60,7 @@
 			0X for hex (%#X); suppress 0x for %p (%#p);
 			print a raw (backquoted) string if possible for %q (%#q)
 		' '	(space) leave a space for elided sign in numbers (% d);
-			put spaces between bytes printing strings or slices in hex (% x)
+			put spaces between bytes printing strings or slices in hex (% x, % X)
 		0	pad with leading zeros rather than spaces
 
 	For each Printf-like function, there is also a Print function
@@ -126,8 +128,7 @@
 
 	%p is not implemented
 	%T is not implemented
-	%e %E %f %F %g %g are all equivalent and scan any floating
-		point or complex value
+	%e %E %f %F %g %g are all equivalent and scan any floating point or complex value
 	%s and %v on strings scan a space-delimited token
 
 	Width is interpreted in the input text (%5s means at most

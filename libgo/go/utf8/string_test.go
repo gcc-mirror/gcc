@@ -15,13 +15,13 @@ func TestScanForwards(t *testing.T) {
 		runes := []int(s)
 		str := NewString(s)
 		if str.RuneCount() != len(runes) {
-			t.Error("%s: expected %d runes; got %d", s, len(runes), str.RuneCount())
+			t.Errorf("%s: expected %d runes; got %d", s, len(runes), str.RuneCount())
 			break
 		}
 		for i, expect := range runes {
 			got := str.At(i)
 			if got != expect {
-				t.Errorf("%s[%d]: expected %c (U+%04x); got %c (U+%04x)", s, i, expect, expect, got, got)
+				t.Errorf("%s[%d]: expected %c (%U); got %c (%U)", s, i, expect, expect, got, got)
 			}
 		}
 	}
@@ -32,14 +32,14 @@ func TestScanBackwards(t *testing.T) {
 		runes := []int(s)
 		str := NewString(s)
 		if str.RuneCount() != len(runes) {
-			t.Error("%s: expected %d runes; got %d", s, len(runes), str.RuneCount())
+			t.Errorf("%s: expected %d runes; got %d", s, len(runes), str.RuneCount())
 			break
 		}
 		for i := len(runes) - 1; i >= 0; i-- {
 			expect := runes[i]
 			got := str.At(i)
 			if got != expect {
-				t.Errorf("%s[%d]: expected %c (U+%04x); got %c (U+%04x)", s, i, expect, expect, got, got)
+				t.Errorf("%s[%d]: expected %c (%U); got %c (%U)", s, i, expect, expect, got, got)
 			}
 		}
 	}
@@ -55,7 +55,7 @@ func TestRandomAccess(t *testing.T) {
 		runes := []int(s)
 		str := NewString(s)
 		if str.RuneCount() != len(runes) {
-			t.Error("%s: expected %d runes; got %d", s, len(runes), str.RuneCount())
+			t.Errorf("%s: expected %d runes; got %d", s, len(runes), str.RuneCount())
 			break
 		}
 		for j := 0; j < randCount; j++ {
@@ -63,7 +63,7 @@ func TestRandomAccess(t *testing.T) {
 			expect := runes[i]
 			got := str.At(i)
 			if got != expect {
-				t.Errorf("%s[%d]: expected %c (U+%04x); got %c (U+%04x)", s, i, expect, expect, got, got)
+				t.Errorf("%s[%d]: expected %c (%U); got %c (%U)", s, i, expect, expect, got, got)
 			}
 		}
 	}
@@ -77,7 +77,7 @@ func TestRandomSliceAccess(t *testing.T) {
 		runes := []int(s)
 		str := NewString(s)
 		if str.RuneCount() != len(runes) {
-			t.Error("%s: expected %d runes; got %d", s, len(runes), str.RuneCount())
+			t.Errorf("%s: expected %d runes; got %d", s, len(runes), str.RuneCount())
 			break
 		}
 		for k := 0; k < randCount; k++ {

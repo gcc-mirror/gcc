@@ -8,6 +8,7 @@ import (
 	"bufio"
 	. "fmt"
 	"io"
+	"math"
 	"os"
 	"reflect"
 	"regexp"
@@ -49,13 +50,11 @@ var (
 	uint16Val            uint16
 	uint32Val            uint32
 	uint64Val            uint64
-	floatVal             float
 	float32Val           float32
 	float64Val           float64
 	stringVal            string
 	stringVal1           string
 	bytesVal             []byte
-	complexVal           complex
 	complex64Val         complex64
 	complex128Val        complex128
 	renamedBoolVal       renamedBool
@@ -72,13 +71,17 @@ var (
 	renamedUintptrVal    renamedUintptr
 	renamedStringVal     renamedString
 	renamedBytesVal      renamedBytes
-	renamedFloatVal      renamedFloat
 	renamedFloat32Val    renamedFloat32
 	renamedFloat64Val    renamedFloat64
-	renamedComplexVal    renamedComplex
 	renamedComplex64Val  renamedComplex64
 	renamedComplex128Val renamedComplex128
 )
+
+type FloatTest struct {
+	text string
+	in   float64
+	out  float64
+}
 
 // Xs accepts any non-empty run of the verb character
 type Xs string
@@ -154,12 +157,12 @@ var scanTests = []ScanTest{
 	{"30\n", &uint64Val, uint64(30)},
 	{"255\n", &uint8Val, uint8(255)},
 	{"32767\n", &int16Val, int16(32767)},
-	{"2.3\n", &floatVal, 2.3},
+	{"2.3\n", &float64Val, 2.3},
 	{"2.3e1\n", &float32Val, float32(2.3e1)},
-	{"2.3e2\n", &float64Val, float64(2.3e2)},
+	{"2.3e2\n", &float64Val, 2.3e2},
 	{"2.35\n", &stringVal, "2.35"},
 	{"2345678\n", &bytesVal, []byte("2345678")},
-	{"(3.4e1-2i)\n", &complexVal, 3.4e1 - 2i},
+	{"(3.4e1-2i)\n", &complex128Val, 3.4e1 - 2i},
 	{"-3.45e1-3i\n", &complex64Val, complex64(-3.45e1 - 3i)},
 	{"-.45e1-1e2i\n", &complex128Val, complex128(-.45e1 - 100i)},
 	{"hello\n", &stringVal, "hello"},
@@ -215,6 +218,8 @@ var scanfTests = []ScanfTest{
 	{"%o", "075\n", &uintVal, uint(075)},
 	{"%x", "a75\n", &uintVal, uint(0xa75)},
 	{"%x", "A75\n", &uintVal, uint(0xa75)},
+	{"%U", "U+1234\n", &intVal, int(0x1234)},
+	{"%U", "U+4567\n", &uintVal, uint(0x4567)},
 
 	// Strings
 	{"%s", "using-%s\n", &stringVal, "using-%s"},
@@ -247,10 +252,8 @@ var scanfTests = []ScanfTest{
 	{"%d", "113\n", &renamedUintptrVal, renamedUintptr(113)},
 	{"%s", "114\n", &renamedStringVal, renamedString("114")},
 	{"%q", "\"1155\"\n", &renamedBytesVal, renamedBytes([]byte("1155"))},
-	{"%g", "115.1\n", &renamedFloatVal, renamedFloat(115.1)},
 	{"%g", "116e1\n", &renamedFloat32Val, renamedFloat32(116e1)},
 	{"%g", "-11.7e+1", &renamedFloat64Val, renamedFloat64(-11.7e+1)},
-	{"%g", "11+5.1i\n", &renamedComplexVal, renamedComplex(11 + 5.1i)},
 	{"%g", "11+6e1i\n", &renamedComplex64Val, renamedComplex64(11 + 6e1i)},
 	{"%g", "-11.+7e+1i", &renamedComplex128Val, renamedComplex128(-11. + 7e+1i)},
 
@@ -279,15 +282,15 @@ var overflowTests = []ScanTest{
 	{"65536", &uint16Val, 0},
 	{"1e100", &float32Val, 0},
 	{"1e500", &float64Val, 0},
-	{"(1e100+0i)", &complexVal, 0},
+	{"(1e100+0i)", &complex64Val, 0},
 	{"(1+1e100i)", &complex64Val, 0},
 	{"(1-1e500i)", &complex128Val, 0},
 }
 
 var i, j, k int
-var f float
+var f float64
 var s, t string
-var c complex
+var c complex128
 var x, y Xs
 
 var multiTests = []ScanfMultiTest{
@@ -298,7 +301,7 @@ var multiTests = []ScanfMultiTest{
 	{"%2d.%3d", "66.777", args(&i, &j), args(66, 777), ""},
 	{"%d, %d", "23, 18", args(&i, &j), args(23, 18), ""},
 	{"%3d22%3d", "33322333", args(&i, &j), args(333, 333), ""},
-	{"%6vX=%3fY", "3+2iX=2.5Y", args(&c, &f), args((3 + 2i), float(2.5)), ""},
+	{"%6vX=%3fY", "3+2iX=2.5Y", args(&c, &f), args((3 + 2i), 2.5), ""},
 	{"%d%s", "123abc", args(&i, &s), args(123, "abc"), ""},
 	{"%c%c%c", "2\u50c2X", args(&i, &j, &k), args('2', '\u50c2', 'X'), ""},
 
@@ -399,6 +402,57 @@ func TestScanOverflow(t *testing.T) {
 	}
 }
 
+func verifyNaN(str string, t *testing.T) {
+	var f float64
+	var f32 float32
+	var f64 float64
+	text := str + " " + str + " " + str
+	n, err := Fscan(strings.NewReader(text), &f, &f32, &f64)
+	if err != nil {
+		t.Errorf("got error scanning %q: %s", text, err)
+	}
+	if n != 3 {
+		t.Errorf("count error scanning %q: got %d", text, n)
+	}
+	if !math.IsNaN(float64(f)) || !math.IsNaN(float64(f32)) || !math.IsNaN(f64) {
+		t.Errorf("didn't get NaNs scanning %q: got %g %g %g", text, f, f32, f64)
+	}
+}
+
+func TestNaN(t *testing.T) {
+	for _, s := range []string{"nan", "NAN", "NaN"} {
+		verifyNaN(s, t)
+	}
+}
+
+func verifyInf(str string, t *testing.T) {
+	var f float64
+	var f32 float32
+	var f64 float64
+	text := str + " " + str + " " + str
+	n, err := Fscan(strings.NewReader(text), &f, &f32, &f64)
+	if err != nil {
+		t.Errorf("got error scanning %q: %s", text, err)
+	}
+	if n != 3 {
+		t.Errorf("count error scanning %q: got %d", text, n)
+	}
+	sign := 1
+	if str[0] == '-' {
+		sign = -1
+	}
+	if !math.IsInf(float64(f), sign) || !math.IsInf(float64(f32), sign) || !math.IsInf(f64, sign) {
+		t.Errorf("didn't get right Infs scanning %q: got %g %g %g", text, f, f32, f64)
+	}
+}
+
+
+func TestInf(t *testing.T) {
+	for _, s := range []string{"inf", "+inf", "-inf", "INF", "-INF", "+INF", "Inf", "-Inf", "+Inf"} {
+		verifyInf(s, t)
+	}
+}
+
 // TODO: there's no conversion from []T to ...T, but we can fake it.  These
 // functions do the faking.  We index the table by the length of the param list.
 var fscanf = []func(io.Reader, string, []interface{}) (int, os.Error){
@@ -472,7 +526,7 @@ func TestScanMultiple(t *testing.T) {
 		t.Errorf("Sscan count error: expected 1: got %d", n)
 	}
 	if err == nil {
-		t.Errorf("Sscan expected error; got none", err)
+		t.Errorf("Sscan expected error; got none: %s", err)
 	}
 	if s != "asdf" {
 		t.Errorf("Sscan wrong values: got %q expected \"asdf\"", s)
@@ -487,7 +541,7 @@ func TestScanEmpty(t *testing.T) {
 		t.Errorf("Sscan count error: expected 1: got %d", n)
 	}
 	if err == nil {
-		t.Errorf("Sscan <one item> expected error; got none")
+		t.Error("Sscan <one item> expected error; got none")
 	}
 	if s1 != "abc" {
 		t.Errorf("Sscan wrong values: got %q expected \"abc\"", s1)
@@ -497,7 +551,7 @@ func TestScanEmpty(t *testing.T) {
 		t.Errorf("Sscan count error: expected 0: got %d", n)
 	}
 	if err == nil {
-		t.Errorf("Sscan <empty> expected error; got none")
+		t.Error("Sscan <empty> expected error; got none")
 	}
 	// Quoted empty string is OK.
 	n, err = Sscanf(`""`, "%q", &s1)

@@ -63,7 +63,7 @@ func send(req *Request) (resp *Response, err os.Error) {
 			return nil, err
 		}
 	} else { // https
-		conn, err = tls.Dial("tcp", "", addr)
+		conn, err = tls.Dial("tcp", "", addr, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -120,6 +120,7 @@ func Get(url string) (r *Response, finalURL string, err os.Error) {
 	// TODO: if/when we add cookie support, the redirected request shouldn't
 	// necessarily supply the same cookies as the original.
 	// TODO: set referrer header on redirects.
+	var base *URL
 	for redirect := 0; ; redirect++ {
 		if redirect >= 10 {
 			err = os.ErrorString("stopped after 10 redirects")
@@ -127,7 +128,12 @@ func Get(url string) (r *Response, finalURL string, err os.Error) {
 		}
 
 		var req Request
-		if req.URL, err = ParseURL(url); err != nil {
+		if base == nil {
+			req.URL, err = ParseURL(url)
+		} else {
+			req.URL, err = base.ParseURL(url)
+		}
+		if err != nil {
 			break
 		}
 		url = req.URL.String()
@@ -140,6 +146,7 @@ func Get(url string) (r *Response, finalURL string, err os.Error) {
 				err = os.ErrorString(fmt.Sprintf("%d response missing Location header", r.StatusCode))
 				break
 			}
+			base = req.URL
 			continue
 		}
 		finalURL = url
@@ -199,20 +206,13 @@ func PostForm(url string, data map[string]string) (r *Response, err os.Error) {
 	return send(&req)
 }
 
+// TODO: remove this function when PostForm takes a multimap.
 func urlencode(data map[string]string) (b *bytes.Buffer) {
-	b = new(bytes.Buffer)
-	first := true
+	m := make(map[string][]string, len(data))
 	for k, v := range data {
-		if first {
-			first = false
-		} else {
-			b.WriteByte('&')
-		}
-		b.WriteString(URLEscape(k))
-		b.WriteByte('=')
-		b.WriteString(URLEscape(v))
+		m[k] = []string{v}
 	}
-	return
+	return bytes.NewBuffer([]byte(EncodeQuery(m)))
 }
 
 // Head issues a HEAD to the specified URL.

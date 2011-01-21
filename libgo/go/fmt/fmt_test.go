@@ -28,10 +28,8 @@ type (
 	renamedUintptr    uintptr
 	renamedString     string
 	renamedBytes      []byte
-	renamedFloat      float
 	renamedFloat32    float32
 	renamedFloat64    float64
-	renamedComplex    complex
 	renamedComplex64  complex64
 	renamedComplex128 complex128
 )
@@ -45,11 +43,6 @@ func TestFmtInterface(t *testing.T) {
 	}
 }
 
-type fmtTest struct {
-	fmt string
-	val interface{}
-	out string
-}
 
 const b32 uint32 = 1<<32 - 1
 const b64 uint64 = 1<<64 - 1
@@ -106,7 +99,11 @@ func (p *P) String() string {
 
 var b byte
 
-var fmttests = []fmtTest{
+var fmttests = []struct {
+	fmt string
+	val interface{}
+	out string
+}{
 	{"%d", 12345, "12345"},
 	{"%v", 12345, "12345"},
 	{"%t", true, "true"},
@@ -121,7 +118,8 @@ var fmttests = []fmtTest{
 	// basic bytes
 	{"%s", []byte("abc"), "abc"},
 	{"%x", []byte("abc"), "616263"},
-	{"% x", []byte("abc"), "61 62 63"},
+	{"% x", []byte("abc\xff"), "61 62 63 ff"},
+	{"% X", []byte("abc\xff"), "61 62 63 FF"},
 	{"%x", []byte("xyz"), "78797a"},
 	{"%X", []byte("xyz"), "78797A"},
 	{"%q", []byte("abc"), `"abc"`},
@@ -159,6 +157,14 @@ var fmttests = []fmtTest{
 	{"%+d", 0, "+0"},
 	{"% d", 0, " 0"},
 	{"% d", 12345, " 12345"},
+
+	// unicode format
+	{"%U", 0x1, "U+0001"},
+	{"%.8U", 0x2, "U+00000002"},
+	{"%U", 0x1234, "U+1234"},
+	{"%U", 0x12345, "U+12345"},
+	{"%10.6U", 0xABC, "  U+000ABC"},
+	{"%-10.6U", 0xABC, "U+000ABC  "},
 
 	// floats
 	{"%+.3e", 0.0, "+0.000e+00"},
@@ -216,31 +222,31 @@ var fmttests = []fmtTest{
 	{"%b", 7, "111"},
 	{"%b", b64, "1111111111111111111111111111111111111111111111111111111111111111"},
 	{"%b", -6, "-110"},
-	{"%e", float64(1), "1.000000e+00"},
-	{"%e", float64(1234.5678e3), "1.234568e+06"},
-	{"%e", float64(1234.5678e-8), "1.234568e-05"},
-	{"%e", float64(-7), "-7.000000e+00"},
-	{"%e", float64(-1e-9), "-1.000000e-09"},
-	{"%f", float64(1234.5678e3), "1234567.800000"},
-	{"%f", float64(1234.5678e-8), "0.000012"},
-	{"%f", float64(-7), "-7.000000"},
-	{"%f", float64(-1e-9), "-0.000000"},
-	{"%g", float64(1234.5678e3), "1.2345678e+06"},
+	{"%e", 1.0, "1.000000e+00"},
+	{"%e", 1234.5678e3, "1.234568e+06"},
+	{"%e", 1234.5678e-8, "1.234568e-05"},
+	{"%e", -7.0, "-7.000000e+00"},
+	{"%e", -1e-9, "-1.000000e-09"},
+	{"%f", 1234.5678e3, "1234567.800000"},
+	{"%f", 1234.5678e-8, "0.000012"},
+	{"%f", -7.0, "-7.000000"},
+	{"%f", -1e-9, "-0.000000"},
+	{"%g", 1234.5678e3, "1.2345678e+06"},
 	{"%g", float32(1234.5678e3), "1.2345678e+06"},
-	{"%g", float64(1234.5678e-8), "1.2345678e-05"},
-	{"%g", float64(-7), "-7"},
-	{"%g", float64(-1e-9), "-1e-09"},
+	{"%g", 1234.5678e-8, "1.2345678e-05"},
+	{"%g", -7.0, "-7"},
+	{"%g", -1e-9, "-1e-09"},
 	{"%g", float32(-1e-9), "-1e-09"},
-	{"%E", float64(1), "1.000000E+00"},
-	{"%E", float64(1234.5678e3), "1.234568E+06"},
-	{"%E", float64(1234.5678e-8), "1.234568E-05"},
-	{"%E", float64(-7), "-7.000000E+00"},
-	{"%E", float64(-1e-9), "-1.000000E-09"},
-	{"%G", float64(1234.5678e3), "1.2345678E+06"},
+	{"%E", 1.0, "1.000000E+00"},
+	{"%E", 1234.5678e3, "1.234568E+06"},
+	{"%E", 1234.5678e-8, "1.234568E-05"},
+	{"%E", -7.0, "-7.000000E+00"},
+	{"%E", -1e-9, "-1.000000E-09"},
+	{"%G", 1234.5678e3, "1.2345678E+06"},
 	{"%G", float32(1234.5678e3), "1.2345678E+06"},
-	{"%G", float64(1234.5678e-8), "1.2345678E-05"},
-	{"%G", float64(-7), "-7"},
-	{"%G", float64(-1e-9), "-1E-09"},
+	{"%G", 1234.5678e-8, "1.2345678E-05"},
+	{"%G", -7.0, "-7"},
+	{"%G", -1e-9, "-1E-09"},
 	{"%G", float32(-1e-9), "-1E-09"},
 	{"%c", 'x', "x"},
 	{"%c", 0xe4, "ä"},
@@ -265,15 +271,15 @@ var fmttests = []fmtTest{
 	{"%20e", 1.2345e3, "        1.234500e+03"},
 	{"%20e", 1.2345e-3, "        1.234500e-03"},
 	{"%20.8e", 1.2345e3, "      1.23450000e+03"},
-	{"%20f", float64(1.23456789e3), "         1234.567890"},
-	{"%20f", float64(1.23456789e-3), "            0.001235"},
-	{"%20f", float64(12345678901.23456789), "  12345678901.234568"},
-	{"%-20f", float64(1.23456789e3), "1234.567890         "},
-	{"%20.8f", float64(1.23456789e3), "       1234.56789000"},
-	{"%20.8f", float64(1.23456789e-3), "          0.00123457"},
-	{"%g", float64(1.23456789e3), "1234.56789"},
-	{"%g", float64(1.23456789e-3), "0.00123456789"},
-	{"%g", float64(1.23456789e20), "1.23456789e+20"},
+	{"%20f", 1.23456789e3, "         1234.567890"},
+	{"%20f", 1.23456789e-3, "            0.001235"},
+	{"%20f", 12345678901.23456789, "  12345678901.234568"},
+	{"%-20f", 1.23456789e3, "1234.567890         "},
+	{"%20.8f", 1.23456789e3, "       1234.56789000"},
+	{"%20.8f", 1.23456789e-3, "          0.00123457"},
+	{"%g", 1.23456789e3, "1234.56789"},
+	{"%g", 1.23456789e-3, "0.00123456789"},
+	{"%g", 1.23456789e20, "1.23456789e+20"},
 	{"%20e", math.Inf(1), "                +Inf"},
 	{"%-20f", math.Inf(-1), "-Inf                "},
 	{"%20g", math.NaN(), "                 NaN"},
@@ -338,10 +344,8 @@ var fmttests = []fmtTest{
 	{"%x", renamedString("thing"), "7468696e67"},
 	{"%d", renamedBytes([]byte{1, 2, 15}), `[1 2 15]`},
 	{"%q", renamedBytes([]byte("hello")), `"hello"`},
-	{"%v", renamedFloat(11), "11"},
 	{"%v", renamedFloat32(22), "22"},
 	{"%v", renamedFloat64(33), "33"},
-	{"%v", renamedComplex(7 + .2i), "(7+0.2i)"},
 	{"%v", renamedComplex64(3 + 4i), "(3+4i)"},
 	{"%v", renamedComplex128(4 - 3i), "(4-3i)"},
 
@@ -355,7 +359,7 @@ var fmttests = []fmtTest{
 	{"%#v", S{F(7), G(8)}, "fmt_test.S{f:<v=F(7)>, g:GoString(8)}"},
 
 	// %T
-	{"%T", (4 - 3i), "complex"},
+	{"%T", (4 - 3i), "complex128"},
 	{"%T", renamedComplex128(4 - 3i), "fmt_test.renamedComplex128"},
 	{"%T", intVal, "int"},
 	{"%6T", &intVal, "  *int"},
@@ -372,11 +376,13 @@ var fmttests = []fmtTest{
 	{"%p", 27, "%!p(int=27)"}, // not a pointer at all
 
 	// erroneous things
+	{"%s %", "hello", "hello %!(NOVERB)"},
+	{"%s %.2", "hello", "hello %!(NOVERB)"},
 	{"%d", "hello", "%!d(string=hello)"},
 	{"no args", "hello", "no args%!(EXTRA string=hello)"},
 	{"%s", nil, "%!s(<nil>)"},
 	{"%T", nil, "<nil>"},
-	{"%-1", 100, "%!1(int=100)"},
+	{"%-1", 100, "%!(NOVERB)%!(EXTRA int=100)"},
 }
 
 func TestSprintf(t *testing.T) {
@@ -428,6 +434,12 @@ func BenchmarkSprintfIntInt(b *testing.B) {
 	}
 }
 
+func BenchmarkSprintfPrefixedInt(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Sprintf("This is some meaningless prefix text that needs to be scanned %d", 6)
+	}
+}
+
 func TestCountMallocs(t *testing.T) {
 	mallocs := 0 - runtime.MemStats.Mallocs
 	for i := 0; i < 100; i++ {
@@ -474,12 +486,10 @@ func (*flagPrinter) Format(f State, c int) {
 	io.WriteString(f, "["+s+"]")
 }
 
-type flagTest struct {
+var flagtests = []struct {
 	in  string
 	out string
-}
-
-var flagtests = []flagTest{
+}{
 	{"%a", "[%a]"},
 	{"%-a", "[%-a]"},
 	{"%+a", "[%+a]"},
@@ -513,11 +523,10 @@ func TestStructPrinter(t *testing.T) {
 	s.a = "abc"
 	s.b = "def"
 	s.c = 123
-	type Test struct {
+	var tests = []struct {
 		fmt string
 		out string
-	}
-	var tests = []Test{
+	}{
 		{"%v", "{abc def 123}"},
 		{"%+v", "{a:abc b:def c:123}"},
 	}
@@ -611,13 +620,11 @@ func TestFormatterPrintln(t *testing.T) {
 
 func args(a ...interface{}) []interface{} { return a }
 
-type starTest struct {
+var startests = []struct {
 	fmt string
 	in  []interface{}
 	out string
-}
-
-var startests = []starTest{
+}{
 	{"%*d", args(4, 42), "  42"},
 	{"%.*d", args(4, 42), "0042"},
 	{"%*.*d", args(8, 4, 42), "    0042"},
@@ -629,24 +636,15 @@ var startests = []starTest{
 	{"%.*d", args(nil, 42), "%!(BADPREC)42"},
 	{"%*d", args(5, "foo"), "%!d(string=  foo)"},
 	{"%*% %d", args(20, 5), "% 5"},
-	{"%*", args(4), "%!(BADWIDTH)%!*(int=4)"},
+	{"%*", args(4), "%!(NOVERB)"},
 	{"%*d", args(int32(4), 42), "%!(BADWIDTH)42"},
-}
-
-// TODO: there's no conversion from []T to ...T, but we can fake it.  These
-// functions do the faking.  We index the table by the length of the param list.
-var sprintf = []func(string, []interface{}) string{
-	0: func(f string, i []interface{}) string { return Sprintf(f) },
-	1: func(f string, i []interface{}) string { return Sprintf(f, i[0]) },
-	2: func(f string, i []interface{}) string { return Sprintf(f, i[0], i[1]) },
-	3: func(f string, i []interface{}) string { return Sprintf(f, i[0], i[1], i[2]) },
 }
 
 func TestWidthAndPrecision(t *testing.T) {
 	for _, tt := range startests {
-		s := sprintf[len(tt.in)](tt.fmt, tt.in)
+		s := Sprintf(tt.fmt, tt.in...)
 		if s != tt.out {
-			t.Errorf("got %q expected %q", s, tt.out)
+			t.Errorf("%q: got %q expected %q", tt.fmt, s, tt.out)
 		}
 	}
 }

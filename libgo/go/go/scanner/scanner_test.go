@@ -11,6 +11,9 @@ import (
 )
 
 
+var fset = token.NewFileSet()
+
+
 const /* class */ (
 	special = iota
 	literal
@@ -196,7 +199,8 @@ func newlineCount(s string) int {
 }
 
 
-func checkPos(t *testing.T, lit string, pos, expected token.Position) {
+func checkPos(t *testing.T, lit string, p token.Pos, expected token.Position) {
+	pos := fset.Position(p)
 	if pos.Filename != expected.Filename {
 		t.Errorf("bad filename for %q: got %s, expected %s", lit, pos.Filename, expected.Filename)
 	}
@@ -219,53 +223,58 @@ func TestScan(t *testing.T) {
 	for _, e := range tokens {
 		src += e.lit + whitespace
 	}
-	src_linecount := newlineCount(src)
+	src_linecount := newlineCount(src) + 1
 	whitespace_linecount := newlineCount(whitespace)
 
 	// verify scan
+	var s Scanner
+	s.Init(fset.AddFile("", fset.Base(), len(src)), []byte(src), &testErrorHandler{t}, ScanComments)
 	index := 0
 	epos := token.Position{"", 0, 1, 1} // expected position
-	nerrors := Tokenize("", []byte(src), &testErrorHandler{t}, ScanComments,
-		func(pos token.Position, tok token.Token, litb []byte) bool {
-			e := elt{token.EOF, "", special}
-			if index < len(tokens) {
-				e = tokens[index]
-			}
-			lit := string(litb)
-			if tok == token.EOF {
-				lit = "<EOF>"
-				epos.Line = src_linecount
-				epos.Column = 1
-			}
-			checkPos(t, lit, pos, epos)
-			if tok != e.tok {
-				t.Errorf("bad token for %q: got %s, expected %s", lit, tok.String(), e.tok.String())
-			}
-			if e.tok.IsLiteral() && lit != e.lit {
-				t.Errorf("bad literal for %q: got %q, expected %q", lit, lit, e.lit)
-			}
-			if tokenclass(tok) != e.class {
-				t.Errorf("bad class for %q: got %d, expected %d", lit, tokenclass(tok), e.class)
-			}
-			epos.Offset += len(lit) + len(whitespace)
-			epos.Line += newlineCount(lit) + whitespace_linecount
-			if tok == token.COMMENT && litb[1] == '/' {
-				// correct for unaccounted '/n' in //-style comment
-				epos.Offset++
-				epos.Line++
-			}
-			index++
-			return tok != token.EOF
-		})
-	if nerrors != 0 {
-		t.Errorf("found %d errors", nerrors)
+	for {
+		pos, tok, litb := s.Scan()
+		e := elt{token.EOF, "", special}
+		if index < len(tokens) {
+			e = tokens[index]
+		}
+		lit := string(litb)
+		if tok == token.EOF {
+			lit = "<EOF>"
+			epos.Line = src_linecount
+			epos.Column = 1
+		}
+		checkPos(t, lit, pos, epos)
+		if tok != e.tok {
+			t.Errorf("bad token for %q: got %s, expected %s", lit, tok.String(), e.tok.String())
+		}
+		if e.tok.IsLiteral() && lit != e.lit {
+			t.Errorf("bad literal for %q: got %q, expected %q", lit, lit, e.lit)
+		}
+		if tokenclass(tok) != e.class {
+			t.Errorf("bad class for %q: got %d, expected %d", lit, tokenclass(tok), e.class)
+		}
+		epos.Offset += len(lit) + len(whitespace)
+		epos.Line += newlineCount(lit) + whitespace_linecount
+		if tok == token.COMMENT && litb[1] == '/' {
+			// correct for unaccounted '/n' in //-style comment
+			epos.Offset++
+			epos.Line++
+		}
+		index++
+		if tok == token.EOF {
+			break
+		}
+	}
+	if s.ErrorCount != 0 {
+		t.Errorf("found %d errors", s.ErrorCount)
 	}
 }
 
 
 func checkSemi(t *testing.T, line string, mode uint) {
 	var S Scanner
-	S.Init("TestSemis", []byte(line), nil, mode)
+	file := fset.AddFile("TestSemis", fset.Base(), len(line))
+	S.Init(file, []byte(line), nil, mode)
 	pos, tok, lit := S.Scan()
 	for tok != token.EOF {
 		if tok == token.ILLEGAL {
@@ -276,7 +285,7 @@ func checkSemi(t *testing.T, line string, mode uint) {
 				semiLit = ";"
 			}
 			// next token must be a semicolon
-			semiPos := pos
+			semiPos := file.Position(pos)
 			semiPos.Offset++
 			semiPos.Column++
 			pos, tok, lit = S.Scan()
@@ -441,20 +450,20 @@ var segments = []struct {
 	line     int    // line number for current token
 }{
 	// exactly one token per line since the test consumes one token per segment
-	{"  line1", "TestLineComments", 1},
-	{"\nline2", "TestLineComments", 2},
-	{"\nline3  //line File1.go:100", "TestLineComments", 3}, // bad line comment, ignored
-	{"\nline4", "TestLineComments", 4},
-	{"\n//line File1.go:100\n  line100", "File1.go", 100},
-	{"\n//line File2.go:200\n  line200", "File2.go", 200},
-	{"\n//line :1\n  line1", "", 1},
-	{"\n//line foo:42\n  line42", "foo", 42},
-	{"\n //line foo:42\n  line44", "foo", 44},           // bad line comment, ignored
-	{"\n//line foo 42\n  line46", "foo", 46},            // bad line comment, ignored
-	{"\n//line foo:42 extra text\n  line48", "foo", 48}, // bad line comment, ignored
-	{"\n//line foo:42\n  line42", "foo", 42},
-	{"\n//line foo:42\n  line42", "foo", 42},
-	{"\n//line File1.go:100\n  line100", "File1.go", 100},
+	{"  line1", "dir/TestLineComments", 1},
+	{"\nline2", "dir/TestLineComments", 2},
+	{"\nline3  //line File1.go:100", "dir/TestLineComments", 3}, // bad line comment, ignored
+	{"\nline4", "dir/TestLineComments", 4},
+	{"\n//line File1.go:100\n  line100", "dir/File1.go", 100},
+	{"\n//line File2.go:200\n  line200", "dir/File2.go", 200},
+	{"\n//line :1\n  line1", "dir", 1},
+	{"\n//line foo:42\n  line42", "dir/foo", 42},
+	{"\n //line foo:42\n  line44", "dir/foo", 44},           // bad line comment, ignored
+	{"\n//line foo 42\n  line46", "dir/foo", 46},            // bad line comment, ignored
+	{"\n//line foo:42 extra text\n  line48", "dir/foo", 48}, // bad line comment, ignored
+	{"\n//line /bar:42\n  line42", "/bar", 42},
+	{"\n//line ./foo:42\n  line42", "dir/foo", 42},
+	{"\n//line a/b/c/File1.go:100\n  line100", "dir/a/b/c/File1.go", 100},
 }
 
 
@@ -468,10 +477,12 @@ func TestLineComments(t *testing.T) {
 
 	// verify scan
 	var S Scanner
-	S.Init("TestLineComments", []byte(src), nil, 0)
+	file := fset.AddFile("dir/TestLineComments", fset.Base(), len(src))
+	S.Init(file, []byte(src), nil, 0)
 	for _, s := range segments {
-		pos, _, lit := S.Scan()
-		checkPos(t, string(lit), pos, token.Position{s.filename, pos.Offset, s.line, pos.Column})
+		p, _, lit := S.Scan()
+		pos := file.Position(p)
+		checkPos(t, string(lit), p, token.Position{s.filename, pos.Offset, s.line, pos.Column})
 	}
 
 	if S.ErrorCount != 0 {
@@ -485,7 +496,12 @@ func TestInit(t *testing.T) {
 	var s Scanner
 
 	// 1st init
-	s.Init("", []byte("if true { }"), nil, 0)
+	src1 := "if true { }"
+	f1 := fset.AddFile("src1", fset.Base(), len(src1))
+	s.Init(f1, []byte(src1), nil, 0)
+	if f1.Size() != len(src1) {
+		t.Errorf("bad file size: got %d, expected %d", f1.Size(), len(src1))
+	}
 	s.Scan()              // if
 	s.Scan()              // true
 	_, tok, _ := s.Scan() // {
@@ -494,7 +510,12 @@ func TestInit(t *testing.T) {
 	}
 
 	// 2nd init
-	s.Init("", []byte("go true { ]"), nil, 0)
+	src2 := "go true { ]"
+	f2 := fset.AddFile("src2", fset.Base(), len(src2))
+	s.Init(f2, []byte(src2), nil, 0)
+	if f2.Size() != len(src2) {
+		t.Errorf("bad file size: got %d, expected %d", f2.Size(), len(src2))
+	}
 	_, tok, _ = s.Scan() // go
 	if tok != token.GO {
 		t.Errorf("bad token: got %s, expected %s", tok.String(), token.GO)
@@ -510,11 +531,12 @@ func TestIllegalChars(t *testing.T) {
 	var s Scanner
 
 	const src = "*?*$*@*"
-	s.Init("", []byte(src), &testErrorHandler{t}, AllowIllegalChars)
+	file := fset.AddFile("", fset.Base(), len(src))
+	s.Init(file, []byte(src), &testErrorHandler{t}, AllowIllegalChars)
 	for offs, ch := range src {
 		pos, tok, lit := s.Scan()
-		if pos.Offset != offs {
-			t.Errorf("bad position for %s: got %d, expected %d", string(lit), pos.Offset, offs)
+		if poffs := file.Offset(pos); poffs != offs {
+			t.Errorf("bad position for %s: got %d, expected %d", string(lit), poffs, offs)
 		}
 		if tok == token.ILLEGAL && string(lit) != string(ch) {
 			t.Errorf("bad token: got %s, expected %s", string(lit), string(ch))
@@ -538,10 +560,13 @@ func TestStdErrorHander(t *testing.T) {
 		"@ @ @" // original file, line 1 again
 
 	v := new(ErrorVector)
-	nerrors := Tokenize("File1", []byte(src), v, 0,
-		func(pos token.Position, tok token.Token, litb []byte) bool {
-			return tok != token.EOF
-		})
+	var s Scanner
+	s.Init(fset.AddFile("File1", fset.Base(), len(src)), []byte(src), v, 0)
+	for {
+		if _, tok, _ := s.Scan(); tok == token.EOF {
+			break
+		}
+	}
 
 	list := v.GetErrorList(Raw)
 	if len(list) != 9 {
@@ -561,8 +586,8 @@ func TestStdErrorHander(t *testing.T) {
 		PrintError(os.Stderr, list)
 	}
 
-	if v.ErrorCount() != nerrors {
-		t.Errorf("found %d errors, expected %d", v.ErrorCount(), nerrors)
+	if v.ErrorCount() != s.ErrorCount {
+		t.Errorf("found %d errors, expected %d", v.ErrorCount(), s.ErrorCount)
 	}
 }
 
@@ -584,7 +609,7 @@ func (h *errorCollector) Error(pos token.Position, msg string) {
 func checkError(t *testing.T, src string, tok token.Token, pos int, err string) {
 	var s Scanner
 	var h errorCollector
-	s.Init("", []byte(src), &h, ScanComments)
+	s.Init(fset.AddFile("", fset.Base(), len(src)), []byte(src), &h, ScanComments)
 	_, tok0, _ := s.Scan()
 	_, tok1, _ := s.Scan()
 	if tok0 != tok {

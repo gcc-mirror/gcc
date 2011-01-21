@@ -53,7 +53,7 @@ func TestUintCodec(t *testing.T) {
 	encState := newEncoderState(nil, b)
 	for _, tt := range encodeT {
 		b.Reset()
-		encodeUint(encState, tt.x)
+		encState.encodeUint(tt.x)
 		if !bytes.Equal(tt.b, b.Bytes()) {
 			t.Errorf("encodeUint: %#x encode: expected % x got % x", tt.x, tt.b, b.Bytes())
 		}
@@ -61,8 +61,8 @@ func TestUintCodec(t *testing.T) {
 	decState := newDecodeState(nil, &b)
 	for u := uint64(0); ; u = (u + 1) * 7 {
 		b.Reset()
-		encodeUint(encState, u)
-		v := decodeUint(decState)
+		encState.encodeUint(u)
+		v := decState.decodeUint()
 		if u != v {
 			t.Errorf("Encode/Decode: sent %#x received %#x", u, v)
 		}
@@ -76,10 +76,10 @@ func verifyInt(i int64, t *testing.T) {
 	defer testError(t)
 	var b = new(bytes.Buffer)
 	encState := newEncoderState(nil, b)
-	encodeInt(encState, i)
+	encState.encodeInt(i)
 	decState := newDecodeState(nil, &b)
 	decState.buf = make([]byte, 8)
-	j := decodeInt(decState)
+	j := decState.decodeInt()
 	if i != j {
 		t.Errorf("Encode/Decode: sent %#x received %#x", uint64(i), uint64(j))
 	}
@@ -254,18 +254,6 @@ func TestScalarEncInstructions(t *testing.T) {
 		}
 	}
 
-	// float
-	{
-		b.Reset()
-		data := struct{ a float }{17}
-		instr := &encInstr{encFloat, 6, 0, 0}
-		state := newencoderState(b)
-		instr.op(instr, state, unsafe.Pointer(&data))
-		if !bytes.Equal(floatResult, b.Bytes()) {
-			t.Errorf("float enc instructions: expected % x got % x", floatResult, b.Bytes())
-		}
-	}
-
 	// float32
 	{
 		b.Reset()
@@ -317,7 +305,7 @@ func TestScalarEncInstructions(t *testing.T) {
 
 func execDec(typ string, instr *decInstr, state *decodeState, t *testing.T, p unsafe.Pointer) {
 	defer testError(t)
-	v := int(decodeUint(state))
+	v := int(state.decodeUint())
 	if v+state.fieldnum != 6 {
 		t.Fatalf("decoding field number %d, got %d", 6, v+state.fieldnum)
 	}
@@ -492,19 +480,6 @@ func TestScalarDecInstructions(t *testing.T) {
 		}
 	}
 
-	// float
-	{
-		var data struct {
-			a float
-		}
-		instr := &decInstr{decOpMap[reflect.Float], 6, 0, 0, ovfl}
-		state := newDecodeStateFromData(floatResult)
-		execDec("float", instr, state, t, unsafe.Pointer(&data))
-		if data.a != 17 {
-			t.Errorf("float a = %v not 17", data.a)
-		}
-	}
-
 	// float32
 	{
 		var data struct {
@@ -528,19 +503,6 @@ func TestScalarDecInstructions(t *testing.T) {
 		execDec("float64", instr, state, t, unsafe.Pointer(&data))
 		if data.a != 17 {
 			t.Errorf("float64 a = %v not 17", data.a)
-		}
-	}
-
-	// complex
-	{
-		var data struct {
-			a complex
-		}
-		instr := &decInstr{decOpMap[reflect.Complex], 6, 0, 0, ovfl}
-		state := newDecodeStateFromData(complexResult)
-		execDec("complex", instr, state, t, unsafe.Pointer(&data))
-		if data.a != 17+19i {
-			t.Errorf("complex a = %v not 17+19i", data.a)
 		}
 	}
 
@@ -599,35 +561,35 @@ func TestScalarDecInstructions(t *testing.T) {
 
 func TestEndToEnd(t *testing.T) {
 	type T2 struct {
-		t string
+		T string
 	}
 	s1 := "string1"
 	s2 := "string2"
 	type T1 struct {
-		a, b, c int
-		m       map[string]*float
-		n       *[3]float
-		strs    *[2]string
-		int64s  *[]int64
-		ri      complex64
-		s       string
-		y       []byte
-		t       *T2
+		A, B, C int
+		M       map[string]*float64
+		N       *[3]float64
+		Strs    *[2]string
+		Int64s  *[]int64
+		RI      complex64
+		S       string
+		Y       []byte
+		T       *T2
 	}
 	pi := 3.14159
 	e := 2.71828
 	t1 := &T1{
-		a:      17,
-		b:      18,
-		c:      -5,
-		m:      map[string]*float{"pi": &pi, "e": &e},
-		n:      &[3]float{1.5, 2.5, 3.5},
-		strs:   &[2]string{s1, s2},
-		int64s: &[]int64{77, 89, 123412342134},
-		ri:     17 - 23i,
-		s:      "Now is the time",
-		y:      []byte("hello, sailor"),
-		t:      &T2{"this is T2"},
+		A:      17,
+		B:      18,
+		C:      -5,
+		M:      map[string]*float64{"pi": &pi, "e": &e},
+		N:      &[3]float64{1.5, 2.5, 3.5},
+		Strs:   &[2]string{s1, s2},
+		Int64s: &[]int64{77, 89, 123412342134},
+		RI:     17 - 23i,
+		S:      "Now is the time",
+		Y:      []byte("hello, sailor"),
+		T:      &T2{"this is T2"},
 	}
 	b := new(bytes.Buffer)
 	err := NewEncoder(b).Encode(t1)
@@ -646,13 +608,13 @@ func TestEndToEnd(t *testing.T) {
 
 func TestOverflow(t *testing.T) {
 	type inputT struct {
-		maxi int64
-		mini int64
-		maxu uint64
-		maxf float64
-		minf float64
-		maxc complex128
-		minc complex128
+		Maxi int64
+		Mini int64
+		Maxu uint64
+		Maxf float64
+		Minf float64
+		Maxc complex128
+		Minc complex128
 	}
 	var it inputT
 	var err os.Error
@@ -663,152 +625,152 @@ func TestOverflow(t *testing.T) {
 	// int8
 	b.Reset()
 	it = inputT{
-		maxi: math.MaxInt8 + 1,
+		Maxi: math.MaxInt8 + 1,
 	}
 	type outi8 struct {
-		maxi int8
-		mini int8
+		Maxi int8
+		Mini int8
 	}
 	var o1 outi8
 	enc.Encode(it)
 	err = dec.Decode(&o1)
-	if err == nil || err.String() != `value for "maxi" out of range` {
+	if err == nil || err.String() != `value for "Maxi" out of range` {
 		t.Error("wrong overflow error for int8:", err)
 	}
 	it = inputT{
-		mini: math.MinInt8 - 1,
+		Mini: math.MinInt8 - 1,
 	}
 	b.Reset()
 	enc.Encode(it)
 	err = dec.Decode(&o1)
-	if err == nil || err.String() != `value for "mini" out of range` {
+	if err == nil || err.String() != `value for "Mini" out of range` {
 		t.Error("wrong underflow error for int8:", err)
 	}
 
 	// int16
 	b.Reset()
 	it = inputT{
-		maxi: math.MaxInt16 + 1,
+		Maxi: math.MaxInt16 + 1,
 	}
 	type outi16 struct {
-		maxi int16
-		mini int16
+		Maxi int16
+		Mini int16
 	}
 	var o2 outi16
 	enc.Encode(it)
 	err = dec.Decode(&o2)
-	if err == nil || err.String() != `value for "maxi" out of range` {
+	if err == nil || err.String() != `value for "Maxi" out of range` {
 		t.Error("wrong overflow error for int16:", err)
 	}
 	it = inputT{
-		mini: math.MinInt16 - 1,
+		Mini: math.MinInt16 - 1,
 	}
 	b.Reset()
 	enc.Encode(it)
 	err = dec.Decode(&o2)
-	if err == nil || err.String() != `value for "mini" out of range` {
+	if err == nil || err.String() != `value for "Mini" out of range` {
 		t.Error("wrong underflow error for int16:", err)
 	}
 
 	// int32
 	b.Reset()
 	it = inputT{
-		maxi: math.MaxInt32 + 1,
+		Maxi: math.MaxInt32 + 1,
 	}
 	type outi32 struct {
-		maxi int32
-		mini int32
+		Maxi int32
+		Mini int32
 	}
 	var o3 outi32
 	enc.Encode(it)
 	err = dec.Decode(&o3)
-	if err == nil || err.String() != `value for "maxi" out of range` {
+	if err == nil || err.String() != `value for "Maxi" out of range` {
 		t.Error("wrong overflow error for int32:", err)
 	}
 	it = inputT{
-		mini: math.MinInt32 - 1,
+		Mini: math.MinInt32 - 1,
 	}
 	b.Reset()
 	enc.Encode(it)
 	err = dec.Decode(&o3)
-	if err == nil || err.String() != `value for "mini" out of range` {
+	if err == nil || err.String() != `value for "Mini" out of range` {
 		t.Error("wrong underflow error for int32:", err)
 	}
 
 	// uint8
 	b.Reset()
 	it = inputT{
-		maxu: math.MaxUint8 + 1,
+		Maxu: math.MaxUint8 + 1,
 	}
 	type outu8 struct {
-		maxu uint8
+		Maxu uint8
 	}
 	var o4 outu8
 	enc.Encode(it)
 	err = dec.Decode(&o4)
-	if err == nil || err.String() != `value for "maxu" out of range` {
+	if err == nil || err.String() != `value for "Maxu" out of range` {
 		t.Error("wrong overflow error for uint8:", err)
 	}
 
 	// uint16
 	b.Reset()
 	it = inputT{
-		maxu: math.MaxUint16 + 1,
+		Maxu: math.MaxUint16 + 1,
 	}
 	type outu16 struct {
-		maxu uint16
+		Maxu uint16
 	}
 	var o5 outu16
 	enc.Encode(it)
 	err = dec.Decode(&o5)
-	if err == nil || err.String() != `value for "maxu" out of range` {
+	if err == nil || err.String() != `value for "Maxu" out of range` {
 		t.Error("wrong overflow error for uint16:", err)
 	}
 
 	// uint32
 	b.Reset()
 	it = inputT{
-		maxu: math.MaxUint32 + 1,
+		Maxu: math.MaxUint32 + 1,
 	}
 	type outu32 struct {
-		maxu uint32
+		Maxu uint32
 	}
 	var o6 outu32
 	enc.Encode(it)
 	err = dec.Decode(&o6)
-	if err == nil || err.String() != `value for "maxu" out of range` {
+	if err == nil || err.String() != `value for "Maxu" out of range` {
 		t.Error("wrong overflow error for uint32:", err)
 	}
 
 	// float32
 	b.Reset()
 	it = inputT{
-		maxf: math.MaxFloat32 * 2,
+		Maxf: math.MaxFloat32 * 2,
 	}
 	type outf32 struct {
-		maxf float32
-		minf float32
+		Maxf float32
+		Minf float32
 	}
 	var o7 outf32
 	enc.Encode(it)
 	err = dec.Decode(&o7)
-	if err == nil || err.String() != `value for "maxf" out of range` {
+	if err == nil || err.String() != `value for "Maxf" out of range` {
 		t.Error("wrong overflow error for float32:", err)
 	}
 
 	// complex64
 	b.Reset()
 	it = inputT{
-		maxc: cmplx(math.MaxFloat32*2, math.MaxFloat32*2),
+		Maxc: complex(math.MaxFloat32*2, math.MaxFloat32*2),
 	}
 	type outc64 struct {
-		maxc complex64
-		minc complex64
+		Maxc complex64
+		Minc complex64
 	}
 	var o8 outc64
 	enc.Encode(it)
 	err = dec.Decode(&o8)
-	if err == nil || err.String() != `value for "maxc" out of range` {
+	if err == nil || err.String() != `value for "Maxc" out of range` {
 		t.Error("wrong overflow error for complex64:", err)
 	}
 }
@@ -816,92 +778,92 @@ func TestOverflow(t *testing.T) {
 
 func TestNesting(t *testing.T) {
 	type RT struct {
-		a    string
-		next *RT
+		A    string
+		Next *RT
 	}
 	rt := new(RT)
-	rt.a = "level1"
-	rt.next = new(RT)
-	rt.next.a = "level2"
+	rt.A = "level1"
+	rt.Next = new(RT)
+	rt.Next.A = "level2"
 	b := new(bytes.Buffer)
 	NewEncoder(b).Encode(rt)
 	var drt RT
 	dec := NewDecoder(b)
 	err := dec.Decode(&drt)
 	if err != nil {
-		t.Errorf("decoder error:", err)
+		t.Fatal("decoder error:", err)
 	}
-	if drt.a != rt.a {
+	if drt.A != rt.A {
 		t.Errorf("nesting: encode expected %v got %v", *rt, drt)
 	}
-	if drt.next == nil {
+	if drt.Next == nil {
 		t.Errorf("nesting: recursion failed")
 	}
-	if drt.next.a != rt.next.a {
-		t.Errorf("nesting: encode expected %v got %v", *rt.next, *drt.next)
+	if drt.Next.A != rt.Next.A {
+		t.Errorf("nesting: encode expected %v got %v", *rt.Next, *drt.Next)
 	}
 }
 
 // These three structures have the same data with different indirections
 type T0 struct {
-	a int
-	b int
-	c int
-	d int
+	A int
+	B int
+	C int
+	D int
 }
 type T1 struct {
-	a int
-	b *int
-	c **int
-	d ***int
+	A int
+	B *int
+	C **int
+	D ***int
 }
 type T2 struct {
-	a ***int
-	b **int
-	c *int
-	d int
+	A ***int
+	B **int
+	C *int
+	D int
 }
 
 func TestAutoIndirection(t *testing.T) {
 	// First transfer t1 into t0
 	var t1 T1
-	t1.a = 17
-	t1.b = new(int)
-	*t1.b = 177
-	t1.c = new(*int)
-	*t1.c = new(int)
-	**t1.c = 1777
-	t1.d = new(**int)
-	*t1.d = new(*int)
-	**t1.d = new(int)
-	***t1.d = 17777
+	t1.A = 17
+	t1.B = new(int)
+	*t1.B = 177
+	t1.C = new(*int)
+	*t1.C = new(int)
+	**t1.C = 1777
+	t1.D = new(**int)
+	*t1.D = new(*int)
+	**t1.D = new(int)
+	***t1.D = 17777
 	b := new(bytes.Buffer)
 	enc := NewEncoder(b)
 	enc.Encode(t1)
 	dec := NewDecoder(b)
 	var t0 T0
 	dec.Decode(&t0)
-	if t0.a != 17 || t0.b != 177 || t0.c != 1777 || t0.d != 17777 {
+	if t0.A != 17 || t0.B != 177 || t0.C != 1777 || t0.D != 17777 {
 		t.Errorf("t1->t0: expected {17 177 1777 17777}; got %v", t0)
 	}
 
 	// Now transfer t2 into t0
 	var t2 T2
-	t2.d = 17777
-	t2.c = new(int)
-	*t2.c = 1777
-	t2.b = new(*int)
-	*t2.b = new(int)
-	**t2.b = 177
-	t2.a = new(**int)
-	*t2.a = new(*int)
-	**t2.a = new(int)
-	***t2.a = 17
+	t2.D = 17777
+	t2.C = new(int)
+	*t2.C = 1777
+	t2.B = new(*int)
+	*t2.B = new(int)
+	**t2.B = 177
+	t2.A = new(**int)
+	*t2.A = new(*int)
+	**t2.A = new(int)
+	***t2.A = 17
 	b.Reset()
 	enc.Encode(t2)
 	t0 = T0{}
 	dec.Decode(&t0)
-	if t0.a != 17 || t0.b != 177 || t0.c != 1777 || t0.d != 17777 {
+	if t0.A != 17 || t0.B != 177 || t0.C != 1777 || t0.D != 17777 {
 		t.Errorf("t2->t0 expected {17 177 1777 17777}; got %v", t0)
 	}
 
@@ -911,8 +873,8 @@ func TestAutoIndirection(t *testing.T) {
 	enc.Encode(t0)
 	t1 = T1{}
 	dec.Decode(&t1)
-	if t1.a != 17 || *t1.b != 177 || **t1.c != 1777 || ***t1.d != 17777 {
-		t.Errorf("t0->t1 expected {17 177 1777 17777}; got {%d %d %d %d}", t1.a, *t1.b, **t1.c, ***t1.d)
+	if t1.A != 17 || *t1.B != 177 || **t1.C != 1777 || ***t1.D != 17777 {
+		t.Errorf("t0->t1 expected {17 177 1777 17777}; got {%d %d %d %d}", t1.A, *t1.B, **t1.C, ***t1.D)
 	}
 
 	// Now transfer t0 into t2
@@ -920,40 +882,40 @@ func TestAutoIndirection(t *testing.T) {
 	enc.Encode(t0)
 	t2 = T2{}
 	dec.Decode(&t2)
-	if ***t2.a != 17 || **t2.b != 177 || *t2.c != 1777 || t2.d != 17777 {
-		t.Errorf("t0->t2 expected {17 177 1777 17777}; got {%d %d %d %d}", ***t2.a, **t2.b, *t2.c, t2.d)
+	if ***t2.A != 17 || **t2.B != 177 || *t2.C != 1777 || t2.D != 17777 {
+		t.Errorf("t0->t2 expected {17 177 1777 17777}; got {%d %d %d %d}", ***t2.A, **t2.B, *t2.C, t2.D)
 	}
 
 	// Now do t2 again but without pre-allocated pointers.
 	b.Reset()
 	enc.Encode(t0)
-	***t2.a = 0
-	**t2.b = 0
-	*t2.c = 0
-	t2.d = 0
+	***t2.A = 0
+	**t2.B = 0
+	*t2.C = 0
+	t2.D = 0
 	dec.Decode(&t2)
-	if ***t2.a != 17 || **t2.b != 177 || *t2.c != 1777 || t2.d != 17777 {
-		t.Errorf("t0->t2 expected {17 177 1777 17777}; got {%d %d %d %d}", ***t2.a, **t2.b, *t2.c, t2.d)
+	if ***t2.A != 17 || **t2.B != 177 || *t2.C != 1777 || t2.D != 17777 {
+		t.Errorf("t0->t2 expected {17 177 1777 17777}; got {%d %d %d %d}", ***t2.A, **t2.B, *t2.C, t2.D)
 	}
 }
 
 type RT0 struct {
-	a int
-	b string
-	c float
+	A int
+	B string
+	C float64
 }
 type RT1 struct {
-	c      float
-	b      string
-	a      int
-	notSet string
+	C      float64
+	B      string
+	A      int
+	NotSet string
 }
 
 func TestReorderedFields(t *testing.T) {
 	var rt0 RT0
-	rt0.a = 17
-	rt0.b = "hello"
-	rt0.c = 3.14159
+	rt0.A = 17
+	rt0.B = "hello"
+	rt0.C = 3.14159
 	b := new(bytes.Buffer)
 	NewEncoder(b).Encode(rt0)
 	dec := NewDecoder(b)
@@ -961,41 +923,41 @@ func TestReorderedFields(t *testing.T) {
 	// Wire type is RT0, local type is RT1.
 	err := dec.Decode(&rt1)
 	if err != nil {
-		t.Error("decode error:", err)
+		t.Fatal("decode error:", err)
 	}
-	if rt0.a != rt1.a || rt0.b != rt1.b || rt0.c != rt1.c {
+	if rt0.A != rt1.A || rt0.B != rt1.B || rt0.C != rt1.C {
 		t.Errorf("rt1->rt0: expected %v; got %v", rt0, rt1)
 	}
 }
 
 // Like an RT0 but with fields we'll ignore on the decode side.
 type IT0 struct {
-	a        int64
-	b        string
-	ignore_d []int
-	ignore_e [3]float
-	ignore_f bool
-	ignore_g string
-	ignore_h []byte
-	ignore_i *RT1
-	ignore_m map[string]int
-	c        float
+	A        int64
+	B        string
+	Ignore_d []int
+	Ignore_e [3]float64
+	Ignore_f bool
+	Ignore_g string
+	Ignore_h []byte
+	Ignore_i *RT1
+	Ignore_m map[string]int
+	C        float64
 }
 
 func TestIgnoredFields(t *testing.T) {
 	var it0 IT0
-	it0.a = 17
-	it0.b = "hello"
-	it0.c = 3.14159
-	it0.ignore_d = []int{1, 2, 3}
-	it0.ignore_e[0] = 1.0
-	it0.ignore_e[1] = 2.0
-	it0.ignore_e[2] = 3.0
-	it0.ignore_f = true
-	it0.ignore_g = "pay no attention"
-	it0.ignore_h = []byte("to the curtain")
-	it0.ignore_i = &RT1{3.1, "hi", 7, "hello"}
-	it0.ignore_m = map[string]int{"one": 1, "two": 2}
+	it0.A = 17
+	it0.B = "hello"
+	it0.C = 3.14159
+	it0.Ignore_d = []int{1, 2, 3}
+	it0.Ignore_e[0] = 1.0
+	it0.Ignore_e[1] = 2.0
+	it0.Ignore_e[2] = 3.0
+	it0.Ignore_f = true
+	it0.Ignore_g = "pay no attention"
+	it0.Ignore_h = []byte("to the curtain")
+	it0.Ignore_i = &RT1{3.1, "hi", 7, "hello"}
+	it0.Ignore_m = map[string]int{"one": 1, "two": 2}
 
 	b := new(bytes.Buffer)
 	NewEncoder(b).Encode(it0)
@@ -1006,14 +968,14 @@ func TestIgnoredFields(t *testing.T) {
 	if err != nil {
 		t.Error("error: ", err)
 	}
-	if int(it0.a) != rt1.a || it0.b != rt1.b || it0.c != rt1.c {
-		t.Errorf("rt1->rt0: expected %v; got %v", it0, rt1)
+	if int(it0.A) != rt1.A || it0.B != rt1.B || it0.C != rt1.C {
+		t.Errorf("rt0->rt1: expected %v; got %v", it0, rt1)
 	}
 }
 
 type Bad0 struct {
 	ch chan int
-	c  float
+	c  float64
 }
 
 var nilEncoder *Encoder
@@ -1031,33 +993,33 @@ func TestInvalidField(t *testing.T) {
 }
 
 type Indirect struct {
-	a ***[3]int
-	s ***[]int
-	m ****map[string]int
+	A ***[3]int
+	S ***[]int
+	M ****map[string]int
 }
 
 type Direct struct {
-	a [3]int
-	s []int
-	m map[string]int
+	A [3]int
+	S []int
+	M map[string]int
 }
 
 func TestIndirectSliceMapArray(t *testing.T) {
 	// Marshal indirect, unmarshal to direct.
 	i := new(Indirect)
-	i.a = new(**[3]int)
-	*i.a = new(*[3]int)
-	**i.a = new([3]int)
-	***i.a = [3]int{1, 2, 3}
-	i.s = new(**[]int)
-	*i.s = new(*[]int)
-	**i.s = new([]int)
-	***i.s = []int{4, 5, 6}
-	i.m = new(***map[string]int)
-	*i.m = new(**map[string]int)
-	**i.m = new(*map[string]int)
-	***i.m = new(map[string]int)
-	****i.m = map[string]int{"one": 1, "two": 2, "three": 3}
+	i.A = new(**[3]int)
+	*i.A = new(*[3]int)
+	**i.A = new([3]int)
+	***i.A = [3]int{1, 2, 3}
+	i.S = new(**[]int)
+	*i.S = new(*[]int)
+	**i.S = new([]int)
+	***i.S = []int{4, 5, 6}
+	i.M = new(***map[string]int)
+	*i.M = new(**map[string]int)
+	**i.M = new(*map[string]int)
+	***i.M = new(map[string]int)
+	****i.M = map[string]int{"one": 1, "two": 2, "three": 3}
 	b := new(bytes.Buffer)
 	NewEncoder(b).Encode(i)
 	dec := NewDecoder(b)
@@ -1066,35 +1028,35 @@ func TestIndirectSliceMapArray(t *testing.T) {
 	if err != nil {
 		t.Error("error: ", err)
 	}
-	if len(d.a) != 3 || d.a[0] != 1 || d.a[1] != 2 || d.a[2] != 3 {
-		t.Errorf("indirect to direct: d.a is %v not %v", d.a, ***i.a)
+	if len(d.A) != 3 || d.A[0] != 1 || d.A[1] != 2 || d.A[2] != 3 {
+		t.Errorf("indirect to direct: d.A is %v not %v", d.A, ***i.A)
 	}
-	if len(d.s) != 3 || d.s[0] != 4 || d.s[1] != 5 || d.s[2] != 6 {
-		t.Errorf("indirect to direct: d.s is %v not %v", d.s, ***i.s)
+	if len(d.S) != 3 || d.S[0] != 4 || d.S[1] != 5 || d.S[2] != 6 {
+		t.Errorf("indirect to direct: d.S is %v not %v", d.S, ***i.S)
 	}
-	if len(d.m) != 3 || d.m["one"] != 1 || d.m["two"] != 2 || d.m["three"] != 3 {
-		t.Errorf("indirect to direct: d.m is %v not %v", d.m, ***i.m)
+	if len(d.M) != 3 || d.M["one"] != 1 || d.M["two"] != 2 || d.M["three"] != 3 {
+		t.Errorf("indirect to direct: d.M is %v not %v", d.M, ***i.M)
 	}
 	// Marshal direct, unmarshal to indirect.
-	d.a = [3]int{11, 22, 33}
-	d.s = []int{44, 55, 66}
-	d.m = map[string]int{"four": 4, "five": 5, "six": 6}
+	d.A = [3]int{11, 22, 33}
+	d.S = []int{44, 55, 66}
+	d.M = map[string]int{"four": 4, "five": 5, "six": 6}
 	i = new(Indirect)
 	b.Reset()
 	NewEncoder(b).Encode(d)
 	dec = NewDecoder(b)
 	err = dec.Decode(&i)
 	if err != nil {
-		t.Error("error: ", err)
+		t.Fatal("error: ", err)
 	}
-	if len(***i.a) != 3 || (***i.a)[0] != 11 || (***i.a)[1] != 22 || (***i.a)[2] != 33 {
-		t.Errorf("direct to indirect: ***i.a is %v not %v", ***i.a, d.a)
+	if len(***i.A) != 3 || (***i.A)[0] != 11 || (***i.A)[1] != 22 || (***i.A)[2] != 33 {
+		t.Errorf("direct to indirect: ***i.A is %v not %v", ***i.A, d.A)
 	}
-	if len(***i.s) != 3 || (***i.s)[0] != 44 || (***i.s)[1] != 55 || (***i.s)[2] != 66 {
-		t.Errorf("direct to indirect: ***i.s is %v not %v", ***i.s, ***i.s)
+	if len(***i.S) != 3 || (***i.S)[0] != 44 || (***i.S)[1] != 55 || (***i.S)[2] != 66 {
+		t.Errorf("direct to indirect: ***i.S is %v not %v", ***i.S, ***i.S)
 	}
-	if len(****i.m) != 3 || (****i.m)["four"] != 4 || (****i.m)["five"] != 5 || (****i.m)["six"] != 6 {
-		t.Errorf("direct to indirect: ****i.m is %v not %v", ****i.m, d.m)
+	if len(****i.M) != 3 || (****i.M)["four"] != 4 || (****i.M)["five"] != 5 || (****i.M)["six"] != 6 {
+		t.Errorf("direct to indirect: ****i.M is %v not %v", ****i.M, d.M)
 	}
 }
 
@@ -1109,7 +1071,7 @@ func (i Int) Square() int {
 	return int(i * i)
 }
 
-type Float float
+type Float float64
 
 func (f Float) Square() int {
 	return int(f * f)
@@ -1135,16 +1097,16 @@ func (p Point) Square() int {
 
 // A struct with interfaces in it.
 type InterfaceItem struct {
-	i             int
-	sq1, sq2, sq3 Squarer
-	f             float
-	sq            []Squarer
+	I             int
+	Sq1, Sq2, Sq3 Squarer
+	F             float64
+	Sq            []Squarer
 }
 
 // The same struct without interfaces
 type NoInterfaceItem struct {
-	i int
-	f float
+	I int
+	F float64
 }
 
 func TestInterface(t *testing.T) {
@@ -1169,34 +1131,34 @@ func TestInterface(t *testing.T) {
 	if err != nil {
 		t.Fatal("decode:", err)
 	}
-	if item2.i != item1.i {
+	if item2.I != item1.I {
 		t.Error("normal int did not decode correctly")
 	}
-	if item2.sq1 == nil || item2.sq1.Square() != iVal.Square() {
+	if item2.Sq1 == nil || item2.Sq1.Square() != iVal.Square() {
 		t.Error("Int did not decode correctly")
 	}
-	if item2.sq2 == nil || item2.sq2.Square() != fVal.Square() {
+	if item2.Sq2 == nil || item2.Sq2.Square() != fVal.Square() {
 		t.Error("Float did not decode correctly")
 	}
-	if item2.sq3 == nil || item2.sq3.Square() != vVal.Square() {
+	if item2.Sq3 == nil || item2.Sq3.Square() != vVal.Square() {
 		t.Error("Vector did not decode correctly")
 	}
-	if item2.f != item1.f {
+	if item2.F != item1.F {
 		t.Error("normal float did not decode correctly")
 	}
 	// Now check that we received a slice of Squarers correctly, including a nil element
-	if len(item1.sq) != len(item2.sq) {
-		t.Fatalf("[]Squarer length wrong: got %d; expected %d", len(item2.sq), len(item1.sq))
+	if len(item1.Sq) != len(item2.Sq) {
+		t.Fatalf("[]Squarer length wrong: got %d; expected %d", len(item2.Sq), len(item1.Sq))
 	}
-	for i, v1 := range item1.sq {
-		v2 := item2.sq[i]
+	for i, v1 := range item1.Sq {
+		v2 := item2.Sq[i]
 		if v1 == nil || v2 == nil {
 			if v1 != nil || v2 != nil {
 				t.Errorf("item %d inconsistent nils", i)
 			}
 			continue
 			if v1.Square() != v2.Square() {
-				t.Errorf("item %d inconsistent values: %v %v", v1, v2)
+				t.Errorf("item %d inconsistent values: %v %v", i, v1, v2)
 			}
 		}
 	}
@@ -1207,8 +1169,8 @@ func TestInterface(t *testing.T) {
 type BasicInterfaceItem struct {
 	Int, Int8, Int16, Int32, Int64      interface{}
 	Uint, Uint8, Uint16, Uint32, Uint64 interface{}
-	Float, Float32, Float64             interface{}
-	Complex, Complex64, Complex128      interface{}
+	Float32, Float64                    interface{}
+	Complex64, Complex128               interface{}
 	Bool                                interface{}
 	String                              interface{}
 	Bytes                               interface{}
@@ -1219,8 +1181,8 @@ func TestInterfaceBasic(t *testing.T) {
 	item1 := &BasicInterfaceItem{
 		int(1), int8(1), int16(1), int32(1), int64(1),
 		uint(1), uint8(1), uint16(1), uint32(1), uint64(1),
-		float(1), float32(1), float64(1),
-		complex(0i), complex64(0i), complex128(0i),
+		float32(1), 1.0,
+		complex64(0i), complex128(0i),
 		true,
 		"hello",
 		[]byte("sailor"),
@@ -1250,8 +1212,8 @@ func TestInterfaceBasic(t *testing.T) {
 type String string
 
 type PtrInterfaceItem struct {
-	str interface{} // basic
-	Str interface{} // derived
+	Str1 interface{} // basic
+	Str2 interface{} // derived
 }
 
 // We'll send pointers; should receive values.
@@ -1277,10 +1239,10 @@ func TestInterfacePointer(t *testing.T) {
 		t.Fatal("decode:", err)
 	}
 	// Hand test for correct types and values.
-	if v, ok := item2.str.(string); !ok || v != str1 {
+	if v, ok := item2.Str1.(string); !ok || v != str1 {
 		t.Errorf("basic string failed: %q should be %q", v, str1)
 	}
-	if v, ok := item2.Str.(String); !ok || v != str2 {
+	if v, ok := item2.Str2.(String); !ok || v != str2 {
 		t.Errorf("derived type String failed: %q should be %q", v, str2)
 	}
 }
@@ -1307,30 +1269,60 @@ func TestIgnoreInterface(t *testing.T) {
 	if err != nil {
 		t.Fatal("decode:", err)
 	}
-	if item2.i != item1.i {
+	if item2.I != item1.I {
 		t.Error("normal int did not decode correctly")
 	}
-	if item2.f != item2.f {
+	if item2.F != item2.F {
 		t.Error("normal float did not decode correctly")
+	}
+}
+
+type U struct {
+	A int
+	B string
+	c float64
+	D uint
+}
+
+func TestUnexportedFields(t *testing.T) {
+	var u0 U
+	u0.A = 17
+	u0.B = "hello"
+	u0.c = 3.14159
+	u0.D = 23
+	b := new(bytes.Buffer)
+	NewEncoder(b).Encode(u0)
+	dec := NewDecoder(b)
+	var u1 U
+	u1.c = 1234.
+	err := dec.Decode(&u1)
+	if err != nil {
+		t.Fatal("decode error:", err)
+	}
+	if u0.A != u0.A || u0.B != u1.B || u0.D != u1.D {
+		t.Errorf("u1->u0: expected %v; got %v", u0, u1)
+	}
+	if u1.c != 1234. {
+		t.Error("u1.c modified")
 	}
 }
 
 // A type that won't be defined in the gob until we send it in an interface value.
 type OnTheFly struct {
-	a int
+	A int
 }
 
 type DT struct {
 	//	X OnTheFly
-	a     int
-	b     string
-	c     float
-	i     interface{}
-	j     interface{}
-	i_nil interface{}
-	m     map[string]int
-	r     [3]int
-	s     []string
+	A     int
+	B     string
+	C     float64
+	I     interface{}
+	J     interface{}
+	I_nil interface{}
+	M     map[string]int
+	T     [3]int
+	S     []string
 }
 
 func TestDebug(t *testing.T) {
@@ -1339,15 +1331,15 @@ func TestDebug(t *testing.T) {
 	}
 	Register(OnTheFly{})
 	var dt DT
-	dt.a = 17
-	dt.b = "hello"
-	dt.c = 3.14159
-	dt.i = 271828
-	dt.j = OnTheFly{3}
-	dt.i_nil = nil
-	dt.m = map[string]int{"one": 1, "two": 2}
-	dt.r = [3]int{11, 22, 33}
-	dt.s = []string{"hi", "joe"}
+	dt.A = 17
+	dt.B = "hello"
+	dt.C = 3.14159
+	dt.I = 271828
+	dt.J = OnTheFly{3}
+	dt.I_nil = nil
+	dt.M = map[string]int{"one": 1, "two": 2}
+	dt.T = [3]int{11, 22, 33}
+	dt.S = []string{"hi", "joe"}
 	b := new(bytes.Buffer)
 	err := NewEncoder(b).Encode(dt)
 	if err != nil {
