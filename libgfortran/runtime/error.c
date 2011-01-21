@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005, 2006, 2007, 2009, 2010
+/* Copyright (C) 2002, 2003, 2005, 2006, 2007, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -141,6 +141,36 @@ gfc_xtoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
   return p;
 }
 
+
+/* Hopefully thread-safe wrapper for a strerror_r() style function.  */
+
+char *
+gf_strerror (int errnum, 
+             char * buf __attribute__((unused)), 
+	     size_t buflen __attribute__((unused)))
+{
+#ifdef HAVE_STRERROR_R
+  /* TODO: How to prevent the compiler warning due to strerror_r of
+     the untaken branch having the wrong return type?  */
+  if (__builtin_classify_type (strerror_r (0, buf, 0)) == 5)
+    {
+      /* GNU strerror_r()  */
+      return strerror_r (errnum, buf, buflen);
+    }
+  else
+    {
+      /* POSIX strerror_r ()  */
+      strerror_r (errnum, buf, buflen);
+      return buf;
+    }
+#else
+  /* strerror () is not necessarily thread-safe, but should at least
+     be available everywhere.  */
+  return strerror (errnum);
+#endif
+}
+
+
 /* show_locus()-- Print a line number and filename describing where
  * something went wrong */
 
@@ -192,6 +222,8 @@ recursion_check (void)
 }
 
 
+#define STRERR_MAXSZ 256
+
 /* os_error()-- Operating system error.  We get a message from the
  * operating system, show it and leave.  Some operating system errors
  * are caught and processed by the library.  If not, we come here. */
@@ -199,8 +231,10 @@ recursion_check (void)
 void
 os_error (const char *message)
 {
+  char errmsg[STRERR_MAXSZ];
   recursion_check ();
-  st_printf ("Operating system error: %s\n%s\n", get_oserror (), message);
+  st_printf ("Operating system error: %s\n%s\n", 
+	     gf_strerror (errno, errmsg, STRERR_MAXSZ), message);
   sys_exit (1);
 }
 iexport(os_error);
@@ -389,6 +423,7 @@ translate_error (int code)
 void
 generate_error (st_parameter_common *cmp, int family, const char *message)
 {
+  char errmsg[STRERR_MAXSZ];
 
   /* If there was a previous error, don't mask it with another
      error message, EOF or EOR condition.  */
@@ -402,7 +437,8 @@ generate_error (st_parameter_common *cmp, int family, const char *message)
 
   if (message == NULL)
     message =
-      (family == LIBERROR_OS) ? get_oserror () : translate_error (family);
+      (family == LIBERROR_OS) ? gf_strerror (errno, errmsg, STRERR_MAXSZ) :
+      translate_error (family);
 
   if (cmp->flags & IOPARM_HAS_IOMSG)
     cf_strcpy (cmp->iomsg, cmp->iomsg_len, message);

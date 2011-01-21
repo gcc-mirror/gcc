@@ -1,3 +1,17 @@
+2011-01-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/46267
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Check presence of strerror_r.
+	* intrinsics/gerror.c (gerror): Use gf_strerror, modify logic.
+	* io/unix.c (get_oserror): Remove.
+	* libgfortran.h (gf_strerror): Add prototype.
+	(get_oserror): Remove prototype.
+	* runtime/error.c (gf_strerror): New function.
+	(os_error): Use gf_strerror instead of get_oserror.
+	(generate_errror): Likewise.
+
 2011-01-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47296
