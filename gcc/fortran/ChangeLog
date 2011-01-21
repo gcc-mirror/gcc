@@ -1,3 +1,9 @@
+2011-01-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47377
+	* expr.c (gfc_check_pointer_assign): Reject expr data-targets
+	without pointer attribute.
+
 2011-01-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47240
