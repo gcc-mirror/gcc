@@ -97,6 +97,8 @@ struct	M
 	int32	locks;
 	int32	nomemprof;
 	int32	gcing_for_prof;
+	int32	holds_finlock;
+	int32	gcing_for_finlock;
 	MCache	*mcache;
 
 	/* For the list of all threads.  */

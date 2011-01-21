@@ -106,9 +106,13 @@ runtime_addfinalizer(void *p, void (*f)(void*), const struct __go_func_type *ft)
 		e->ft = ft;
 	}
 
+	if(!__sync_bool_compare_and_swap(&m->holds_finlock, 0, 1))
+		runtime_throw("finalizer deadlock");
+
 	runtime_lock(&finlock);
 	if(!runtime_mlookup(p, &base, nil, nil, &ref) || p != base) {
 		runtime_unlock(&finlock);
+		__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
 		runtime_throw("addfinalizer on invalid pointer");
 	}
 	if(f == nil) {
@@ -116,12 +120,12 @@ runtime_addfinalizer(void *p, void (*f)(void*), const struct __go_func_type *ft)
 			lookfintab(&fintab, p, 1);
 			*ref &= ~RefHasFinalizer;
 		}
-		runtime_unlock(&finlock);
-		return;
+		goto unlock;
 	}
 
 	if(*ref & RefHasFinalizer) {
 		runtime_unlock(&finlock);
+		__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
 		runtime_throw("double finalizer");
 	}
 	*ref |= RefHasFinalizer;
@@ -156,7 +160,14 @@ runtime_addfinalizer(void *p, void (*f)(void*), const struct __go_func_type *ft)
 	}
 
 	addfintab(&fintab, p, e);
+ unlock:
 	runtime_unlock(&finlock);
+
+	__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
+
+	if(__sync_bool_compare_and_swap(&m->gcing_for_finlock, 1, 0)) {
+		__go_run_goroutine_gc(200);
+	}
 }
 
 // get finalizer; if del, delete finalizer.
@@ -166,9 +177,18 @@ runtime_getfinalizer(void *p, bool del)
 {
 	Finalizer *f;
 	
+	if(!__sync_bool_compare_and_swap(&m->holds_finlock, 0, 1))
+		runtime_throw("finalizer deadlock");
+
 	runtime_lock(&finlock);
 	f = lookfintab(&fintab, p, del);
 	runtime_unlock(&finlock);
+
+	__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
+	if(__sync_bool_compare_and_swap(&m->gcing_for_finlock, 1, 0)) {
+		__go_run_goroutine_gc(201);
+	}
+
 	return f;
 }
 
@@ -178,6 +198,9 @@ runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, int64))
 	void **key;
 	void **ekey;
 
+	if(!__sync_bool_compare_and_swap(&m->holds_finlock, 0, 1))
+		runtime_throw("finalizer deadlock");
+
 	scan((byte*)&fintab, sizeof fintab);
 	runtime_lock(&finlock);
 	key = fintab.key;
@@ -186,4 +209,9 @@ runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, int64))
 		if(*key != nil && *key != ((void*)-1))
 			fn(*key);
 	runtime_unlock(&finlock);
+
+	__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
+	if(__sync_bool_compare_and_swap(&m->gcing_for_finlock, 1, 0)) {
+		runtime_throw("walkfintab not called from gc");
+	}
 }
