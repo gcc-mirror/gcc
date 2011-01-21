@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1927,8 +1927,6 @@ _GLIBCXX_END_NAMESPACE
 // 22.2.1.5  Template class codecvt
 #include <bits/codecvt.h>
 
-#ifndef _GLIBCXX_EXPORT_TEMPLATE
-# include <bits/locale_facets_nonio.tcc>
-#endif
+#include <bits/locale_facets_nonio.tcc>
 
 #endif

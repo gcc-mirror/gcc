@@ -1,6 +1,6 @@
 // <forward_list> -*- C++ -*-
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,10 +37,7 @@
 
 #include <bits/forward_list.h>
 #include <bits/range_access.h>
-
-#ifndef _GLIBCXX_EXPORT_TEMPLATE
-# include <bits/forward_list.tcc>
-#endif
+#include <bits/forward_list.tcc>
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/forward_list>
