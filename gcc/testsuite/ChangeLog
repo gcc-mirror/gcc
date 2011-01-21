@@ -1,5 +1,10 @@
 2011-01-21  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/pr47392.c: Make test non-static instead of
+	making main hot.
+
+2011-01-21  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/47365
 	* gcc.dg/torture/pr47365.c: New testcase.
 	* gcc.dg/tree-ssa/pr47392.c: Likewise.
