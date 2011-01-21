@@ -3507,6 +3507,15 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
     lvalue->symtree->n.sym->attr.subref_array_pointer = 1;
 
   attr = gfc_expr_attr (rvalue);
+
+  if (rvalue->expr_type == EXPR_FUNCTION && !attr.pointer)
+    {
+      gfc_error ("Target expression in pointer assignment "
+		 "at %L must deliver a pointer result",
+		 &rvalue->where);
+      return FAILURE;
+    }
+
   if (!attr.target && !attr.pointer)
     {
       gfc_error ("Pointer assignment target is neither TARGET "
