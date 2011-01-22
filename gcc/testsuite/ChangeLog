@@ -1,3 +1,8 @@
+2011-01-21  Jeff Law <law@redhat.com>
+
+	PR tree-optimization/47053
+	* g++.dg/pr47053.C: New test.
+	
 2011-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47041

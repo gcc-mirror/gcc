@@ -1,3 +1,12 @@
+2011-01-21  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/47053
+	* tree-ssa-dse.c (need_eh_cleanup): New bitmap.
+	(dse_optimize_stmt): Set the appropriate bit in NEED_EH_CLEANUP when
+	statements are deleted.
+	(tree_ssa_dse): Allocate & free NEED_EH_CLEANUP.  If NEED_EH_CLEANUP
+	is nonempty, then purge dead edges and cleanup the CFG.
+
 2011-01-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/47402
