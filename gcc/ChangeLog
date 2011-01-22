@@ -1,3 +1,10 @@
+2011-01-22  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/43884
+	PR lto/44334
+	* predict.c (maybe_hot_frequency_p): Use entry block frequency as an base.
+	* doc/invoke.texi (hot-bb-frequency-fraction): Update docs.
+
 2011-01-22  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/s390/s390.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.

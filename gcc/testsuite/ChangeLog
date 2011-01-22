@@ -1,3 +1,10 @@
+2011-01-22  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/43884
+	PR lto/44334
+	* gcc.dg/autopar/outer-2.c: Increase array size.
+	* gcc.dg/tree-ssa/ldist-pr45948.c: Update test.
+
 2011-01-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/38536
