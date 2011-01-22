@@ -1,3 +1,8 @@
+2011-01-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/38536
+	* gfortran.dg/c_loc_tests_16.f90:  New test.
+
 2011-01-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47399
@@ -7,7 +12,7 @@
 
 	PR tree-optimization/47053
 	* g++.dg/pr47053.C: New test.
-	
+
 2011-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47041
