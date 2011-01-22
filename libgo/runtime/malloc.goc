@@ -255,6 +255,9 @@ runtime_allocmcache(void)
 {
 	MCache *c;
 
+	if(!__sync_bool_compare_and_swap(&m->mallocing, 0, 1))
+		runtime_throw("allocmcache - deadlock");
+
 	runtime_lock(&runtime_mheap);
 	c = runtime_FixAlloc_Alloc(&runtime_mheap.cachealloc);
 
@@ -264,6 +267,11 @@ runtime_allocmcache(void)
 	mstats.mcache_inuse = runtime_mheap.cachealloc.inuse;
 	mstats.mcache_sys = runtime_mheap.cachealloc.sys;
 	runtime_unlock(&runtime_mheap);
+
+	__sync_bool_compare_and_swap(&m->mallocing, 1, 0);
+	if(__sync_bool_compare_and_swap(&m->gcing, 1, 0))
+		__go_run_goroutine_gc(2);
+
 	return c;
 }
 
