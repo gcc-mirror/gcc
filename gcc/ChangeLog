@@ -1,3 +1,14 @@
+2011-01-22  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR middle-end/47401
+	* except.c (sjlj_assign_call_site_values): Move setting the
+	crtl->uses_eh_lsda flag to ...
+	(sjlj_mark_call_sites): ... here.
+	(sjlj_emit_function_enter): Support NULL dispatch label.
+	(sjlj_build_landing_pads): In a function with no landing pads
+	that still has must-not-throw regions, generate code to register
+	a personality function with empty LSDA.
+
 2011-01-21  Richard Henderson  <rth@redhat.com>
 
 	* config/rx/rx.c (TARGET_FLAGS_REGNUM): New.
