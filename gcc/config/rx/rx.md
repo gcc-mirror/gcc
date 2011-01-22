@@ -762,7 +762,7 @@
 
   /* If the comparison needs swapping of operands, do that now.
      Do not split the comparison in two yet.  */
-  if (rx_split_fp_compare (GET_CODE (operands[0]), &cmp1, &cmp2))
+  if (rx_split_fp_compare (GET_CODE (operands[1]), &cmp1, &cmp2))
     {
       rtx op2, op3;
 
