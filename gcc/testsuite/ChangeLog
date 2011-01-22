@@ -1,5 +1,10 @@
 2011-01-22  Jan Hubicka  <jh@suse.cz>
 
+	PR lto/47333
+	* g++.dg/lto/pr47333.C: New file.
+
+2011-01-22  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/43884
 	PR lto/44334
 	* gcc.dg/autopar/outer-2.c: Increase array size.

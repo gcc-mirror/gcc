@@ -383,10 +383,6 @@ bool
 reachable_from_this_partition_p (struct cgraph_node *node, cgraph_node_set set)
 {
   struct cgraph_edge *e;
-  if (!node->analyzed)
-    return false;
-  if (node->global.inlined_to)
-    return false;
   for (e = node->callers; e; e = e->next_caller)
     if (cgraph_node_in_set_p (e->caller, set))
       return true;

@@ -1,5 +1,10 @@
 2011-01-22  Jan Hubicka  <jh@suse.cz>
 
+	PR lto/47333
+	* lto-cgraph.c (reachable_from_this_partition_p): Fix pasto.
+
+2011-01-22  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/43884
 	PR lto/44334
 	* predict.c (maybe_hot_frequency_p): Use entry block frequency as an base.
