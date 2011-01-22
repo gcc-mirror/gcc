@@ -4351,6 +4351,10 @@ to return a nonzero value when it is required, the compiler will run out
 of spill registers and print a fatal error message.
 @end deftypefn
 
+@deftypevr {Target Hook} {unsigned int} TARGET_FLAGS_REGNUM
+If the target has a dedicated flags register, and it needs to use the post-reload comparison elimination pass, then this value should be set appropriately.
+@end deftypevr
+
 @node Scalar Return
 @subsection How Scalar Function Values Are Returned
 @cindex return values in registers

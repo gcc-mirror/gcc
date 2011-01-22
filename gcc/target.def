@@ -1638,6 +1638,15 @@ DEFHOOK
  bool, (enum machine_mode mode),
  hook_bool_mode_false)
 
+/* Register number for a flags register.  Only needs to be defined if the
+   target is constrainted to use post-reload comparison elimination.  */
+DEFHOOKPOD
+(flags_regnum,
+ "If the target has a dedicated flags register, and it needs to use the\
+ post-reload comparison elimination pass, then this value should be set\
+ appropriately.",
+ unsigned int, INVALID_REGNUM)
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */

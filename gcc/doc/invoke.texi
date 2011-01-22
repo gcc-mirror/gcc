@@ -337,7 +337,7 @@ Objective-C and Objective-C++ Dialects}.
 -fauto-inc-dec -fbranch-probabilities -fbranch-target-load-optimize @gol
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive -fcaller-saves @gol
 -fcheck-data-deps -fcombine-stack-adjustments -fconserve-stack @gol
--fcprop-registers -fcrossjumping @gol
+-fcompare-elim -fcprop-registers -fcrossjumping @gol
 -fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules @gol
 -fcx-limited-range @gol
 -fdata-sections -fdce -fdce -fdelayed-branch @gol
@@ -5870,6 +5870,7 @@ compilation time.
 @option{-O} turns on the following optimization flags:
 @gccoptlist{
 -fauto-inc-dec @gol
+-fcompare-elim @gol
 -fcprop-registers @gol
 -fdce @gol
 -fdefer-pop @gol
@@ -7688,6 +7689,18 @@ use hidden visibility) is similar to @code{-fwhole-program}.  See
 
 Enabled by default when LTO support in GCC is enabled and GCC was compiled
 with linker supporting plugins (GNU ld or @code{gold}).
+
+@item -fcompare-elim
+@opindex fcompare-elim
+After register allocation and post-register allocation instruction splitting,
+identify arithmetic instructions that compute processor flags similar to a
+comparison operation based on that arithmetic.  If possible, eliminate the
+explicit comparison operation.
+
+This pass only applies to certain targets that cannot explicitly represent
+the comparison operation before register allocation is complete.
+
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fcprop-registers
 @opindex fcprop-registers
