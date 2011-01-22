@@ -1,5 +1,7 @@
 2011-01-21  Richard Henderson  <rth@redhat.com>
 
+	* config/rx/rx.c (TARGET_FLAGS_REGNUM): New.
+
 	* config/mn10300/mn10300.c (TARGET_FLAGS_REGNUM): New.
 
 	* compare-elim.c: New file.
