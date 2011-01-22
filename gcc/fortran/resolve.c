@@ -2699,6 +2699,9 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
         }
       else if (sym->intmod_sym_id == ISOCBINDING_LOC)
         {
+	  gfc_ref *ref;
+	  bool seen_section;
+
           /* Make sure we have either the target or pointer attribute.  */
 	  if (!arg_attr.target && !arg_attr.pointer)
             {
@@ -2709,6 +2712,45 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
               retval = FAILURE;
             }
 
+	  if (gfc_is_coindexed (args->expr))
+	    {
+	      gfc_error_now ("Coindexed argument not permitted"
+			     " in '%s' call at %L", name,
+			     &(args->expr->where));
+	      retval = FAILURE;
+	    }
+
+	  /* Follow references to make sure there are no array
+	     sections.  */
+	  seen_section = false;
+
+	  for (ref=args->expr->ref; ref; ref = ref->next)
+	    {
+	      if (ref->type == REF_ARRAY)
+		{
+		  if (ref->u.ar.type == AR_SECTION)
+		    seen_section = true;
+
+		  if (ref->u.ar.type != AR_ELEMENT)
+		    {
+		      gfc_ref *r;
+		      for (r = ref->next; r; r=r->next)
+			if (r->type == REF_COMPONENT)
+			  {
+			    gfc_error_now ("Array section not permitted"
+					   " in '%s' call at %L", name,
+					   &(args->expr->where));
+			    retval = FAILURE;
+			    break;
+			  }
+		    }
+		}
+	    }
+
+	  if (seen_section && retval == SUCCESS)
+	    gfc_warning ("Array section in '%s' call at %L", name,
+			 &(args->expr->where));
+			 
           /* See if we have interoperable type and type param.  */
           if (verify_c_interop (arg_ts) == SUCCESS
               || gfc_check_any_c_kind (arg_ts) == SUCCESS)
