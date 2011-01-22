@@ -94,6 +94,13 @@ remove_current_thread (void)
 
   runtime_MCache_ReleaseAll (mcache);
 
+  /* As soon as we release this look, a GC could run.  Since this
+     thread is no longer on the list, the GC will not find our M
+     structure, so it could get freed at any time.  That means that
+     any code from here to thread exit must not assume that the m is
+     valid.  */
+  m = NULL;
+
   i = pthread_mutex_unlock (&__go_thread_ids_lock);
   __go_assert (i == 0);
 

@@ -38,9 +38,11 @@ runtime_lock_full(Lock *l)
 void
 runtime_lock(Lock *l)
 {
-	if(m->locks < 0)
-		runtime_throw("lock count");
-	m->locks++;
+	if(m != nil) {
+		if(m->locks < 0)
+			runtime_throw("lock count");
+		m->locks++;
+	}
 
 	if(runtime_xadd(&l->key, 1) > 1)	// someone else has it; wait
 		runtime_lock_full(l);
@@ -58,9 +60,11 @@ runtime_unlock_full(Lock *l)
 void
 runtime_unlock(Lock *l)
 {
-	m->locks--;
-	if(m->locks < 0)
-		runtime_throw("lock count");
+	if(m != nil) {
+		m->locks--;
+		if(m->locks < 0)
+			runtime_throw("lock count");
+	}
 
 	if(runtime_xadd(&l->key, -1) > 0)	// someone else is waiting
 		runtime_unlock_full(l);
