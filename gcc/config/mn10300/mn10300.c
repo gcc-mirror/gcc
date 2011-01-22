@@ -3021,4 +3021,7 @@ mn10300_split_and_operand_count (rtx op)
 #undef TARGET_MD_ASM_CLOBBERS
 #define TARGET_MD_ASM_CLOBBERS  mn10300_md_asm_clobbers
 
+#undef  TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM  CC_REG
+
 struct gcc_target targetm = TARGET_INITIALIZER;
