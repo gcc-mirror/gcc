@@ -551,6 +551,7 @@ extern struct rtl_opt_pass pass_reorder_blocks;
 extern struct rtl_opt_pass pass_branch_target_load_optimize2;
 extern struct rtl_opt_pass pass_leaf_regs;
 extern struct rtl_opt_pass pass_split_before_sched2;
+extern struct rtl_opt_pass pass_compare_elim_after_reload;
 extern struct rtl_opt_pass pass_sched2;
 extern struct rtl_opt_pass pass_stack_regs;
 extern struct rtl_opt_pass pass_stack_regs_run;

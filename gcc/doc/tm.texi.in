@@ -4337,6 +4337,8 @@ to return a nonzero value when it is required, the compiler will run out
 of spill registers and print a fatal error message.
 @end deftypefn
 
+@hook TARGET_FLAGS_REGNUM
+
 @node Scalar Return
 @subsection How Scalar Function Values Are Returned
 @cindex return values in registers
