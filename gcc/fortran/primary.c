@@ -1843,7 +1843,10 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	    return MATCH_ERROR;
 
 	  gcc_assert (!tail || !tail->next);
-	  gcc_assert (primary->expr_type == EXPR_VARIABLE);
+	  gcc_assert (primary->expr_type == EXPR_VARIABLE
+		      || (primary->expr_type == EXPR_STRUCTURE
+			  && primary->symtree && primary->symtree->n.sym
+			  && primary->symtree->n.sym->attr.flavor));
 
 	  if (tbp->n.tb->is_generic)
 	    tbp_sym = NULL;

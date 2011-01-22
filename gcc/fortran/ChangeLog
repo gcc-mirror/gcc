@@ -1,3 +1,9 @@
+2011-01-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47399
+	* primary.c (gfc_match_varspec): Relax gcc_assert to allow for
+	PARAMETER TBP.
+
 2011-01-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47394
