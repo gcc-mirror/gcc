@@ -1,5 +1,10 @@
 2011-01-22  Nick Clifton  <nickc@redhat.com>
 
+	* config/rx/rx.md (cstoresf4): Pass comparison operator to
+	rx_split_fp_compare.
+
+2011-01-22  Nick Clifton  <nickc@redhat.com>
+
 	* config/rx/rx.md (UNSPEC_CONST): New.
 	(deallocate_and_return): Wrap the amount popped off the stack in
 	an UNSPEC_CONST in order to stop it being rejected by
@@ -16,6 +21,7 @@
 	(sibcall_value): Likewise.
 	(mov<>): FAIL if a constant operand is not legitimate.
 	(addsi3_unpsec): New pattern.
+
 	* config/rx/rx.c (rx_print_operand_address): Handle UNPSEC
 	CONSTs.
 	(ok_for_max_constant): New function.
