@@ -1,3 +1,8 @@
+2011-01-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47399
+	* gfortran.dg/typebound_proc_19.f90: New.
+
 2011-01-21  Jeff Law <law@redhat.com>
 
 	PR tree-optimization/47053
