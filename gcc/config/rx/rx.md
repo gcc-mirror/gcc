@@ -1,5 +1,5 @@
 ;;  Machine Description for Renesas RX processors
-;;  Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+;;  Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 ;;  Contributed by Red Hat.
 
 ;; This file is part of GCC.
@@ -50,6 +50,7 @@
    (UNSPEC_RTE             10)
    (UNSPEC_RTFI            11)
    (UNSPEC_NAKED           12)
+   (UNSPEC_CONST           13)
    
    (UNSPEC_MOVSTR          20)
    (UNSPEC_MOVMEM          21)
@@ -416,10 +417,12 @@
    (set_attr "timings" "55")]
 )
 
+;; Unspec used so that the constant will not be invalid
+;; if -mmax-constant-size has been specified.
 (define_insn "deallocate_and_return"
   [(set (reg:SI SP_REG)
 	(plus:SI (reg:SI SP_REG)
-		 (match_operand:SI 0 "immediate_operand" "i")))
+		 (const:SI (unspec:SI [(match_operand 0 "const_int_operand" "n")] UNSPEC_CONST))))
    (return)]
   ""
   "rtsd\t%0"
@@ -431,7 +434,8 @@
   [(match_parallel 1 "rx_rtsd_vector"
      [(set (reg:SI SP_REG)
 	   (plus:SI (reg:SI SP_REG)
-		    (match_operand:SI 0 "const_int_operand" "n")))])]
+		    (match_operand:SI 0 "const_int_operand" "n")))])
+   (return)]
   "reload_completed"
   {
     rx_emit_stack_popm (operands, false);
@@ -481,14 +485,14 @@
 
     if (! rx_call_operand (dest, Pmode))
       dest = force_reg (Pmode, dest);
-    emit_call_insn (gen_call_internal (dest, operands[1]));
+    emit_call_insn (gen_call_internal (dest));
     DONE;
   }
 )
 
 (define_insn "call_internal"
   [(call (mem:QI (match_operand:SI 0 "rx_call_operand" "r,Symbol"))
-	 (match_operand:SI         1 "general_operand" "g,g"))
+	 (const_int 0))
    (clobber (reg:CC CC_REG))]
   ""
   "@
@@ -508,7 +512,7 @@
 
     if (! rx_call_operand (dest, Pmode))
       dest = force_reg (Pmode, dest);
-    emit_call_insn (gen_call_value_internal (operands[0], dest, operands[2]));
+    emit_call_insn (gen_call_value_internal (operands[0], dest));
     DONE;
   }
 )
@@ -516,7 +520,7 @@
 (define_insn "call_value_internal"
   [(set (match_operand                  0 "register_operand" "=r,r")
 	(call (mem:QI (match_operand:SI 1 "rx_call_operand"   "r,Symbol"))
-	      (match_operand:SI         2 "general_operand"   "g,g")))
+	      (const_int 0)))
    (clobber (reg:CC CC_REG))]
   ""
   "@
@@ -540,12 +544,14 @@
   {
     if (MEM_P (operands[0]))
       operands[0] = XEXP (operands[0], 0);
+    emit_call_insn (gen_sibcall_internal (operands[0]));
+    DONE;
   }
 )
 
 (define_insn "sibcall_internal"
   [(call (mem:QI (match_operand:SI 0 "rx_symbolic_call_operand" "Symbol"))
-	 (match_operand:SI         1 "general_operand"          "g"))
+	 (const_int 0))
    (return)]
   ""
   "bra\t%A0"
@@ -563,13 +569,15 @@
   {
     if (MEM_P (operands[1]))
       operands[1] = XEXP (operands[1], 0);
+    emit_call_insn (gen_sibcall_value_internal (operands[0], operands[1]));
+    DONE;
   }
 )
 
 (define_insn "sibcall_value_internal"
  [(set (match_operand                  0 "register_operand"         "=r")
        (call (mem:QI (match_operand:SI 1 "rx_symbolic_call_operand" "Symbol"))
-	     (match_operand:SI         2 "general_operand"          "g")))
+	     (const_int 0)))
   (return)]
   ""
   "bra\t%A1"
@@ -621,6 +629,9 @@
   {
     if (MEM_P (operand0) && MEM_P (operand1))
       operands[1] = copy_to_mode_reg (<register_modes:MODE>mode, operand1);
+    if (CONST_INT_P (operand1)
+        && ! rx_is_legitimate_constant (operand1))
+      FAIL;
   }
 )
 
@@ -1109,6 +1120,22 @@
   emit_insn (gen_adc_internal (op0h, op1h, op2h));
   DONE;
 })
+
+;; A pattern to add an integer to a register, regardless of the
+;; setting of the -mmax-constant-size command line switch.
+;; See rx.c:gen_safe_add() for more details.
+(define_insn "addsi3_unspec"
+  [(set (match_operand:SI          0 "register_operand"  "=r,r")
+	(plus:SI (match_operand:SI 1 "register_operand"  "%0,r")
+		 (const:SI (unspec:SI [(match_operand 2 "const_int_operand" "n,n")] UNSPEC_CONST))))
+   (clobber (reg:CC CC_REG))]
+  ""
+  "@
+  add\t%2, %0
+  add\t%2, %1, %0"
+  [(set_attr "timings" "11")
+   (set_attr "length"   "6")]
+)
 
 (define_insn "andsi3"
   [(set (match_operand:SI         0 "register_operand"  "=r,r,r,r,r,r,r,r,r")

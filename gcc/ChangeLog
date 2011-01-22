@@ -1,3 +1,30 @@
+2011-01-22  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.md (UNSPEC_CONST): New.
+	(deallocate_and_return): Wrap the amount popped off the stack in
+	an UNSPEC_CONST in order to stop it being rejected by
+	-mmax-constant-size.
+	(pop_and_return): Add a "(return)" rtx.
+	(call): Drop the immediate operand.
+	(call_internal): Likewise.
+	(call_value): Likewise.
+	(call_value_internal): Likewise.
+	(sibcall_internal): Likewise.
+	(sibcall_value_internal): Likewise.
+	(sibcall): Likewise.  Generate an explicit call using
+	sibcall_internal.
+	(sibcall_value): Likewise.
+	(mov<>): FAIL if a constant operand is not legitimate.
+	(addsi3_unpsec): New pattern.
+	* config/rx/rx.c (rx_print_operand_address): Handle UNPSEC
+	CONSTs.
+	(ok_for_max_constant): New function.
+	(gen_safe_add): New function.
+	(rx_expand_prologue): Use gen_safe_add.
+	(rx_expand_epilogue): Likewise.
+	(rx_is_legitimate_constant): Use ok_for_max_constant.  Handle
+	UNSPEC CONSTs.
+
 2011-01-21  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/47053
