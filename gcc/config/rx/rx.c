@@ -2902,6 +2902,9 @@ rx_match_ccmode (rtx insn, enum machine_mode cc_mode)
 #undef  TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO		sjlj_except_unwind_info
 
+#undef  TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM			CC_REG
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* #include "gt-rx.h" */
