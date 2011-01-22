@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RX processors.
-   Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -323,10 +323,20 @@ rx_print_operand_address (FILE * file, rtx addr)
 	break;
       }
 
+    case CONST:
+      if (GET_CODE (XEXP (addr, 0)) == UNSPEC)
+	{
+	  addr = XEXP (addr, 0);
+	  gcc_assert (XINT (addr, 1) == UNSPEC_CONST);
+      
+	  addr = XVECEXP (addr, 0, 0);
+	  gcc_assert (CONST_INT_P (addr));
+	}
+      /* Fall through.  */
     case LABEL_REF:
     case SYMBOL_REF:
-    case CONST:
       fprintf (file, "#");
+
     default:
       output_addr_const (file, addr);
       break;
@@ -1281,6 +1291,56 @@ mark_frame_related (rtx insn)
     }
 }
 
+static bool
+ok_for_max_constant (HOST_WIDE_INT val)
+{
+  if (rx_max_constant_size == 0  || rx_max_constant_size == 4)
+    /* If there is no constraint on the size of constants
+       used as operands, then any value is legitimate.  */
+    return true;
+
+  /* rx_max_constant_size specifies the maximum number
+     of bytes that can be used to hold a signed value.  */
+  return IN_RANGE (val, (-1 << (rx_max_constant_size * 8)),
+		        ( 1 << (rx_max_constant_size * 8)));
+}
+
+/* Generate an ADD of SRC plus VAL into DEST.
+   Handles the case where VAL is too big for max_constant_value.
+   Sets FRAME_RELATED_P on the insn if IS_FRAME_RELATED is true.  */
+
+static void
+gen_safe_add (rtx dest, rtx src, rtx val, bool is_frame_related)
+{
+  rtx insn;
+
+  if (val == NULL_RTX || INTVAL (val) == 0)
+    {
+      gcc_assert (dest != src);
+
+      insn = emit_move_insn (dest, src);
+    }
+  else if (ok_for_max_constant (INTVAL (val)))
+    insn = emit_insn (gen_addsi3 (dest, src, val));
+  else
+    {
+      insn = emit_insn (gen_addsi3_unspec (dest, src, val));
+
+      if (is_frame_related)
+	/* We have to provide our own frame related note here
+	   as the dwarf2out code cannot be expected to grok
+	   our unspec.  */
+	add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		      gen_rtx_SET (SImode, dest,
+				   gen_rtx_PLUS (SImode, src, val)));
+      return;
+    }
+
+  if (is_frame_related)
+    RTX_FRAME_RELATED_P (insn) = 1;
+  return;
+}
+
 void
 rx_expand_prologue (void)
 {
@@ -1370,17 +1430,8 @@ rx_expand_prologue (void)
 
   /* If needed, set up the frame pointer.  */
   if (frame_pointer_needed)
-    {
-      if (frame_size)
-	insn = emit_insn (gen_addsi3 (frame_pointer_rtx, stack_pointer_rtx,
-				      GEN_INT (- (HOST_WIDE_INT) frame_size)));
-      else
-	insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
-
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
-
-  insn = NULL_RTX;
+    gen_safe_add (frame_pointer_rtx, stack_pointer_rtx,
+		  GEN_INT (- (HOST_WIDE_INT) frame_size), true);
 
   /* Allocate space for the outgoing args.
      If the stack frame has not already been set up then handle this as well.  */
@@ -1389,29 +1440,26 @@ rx_expand_prologue (void)
       if (frame_size)
 	{
 	  if (frame_pointer_needed)
-	    insn = emit_insn (gen_addsi3 (stack_pointer_rtx, frame_pointer_rtx,
-					  GEN_INT (- (HOST_WIDE_INT)
-						   stack_size)));
+	    gen_safe_add (stack_pointer_rtx, frame_pointer_rtx,
+			  GEN_INT (- (HOST_WIDE_INT) stack_size), true);
 	  else
-	    insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-					  GEN_INT (- (HOST_WIDE_INT)
-						   (frame_size + stack_size))));
+	    gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
+			  GEN_INT (- (HOST_WIDE_INT) (frame_size + stack_size)),
+			  true);
 	}
       else
-	insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				      GEN_INT (- (HOST_WIDE_INT) stack_size)));
+	gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
+		      GEN_INT (- (HOST_WIDE_INT) stack_size), true);
     }
   else if (frame_size)
     {
       if (! frame_pointer_needed)
-	insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				      GEN_INT (- (HOST_WIDE_INT) frame_size)));
+	gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
+		      GEN_INT (- (HOST_WIDE_INT) frame_size), true);
       else
-	insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+	gen_safe_add (stack_pointer_rtx, frame_pointer_rtx, NULL_RTX,
+		      true);
     }
-
-  if (insn != NULL_RTX)
-    RTX_FRAME_RELATED_P (insn) = 1;
 }
 
 static void
@@ -1589,8 +1637,8 @@ rx_expand_epilogue (bool is_sibcall)
     {
       /* Cannot use the special instructions - deconstruct by hand.  */
       if (total_size)
-	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			       GEN_INT (total_size)));
+	gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
+		      GEN_INT (total_size), false);
 
       if (MUST_SAVE_ACC_REGISTER)
 	{
@@ -1682,8 +1730,8 @@ rx_expand_epilogue (bool is_sibcall)
 	  return;
 	}
 
-      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			     GEN_INT (total_size)));
+      gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
+		    GEN_INT (total_size), false);
     }
 
   if (low)
@@ -2342,8 +2390,6 @@ rx_is_ms_bitfield_layout (const_tree record_type ATTRIBUTE_UNUSED)
 bool
 rx_is_legitimate_constant (rtx x)
 {
-  HOST_WIDE_INT val;
-
   switch (GET_CODE (x))
     {
     case CONST:
@@ -2366,7 +2412,9 @@ rx_is_legitimate_constant (rtx x)
 	case SYMBOL_REF:
 	  return true;
 
-	  /* One day we may have to handle UNSPEC constants here.  */
+	case UNSPEC:
+	  return XINT (x, 1) == UNSPEC_CONST;
+
 	default:
 	  /* FIXME: Can this ever happen ?  */
 	  abort ();
@@ -2386,17 +2434,7 @@ rx_is_legitimate_constant (rtx x)
       break;
     }
 
-  if (rx_max_constant_size == 0  || rx_max_constant_size == 4)
-    /* If there is no constraint on the size of constants
-       used as operands, then any value is legitimate.  */
-    return true;
-
-  val = INTVAL (x);
-
-  /* rx_max_constant_size specifies the maximum number
-     of bytes that can be used to hold a signed value.  */
-  return IN_RANGE (val, (-1 << (rx_max_constant_size * 8)),
-		        ( 1 << (rx_max_constant_size * 8)));
+  return ok_for_max_constant (INTVAL (x));
 }
 
 static int
