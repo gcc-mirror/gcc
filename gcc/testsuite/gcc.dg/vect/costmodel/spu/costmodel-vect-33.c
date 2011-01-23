@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include "../../tree-vect.h"
 
-#define N 17
+#define N 16
 struct test {
   char ca[N];
 };
@@ -35,6 +35,9 @@ int main (void)
   return main1 ();
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorization not profitable" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
+/* Peeling to align the store is used. Overhead of peeling is too high.  */
+/* { dg-final { scan-tree-dump-times "vectorization not profitable" 1 "vect" { target vector_alignment_reachable } } } */
+
+/* Versioning to align the store is used. Overhead of versioning is not too high.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target {! vector_alignment_reachable} } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

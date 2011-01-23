@@ -1,3 +1,12 @@
+2011-01-23  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-33.c: Expect
+	vectorization to be not profitable if peeling is used to
+	realign the memory access.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-76a.c: Increase
+	loop bound to avoid loop unrolling.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-76c.c: Likewise.
+
 2011-01-22  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/47333

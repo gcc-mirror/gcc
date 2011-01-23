@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "../../tree-vect.h"
 
-#define N 8
+#define N 32
 #define OFF 4
 
 /* Check handling of accesses for which the "initial condition" -
