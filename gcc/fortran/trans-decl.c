@@ -3304,9 +3304,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	  if (sym_has_alloc_comp && !seen_trans_deferred_array)
 	    gfc_trans_deferred_array (sym, block);
 	}
-      else if (sym->attr.allocatable
-	       || (sym->ts.type == BT_CLASS
-		   && CLASS_DATA (sym)->attr.allocatable))
+      else if (!sym->attr.dummy
+		&& (sym->attr.allocatable
+		    || (sym->ts.type == BT_CLASS
+			&& CLASS_DATA (sym)->attr.allocatable)))
 	{
 	  if (!sym->attr.save)
 	    {
