@@ -1,3 +1,8 @@
+2011-01-23  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* compare-elim.c (maybe_select_cc_mode): Add ATTRIBUTE_UNUSED
+	markers.
+
 2011-01-22  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/47333
