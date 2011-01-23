@@ -1,7 +1,7 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -8086,10 +8086,22 @@ emit_reload_insns (struct insn_chain *chain)
 	  /* Maybe the spill reg contains a copy of reload_out.  */
 	  if (rld[r].out != 0
 	      && (REG_P (rld[r].out)
-#ifdef AUTO_INC_DEC
-		  || ! rld[r].out_reg
-#endif
-		  || REG_P (rld[r].out_reg)))
+		  || (rld[r].out_reg
+		      ? REG_P (rld[r].out_reg)
+		      /* The reload value is an auto-modification of
+			 some kind.  For PRE_INC, POST_INC, PRE_DEC
+			 and POST_DEC, we record an equivalence
+			 between the reload register and the operand
+			 on the optimistic assumption that we can make
+			 the equivalence hold.  reload_as_needed must
+			 then either make it hold or invalidate the
+			 equivalence.
+
+			 PRE_MODIFY and POST_MODIFY addresses are reloaded
+			 somewhat differently, and allowing them here leads
+			 to problems.  */
+		      : (GET_CODE (rld[r].out) != POST_MODIFY
+			 && GET_CODE (rld[r].out) != PRE_MODIFY))))
 	    {
 	      rtx reg;
 	      enum machine_mode mode;
@@ -9033,7 +9045,7 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
 		 be used as an address.  */
 
 	      if (! post)
-		emit_insn (gen_move_insn (reloadreg, incloc));
+		add_insn = emit_insn (gen_move_insn (reloadreg, incloc));
 
 	      return add_insn;
 	    }
