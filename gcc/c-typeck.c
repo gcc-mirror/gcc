@@ -10946,7 +10946,7 @@ c_build_qualified_type (tree type, int type_quals)
       /* UPC TODO: add block_factor as arg to c_build_qualified_type(). */
       const tree element_type = c_build_qualified_type (TREE_TYPE (type),
 						  type_quals);
-      const tree elem_block_factor = TYPE_BLOCK_FACTOR (element_type);
+      const tree elem_block_factor = upc_get_block_factor (element_type);
       tree t;
 
       /* See if we already have an identically qualified type.  */

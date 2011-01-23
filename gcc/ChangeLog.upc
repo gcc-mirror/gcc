@@ -1,3 +1,10 @@
+2011-01-23  Gary Funck  <gary@intrepid.com>
+
+	* c-typeck.c: (c_build_qualified_type)
+	  derive UPC block size by calling upc_get_block_size(),
+	  to ensure that the element type of an array of an array
+	  is derived correctly.
+
 2010-12-29  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 168314 into gupc branch.
