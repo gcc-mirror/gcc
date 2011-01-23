@@ -404,7 +404,8 @@ find_comparisons (void)
    Note that this function may start a change group.  */
 
 static rtx
-maybe_select_cc_mode (struct comparison *cmp, rtx a, rtx b)
+maybe_select_cc_mode (struct comparison *cmp, rtx a ATTRIBUTE_UNUSED,
+		      rtx b ATTRIBUTE_UNUSED)
 {
   enum machine_mode sel_mode;
   const int n = cmp->n_uses;
