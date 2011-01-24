@@ -1,5 +1,9 @@
 2011-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* lib/scanasm.exp (dg-function-on-line): Handle mips-sgi-irix*.
+
+2011-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gfortran.dg/cray_pointers_2.f90: Avoid cycling through
 	optimization options.
 
