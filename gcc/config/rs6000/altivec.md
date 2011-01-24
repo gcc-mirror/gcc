@@ -224,7 +224,7 @@
 (define_split
   [(set (match_operand:VM 0 "altivec_register_operand" "")
 	(match_operand:VM 1 "easy_vector_constant_msb" ""))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode) && reload_completed"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode) && reload_completed"
   [(const_int 0)]
 {
   rtx dest = operands[0];
@@ -251,7 +251,7 @@
 (define_split
   [(set (match_operand:VM 0 "altivec_register_operand" "")
 	(match_operand:VM 1 "easy_vector_constant_add_self" ""))]
-  "VECTOR_UNIT_ALTIVEC_P (<MODE>mode) && reload_completed"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode) && reload_completed"
   [(set (match_dup 0) (match_dup 3))
    (set (match_dup 0) (match_dup 4))]
 {

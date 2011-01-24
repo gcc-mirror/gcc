@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-linux* } } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-options "-maltivec -std=c++98" } */
+/* { dg-options "-maltivec -mno-vsx -std=c++98" } */
 
 /* Valid AltiVec vector types should be accepted with no warnings.  */
 

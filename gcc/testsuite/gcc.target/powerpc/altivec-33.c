@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-options "-O2 -maltivec" } */
+/* { dg-options "-O2 -maltivec -mno-vsx" } */
 
 /* We should only produce one vspltw as we already splatted the value.  */
 /* { dg-final { scan-assembler-times "vspltw" 1 } } */

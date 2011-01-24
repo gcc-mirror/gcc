@@ -1,3 +1,21 @@
+2011-01-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/47408
+	* gcc.target/powerpc/altivec-11.c: Add explicit -mno-vsx.
+	* gcc.target/powerpc/altivec-14.c: Ditto.
+	* gcc.target/powerpc/altivec-33.c: Ditto.
+	* gcc.target/powerpc/altivec-types-1.c: Ditto.
+	* gcc.target/powerpc/altivec-types-2.c: Ditto.
+	* gcc.target/powerpc/altivec-types-3.c: Ditto.
+	* gcc.target/powerpc/altivec-types-4.c: Ditto.
+	* gcc.target/powerpc/ppc-vector-memcpy.c: Ditto.
+	* gcc.target/powerpc/ppc-vector-memset.c: Ditto.
+	* g++.dg/ext/altivec-15.C: Ditto.
+	* g++.dg/ext/altivec-types-1.C: Ditto.
+	* g++.dg/ext/altivec-types-2.C: Ditto.
+	* g++.dg/ext/altivec-types-3.C: Ditto.
+	* g++.dg/ext/altivec-types-4.C: Ditto.
+
 2011-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/scanasm.exp (dg-function-on-line): Handle mips-sgi-irix*.
