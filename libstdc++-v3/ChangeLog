@@ -1,3 +1,9 @@
+2011-01-24  Johannes Singler  <singler@kit.edu>
+
+        PR libstdc++/47437
+        * include/parallel/multiway_merge.h (_UnguardedIterator):
+        Remove useless "mutable" from reference declaration.
+
 2011-01-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_EXPORT_TEMPLATE): Remove.
