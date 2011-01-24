@@ -612,6 +612,8 @@ MATH_LIBS
 USING_SPLIT_STACK_FALSE
 USING_SPLIT_STACK_TRUE
 SPLIT_STACK
+GO_DEBUG_PROC_REGS_OS_ARCH_FILE
+GO_SYSCALLS_SYSCALL_OS_ARCH_FILE
 GOARCH
 LIBGO_IS_X86_64_FALSE
 LIBGO_IS_X86_64_TRUE
@@ -619,6 +621,16 @@ LIBGO_IS_SPARC64_FALSE
 LIBGO_IS_SPARC64_TRUE
 LIBGO_IS_SPARC_FALSE
 LIBGO_IS_SPARC_TRUE
+LIBGO_IS_PPC64_FALSE
+LIBGO_IS_PPC64_TRUE
+LIBGO_IS_PPC_FALSE
+LIBGO_IS_PPC_TRUE
+LIBGO_IS_MIPS64_FALSE
+LIBGO_IS_MIPS64_TRUE
+LIBGO_IS_MIPS_FALSE
+LIBGO_IS_MIPS_TRUE
+LIBGO_IS_M68K_FALSE
+LIBGO_IS_M68K_TRUE
 LIBGO_IS_ARM_FALSE
 LIBGO_IS_ARM_TRUE
 LIBGO_IS_386_FALSE
@@ -10878,7 +10890,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10881 "configure"
+#line 10893 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10984,7 +10996,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10987 "configure"
+#line 10999 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13252,11 +13264,20 @@ fi
 
 is_386=no
 is_arm=no
+is_m68k=no
+is_mips=no
+is_mips64=no
+is_ppc=no
+is_ppc64=no
 is_sparc=no
 is_sparc64=no
 is_x86_64=no
 GOARCH=unknown
 case ${host} in
+  arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
+    is_arm=yes
+    GOARCH=arm
+    ;;
   i[34567]86-*-* | x86_64-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -13272,16 +13293,54 @@ else
 fi
 rm -f conftest.err conftest.$ac_ext
     if test "$is_386" = "yes"; then
-      is_386=yes
       GOARCH=386
     else
-      is_x86_64=yes
       GOARCH=amd64
     fi
     ;;
-  arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
-    is_arm=yes
-    GOARCH=arm
+  m68k*-*-*)
+    is_m68k=yes
+    GOARCH=m68k
+    ;;
+  mips*-*-*)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef __mips64
+#error 64-bit
+#endif
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  is_mips=yes
+else
+  is_mips64=yes
+fi
+rm -f conftest.err conftest.$ac_ext
+    if test "$is_mips" = "yes"; then
+      GOARCH=mips
+    else
+      GOARCH=mips64
+    fi
+    ;;
+  rs6000*-*-* | powerpc*-*-*)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef _ARCH_PPC64
+#error 64-bit
+#endif
+_ACEOF
+if ac_fn_c_try_cpp "$LINENO"; then :
+  is_ppc=yes
+else
+  is_ppc64=yes
+fi
+rm -f conftest.err conftest.$ac_ext
+    if test "$is_ppc" = "yes"; then
+      GOARCH=ppc
+    else
+      GOARCH=ppc64
+    fi
     ;;
   sparc*-*-*)
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13298,10 +13357,8 @@ else
 fi
 rm -f conftest.err conftest.$ac_ext
     if test "$is_sparc" = "yes"; then
-      is_sparc=yes
       GOARCH=sparc
     else
-      is_sparc64=yes
       GOARCH=sparc64
     fi
     ;;
@@ -13320,6 +13377,46 @@ fi
 else
   LIBGO_IS_ARM_TRUE='#'
   LIBGO_IS_ARM_FALSE=
+fi
+
+ if test $is_m68k = yes; then
+  LIBGO_IS_M68K_TRUE=
+  LIBGO_IS_M68K_FALSE='#'
+else
+  LIBGO_IS_M68K_TRUE='#'
+  LIBGO_IS_M68K_FALSE=
+fi
+
+ if test $is_mips = yes; then
+  LIBGO_IS_MIPS_TRUE=
+  LIBGO_IS_MIPS_FALSE='#'
+else
+  LIBGO_IS_MIPS_TRUE='#'
+  LIBGO_IS_MIPS_FALSE=
+fi
+
+ if test $is_mips64 = yes; then
+  LIBGO_IS_MIPS64_TRUE=
+  LIBGO_IS_MIPS64_FALSE='#'
+else
+  LIBGO_IS_MIPS64_TRUE='#'
+  LIBGO_IS_MIPS64_FALSE=
+fi
+
+ if test $is_ppc = yes; then
+  LIBGO_IS_PPC_TRUE=
+  LIBGO_IS_PPC_FALSE='#'
+else
+  LIBGO_IS_PPC_TRUE='#'
+  LIBGO_IS_PPC_FALSE=
+fi
+
+ if test $is_ppc64 = yes; then
+  LIBGO_IS_PPC64_TRUE=
+  LIBGO_IS_PPC64_FALSE='#'
+else
+  LIBGO_IS_PPC64_TRUE='#'
+  LIBGO_IS_PPC64_FALSE=
 fi
 
  if test $is_sparc = yes; then
@@ -13346,6 +13443,18 @@ else
   LIBGO_IS_X86_64_FALSE=
 fi
 
+
+
+GO_SYSCALLS_SYSCALL_OS_ARCH_FILE=
+if test -f ${srcdir}/syscalls/syscall_${GOOS}_${GOARCH}.go; then
+  GO_SYSCALLS_SYSCALL_OS_ARCH_FILE=syscalls/syscall_${GOOS}_${GOARCH}.go
+fi
+
+
+GO_DEBUG_PROC_REGS_OS_ARCH_FILE=
+if test -f ${srcdir}/go/debug/proc/regs_${GOOS}_${GOARCH}.go; then
+  GO_DEBUG_PROC_REGS_OS_ARCH_FILE=go/debug/proc/regs_${GOOS}_${GOARCH}.go
+fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -fsplit-stack is supported" >&5
@@ -14261,6 +14370,26 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_ARM_TRUE}" && test -z "${LIBGO_IS_ARM_FALSE}"; then
   as_fn_error "conditional \"LIBGO_IS_ARM\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_M68K_TRUE}" && test -z "${LIBGO_IS_M68K_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_M68K\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_MIPS_TRUE}" && test -z "${LIBGO_IS_MIPS_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_MIPS64_TRUE}" && test -z "${LIBGO_IS_MIPS64_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_MIPS64\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_PPC_TRUE}" && test -z "${LIBGO_IS_PPC_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_PPC\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGO_IS_PPC64_TRUE}" && test -z "${LIBGO_IS_PPC64_FALSE}"; then
+  as_fn_error "conditional \"LIBGO_IS_PPC64\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGO_IS_SPARC_TRUE}" && test -z "${LIBGO_IS_SPARC_FALSE}"; then
