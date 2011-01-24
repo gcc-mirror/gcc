@@ -1,3 +1,19 @@
+2011-01-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/46519
+	* config/i386/i386.c: Include sbitmap.h and fibheap.h.
+	(block_info): Add scanned and prev.
+	(move_or_delete_vzeroupper_2): Return if the basic block
+	has been scanned and the upper 128bit state is unchanged
+	from the last scan.
+	(move_or_delete_vzeroupper_1): Return true if the exit
+	state is changed.
+	(move_or_delete_vzeroupper): Visit basic blocks using the
+	work-list based algorithm based on vt_find_locations in
+	var-tracking.c.
+
+	* config/i386/t-i386: Also depend on sbitmap.h and $(FIBHEAP_H).
+
 2011-01-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.opt (mv850es): New option - alias for -mv850e1.
