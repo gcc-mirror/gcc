@@ -1,4 +1,8 @@
-2011-101-24  Paul Koning  <ni1d@arrl.net>
+2011-01-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	* emit-rtl.c (reg_attrs_htab_hash): Replace long by intptr_t.
+
+2011-01-24  Paul Koning  <ni1d@arrl.net>
 
 	* builtins.c (c_readstr): Fix byte order if BYTES_BIG_ENDIAN !=
 	WORDS_BIG_ENDIAN. 
