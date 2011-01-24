@@ -216,6 +216,7 @@ namespace __gnu_parallel
       void
       __delete_min_insert(_Tp __key, bool __sup)
       {
+        using std::swap;
 #if _GLIBCXX_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
@@ -236,7 +237,7 @@ namespace __gnu_parallel
 		// The other one is smaller.
 		std::swap(_M_losers[__pos]._M_sup, __sup);
 		std::swap(_M_losers[__pos]._M_source, __source);
-		std::swap(_M_losers[__pos]._M_key, __key);
+		swap(_M_losers[__pos]._M_key, __key);
 	      }
 	  }
 
@@ -316,6 +317,7 @@ namespace __gnu_parallel
       void
       __delete_min_insert(_Tp __key, bool __sup)
       {
+        using std::swap;
 #if _GLIBCXX_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
@@ -332,7 +334,7 @@ namespace __gnu_parallel
 		// The other one is smaller.
 		std::swap(_M_losers[__pos]._M_sup, __sup);
 		std::swap(_M_losers[__pos]._M_source, __source);
-		std::swap(_M_losers[__pos]._M_key, __key);
+		swap(_M_losers[__pos]._M_key, __key);
 	      }
 	  }
 
@@ -679,6 +681,7 @@ namespace __gnu_parallel
       void
       __delete_min_insert(_Tp __key, bool)
       {
+        using std::swap;
 #if _GLIBCXX_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
@@ -695,7 +698,7 @@ namespace __gnu_parallel
 	      {
 		// The other one is smaller.
 		std::swap(_M_losers[__pos]._M_source, __source);
-		std::swap(_M_losers[__pos]._M_key, __key);
+		swap(_M_losers[__pos]._M_key, __key);
 	      }
 	  }
 
@@ -786,7 +789,7 @@ namespace __gnu_parallel
 	      {
 		// The other one is smaller.
 		std::swap(_M_losers[__pos]._M_source, __source);
-		std::swap(_M_losers[__pos]._M_key, __key);
+		swap(_M_losers[__pos]._M_key, __key);
 	      }
 	  }
 
