@@ -178,8 +178,8 @@ namespace __gnu_parallel
 			// Fetch new chunk(__s).
 			break;
 
-		      std::swap(__begin[__thread_left],
-				__begin[__thread_right]);
+		      std::iter_swap(__begin + __thread_left,
+                             __begin + __thread_right);
 		      ++__thread_left;
 		      --__thread_right;
 		    }
@@ -301,7 +301,7 @@ namespace __gnu_parallel
 
 	    if (__final_left == __final_right)
 	      break;
-	    std::swap(__begin[__final_left], __begin[__final_right]);
+	    std::iter_swap(__begin + __final_left, __begin + __final_right);
 	    ++__final_left;
 	    --__final_right;
 	  }
@@ -354,7 +354,7 @@ namespace __gnu_parallel
 
           // Swap __pivot_pos value to end.
           if (__pivot_pos != (__end - 1))
-            std::swap(*__pivot_pos, *(__end - 1));
+            std::iter_swap(__pivot_pos, __end - 1);
           __pivot_pos = __end - 1;
 
           // _Compare must have first_value_type, second_value_type,
@@ -376,7 +376,7 @@ namespace __gnu_parallel
 
           // Swap pivot back to middle.
           if (__split_pos1 != __pivot_pos)
-            std::swap(*__split_pos1, *__pivot_pos);
+            std::iter_swap(__split_pos1, __pivot_pos);
           __pivot_pos = __split_pos1;
 
           // In case all elements are equal, __split_pos1 == 0
