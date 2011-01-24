@@ -957,7 +957,7 @@ go_debug_pe_files = \
 go_debug_proc_files = \
 	go/debug/proc/proc.go \
 	go/debug/proc/proc_$(GOOS).go \
-	go/debug/proc/regs_$(GOOS)_$(GOARCH).go
+	$(GO_DEBUG_PROC_REGS_OS_ARCH_FILE)
 
 go_encoding_ascii85_files = \
 	go/encoding/ascii85/ascii85.go
@@ -1189,7 +1189,7 @@ go_syscall_files = \
 	syscalls/syscall_unix.go \
 	syscalls/stringbyte.go \
 	syscalls/syscall_$(GOOS).go \
-	syscalls/syscall_$(GOOS)_$(GOARCH).go \
+	$(GO_SYSCALLS_SYSCALL_OS_ARCH_FILE) \
 	syscalls/sysfile_posix.go \
 	sysinfo.go \
 	syscall_arch.go

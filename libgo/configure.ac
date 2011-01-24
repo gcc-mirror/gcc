@@ -135,11 +135,20 @@ AC_SUBST(GOOS)
 dnl N.B. Keep in sync with gcc/testsuite/go.test/go-test.exp (go-set-goarch).
 is_386=no
 is_arm=no
+is_m68k=no
+is_mips=no
+is_mips64=no
+is_ppc=no
+is_ppc64=no
 is_sparc=no
 is_sparc64=no
 is_x86_64=no
 GOARCH=unknown
 case ${host} in
+  arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
+    is_arm=yes
+    GOARCH=arm
+    ;;
 changequote(,)dnl
   i[34567]86-*-* | x86_64-*-*)
 changequote([,])dnl
@@ -149,16 +158,38 @@ changequote([,])dnl
 #endif],
 [is_386=yes], [is_x86_64=yes])
     if test "$is_386" = "yes"; then
-      is_386=yes
       GOARCH=386
     else
-      is_x86_64=yes
       GOARCH=amd64
     fi
     ;;
-  arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
-    is_arm=yes
-    GOARCH=arm
+  m68k*-*-*)
+    is_m68k=yes
+    GOARCH=m68k
+    ;;
+  mips*-*-*)
+    AC_PREPROC_IFELSE([
+#ifdef __mips64
+#error 64-bit
+#endif],
+[is_mips=yes], [is_mips64=yes])
+    if test "$is_mips" = "yes"; then
+      GOARCH=mips
+    else
+      GOARCH=mips64
+    fi
+    ;;
+  rs6000*-*-* | powerpc*-*-*)
+    AC_PREPROC_IFELSE([
+#ifdef _ARCH_PPC64
+#error 64-bit
+#endif],
+[is_ppc=yes], [is_ppc64=yes])
+    if test "$is_ppc" = "yes"; then
+      GOARCH=ppc
+    else
+      GOARCH=ppc64
+    fi
     ;;
   sparc*-*-*)
     AC_PREPROC_IFELSE([
@@ -167,20 +198,36 @@ changequote([,])dnl
 #endif],
 [is_sparc=yes], [is_sparc64=yes])
     if test "$is_sparc" = "yes"; then
-      is_sparc=yes
       GOARCH=sparc
     else
-      is_sparc64=yes
       GOARCH=sparc64
     fi
     ;;
 esac
 AM_CONDITIONAL(LIBGO_IS_386, test $is_386 = yes)
 AM_CONDITIONAL(LIBGO_IS_ARM, test $is_arm = yes)
+AM_CONDITIONAL(LIBGO_IS_M68K, test $is_m68k = yes)
+AM_CONDITIONAL(LIBGO_IS_MIPS, test $is_mips = yes)
+AM_CONDITIONAL(LIBGO_IS_MIPS64, test $is_mips64 = yes)
+AM_CONDITIONAL(LIBGO_IS_PPC, test $is_ppc = yes)
+AM_CONDITIONAL(LIBGO_IS_PPC64, test $is_ppc64 = yes)
 AM_CONDITIONAL(LIBGO_IS_SPARC, test $is_sparc = yes)
 AM_CONDITIONAL(LIBGO_IS_SPARC64, test $is_sparc64 = yes)
 AM_CONDITIONAL(LIBGO_IS_X86_64, test $is_x86_64 = yes)
 AC_SUBST(GOARCH)
+
+dnl Some files are only present when needed for specific architectures.
+GO_SYSCALLS_SYSCALL_OS_ARCH_FILE=
+if test -f ${srcdir}/syscalls/syscall_${GOOS}_${GOARCH}.go; then
+  GO_SYSCALLS_SYSCALL_OS_ARCH_FILE=syscalls/syscall_${GOOS}_${GOARCH}.go
+fi
+AC_SUBST(GO_SYSCALLS_SYSCALL_OS_ARCH_FILE)
+
+GO_DEBUG_PROC_REGS_OS_ARCH_FILE=
+if test -f ${srcdir}/go/debug/proc/regs_${GOOS}_${GOARCH}.go; then
+  GO_DEBUG_PROC_REGS_OS_ARCH_FILE=go/debug/proc/regs_${GOOS}_${GOARCH}.go
+fi
+AC_SUBST(GO_DEBUG_PROC_REGS_OS_ARCH_FILE)
 
 dnl Use -fsplit-stack when compiling C code if available.
 AC_CACHE_CHECK([whether -fsplit-stack is supported],
