@@ -287,9 +287,9 @@
   (match_code "eq,ne,lt,ge")
 )
 
-;; GT, LE, UNLE, UNGT omitted due to operand swap required.
+;; GT and LE omitted due to operand swap required.
 (define_predicate "rx_fp_comparison_operator"
-  (match_code "eq,ne,lt,ge,ordered,unordered,uneq,unlt,unge,ltgt")
+  (match_code "eq,ne,lt,ge,ordered,unordered")
 )
 
 (define_predicate "rshift_operator"

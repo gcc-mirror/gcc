@@ -2665,68 +2665,6 @@ rx_select_cc_mode (enum rtx_code cmp_code, rtx x, rtx y ATTRIBUTE_UNUSED)
   return mode_from_flags (flags_from_code (cmp_code));
 }
 
-/* Split the floating-point comparison IN into individual comparisons
-   O1 and O2.  O2 may be UNKNOWN if there is no second comparison.
-   Return true iff the comparison operands must be swapped.  */
-
-bool
-rx_split_fp_compare (enum rtx_code in, enum rtx_code *o1, enum rtx_code *o2)
-{
-  enum rtx_code cmp1 = in, cmp2 = UNKNOWN;
-  bool swap = false;
-
-  switch (in)
-    {
-    case ORDERED:
-    case UNORDERED:
-    case LT:
-    case GE:
-    case EQ:
-    case NE:
-      break;
-
-    case GT:
-    case LE:
-      cmp1 = swap_condition (cmp1);
-      swap = true;
-      break;
-
-    case UNEQ:
-      cmp1 = UNORDERED;
-      cmp2 = EQ;
-      break;
-    case UNLT:
-      cmp1 = UNORDERED;
-      cmp2 = LT;
-      break;
-    case UNGE:
-      cmp1 = UNORDERED;
-      cmp2 = GE;
-      break;
-    case UNLE:
-      cmp1 = UNORDERED;
-      cmp2 = GT;
-      swap = true;
-      break;
-    case UNGT:
-      cmp1 = UNORDERED;
-      cmp2 = LE;
-      swap = true;
-      break;
-    case LTGT:
-      cmp1 = ORDERED;
-      cmp2 = NE;
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  *o1 = cmp1;
-  *o2 = cmp2;
-  return swap;
-}
-
 /* Split the conditional branch.  Emit (COMPARE C1 C2) into CC_REG with
    CC_MODE, and use that in branches based on that compare.  */
 
