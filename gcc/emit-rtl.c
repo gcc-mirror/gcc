@@ -326,7 +326,7 @@ reg_attrs_htab_hash (const void *x)
 {
   const reg_attrs *const p = (const reg_attrs *) x;
 
-  return ((p->offset * 1000) ^ (long) p->decl);
+  return ((p->offset * 1000) ^ (intptr_t) p->decl);
 }
 
 /* Returns nonzero if the value represented by X (which is really a
