@@ -605,7 +605,7 @@ c_readstr (const char *str, enum machine_mode mode)
       if (WORDS_BIG_ENDIAN)
 	j = GET_MODE_SIZE (mode) - i - 1;
       if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
-	  && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	  && GET_MODE_SIZE (mode) >= UNITS_PER_WORD)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
       gcc_assert (j < 2 * HOST_BITS_PER_WIDE_INT);
