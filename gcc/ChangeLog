@@ -1,3 +1,10 @@
+2011-01-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/47385
+	* config/rs6000/altivec.md (vector constant splitters): Add
+	support for creating vector single precision constants if -mvsx is
+	used and we would create the constant using Altivec primitives.
+
 2011-01-23  Bernd Schmidt  <bernds@codesourcery.com>
 	    Richard Sandiford  <rdsandiford@googlemail.com>
 
