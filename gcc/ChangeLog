@@ -1,3 +1,16 @@
+2011-01-24  Richard Henderson  <rth@redhat.com>
+
+	* config/rx/predicates.md (rx_fp_comparison_operator): Don't accept
+	compound unordered comparisons.
+	* config/rx/rx.c (rx_split_fp_compare): Remove.
+	* config/rx/rx-protos.h: Update.
+	* config/rx/rx.md (gcc_conds, rx_conds): Remove.
+	(cbranchsf4): Don't call rx_split_fp_compare.
+	(*cbranchsf4): Use rx_split_cbranch.
+	(*cmpsf): Don't accept "i" constraint.
+	(*conditional_branch): Only valid after reload.
+	(cstoresf4): Merge expander with insn.  Don't call rx_split_fp_compare.
+
 2011-01-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/47385

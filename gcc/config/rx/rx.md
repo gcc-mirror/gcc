@@ -29,16 +29,6 @@
 (define_mode_iterator register_modes
   [(SF "ALLOW_RX_FPU_INSNS") (SI "") (HI "") (QI "")])
 
-
-;; Used to map RX condition names to GCC
-;; condition names for builtin instructions.
-(define_code_iterator gcc_conds [eq ne gt ge lt le gtu geu ltu leu
-				unge unlt uneq ltgt])
-(define_code_attr rx_conds [(eq "eq") (ne "ne") (gt "gt") (ge "ge") (lt "lt")
-			    (le "le") (gtu "gtu") (geu "geu") (ltu "ltu")
-			    (leu "leu") (unge "pz") (unlt "n") (uneq "o")
-			    (ltgt "no")])
-
 (define_constants
   [
    (SP_REG 0)
@@ -259,46 +249,20 @@
 (define_expand "cbranchsf4"
   [(set (pc)
 	(if_then_else
-	  (match_operator 0 "comparison_operator"
+	  (match_operator 0 "rx_fp_comparison_operator"
 	    [(match_operand:SF 1 "register_operand")
-	     (match_operand:SF 2 "register_operand")])
-          (label_ref (match_operand 3 ""))
+	     (match_operand:SF 2 "rx_source_operand")])
+	  (label_ref (match_operand 3 ""))
 	  (pc)))]
   "ALLOW_RX_FPU_INSNS"
-{
-  enum rtx_code cmp1, cmp2;
-
-  /* If the comparison needs swapping of operands, do that now.
-     Do not split the comparison in two yet.  */
-  if (rx_split_fp_compare (GET_CODE (operands[0]), &cmp1, &cmp2))
-    {
-      rtx op1, op2;
-
-      if (cmp2 != UNKNOWN)
-	{
-	  gcc_assert (cmp1 == UNORDERED);
-	  if (cmp2 == GT)
-	    cmp1 = UNGT;
-	  else if (cmp2 == LE)
-	    cmp1 = UNLE;
-	  else
-	    gcc_unreachable ();
-	}
-
-      op1 = operands[2];
-      op2 = operands[1];
-      operands[0] = gen_rtx_fmt_ee (cmp1, VOIDmode, op1, op2);
-      operands[1] = op1;
-      operands[2] = op2;
-    }
-})
+)
 
 (define_insn_and_split "*cbranchsf4"
   [(set (pc)
 	(if_then_else
 	  (match_operator 3 "rx_fp_comparison_operator"
 	    [(match_operand:SF  0 "register_operand"  "r")
-	     (match_operand:SF  1 "rx_source_operand" "rFiQ")])
+	     (match_operand:SF  1 "rx_source_operand" "rFQ")])
 	  (match_operand        2 "label_ref_operand" "")
 	  (pc)))]
   "ALLOW_RX_FPU_INSNS"
@@ -306,46 +270,8 @@
   "&& reload_completed"
   [(const_int 0)]
 {
-  enum rtx_code cmp0, cmp1, cmp2;
-  rtx flags, lab1, lab2, over, x;
-  bool swap;
-
-  cmp0 = GET_CODE (operands[3]);
-  swap = rx_split_fp_compare (cmp0, &cmp1, &cmp2);
-  gcc_assert (!swap);
-
-  flags = gen_rtx_REG (CC_Fmode, CC_REG);
-  x = gen_rtx_COMPARE (CC_Fmode, operands[0], operands[1]);
-  x = gen_rtx_SET (VOIDmode, flags, x);
-  emit_insn (x);
-
-  over = NULL;
-  lab1 = lab2 = operands[2];
-
-  /* The one case of LTGT needs to be split into cmp1 && cmp2.  */
-  if (cmp0 == LTGT)
-    {
-      over = gen_label_rtx ();
-      lab1 = gen_rtx_LABEL_REF (VOIDmode, over);
-      cmp1 = reverse_condition_maybe_unordered (cmp1);
-    }
-
-  /* Otherwise we split into cmp1 || cmp2.  */
-  x = gen_rtx_fmt_ee (cmp1, VOIDmode, flags, const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, lab1, pc_rtx);
-  x = gen_rtx_SET (VOIDmode, pc_rtx, x);
-  emit_jump_insn (x);
-
-  if (cmp2 != UNKNOWN)
-    {
-      x = gen_rtx_fmt_ee (cmp2, VOIDmode, flags, const0_rtx);
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x, lab2, pc_rtx);
-      x = gen_rtx_SET (VOIDmode, pc_rtx, x);
-      emit_jump_insn (x);
-    }
-
-  if (over)
-    emit_label (over);
+  rx_split_cbranch (CC_Fmode, GET_CODE (operands[3]),
+		    operands[0], operands[1], operands[2]);
   DONE;
 })
 
@@ -353,7 +279,7 @@
   [(set (reg:CC_F CC_REG)
 	(compare:CC_F
 	  (match_operand:SF 0 "register_operand"  "r,r,r")
-	  (match_operand:SF 1 "rx_source_operand" "r,iF,Q")))]
+	  (match_operand:SF 1 "rx_source_operand" "r,F,Q")))]
   "ALLOW_RX_FPU_INSNS && reload_completed"
   "fcmp\t%1, %0"
   [(set_attr "timings" "11,11,33")
@@ -369,7 +295,7 @@
 	    [(reg CC_REG) (const_int 0)])
 	  (label_ref (match_operand 0 "" ""))
 	  (pc)))]
-  ""
+  "reload_completed"
   "b%B1\t%0"
   [(set_attr "length" "8")    ;; This length is wrong, but it is
                               ;; too hard to compute statically.
@@ -750,95 +676,26 @@
   [(set_attr "length" "3")]
 )
 
-(define_expand "cstoresf4"
-  [(parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (match_operator:SI 1 "comparison_operator"
-		    [(match_operand:SF 2 "register_operand" "")
-		     (match_operand:SF 3 "register_operand" "")]))
-	     (clobber (match_scratch:SI 4))])]
-  "ALLOW_RX_FPU_INSNS"
-{
-  enum rtx_code cmp1, cmp2;
-
-  /* If the comparison needs swapping of operands, do that now.
-     Do not split the comparison in two yet.  */
-  if (rx_split_fp_compare (GET_CODE (operands[1]), &cmp1, &cmp2))
-    {
-      rtx op2, op3;
-
-      if (cmp2 != UNKNOWN)
-	{
-	  gcc_assert (cmp1 == UNORDERED);
-	  if (cmp2 == GT)
-	    cmp1 = UNGT;
-	  else if (cmp2 == LE)
-	    cmp1 = UNLE;
-	  else
-	    gcc_unreachable ();
-	}
-
-      op2 = operands[3];
-      op3 = operands[2];
-      operands[0] = gen_rtx_fmt_ee (cmp1, VOIDmode, op2, op3);
-      operands[2] = op2;
-      operands[3] = op3;
-    }
-})
-
-(define_insn_and_split "*cstoresf4"
+(define_insn_and_split "cstoresf4"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operator:SI 4 "rx_fp_comparison_operator"
+	(match_operator:SI 1 "rx_fp_comparison_operator"
 	 [(match_operand:SF 2 "register_operand" "r")
-	  (match_operand:SF 3 "rx_source_operand" "rFiQ")]))
-   (clobber (match_scratch:SI 1 "=r"))]
+	  (match_operand:SF 3 "rx_source_operand" "rFQ")]))]
   "ALLOW_RX_FPU_INSNS"
   "#"
   "reload_completed"
   [(const_int 0)]
 {
-  enum rtx_code cmp0, cmp1, cmp2;
   rtx flags, x;
-  bool swap;
-
-  cmp0 = GET_CODE (operands[4]);
-  swap = rx_split_fp_compare (cmp0, &cmp1, &cmp2);
-  gcc_assert (!swap);
 
   flags = gen_rtx_REG (CC_Fmode, CC_REG);
   x = gen_rtx_COMPARE (CC_Fmode, operands[2], operands[3]);
   x = gen_rtx_SET (VOIDmode, flags, x);
   emit_insn (x);
 
-  x = gen_rtx_fmt_ee (cmp1, SImode, flags, const0_rtx);
+  x = gen_rtx_fmt_ee (GET_CODE (operands[1]), SImode, flags, const0_rtx);
   x = gen_rtx_SET (VOIDmode, operands[0], x);
   emit_insn (x);
-
-  if (cmp0 == LTGT)
-    {
-      /* The one case of LTGT needs to be split into ORDERED && NE.  */
-      x = gen_rtx_fmt_ee (EQ, VOIDmode, flags, const0_rtx);
-      x = gen_rtx_IF_THEN_ELSE (SImode, x, const0_rtx, operands[0]);
-      x = gen_rtx_SET (VOIDmode, operands[0], x);
-      emit_insn (x);
-    }
-  else if (cmp2 == EQ || cmp2 == NE)
-    {
-      /* Oring the two flags can be performed with a movcc operation.  */
-      x = gen_rtx_fmt_ee (cmp2, VOIDmode, flags, const0_rtx);
-      x = gen_rtx_IF_THEN_ELSE (SImode, x, const1_rtx, operands[0]);
-      x = gen_rtx_SET (VOIDmode, operands[0], x);
-      emit_insn (x);
-    }
-  else if (cmp2 != UNKNOWN)
-    {
-      /* We can't use movcc, but need to or in another compare.
-	 Do this by storing the second operation into the scratch.  */
-      x = gen_rtx_fmt_ee (cmp2, SImode, flags, const0_rtx);
-      x = gen_rtx_SET (VOIDmode, operands[1], x);
-      emit_insn (x);
-
-      emit_insn (gen_iorsi3 (operands[0], operands[0], operands[1]));
-    }
   DONE;
 })
 
