@@ -1,15 +1,21 @@
+2011-01-24  Graham Reed  <greed@pobox.com>
+
+	PR libstdc++/47387
+	* config/os/aix/ctype_inline.h (ctype<char>::is): Use _M_table if
+	provided.
+
 2011-01-24  Johannes Singler  <singler@kit.edu>
 
         PR libstdc++/47433
         * include/parallel/losertree.h
         (_LoserTree<>::__delete_min_insert):
-        Do not qualify swap with std:: for value type, 
+        Do not qualify swap with std:: for value type,
         but include a using directive instead.
         (_LoserTreeUnguarded<>::__delete_min_insert): Likewise.
         * include/parallel/balanced_quicksort.h (__qsb_divide):
         Use std::iter_swap instead of std::swap.
         (__qsb_local_sort_with_helping): Likewise.
-        * include/parallel/partition.h (__parallel_partition): 
+        * include/parallel/partition.h (__parallel_partition):
         Likewise. (__parallel_nth_element): Likewise.
 
 2011-01-24  Johannes Singler  <singler@kit.edu>

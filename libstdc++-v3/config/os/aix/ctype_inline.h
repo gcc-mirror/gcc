@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2000, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,14 +39,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   bool
   ctype<char>::
   is(mask __m, char __c) const
-  { return __OBJ_DATA(__lc_ctype)->mask[__c] & __m; }
+  { 
+    if(_M_table)
+      return _M_table[static_cast<unsigned char>(__c)] & __m;
+    else
+      return __OBJ_DATA(__lc_ctype)->mask[__c] & __m;
+  }
 
   const char*
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const
   {
-    while (__low < __high)
-      *__vec++ = __OBJ_DATA(__lc_ctype)->mask[*__low++];
+    if(_M_table)
+      while (__low < __high)
+	*__vec++ = _M_table[static_cast<unsigned char>(*__low++)];
+    else
+      while (__low < __high)
+        *__vec++ = __OBJ_DATA(__lc_ctype)->mask[*__low++];
     return __high;
   }
 
