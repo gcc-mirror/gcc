@@ -13024,8 +13024,7 @@ aliases.
 @cindex pragma, weak
 This pragma declares @var{symbol} to be weak, as if the declaration
 had the attribute of the same name.  The pragma may appear before
-or after the declaration of @var{symbol}, but must appear before
-either its first use or its definition.  It is not an error for
+or after the declaration of @var{symbol}.  It is not an error for
 @var{symbol} to never be defined at all.
 
 @item #pragma weak @var{symbol1} = @var{symbol2}

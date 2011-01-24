@@ -1,3 +1,11 @@
+2011-01-24  Jan Hubicka  <jh@suse.cz>
+
+	PR c/21659
+	* doc/extend.texi (weak pragma): Drop claim that it must
+	appear before definition.
+	* varasm.c (merge_weak, declare_weak): Only sanity check
+	that DECL is not output at a time it is declared weak.
+
 2011-01-24  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* machmode.def: Fixed comments.
