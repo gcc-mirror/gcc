@@ -1,5 +1,10 @@
 2011-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gfortran.dg/cray_pointers_2.f90: Avoid cycling through
+	optimization options.
+
+2011-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gfortran.dg/array_constructor_33.f90: Use dg-timeout-factor 4.
 
 	PR testsuite/45988
