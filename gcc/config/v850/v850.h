@@ -98,9 +98,15 @@ extern GTY(()) rtx v850_compare_op1;
 
 #define TARGET_V850E2_ALL      (TARGET_V850E2 || TARGET_V850E2V3) 
 
-#define ASM_SPEC "%{mv*:-mv%*}"
-#define CPP_SPEC               "%{mv850e2v3:-D__v850e2v3__} %{mv850e2:-D__v850e2__} %{mv850e:-D__v850e__} %{mv850:-D__v850__} %(subtarget_cpp_spec)" \
-                               " %{mep:-D__EP__}"
+#define ASM_SPEC "%{mv850es:-mv850e1}%{!mv850es:%{mv*:-mv%*}}"
+#define CPP_SPEC "\
+  %{mv850e2v3:-D__v850e2v3__} \
+  %{mv850e2:-D__v850e2__} \
+  %{mv850es:-D__v850e1__} \
+  %{mv850e1:-D__v850e1__} \
+  %{mv850:-D__v850__} \
+  %(subtarget_cpp_spec)" \
+  " %{mep:-D__EP__}"
 
 #define EXTRA_SPECS \
  { "subtarget_asm_spec", SUBTARGET_ASM_SPEC }, \

@@ -890,7 +890,7 @@ See RS/6000 and PowerPC Options.
 -mdisable-callt  -mno-disable-callt @gol
 -mv850e2v3 @gol
 -mv850e2 @gol
--mv850e1 @gol
+-mv850e1 -mv850es @gol
 -mv850e @gol
 -mv850  -mbig-switch}
 
@@ -17388,6 +17388,11 @@ constants @samp{__v850e2__} will be defined if
 @opindex mv850e1
 Specify that the target processor is the V850E1.  The preprocessor
 constants @samp{__v850e1__} and @samp{__v850e__} will be defined if
+
+@item -mv850es
+@opindex mv850es
+Specify that the target processor is the V850ES.  This is an alias for
+the @option{-mv850e1} option.
 
 @item -mv850e
 @opindex mv850e

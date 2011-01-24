@@ -68,11 +68,11 @@ Set the max size of data eligible for the TDA area
 
 mno-strict-align
 Target Report Mask(NO_STRICT_ALIGN)
-Enforce strict alignment
+Do not enforce strict alignment
 
 mjump-tables-in-data-section
 Target Report Mask(JUMP_TABLES_IN_DATA_SECTION)
-Enforce table jump
+Put jump tables for switch statements into the .data section rather than the .code section
 
 mUS-bit-set
 Target Report Mask(US_BIT_SET)
@@ -88,6 +88,10 @@ Compile for the v850e processor
 mv850e1
 Target RejectNegative Mask(V850E1)
 Compile for the v850e1 processor
+
+mv850es
+Target RejectNegative Mask(V850E1) MaskExists
+Compile for the v850es variant of the v850e1
 
 mv850e2
 Target Report RejectNegative Mask(V850E2)
