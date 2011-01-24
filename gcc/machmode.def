@@ -86,14 +86,18 @@ along with GCC; see the file COPYING3.  If not see
 	using floating point format FORMAT.
 	All of the bits of its representation are significant.
 
-     DECIMAL FLOAT_MODE (MODE, BYTESIZE);
-	declares MODE to be of class DECIMAL_FLOAT and BYTESIZE bytes
-	wide.  All of the bits of its representation are significant.
-
      FRACTIONAL_FLOAT_MODE (MODE, PRECISION, BYTESIZE, FORMAT);
         declares MODE to be of class FLOAT, BYTESIZE bytes wide in
 	storage, but with only PRECISION significant bits, using
 	floating point format FORMAT.
+
+     DECIMAL_FLOAT_MODE (MODE, BYTESIZE, FORMAT);
+	declares MODE to be of class DECIMAL_FLOAT and BYTESIZE bytes
+	wide.  All of the bits of its representation are significant.
+
+     FRACTIONAL_DECIMAL_FLOAT_MODE (MODE, BYTESIZE, FORMAT);
+	declares MODE to be of class DECIMAL_FLOAT and BYTESIZE bytes
+	wide.  All of the bits of its representation are significant.
 
      FRACT_MODE (MODE, BYTESIZE, FBIT);
 	declares MODE to be of class FRACT and BYTESIZE bytes wide
@@ -108,7 +112,7 @@ along with GCC; see the file COPYING3.  If not see
 	with IBIT integral bits and FBIT fractional bits.
 	There may be padding bits.
 
-     UACCUM_MODE (MODE, BYTESIZE, FBIT);
+     UACCUM_MODE (MODE, BYTESIZE, IBIT, FBIT);
 	declares MODE to be of class UACCUM and BYTESIZE bytes wide
 	with IBIT integral bits and FBIT fractional bits.
 	There may be padding bits.
