@@ -1,3 +1,8 @@
+2011-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gfortran.dg/cray_pointers_2.f90: Avoid cycling through
+	optimization options.
+
 2011-01-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/other/anon5.C: Skip on mips-sgi-irix*.
