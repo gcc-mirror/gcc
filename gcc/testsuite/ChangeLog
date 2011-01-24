@@ -1,3 +1,10 @@
+2011-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gfortran.dg/array_constructor_33.f90: Use dg-timeout-factor 4.
+
+	PR testsuite/45988
+	* gfortran.dg/vect/fast-math-pr38968.f90: Use dg-timeout-factor 2.
+
 2011-01-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47421
