@@ -5780,8 +5780,6 @@ fi
 
 
 # Check for PPL
-ppl_major_version=0
-ppl_minor_version=10
 ppllibs=" -lppl_c -lppl -lgmpxx"
 pplinc=
 
@@ -5838,8 +5836,8 @@ fi
 if test "x$with_ppl" != "xno" -a "${ENABLE_PPL_CHECK}" = "yes"; then
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $pplinc $gmpinc"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version $ppl_major_version.$ppl_minor_version of PPL" >&5
-$as_echo_n "checking for version $ppl_major_version.$ppl_minor_version of PPL... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.10 (or later revision) of PPL" >&5
+$as_echo_n "checking for version 0.10 (or later revision) of PPL... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "ppl_c.h"
@@ -5847,7 +5845,7 @@ int
 main ()
 {
 
-  #if PPL_VERSION_MAJOR != $ppl_major_version || PPL_VERSION_MINOR != $ppl_minor_version
+  #if PPL_VERSION_MAJOR != 0 || PPL_VERSION_MINOR < 10
   choke me
   #endif
 
