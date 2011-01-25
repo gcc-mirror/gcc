@@ -1,3 +1,11 @@
+2011-01-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47375
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Add check for getpwuid_r.
+	* intrinsics/getlog.c (getlog): Use getpwuid_r() if available.
+
 2011-01-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/46267
