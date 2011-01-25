@@ -515,4 +515,77 @@ debug_gmp_value (mpz_t val)
   (*gmp_free) (str, strlen (str) + 1);
 }
 
+/* Checks for integer feasibility: returns true when the powerset
+   polyhedron PS has no integer solutions.  NB_PARAMS is the number of
+   dimensions used as parameters in PS.  If DIM is the dimension of
+   PS, the parameter dimensions are in between DIM - NB_PARAMS and
+   DIM.  */
+
+bool
+ppl_powerset_is_empty (ppl_Pointset_Powerset_C_Polyhedron_t ps,
+		       int nb_params ATTRIBUTE_UNUSED)
+{
+#if PPL_VERSION_MAJOR == 0 && PPL_VERSION_MINOR < 11
+  /* On PPL 0.10,
+     ppl_Pointset_Powerset_C_Polyhedron_contains_integer_point (ps)
+     takes too long on some cases and so we call _is_empty instead.  */
+  return ppl_Pointset_Powerset_C_Polyhedron_is_empty (ps);
+
+#else
+  /* On PPL 0.11 or later, we can check for integer feasibility using
+     the PIP solver.  */
+  ppl_PIP_Problem_t pip;
+  ppl_dimension_type d;
+  ppl_const_Constraint_System_t pcs;
+  ppl_Constraint_System_const_iterator_t first, last;
+  ppl_Pointset_Powerset_C_Polyhedron_iterator_t it, end;
+  int i;
+  bool has_integer_solutions = false;
+  ppl_dimension_type *ds;
+  int dim_first_parameter;
+
+  if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (ps))
+    return true;
+
+  ppl_Pointset_Powerset_C_Polyhedron_space_dimension (ps, &d);
+  dim_first_parameter = d - nb_params;
+  ds = (ppl_dimension_type *) XNEWVEC (ppl_dimension_type, nb_params);
+
+  for (i = 0; i < nb_params; i++)
+    ds[i] = dim_first_parameter + i;
+
+  ppl_new_Constraint_System_const_iterator (&first);
+  ppl_new_Constraint_System_const_iterator (&last);
+  ppl_new_Pointset_Powerset_C_Polyhedron_iterator (&it);
+  ppl_new_Pointset_Powerset_C_Polyhedron_iterator (&end);
+
+  for (ppl_Pointset_Powerset_C_Polyhedron_iterator_begin (ps, it),
+       ppl_Pointset_Powerset_C_Polyhedron_iterator_end (ps, end);
+       !ppl_Pointset_Powerset_C_Polyhedron_iterator_equal_test (it, end);
+       ppl_Pointset_Powerset_C_Polyhedron_iterator_increment (it))
+    {
+      ppl_const_Polyhedron_t ph;
+      ppl_Pointset_Powerset_C_Polyhedron_iterator_dereference (it, &ph);
+
+      ppl_Polyhedron_get_constraints (ph, &pcs);
+      ppl_Constraint_System_begin (pcs, first);
+      ppl_Constraint_System_end (pcs, last);
+
+      ppl_new_PIP_Problem_from_constraints (&pip, d, first, last, nb_params, ds);
+      has_integer_solutions |= ppl_PIP_Problem_is_satisfiable (pip);
+
+      ppl_delete_PIP_Problem (pip);
+    }
+
+  ppl_delete_Constraint_System_const_iterator (first);
+  ppl_delete_Constraint_System_const_iterator (last);
+  ppl_delete_Pointset_Powerset_C_Polyhedron_iterator (it);
+  ppl_delete_Pointset_Powerset_C_Polyhedron_iterator (end);
+  if (ds)
+    free (ds);
+
+  return !has_integer_solutions;
+#endif
+}
+
 #endif

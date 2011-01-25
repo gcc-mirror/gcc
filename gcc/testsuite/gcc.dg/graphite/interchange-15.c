@@ -7,24 +7,19 @@
 
 #define NMAX 2000
 
-static int x1[NMAX], x2[NMAX], a[NMAX][NMAX], y1[NMAX], y2[NMAX];
+static int x[NMAX], a[NMAX][NMAX];
 
 static int __attribute__((noinline))
 mvt (long N)
 {
-
   int i,j;
-
-  for (i = 0; i < N; i++)
-    for (j = 0; j < N; j++)
-      x1[i] = x1[i] + a[i][j] * y1[j];
 
   /* These two loops should be interchanged.  */
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
-      x2[i] = x2[i] + a[j][i] * y2[j];
+      x[i] += a[j][i];
 
-  return x1[0] + x2[0];
+  return x[1];
 }
 
 extern void abort ();
@@ -36,15 +31,10 @@ main (void)
 
   for (i = 0; i < NMAX; i++)
     for (j = 0; j < NMAX; j++)
-      a[i][j] = i + j;
+      a[i][j] = j;
 
   for (i = 0; i < NMAX; i++)
-    {
-      x1[i] = 0;
-      x2[i] = 2*i;
-      y1[i] = 100 - i;
-      y2[i] = i;
-    }
+    x[i] = i;
 
   res = mvt (NMAX);
 
@@ -52,7 +42,7 @@ main (void)
   fprintf (stderr, "res = %d \n", res);
 #endif
 
-  if (res != 199900000)
+  if (res != 2001)
     abort ();
 
   return 0;

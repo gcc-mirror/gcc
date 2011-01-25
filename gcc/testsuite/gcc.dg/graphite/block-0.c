@@ -12,6 +12,7 @@ foo (void)
   int j;
   int i;
 
+  /* This should be blocked.  */
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
       a[j] = a[i] + 1;
