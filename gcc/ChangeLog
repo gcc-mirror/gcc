@@ -1,3 +1,9 @@
+2011-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/45701
+	* config/arm/arm.c (any_sibcall_uses_r3): New function.
+	(arm_get_frame_offsets): Use it.
+
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
