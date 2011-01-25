@@ -1,3 +1,8 @@
+2011-01-25  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* configure: Regenerated.
+	* configure.ac: Use CLOOG_CHECK_VERSION(0,16,1).
+
 2011-01-21  Andreas Schwab  <schwab@redhat.com>
 
 	* configure.ac: Use AS_HELP_STRING throughout.
