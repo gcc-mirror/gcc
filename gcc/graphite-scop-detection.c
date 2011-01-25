@@ -1199,6 +1199,66 @@ limit_scops (VEC (scop_p, heap) **scops)
   VEC_free (sd_region, heap, regions);
 }
 
+/* Returns true when P1 and P2 are close phis with the same
+   argument.  */
+
+static inline bool
+same_close_phi_node (gimple p1, gimple p2)
+{
+  return operand_equal_p (gimple_phi_arg_def (p1, 0),
+			  gimple_phi_arg_def (p2, 0), 0);
+}
+
+/* Remove the close phi node at GSI and replace its rhs with the rhs
+   of PHI.  */
+
+static void
+remove_duplicate_close_phi (gimple phi, gimple_stmt_iterator *gsi)
+{
+  gimple use_stmt;
+  use_operand_p use_p;
+  imm_use_iterator imm_iter;
+  tree res = gimple_phi_result (phi);
+  tree def = gimple_phi_result (gsi_stmt (*gsi));
+
+  gcc_assert (same_close_phi_node (phi, gsi_stmt (*gsi)));
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
+    {
+      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	SET_USE (use_p, res);
+
+      update_stmt (use_stmt);
+    }
+
+  remove_phi_node (gsi, true);
+}
+
+/* Removes all the close phi duplicates from BB.  */
+
+static void
+make_close_phi_nodes_unique (basic_block bb)
+{
+  gimple_stmt_iterator psi;
+
+  for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
+    {
+      gimple_stmt_iterator gsi = psi;
+      gimple phi = gsi_stmt (psi);
+
+      /* At this point, PHI should be a close phi in normal form.  */
+      gcc_assert (gimple_phi_num_args (phi) == 1);
+
+      /* Iterate over the next phis and remove duplicates.  */
+      gsi_next (&gsi);
+      while (!gsi_end_p (gsi))
+	if (same_close_phi_node (phi, gsi_stmt (gsi)))
+	  remove_duplicate_close_phi (phi, &gsi);
+	else
+	  gsi_next (&gsi);
+    }
+}
+
 /* Transforms LOOP to the canonical loop closed SSA form.  */
 
 static void
@@ -1213,7 +1273,10 @@ canonicalize_loop_closed_ssa (loop_p loop)
   bb = e->dest;
 
   if (VEC_length (edge, bb->preds) == 1)
-    split_block_after_labels (bb);
+    {
+      e = split_block_after_labels (bb);
+      make_close_phi_nodes_unique (e->src);
+    }
   else
     {
       gimple_stmt_iterator psi;
@@ -1248,6 +1311,8 @@ canonicalize_loop_closed_ssa (loop_p loop)
 		update_stmt (phi);
 	      }
 	}
+
+      make_close_phi_nodes_unique (close);
     }
 
   /* The code above does not properly handle changes in the post dominance
@@ -1272,6 +1337,8 @@ canonicalize_loop_closed_ssa (loop_p loop)
 
    - the basic block containing the close phi nodes does not contain
    other statements.
+
+   - there exist only one phi node per definition in the loop.
 */
 
 static void
