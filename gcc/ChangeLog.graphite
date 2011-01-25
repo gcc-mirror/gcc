@@ -1,3 +1,7 @@
+2011-01-13  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* doc/install.texi: Document availability of cloog-0.16
+
 2011-01-05  Vladimir Kargov  <kargov@gmail.com>
 
 	* graphite-scop-detection.c (is_valid_stmt_p): Pass the entry basic

@@ -340,16 +340,23 @@ It can be downloaded from @uref{http://www.cs.unipr.it/ppl/Download/}.
 The @option{--with-ppl} configure option should be used if PPL is not
 installed in your default library search path.
 
-@item CLooG-PPL version 0.15
+@item CLooG-PPL version 0.15 or CLooG 0.16
 
-Necessary to build GCC with the Graphite loop optimizations.  It can
-be downloaded from @uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/}.
-The code in @file{cloog-ppl-0.15.tar.gz} comes from a branch of CLooG
-available from @uref{http://repo.or.cz/w/cloog-ppl.git}.  CLooG-PPL
-should be configured with @option{--with-ppl}.
+Necessary to build GCC with the Graphite loop optimizations.  There
+are two versions available.  CLooG-PPL 0.15 as well as CLooG 0.16.
+The former is the default right now.  It can be downloaded from
+@uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/} as
+@file{cloog-ppl-0.15.tar.gz}.
 
-The @option{--with-cloog} configure option should be used if CLooG is
-not installed in your default library search path.
+CLooG 0.16 support is still in testing stage, but will be the
+default in future GCC releases.  It is also available at
+@uref{ftp://gcc.gnu.org/pub/gcc/infrastructure/} as
+@file{cloog-0.16.1.tar.gz}.  To use it add the additional configure
+option @option{--enable-cloog-backend=isl}.  Even if CLooG 0.16
+does not use PPL, PPL is still required for Graphite.
+
+In both cases @option{--with-cloog} configure option should be used
+if CLooG is not installed in your default library search path.
 
 @item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
 
