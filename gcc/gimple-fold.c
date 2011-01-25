@@ -1443,38 +1443,6 @@ gimple_adjust_this_by_delta (gimple_stmt_iterator *gsi, tree delta)
   gimple_call_set_arg (call_stmt, 0, tmp);
 }
 
-/* Fold a call statement to OBJ_TYPE_REF to a direct call, if possible.  GSI
-   determines the statement, generating new statements is allowed only if
-   INPLACE is false.  Return true iff the statement was changed.  */
-
-static bool
-gimple_fold_obj_type_ref_call (gimple_stmt_iterator *gsi)
-{
-  gimple stmt = gsi_stmt (*gsi);
-  tree ref = gimple_call_fn (stmt);
-  tree obj = OBJ_TYPE_REF_OBJECT (ref);
-  tree binfo, fndecl, delta;
-  HOST_WIDE_INT token;
-
-  if (TREE_CODE (obj) != ADDR_EXPR)
-    return false;
-  obj = TREE_OPERAND (obj, 0);
-  if (!DECL_P (obj)
-      || TREE_CODE (TREE_TYPE (obj)) != RECORD_TYPE)
-    return false;
-  binfo = TYPE_BINFO (TREE_TYPE (obj));
-  if (!binfo)
-    return false;
-
-  token = tree_low_cst (OBJ_TYPE_REF_TOKEN (ref), 1);
-  fndecl = gimple_get_virt_mehtod_for_binfo (token, binfo, &delta, false);
-  if (!fndecl)
-    return false;
-  gcc_assert (integer_zerop (delta));
-  gimple_call_set_fndecl (stmt, fndecl);
-  return true;
-}
-
 /* Attempt to fold a call statement referenced by the statement iterator GSI.
    The statement may be replaced by another statement, e.g., if the call
    simplifies to a constant value. Return true if any changes were made.
@@ -1500,17 +1468,6 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  return true;
 	}
     }
-  else
-    {
-      /* ??? Should perhaps do this in fold proper.  However, doing it
-         there requires that we create a new CALL_EXPR, and that requires
-         copying EH region info to the new node.  Easier to just do it
-         here where we can just smash the call operand.  */
-      callee = gimple_call_fn (stmt);
-      if (TREE_CODE (callee) == OBJ_TYPE_REF)
-	return gimple_fold_obj_type_ref_call (gsi);
-    }
-
   return false;
 }
 
