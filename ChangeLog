@@ -1,5 +1,11 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* configure.ac: Call AC_MSG_ERROR when PPL 0.11 is not present and
+	CLooG has been requested.
+	* configure: Regenerated.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* configure: Regenerated.
 	* configure.ac: Check for version 0.11 (or later revision) of PPL.
 
