@@ -1,5 +1,14 @@
 2011-01-05  Vladimir Kargov  <kargov@gmail.com>
 
+	* graphite-scop-detection.c (is_valid_stmt_p): Pass the entry basic
+	block instead of region start to the instantiation.
+	(is_valid_bb_p): Add support for basic blocks with conditional
+	statements.
+	(find_scops_new): Recalculate dominance info before SCOP
+	detection.
+
+2011-01-05  Vladimir Kargov  <kargov@gmail.com>
+
 	* graphite-scop-detection.c (get_outermost_loop_in_region): New.
 	(is_valid_loop_p): Correct loop passed to stmt_has_simple_data_refs_p
 
