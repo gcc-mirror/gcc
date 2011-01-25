@@ -1,8 +1,8 @@
 /* Implementation of the GETLOG g77 intrinsic.
-   Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -75,7 +75,22 @@ PREFIX(getlog) (char * login, gfc_charlen_type login_len)
 
   memset (login, ' ', login_len); /* Blank the string.  */
 
-#if defined(HAVE_GETPWUID) && defined(HAVE_GETEUID)
+#if defined(HAVE_GETPWUID_R) && defined(HAVE_GETEUID)
+  struct passwd pwd;
+  struct passwd *result;
+  char *buf;
+  int err;
+  /* To be pedantic, buflen should be determined by
+     sysconf(_SC_GETPW_R_SIZE_MAX), which is 1024 on some tested
+     targets; we do something simple in case the target doesn't
+     support sysconf.  */
+  static const size_t buflen = 1024;
+  buf = get_mem (buflen);
+  err = getpwuid_r (geteuid (), &pwd, buf, buflen, &result);
+  if (err != 0 || result == NULL)
+    goto cleanup;
+  p = pwd.pw_name;
+#elif defined(HAVE_GETPWUID) && defined(HAVE_GETEUID)
   {
     struct passwd *pw = getpwuid (geteuid ());
     if (pw)
@@ -83,20 +98,22 @@ PREFIX(getlog) (char * login, gfc_charlen_type login_len)
     else
       return;
   }
-#else
-# ifdef HAVE_GETLOGIN
+#elif HAVE_GETLOGIN
   p = getlogin();
 # else
   return;
-# endif
 #endif
 
   if (p == NULL)
-    return;
+    goto cleanup;
 
   p_len = strlen (p);
   if (login_len < p_len)
-    memcpy (login, p, login_len);
-  else
-    memcpy (login, p, p_len);
+    p_len = login_len;
+  memcpy (login, p, p_len);
+
+ cleanup:
+#ifdef HAVE_GETPWUID_R
+  free (buf);
+#endif
 }
