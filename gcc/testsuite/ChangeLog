@@ -1,5 +1,10 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/43567
+	* gcc.dg/graphite/pr43567.c: New.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gfortran.dg/graphite/interchange-4.f: New.
 	* gfortran.dg/graphite/interchange-5.f: New.
 
