@@ -1,5 +1,112 @@
 2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* Makefile.in (LAMBDA_H): Removed.
+	(TREE_DATA_REF_H): Remove dependence on LAMBDA_H.
+	(OBJS-common): Remove dependence on lambda-code.o, lambda-mat.o,
+	lambda-trans.o, and tree-loop-linear.o.
+	(lto-symtab.o): Remove dependence on LAMBDA_H.
+	(tree-loop-linear.o): Remove rule.
+	(lambda-mat.o): Same.
+	(lambda-trans.o): Same.
+	(lambda-code.o): Same.
+	(tree-vect-loop.o): Add missing dependence on TREE_DATA_REF_H.
+	(tree-vect-slp.o): Same.
+	* hwint.h (gcd): Moved here.
+	(least_common_multiple): Same.
+	* lambda-code.c: Removed.
+	* lambda-mat.c: Removed.
+	* lambda-trans.c: Removed.
+	* lambda.h: Removed.
+	* tree-loop-linear.c: Removed.
+	* lto-symtab.c: Do not include lambda.h.
+	* omega.c (gcd): Removed.
+	* passes.c (init_optimization_passes): Remove pass_linear_transform.
+	* tree-data-ref.c (print_lambda_vector): Moved here.
+	(lambda_vector_copy): Same.
+	(lambda_matrix_copy): Same.
+	(lambda_matrix_id): Same.
+	(lambda_vector_first_nz): Same.
+	(lambda_matrix_row_add): Same.
+	(lambda_matrix_row_exchange): Same.
+	(lambda_vector_mult_const): Same.
+	(lambda_vector_negate): Same.
+	(lambda_matrix_row_negate): Same.
+	(lambda_vector_equal): Same.
+	(lambda_matrix_right_hermite): Same.
+	* tree-data-ref.h: Do not include lambda.h.
+	(lambda_vector): Moved here.
+	(lambda_matrix): Same.
+	(dependence_level): Same.
+	(lambda_transform_legal_p): Removed declaration.
+	(lambda_collect_parameters): Same.
+	(lambda_compute_access_matrices): Same.
+	(lambda_vector_gcd): Same.
+	(lambda_vector_new): Same.
+	(lambda_vector_clear): Same.
+	(lambda_vector_lexico_pos): Same.
+	(lambda_vector_zerop): Same.
+	(lambda_matrix_new): Same.
+	* tree-flow.h (least_common_multiple): Removed declaration.
+	* tree-parloops.c (lambda_trans_matrix): Moved here.
+	(LTM_MATRIX): Same.
+	(LTM_ROWSIZE): Same.
+	(LTM_COLSIZE): Same.
+	(LTM_DENOMINATOR): Same.
+	(lambda_trans_matrix_new): Same.
+	(lambda_matrix_vector_mult): Same.
+	(lambda_transform_legal_p): Same.
+	* tree-pass.h (pass_linear_transform): Removed declaration.
+	* tree-ssa-loop.c (tree_linear_transform): Removed.
+	(gate_tree_linear_transform): Removed.
+	(pass_linear_transform): Removed.
+	(gate_graphite_transforms): Make flag_tree_loop_linear an alias of
+	flag_loop_interchange.
+
+	* gfortran.dg/graphite/interchange-4.f: New.
+	* gfortran.dg/graphite/interchange-5.f: New.
+
+	* gcc.dg/tree-ssa/ltrans-1.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-2.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-3.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-4.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-5.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-6.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-8.c: Removed.
+	* gfortran.dg/ltrans-7.f90: Removed.
+	* gcc.dg/tree-ssa/data-dep-1.c: Removed.
+
+	* gcc.dg/pr18792.c: -> gcc.dg/graphite/pr18792.c
+	* gcc.dg/pr19910.c: -> gcc.dg/graphite/pr19910.c
+	* gcc.dg/tree-ssa/20041110-1.c: -> gcc.dg/graphite/pr20041110-1.c
+	* gcc.dg/tree-ssa/pr20256.c: -> gcc.dg/graphite/pr20256.c
+	* gcc.dg/pr23625.c: -> gcc.dg/graphite/pr23625.c
+	* gcc.dg/tree-ssa/pr23820.c: -> gcc.dg/graphite/pr23820.c
+	* gcc.dg/tree-ssa/pr24309.c: -> gcc.dg/graphite/pr24309.c
+	* gcc.dg/tree-ssa/pr26435.c: -> gcc.dg/graphite/pr26435.c
+	* gcc.dg/pr29330.c: -> gcc.dg/graphite/pr29330.c
+	* gcc.dg/pr29581-1.c: -> gcc.dg/graphite/pr29581-1.c
+	* gcc.dg/pr29581-2.c: -> gcc.dg/graphite/pr29581-2.c
+	* gcc.dg/pr29581-3.c: -> gcc.dg/graphite/pr29581-3.c
+	* gcc.dg/pr29581-4.c: -> gcc.dg/graphite/pr29581-4.c
+	* gcc.dg/tree-ssa/loop-27.c: -> gcc.dg/graphite/pr30565.c
+	* gcc.dg/tree-ssa/pr31183.c: -> gcc.dg/graphite/pr31183.c
+	* gcc.dg/tree-ssa/pr33576.c: -> gcc.dg/graphite/pr33576.c
+	* gcc.dg/tree-ssa/pr33766.c: -> gcc.dg/graphite/pr33766.c
+	* gcc.dg/pr34016.c: -> gcc.dg/graphite/pr34016.c
+	* gcc.dg/tree-ssa/pr34017.c: -> gcc.dg/graphite/pr34017.c
+	* gcc.dg/tree-ssa/pr34123.c: -> gcc.dg/graphite/pr34123.c
+	* gcc.dg/tree-ssa/pr36287.c: -> gcc.dg/graphite/pr36287.c
+	* gcc.dg/tree-ssa/pr37686.c: -> gcc.dg/graphite/pr37686.c
+	* gcc.dg/pr42917.c: -> gcc.dg/graphite/pr42917.c
+	* gcc.dg/tree-ssa/data-dep-1.c
+	* gfortran.dg/loop_nest_1.f90: -> gfortran.dg/graphite/pr29290.f90
+	* gfortran.dg/pr29581.f90: -> gfortran.dg/graphite/pr29581.f90
+	* gfortran.dg/pr36286.f90: -> gfortran.dg/graphite/pr36286.f90
+	* gfortran.dg/pr36922.f: -> gfortran.dg/graphite/pr36922.f
+	* gfortran.dg/pr39516.f: -> gfortran.dg/graphite/pr39516.f
+
+2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (close_phi_written_to_memory): Also allow
 	VAR_DECL, PARM_DECL, and RESULT_DECL.
 
