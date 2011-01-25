@@ -716,6 +716,20 @@ if_convertible_stmt_p (gimple stmt, VEC (data_reference_p, heap) *refs)
   return true;
 }
 
+/* Return true when BB post-dominates all its predecessors.  */
+
+static bool
+bb_postdominates_preds (basic_block bb)
+{
+  unsigned i;
+
+  for (i = 0; i < EDGE_COUNT (bb->preds); i++)
+    if (!dominated_by_p (CDI_POST_DOMINATORS, EDGE_PRED (bb, i)->src, bb))
+      return false;
+
+  return true;
+}
+
 /* Return true when BB is if-convertible.  This routine does not check
    basic block's statements and phis.
 
@@ -773,6 +787,11 @@ if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
 	  fprintf (dump_file, "Difficult to handle edges\n");
 	return false;
       }
+
+  if (EDGE_COUNT (bb->preds) == 2
+      && bb != loop->header
+      && !bb_postdominates_preds (bb))
+    return false;
 
   return true;
 }
@@ -992,6 +1011,7 @@ if_convertible_loop_p_1 (struct loop *loop,
     return false;
 
   calculate_dominance_info (CDI_DOMINATORS);
+  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   /* Allow statements that can be handled during if-conversion.  */
   ifc_bbs = get_loop_body_in_if_conv_order (loop);
@@ -1261,6 +1281,9 @@ predicate_scalar_phi (gimple phi, tree cond,
 	  arg_0 = gimple_phi_arg_def (phi, 0);
 	  arg_1 = gimple_phi_arg_def (phi, 1);
 	}
+
+      gcc_checking_assert (bb == bb->loop_father->header
+			   || bb_postdominates_preds (bb));
 
       /* Build new RHS using selected condition and arguments.  */
       rhs = build3 (COND_EXPR, TREE_TYPE (res),
