@@ -874,7 +874,10 @@ rx_function_value (const_tree ret_type,
 
   /* RX ABI specifies that small integer types are
      promoted to int when returned by a function.  */
-  if (GET_MODE_SIZE (mode) > 0 && GET_MODE_SIZE (mode) < 4)
+  if (GET_MODE_SIZE (mode) > 0
+      && GET_MODE_SIZE (mode) < 4
+      && ! COMPLEX_MODE_P (mode)
+      )
     return gen_rtx_REG (SImode, FUNC_RETURN_REGNUM);
     
   return gen_rtx_REG (mode, FUNC_RETURN_REGNUM);
@@ -892,6 +895,7 @@ rx_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 {
   if (for_return != 1
       || GET_MODE_SIZE (mode) >= 4
+      || COMPLEX_MODE_P (mode)
       || GET_MODE_SIZE (mode) < 1)
     return mode;
 
@@ -1324,7 +1328,10 @@ gen_safe_add (rtx dest, rtx src, rtx val, bool is_frame_related)
     insn = emit_insn (gen_addsi3 (dest, src, val));
   else
     {
-      insn = emit_insn (gen_addsi3_unspec (dest, src, val));
+      /* Wrap VAL in an UNSPEC so that rx_is_legitimate_constant
+	 will not reject it.  */
+      val = gen_rtx_CONST (SImode, gen_rtx_UNSPEC (SImode, gen_rtvec (1, val), UNSPEC_CONST));
+      insn = emit_insn (gen_addsi3 (dest, src, val));
 
       if (is_frame_related)
 	/* We have to provide our own frame related note here

@@ -1,3 +1,17 @@
+2011-01-25  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (LIBCALL_VALUE): Do not promote complex types.
+	* config/rx/rx.c (rx_function_value): Likewise.
+	(rx_promote_function_mode): Likewise.
+	(gen_safe_add): Place an outsized immediate value inside an UNSPEC
+	in order to make it legitimate.
+	* config/rx/rx.md (adddi3_internal): If the second operand is a
+	MEM make sure that the first operand is the same as the result
+	register.
+	(addsi3_unspec): Delete.
+	(subdi3): Do not accept immediate operands.
+	(subdi3_internal): Likewise.
+
 2011-01-25  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/37273
