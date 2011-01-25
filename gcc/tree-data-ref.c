@@ -820,13 +820,11 @@ dr_analyze_innermost (struct data_reference *dr)
 }
 
 /* Determines the base object and the list of indices of memory reference
-   DR, analyzed in loop nest NEST.  */
+   DR, analyzed in LOOP and instantiated in loop nest NEST.  */
 
 static void
-dr_analyze_indices (struct data_reference *dr, struct loop *nest)
+dr_analyze_indices (struct data_reference *dr, loop_p nest, loop_p loop)
 {
-  gimple stmt = DR_STMT (dr);
-  struct loop *loop = loop_containing_stmt (stmt);
   VEC (tree, heap) *access_fns = NULL;
   tree ref = unshare_expr (DR_REF (dr)), aref = ref, op;
   tree base, off, access_fn = NULL_TREE;
@@ -935,11 +933,13 @@ free_data_ref (data_reference_p dr)
 
 /* Analyzes memory reference MEMREF accessed in STMT.  The reference
    is read if IS_READ is true, write otherwise.  Returns the
-   data_reference description of MEMREF.  NEST is the outermost loop of the
-   loop nest in that the reference should be analyzed.  */
+   data_reference description of MEMREF.  NEST is the outermost loop
+   in which the reference should be instantiated, LOOP is the loop in
+   which the data reference should be analyzed.  */
 
 struct data_reference *
-create_data_ref (struct loop *nest, tree memref, gimple stmt, bool is_read)
+create_data_ref (loop_p nest, loop_p loop, tree memref, gimple stmt,
+		 bool is_read)
 {
   struct data_reference *dr;
 
@@ -956,7 +956,7 @@ create_data_ref (struct loop *nest, tree memref, gimple stmt, bool is_read)
   DR_IS_READ (dr) = is_read;
 
   dr_analyze_innermost (dr);
-  dr_analyze_indices (dr, nest);
+  dr_analyze_indices (dr, nest, loop);
   dr_analyze_alias (dr);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4079,7 +4079,8 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
 
   FOR_EACH_VEC_ELT (data_ref_loc, references, i, ref)
     {
-      dr = create_data_ref (nest, *ref->pos, stmt, ref->is_read);
+      dr = create_data_ref (nest, loop_containing_stmt (stmt),
+			    *ref->pos, stmt, ref->is_read);
       gcc_assert (dr != NULL);
 
       /* FIXME -- data dependence analysis does not work correctly for objects
@@ -4100,12 +4101,14 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
   return ret;
 }
 
-/* Stores the data references in STMT to DATAREFS.  If there is an unanalyzable
-   reference, returns false, otherwise returns true.  NEST is the outermost
-   loop of the loop nest in which the references should be analyzed.  */
+/* Stores the data references in STMT to DATAREFS.  If there is an
+   unanalyzable reference, returns false, otherwise returns true.
+   NEST is the outermost loop of the loop nest in which the references
+   should be instantiated, LOOP is the loop in which the references
+   should be analyzed.  */
 
 bool
-graphite_find_data_references_in_stmt (struct loop *nest, gimple stmt,
+graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple stmt,
 				       VEC (data_reference_p, heap) **datarefs)
 {
   unsigned i;
@@ -4122,7 +4125,7 @@ graphite_find_data_references_in_stmt (struct loop *nest, gimple stmt,
 
   FOR_EACH_VEC_ELT (data_ref_loc, references, i, ref)
     {
-      dr = create_data_ref (nest, *ref->pos, stmt, ref->is_read);
+      dr = create_data_ref (nest, loop, *ref->pos, stmt, ref->is_read);
       gcc_assert (dr != NULL);
       VEC_safe_push (data_reference_p, heap, *datarefs, dr);
     }

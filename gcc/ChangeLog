@@ -1,5 +1,24 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-scop-detection.c (stmt_has_simple_data_refs_p): Update
+	call to graphite_find_data_references_in_stmt.
+	* graphite-sese-to-poly.c (outermost_loop_in_sese_1): New.
+	(try_generate_gimple_bb): Call outermost_loop_in_sese_1.  Update
+	call to graphite_find_data_references_in_stmt.
+	(analyze_drs_in_stmts): Same.
+	* tree-data-ref.c (dr_analyze_indices): Pass in parameter the loop
+	in which the scalar analysis of indices is performed.
+	(create_data_ref): Same.  Update call to dr_analyze_indices.
+	(find_data_references_in_stmt): Update call to create_data_ref.
+	(graphite_find_data_references_in_stmt): Same.
+	* tree-data-ref.h (graphite_find_data_references_in_stmt): Update
+	declaration.
+	(create_data_ref): Same.
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Update
+	call to create_data_ref.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (build_poly_scop): Move
 	rewrite_commutative_reductions_out_of_ssa before
 	find_scop_parameters.

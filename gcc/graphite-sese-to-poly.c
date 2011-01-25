@@ -241,6 +241,32 @@ free_scops (VEC (scop_p, heap) *scops)
   VEC_free (scop_p, heap, scops);
 }
 
+/* Same as outermost_loop_in_sese, returns the outermost loop
+   containing BB in REGION, but makes sure that the returned loop
+   belongs to the REGION, and so this returns the first loop in the
+   REGION when the loop containing BB does not belong to REGION.  */
+
+static loop_p
+outermost_loop_in_sese_1 (sese region, basic_block bb)
+{
+  loop_p nest = outermost_loop_in_sese (region, bb);
+
+  if (loop_in_sese_p (nest, region))
+    return nest;
+
+  /* When the basic block BB does not belong to a loop in the region,
+     return the first loop in the region.  */
+  nest = nest->inner;
+  while (nest)
+    if (loop_in_sese_p (nest, region))
+      break;
+    else
+      nest = nest->next;
+
+  gcc_assert (nest);
+  return nest;
+}
+
 /* Generates a polyhedral black box only if the bb contains interesting
    information.  */
 
@@ -248,14 +274,23 @@ static gimple_bb_p
 try_generate_gimple_bb (scop_p scop, basic_block bb)
 {
   VEC (data_reference_p, heap) *drs = VEC_alloc (data_reference_p, heap, 5);
-  loop_p nest = outermost_loop_in_sese (SCOP_REGION (scop), bb);
+  sese region = SCOP_REGION (scop);
+  loop_p nest = outermost_loop_in_sese_1 (region, bb);
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
-      if (!is_gimple_debug (stmt))
-	graphite_find_data_references_in_stmt (nest, stmt, &drs);
+      loop_p loop;
+
+      if (is_gimple_debug (stmt))
+	continue;
+
+      loop = loop_containing_stmt (stmt);
+      if (!loop_in_sese_p (loop, region))
+	loop = nest;
+
+      graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
     }
 
   return new_gimple_bb (bb, drs);
@@ -2019,17 +2054,28 @@ analyze_drs_in_stmts (scop_p scop, basic_block bb, VEC (gimple, heap) *stmts)
   gimple_bb_p gbb;
   gimple stmt;
   int i;
+  sese region = SCOP_REGION (scop);
 
-  if (!bb_in_sese_p (bb, SCOP_REGION (scop)))
+  if (!bb_in_sese_p (bb, region))
     return;
 
-  nest = outermost_loop_in_sese (SCOP_REGION (scop), bb);
+  nest = outermost_loop_in_sese_1 (region, bb);
   gbb = gbb_from_bb (bb);
 
   FOR_EACH_VEC_ELT (gimple, stmts, i, stmt)
-    if (!is_gimple_debug (stmt))
-      graphite_find_data_references_in_stmt (nest, stmt,
+    {
+      loop_p loop;
+
+      if (is_gimple_debug (stmt))
+	continue;
+
+      loop = loop_containing_stmt (stmt);
+      if (!loop_in_sese_p (loop, region))
+	loop = nest;
+
+      graphite_find_data_references_in_stmt (nest, loop, stmt,
 					     &GBB_DATA_REFS (gbb));
+    }
 }
 
 /* Insert STMT at the end of the STMTS sequence and then insert the
