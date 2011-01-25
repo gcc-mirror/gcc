@@ -1,3 +1,10 @@
+2011-01-25  Ian Lance Taylor  <iant@google.com>
+
+	* lto-plugin.c (gold_version): New static variable.
+	(all_symbols_read_handler): Don't check pass_through_items if
+	using gold 1.11 or later.
+	(onload): Set gold_version if we see LDPT_GOLD_VERSION.
+
 2011-01-12  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/47264
