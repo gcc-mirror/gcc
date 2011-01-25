@@ -1,3 +1,9 @@
+2011-01-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/47414
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Use the
+	correct type for TBAA.
+
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (dr_indices_valid_in_loop): New.
