@@ -1,3 +1,9 @@
+2011-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47448
+	* interface.c (gfc_check_operator_interface): Fix
+	defined-assignment check.
+
 2011-01-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47421

@@ -1,3 +1,8 @@
+2011-01-25  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47448
+	* gfortran.dg/redefined_intrinsic_assignment_2.f90: New.
+
 2011-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47427

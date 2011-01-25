@@ -654,11 +654,12 @@ gfc_check_operator_interface (gfc_symbol *sym, gfc_intrinsic_op op,
 
       /* Allowed are (per F2003, 12.3.2.1.2 Defined assignments):
 	 - First argument an array with different rank than second,
-	 - Types and kinds do not conform, and
+	 - First argument is a scalar and second an array,
+	 - Types and kinds do not conform, or
 	 - First argument is of derived type.  */
       if (sym->formal->sym->ts.type != BT_DERIVED
 	  && sym->formal->sym->ts.type != BT_CLASS
-	  && (r1 == 0 || r1 == r2)
+	  && (r2 == 0 || r1 == r2)
 	  && (sym->formal->sym->ts.type == sym->formal->next->sym->ts.type
 	      || (gfc_numeric_ts (&sym->formal->sym->ts)
 		  && gfc_numeric_ts (&sym->formal->next->sym->ts))))
