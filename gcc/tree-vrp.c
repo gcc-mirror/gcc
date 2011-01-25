@@ -7290,6 +7290,7 @@ vrp_finalize (void)
   size_t i;
   prop_value_t *single_val_range;
   bool do_value_subst_p;
+  unsigned num = num_ssa_names;
 
   if (dump_file)
     {
@@ -7301,10 +7302,10 @@ vrp_finalize (void)
   /* We may have ended with ranges that have exactly one value.  Those
      values can be substituted as any other const propagated
      value using substitute_and_fold.  */
-  single_val_range = XCNEWVEC (prop_value_t, num_ssa_names);
+  single_val_range = XCNEWVEC (prop_value_t, num);
 
   do_value_subst_p = false;
-  for (i = 0; i < num_ssa_names; i++)
+  for (i = 0; i < num; i++)
     if (vr_value[i]
 	&& vr_value[i]->type == VR_RANGE
 	&& vr_value[i]->min == vr_value[i]->max
@@ -7332,7 +7333,7 @@ vrp_finalize (void)
   identify_jump_threads ();
 
   /* Free allocated memory.  */
-  for (i = 0; i < num_ssa_names; i++)
+  for (i = 0; i < num; i++)
     if (vr_value[i])
       {
 	BITMAP_FREE (vr_value[i]->equiv);
