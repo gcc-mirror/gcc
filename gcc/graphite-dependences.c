@@ -531,8 +531,7 @@ new_poly_ddr (poly_dr_p pdr1, poly_dr_p pdr2,
     PDDR_KIND (res) = unknown_dependence;
 
   else if (!(pdr_read_p (pdr1) && pdr_read_p (pdr2))
-	   && PDR_BASE_OBJECT_SET (pdr1) == PDR_BASE_OBJECT_SET (pdr2)
-	   && PDR_NB_SUBSCRIPTS (pdr1) == PDR_NB_SUBSCRIPTS (pdr2)
+	   && same_pdr_p (pdr1, pdr2)
 	   && may_alias)
     {
       PDDR_DDP (res) = dependence_polyhedron (pdr1, pdr2, direction,
