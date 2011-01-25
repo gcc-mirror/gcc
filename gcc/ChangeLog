@@ -1,3 +1,8 @@
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-ppl.c (debug_gmp_value): New.
+	* graphite-ppl.h (debug_gmp_value): Declared.
+
 2011-01-25  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* doc/install.texi: Document availability of cloog-0.16.
