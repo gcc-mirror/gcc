@@ -274,7 +274,7 @@ struct dump_file_info
 /* Insert PHI nodes everywhere they are needed.  No pruning of the
    IDF is done.  This is used by passes that need the PHI nodes for
    O_j even if it means that some arguments will come from the default
-   definition of O_j's symbol (e.g., pass_linear_transform).
+   definition of O_j's symbol.
 
    WARNING: If you need to use this flag, chances are that your pass
    may be doing something wrong.  Inserting PHI nodes for an old name
@@ -431,7 +431,6 @@ extern struct gimple_opt_pass pass_rename_ssa_copies;
 extern struct gimple_opt_pass pass_rest_of_compilation;
 extern struct gimple_opt_pass pass_sink_code;
 extern struct gimple_opt_pass pass_fre;
-extern struct gimple_opt_pass pass_linear_transform;
 extern struct gimple_opt_pass pass_check_data_deps;
 extern struct gimple_opt_pass pass_copy_prop;
 extern struct gimple_opt_pass pass_vrp;

@@ -966,8 +966,7 @@ DIAGNOSTIC_H = diagnostic.h $(DIAGNOSTIC_CORE_H) $(PRETTY_PRINT_H)
 C_PRETTY_PRINT_H = c-family/c-pretty-print.h $(PRETTY_PRINT_H) \
 	$(C_COMMON_H) $(TREE_H)
 SCEV_H = tree-scalar-evolution.h $(GGC_H) tree-chrec.h $(PARAMS_H)
-LAMBDA_H = lambda.h $(TREE_H) $(VEC_H) $(GGC_H)
-TREE_DATA_REF_H = tree-data-ref.h $(LAMBDA_H) omega.h graphds.h $(SCEV_H)
+TREE_DATA_REF_H = tree-data-ref.h omega.h graphds.h $(SCEV_H)
 TREE_INLINE_H = tree-inline.h vecir.h
 REAL_H = real.h $(MACHMODE_H)
 IRA_INT_H = ira.h ira-int.h $(CFGLOOP_H) alloc-pool.h
@@ -1279,9 +1278,6 @@ OBJS-common = \
 	ira-emit.o \
 	ira-lives.o \
 	jump.o \
-	lambda-code.o \
-	lambda-mat.o \
-	lambda-trans.o \
 	langhooks.o \
 	lcm.o \
 	lists.o \
@@ -1379,7 +1375,6 @@ OBJS-common = \
 	tree-into-ssa.o \
 	tree-iterator.o \
 	tree-loop-distribution.o \
-	tree-loop-linear.o \
 	tree-nested.o \
 	tree-nrv.o \
 	tree-object-size.o \
@@ -2331,7 +2326,7 @@ lto-section-out.o : lto-section-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) $(EXCEPT_H) pointer-set.h \
    $(BITMAP_H) langhooks.h $(LTO_STREAMER_H) lto-compress.h
 lto-symtab.o: lto-symtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_H) $(GIMPLE_H) $(GGC_H) $(LAMBDA_H) $(HASHTAB_H) \
+   $(TREE_H) $(GIMPLE_H) $(GGC_H) $(HASHTAB_H) \
    $(LTO_STREAMER_H) $(LINKER_PLUGIN_API_H) gt-lto-symtab.h
 lto-opts.o: lto-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
    $(HASHTAB_H) $(GGC_H) $(BITMAP_H) $(FLAGS_H) $(OPTS_H) $(OPTIONS_H) \
@@ -2711,7 +2706,7 @@ tree-vect-loop.o: tree-vect-loop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) \
    $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) $(EXPR_H) $(RECOG_H) $(OPTABS_H) \
    $(DIAGNOSTIC_CORE_H) $(SCEV_H) $(TREE_VECTORIZER_H) tree-pretty-print.h \
-   gimple-pretty-print.h $(TARGET_H)
+   gimple-pretty-print.h $(TARGET_H) $(TREE_DATA_REF_H)
 tree-vect-loop-manip.o: tree-vect-loop-manip.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) $(EXPR_H) $(DIAGNOSTIC_CORE_H) \
@@ -2726,7 +2721,7 @@ tree-vect-slp.o: tree-vect-slp.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) \
    $(EXPR_H) $(RECOG_H) $(OPTABS_H) $(TREE_VECTORIZER_H) tree-pretty-print.h \
-   gimple-pretty-print.h
+   gimple-pretty-print.h $(TREE_DATA_REF_H)
 tree-vect-stmts.o: tree-vect-stmts.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(CFGLAYOUT_H) \
@@ -2742,8 +2737,6 @@ tree-vectorizer.o: tree-vectorizer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
    $(CFGLOOP_H) $(TREE_PASS_H) $(TREE_VECTORIZER_H) $(TIMEVAR_H) \
    tree-pretty-print.h
-tree-loop-linear.o: tree-loop-linear.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(TREE_PASS_H) $(LAMBDA_H)
 tree-loop-distribution.o: tree-loop-distribution.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(TREE_PASS_H)
 tree-parloops.o: tree-parloops.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -3462,12 +3455,6 @@ ifcvt.o : ifcvt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TARGET_H) $(BASIC_BLOCK_H) $(EXPR_H) output.h $(EXCEPT_H) $(TM_P_H) \
    $(OPTABS_H) $(CFGLOOP_H) hard-reg-set.h $(TIMEVAR_H) \
    $(TREE_PASS_H) $(DF_H) $(DBGCNT_H)
-lambda-mat.o : lambda-mat.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_FLOW_H) \
-   $(LAMBDA_H)
-lambda-trans.o : lambda-trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_FLOW_H) $(LAMBDA_H)
-lambda-code.o : lambda-code.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(LAMBDA_H) $(TREE_PASS_H)
 params.o : params.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(PARAMS_H) \
    $(DIAGNOSTIC_CORE_H)
 pointer-set.o: pointer-set.c pointer-set.h $(CONFIG_H) $(SYSTEM_H)

@@ -340,6 +340,18 @@ print_dir_vectors (FILE *outf, VEC (lambda_vector, heap) *dir_vects,
     print_direction_vector (outf, v, length);
 }
 
+/* Print out a vector VEC of length N to OUTFILE.  */
+
+static inline void
+print_lambda_vector (FILE * outfile, lambda_vector vector, int n)
+{
+  int i;
+
+  for (i = 0; i < n; i++)
+    fprintf (outfile, "%3d ", vector[i]);
+  fprintf (outfile, "\n");
+}
+
 /* Print a vector of distance vectors.  */
 
 void
@@ -2062,6 +2074,168 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
   affine_fn_free (overlaps_b_yz);
   affine_fn_free (overlaps_a_xyz);
   affine_fn_free (overlaps_b_xyz);
+}
+
+/* Copy the elements of vector VEC1 with length SIZE to VEC2.  */
+
+static void
+lambda_vector_copy (lambda_vector vec1, lambda_vector vec2,
+		    int size)
+{
+  memcpy (vec2, vec1, size * sizeof (*vec1));
+}
+
+/* Copy the elements of M x N matrix MAT1 to MAT2.  */
+
+static void
+lambda_matrix_copy (lambda_matrix mat1, lambda_matrix mat2,
+		    int m, int n)
+{
+  int i;
+
+  for (i = 0; i < m; i++)
+    lambda_vector_copy (mat1[i], mat2[i], n);
+}
+
+/* Store the N x N identity matrix in MAT.  */
+
+static void
+lambda_matrix_id (lambda_matrix mat, int size)
+{
+  int i, j;
+
+  for (i = 0; i < size; i++)
+    for (j = 0; j < size; j++)
+      mat[i][j] = (i == j) ? 1 : 0;
+}
+
+/* Return the first nonzero element of vector VEC1 between START and N.
+   We must have START <= N.   Returns N if VEC1 is the zero vector.  */
+
+static int
+lambda_vector_first_nz (lambda_vector vec1, int n, int start)
+{
+  int j = start;
+  while (j < n && vec1[j] == 0)
+    j++;
+  return j;
+}
+
+/* Add a multiple of row R1 of matrix MAT with N columns to row R2:
+   R2 = R2 + CONST1 * R1.  */
+
+static void
+lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2, int const1)
+{
+  int i;
+
+  if (const1 == 0)
+    return;
+
+  for (i = 0; i < n; i++)
+    mat[r2][i] += const1 * mat[r1][i];
+}
+
+/* Swap rows R1 and R2 in matrix MAT.  */
+
+static void
+lambda_matrix_row_exchange (lambda_matrix mat, int r1, int r2)
+{
+  lambda_vector row;
+
+  row = mat[r1];
+  mat[r1] = mat[r2];
+  mat[r2] = row;
+}
+
+/* Multiply vector VEC1 of length SIZE by a constant CONST1,
+   and store the result in VEC2.  */
+
+static void
+lambda_vector_mult_const (lambda_vector vec1, lambda_vector vec2,
+			  int size, int const1)
+{
+  int i;
+
+  if (const1 == 0)
+    lambda_vector_clear (vec2, size);
+  else
+    for (i = 0; i < size; i++)
+      vec2[i] = const1 * vec1[i];
+}
+
+/* Negate vector VEC1 with length SIZE and store it in VEC2.  */
+
+static void
+lambda_vector_negate (lambda_vector vec1, lambda_vector vec2,
+		      int size)
+{
+  lambda_vector_mult_const (vec1, vec2, size, -1);
+}
+
+/* Negate row R1 of matrix MAT which has N columns.  */
+
+static void
+lambda_matrix_row_negate (lambda_matrix mat, int n, int r1)
+{
+  lambda_vector_negate (mat[r1], mat[r1], n);
+}
+
+/* Return true if two vectors are equal.  */
+
+static bool
+lambda_vector_equal (lambda_vector vec1, lambda_vector vec2, int size)
+{
+  int i;
+  for (i = 0; i < size; i++)
+    if (vec1[i] != vec2[i])
+      return false;
+  return true;
+}
+
+/* Given an M x N integer matrix A, this function determines an M x
+   M unimodular matrix U, and an M x N echelon matrix S such that
+   "U.A = S".  This decomposition is also known as "right Hermite".
+
+   Ref: Algorithm 2.1 page 33 in "Loop Transformations for
+   Restructuring Compilers" Utpal Banerjee.  */
+
+static void
+lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
+			     lambda_matrix S, lambda_matrix U)
+{
+  int i, j, i0 = 0;
+
+  lambda_matrix_copy (A, S, m, n);
+  lambda_matrix_id (U, m);
+
+  for (j = 0; j < n; j++)
+    {
+      if (lambda_vector_first_nz (S[j], m, i0) < m)
+	{
+	  ++i0;
+	  for (i = m - 1; i >= i0; i--)
+	    {
+	      while (S[i][j] != 0)
+		{
+		  int sigma, factor, a, b;
+
+		  a = S[i-1][j];
+		  b = S[i][j];
+		  sigma = (a * b < 0) ? -1: 1;
+		  a = abs (a);
+		  b = abs (b);
+		  factor = sigma * (a / b);
+
+		  lambda_matrix_row_add (S, n, i, i-1, -factor);
+		  lambda_matrix_row_exchange (S, i, i-1);
+
+		  lambda_matrix_row_add (U, m, i, i-1, -factor);
+		  lambda_matrix_row_exchange (U, i, i-1);
+		}
+	    }
+	}
+    }
 }
 
 /* Determines the overlapping elements due to accesses CHREC_A and

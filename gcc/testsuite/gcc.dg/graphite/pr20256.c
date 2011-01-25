@@ -1,5 +1,5 @@
-/* { dg-do compile } */ 
-/* { dg-options "-O2 -ftree-loop-linear -fdump-tree-ltrans-all" } */
+/* { dg-do compile } */
+/* { dg-options "-O2 -ftree-loop-linear" } */
 /* { dg-require-effective-target size32plus } */
 
 int foo()
@@ -20,6 +20,3 @@ int foo()
 
   return s;
 }
-
-/* { dg-final { scan-tree-dump-times "converted loop nest to perfect loop nest" 0 "ltrans"} } */ 
-/* { dg-final { cleanup-tree-dump "ltrans" } } */

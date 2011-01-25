@@ -1,3 +1,7 @@
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* MAINTAINERS (linear loop transforms): Removed.
+
 2011-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/cloog.m4 (CLOOG_REQUESTED): Use $2 if --without-cloog.
