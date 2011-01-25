@@ -1,5 +1,11 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (build_poly_scop): Move
+	rewrite_commutative_reductions_out_of_ssa before
+	find_scop_parameters.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (close_phi_written_to_memory): Also allow
 	VAR_DECL, PARM_DECL, and RESULT_DECL.
 
