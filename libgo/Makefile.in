@@ -3838,7 +3838,7 @@ bufio/check: $(CHECK_DEPS)
 bytes/libbytes.a: $(go_bytes_files) $(go_bytes_c_files) io.gox os.gox \
 		unicode.gox utf8.gox
 	test -d bytes || $(MKDIR_P) bytes
-	$(LTGOCOMPILE) -c -o bytes/bytes.$(OBJEXT) -fgo-prefix=libgo_bytes $(srcdir)/go/bytes/buffer.go $(srcdir)/go/bytes/bytes.go $(srcdir)/go/bytes/bytes_decl.go
+	$(LTGOCOMPILE) -I . -c -o bytes/bytes.$(OBJEXT) -fgo-prefix=libgo_bytes $(srcdir)/go/bytes/buffer.go $(srcdir)/go/bytes/bytes.go $(srcdir)/go/bytes/bytes_decl.go
 	$(LTCOMPILE) -c -o bytes/index.$(OBJEXT) $(srcdir)/go/bytes/indexbyte.c
 	rm -f $@
 	$(AR) rc $@ bytes/bytes.$(OBJEXT) bytes/index.$(OBJEXT)
@@ -4093,7 +4093,7 @@ strings/check: $(CHECK_DEPS)
 
 sync/libsync.a: $(go_sync_files) $(go_sync_c_files) runtime.gox
 	test -d sync || $(MKDIR_P) sync
-	$(LTGOCOMPILE) -c -o sync/mutex.$(OBJEXT) -fgo-prefix=libgo_sync $(srcdir)/go/sync/mutex.go $(srcdir)/go/sync/once.go $(srcdir)/go/sync/rwmutex.go
+	$(LTGOCOMPILE) -I . -c -o sync/mutex.$(OBJEXT) -fgo-prefix=libgo_sync $(srcdir)/go/sync/mutex.go $(srcdir)/go/sync/once.go $(srcdir)/go/sync/rwmutex.go
 	$(LTCOMPILE) -c -o sync/cas.$(OBJEXT) $(srcdir)/go/sync/cas.c
 	rm -f $@
 	$(AR) rc $@ sync/mutex.$(OBJEXT) sync/cas.$(OBJEXT)
@@ -4869,7 +4869,7 @@ syscalls/libsyscall.a: $(go_syscall_files) $(go_syscall_c_files) sync.gox
 	rm -f syscall.gox syscalls/libsyscall.a
 	test -d syscalls || $(MKDIR_P) syscalls
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g' -e's/[^ ]*\.c//g'`; \
-	$(LTGOCOMPILE) -c -fgo-prefix="libgo_syscalls" -o syscalls/syscall.$(OBJEXT) $$files
+	$(LTGOCOMPILE) -I . -c -fgo-prefix="libgo_syscalls" -o syscalls/syscall.$(OBJEXT) $$files
 	$(LTCOMPILE) -c -o syscalls/errno.$(OBJEXT) $(srcdir)/syscalls/errno.c
 	$(AR) rc syscalls/libsyscall.a syscalls/syscall.$(OBJEXT) syscalls/errno.$(OBJEXT)
 syscalls/libsyscall.la: syscalls/libsyscall.a
