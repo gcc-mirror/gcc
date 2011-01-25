@@ -1,3 +1,10 @@
+2011-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47265
+	PR tree-optimization/47443
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Return false
+	if name still has some uses.
+
 2011-01-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/47382
