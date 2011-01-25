@@ -571,10 +571,11 @@ reduction_dr_1 (poly_bb_p pbb1, poly_dr_p pdr1, poly_dr_p pdr2)
   poly_dr_p pdr;
 
   FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), i, pdr)
-    if (PDR_TYPE (pdr) == PDR_WRITE)
-      break;
+    if (PDR_TYPE (pdr) == PDR_WRITE
+	&& same_pdr_p (pdr, pdr1) && same_pdr_p (pdr, pdr2))
+      return true;
 
-  return same_pdr_p (pdr, pdr1) && same_pdr_p (pdr, pdr2);
+  return false;
 }
 
 /* Return true when the data dependence relation between the data
