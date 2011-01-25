@@ -2968,7 +2968,10 @@ close_phi_written_to_memory (gimple close_phi)
 	&& gimple_code (stmt) == GIMPLE_ASSIGN
 	&& (res = gimple_assign_lhs (stmt))
 	&& (TREE_CODE (res) == ARRAY_REF
-	    || TREE_CODE (res) == MEM_REF))
+	    || TREE_CODE (res) == MEM_REF
+	    || TREE_CODE (res) == VAR_DECL
+	    || TREE_CODE (res) == PARM_DECL
+	    || TREE_CODE (res) == RESULT_DECL))
       return res;
 
   return NULL_TREE;
