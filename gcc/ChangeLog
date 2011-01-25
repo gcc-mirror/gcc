@@ -1,5 +1,24 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c: Include graphite-cloog-util.h.
+	(new_poly_ddr): Inlined into dependence_polyhedron.
+	(free_poly_ddr): Moved close by new_poly_ddr.
+	(dependence_polyhedron_1): Renamed dependence_polyhedron.
+	Early return NULL when ppl_powerset_is_empty returns true.
+	(dependence_polyhedron): Renamed new_poly_ddr.  Call only once
+	poly_drs_may_alias_p.  Avoid one call to ppl_powerset_is_empty.
+	(graphite_legal_transform_dr): Call new_poly_ddr.
+	(graphite_carried_dependence_level_k): Same.
+	(dot_original_deps_stmt_1): Renamed dot_deps_stmt_2.  Use new_poly_ddr.
+	(dot_transformed_deps_stmt_1): Removed.
+	(dot_deps_stmt_1): Call dot_deps_stmt_2.
+	(dot_original_deps): Renamed dot_deps_2.  Call new_poly_ddr.
+	(dot_deps_1): Call dot_deps_2.
+	* Makefile.in (graphite-dependences.o): Add missing dependence on
+	graphite-cloog-util.h.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (new_poly_dr): Call ppl_powerset_is_empty.
 	(build_lexicographical_constraint): Same.
 	(dependence_polyhedron_1): Same.

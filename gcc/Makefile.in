@@ -2686,7 +2686,8 @@ graphite-cloog-util.o : graphite-cloog-util.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h graphite-cloog-util.h graphite-cloog-compat.h
 graphite-dependences.o : graphite-dependences.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
-   sese.h graphite-ppl.h graphite-poly.h graphite-dependences.h
+   sese.h graphite-ppl.h graphite-poly.h graphite-dependences.h \
+   graphite-cloog-util.h
 graphite-flattening.o : graphite-flattening.c $(CONFIG_H) $(SYSTEM_H)	\
    coretypes.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) \
    sese.h graphite-ppl.h graphite-poly.h

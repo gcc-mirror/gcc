@@ -35,43 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-ppl.h"
 #include "graphite-poly.h"
 #include "graphite-dependences.h"
-
-/* Returns a new polyhedral Data Dependence Relation (DDR).  SOURCE is
-   the source data reference, SINK is the sink data reference.  When
-   the Data Dependence Polyhedron DDP is not NULL or not empty, SOURCE
-   and SINK are in dependence as described by DDP.  */
-
-static poly_ddr_p
-new_poly_ddr (poly_dr_p source, poly_dr_p sink,
-	      ppl_Pointset_Powerset_C_Polyhedron_t ddp,
-	      bool original_scattering_p)
-{
-  poly_ddr_p pddr = XNEW (struct poly_ddr);
-
-  PDDR_SOURCE (pddr) = source;
-  PDDR_SINK (pddr) = sink;
-  PDDR_DDP (pddr) = ddp;
-  PDDR_ORIGINAL_SCATTERING_P (pddr) = original_scattering_p;
-
-  if (!ddp
-      || ppl_powerset_is_empty (ddp,
-				scop_nb_params (PBB_SCOP (PDR_PBB (source)))))
-    PDDR_KIND (pddr) = no_dependence;
-  else
-    PDDR_KIND (pddr) = has_dependence;
-
-  return pddr;
-}
-
-/* Free the poly_ddr_p P.  */
-
-void
-free_poly_ddr (void *p)
-{
-  poly_ddr_p pddr = (poly_ddr_p) p;
-  ppl_delete_Pointset_Powerset_C_Polyhedron (PDDR_DDP (pddr));
-  free (pddr);
-}
+#include "graphite-cloog-util.h"
 
 /* Comparison function for poly_ddr hash table.  */
 
@@ -458,8 +422,8 @@ build_lexicographical_constraint (ppl_Pointset_Powerset_C_Polyhedron_t bag,
    relation, from PDR2 to PDR1.  */
 
 static ppl_Pointset_Powerset_C_Polyhedron_t
-dependence_polyhedron_1 (poly_dr_p pdr1, poly_dr_p pdr2,
-		         int direction, bool original_scattering_p)
+dependence_polyhedron (poly_dr_p pdr1, poly_dr_p pdr2,
+		       int direction, bool original_scattering_p)
 {
   poly_bb_p pbb1 = PDR_PBB (pdr1);
   poly_bb_p pbb2 = PDR_PBB (pdr2);
@@ -479,6 +443,7 @@ dependence_polyhedron_1 (poly_dr_p pdr1, poly_dr_p pdr2,
   ppl_Pointset_Powerset_C_Polyhedron_t res;
   ppl_Pointset_Powerset_C_Polyhedron_t idr1, idr2;
   ppl_Pointset_Powerset_C_Polyhedron_t sc1, sc2, dreq;
+  ppl_Pointset_Powerset_C_Polyhedron_t lex;
 
   gcc_assert (PBB_SCOP (pbb1) == PBB_SCOP (pbb2));
 
@@ -512,16 +477,14 @@ dependence_polyhedron_1 (poly_dr_p pdr1, poly_dr_p pdr2,
   ppl_delete_Pointset_Powerset_C_Polyhedron (idr2);
   ppl_delete_Pointset_Powerset_C_Polyhedron (dreq);
 
-  if (!ppl_powerset_is_empty (res, gdim))
-    {
-      ppl_Pointset_Powerset_C_Polyhedron_t lex =
-	build_lexicographical_constraint (res, dim, MIN (tdim1, tdim2),
-					  tdim1 + ddim1, gdim, direction);
-      ppl_delete_Pointset_Powerset_C_Polyhedron (res);
-      res = lex;
-    }
+  if (ppl_powerset_is_empty (res, gdim))
+    return NULL;
 
-  return res;
+  lex = build_lexicographical_constraint (res, dim, MIN (tdim1, tdim2),
+					  tdim1 + ddim1, gdim, direction);
+  ppl_delete_Pointset_Powerset_C_Polyhedron (res);
+
+  return lex;
 }
 
 /* Build the dependence polyhedron for data references PDR1 and PDR2.
@@ -532,12 +495,12 @@ dependence_polyhedron_1 (poly_dr_p pdr1, poly_dr_p pdr2,
    relation, from PDR2 to PDR1.  */
 
 static poly_ddr_p
-dependence_polyhedron (poly_dr_p pdr1, poly_dr_p pdr2,
-		       int direction, bool original_scattering_p)
+new_poly_ddr (poly_dr_p pdr1, poly_dr_p pdr2,
+	      int direction, bool original_scattering_p)
 {
   PTR *x = NULL;
   poly_ddr_p res;
-  ppl_Pointset_Powerset_C_Polyhedron_t ddp;
+  bool may_alias;
 
   /* Return the PDDR from the cache if it already has been computed.  */
   if (original_scattering_p)
@@ -554,26 +517,49 @@ dependence_polyhedron (poly_dr_p pdr1, poly_dr_p pdr2,
 	return (poly_ddr_p) *x;
     }
 
-  if ((pdr_read_p (pdr1) && pdr_read_p (pdr2))
-      || PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
-      || PDR_NB_SUBSCRIPTS (pdr1) != PDR_NB_SUBSCRIPTS (pdr2)
-      || !poly_drs_may_alias_p (pdr1, pdr2))
-    ddp = NULL;
-  else
-    ddp = dependence_polyhedron_1 (pdr1, pdr2, direction,
-				   original_scattering_p);
+  res = XNEW (struct poly_ddr);
+  PDDR_SOURCE (res) = pdr1;
+  PDDR_SINK (res) = pdr2;
+  PDDR_DDP (res) = NULL;
+  PDDR_ORIGINAL_SCATTERING_P (res) = original_scattering_p;
+  PDDR_KIND (res) = unknown_dependence;
 
-  res = new_poly_ddr (pdr1, pdr2, ddp, original_scattering_p);
+  may_alias = poly_drs_may_alias_p (pdr1, pdr2);
 
   if (!(pdr_read_p (pdr1) && pdr_read_p (pdr2))
       && PDR_BASE_OBJECT_SET (pdr1) != PDR_BASE_OBJECT_SET (pdr2)
-      && poly_drs_may_alias_p (pdr1, pdr2))
+      && may_alias)
     PDDR_KIND (res) = unknown_dependence;
+
+  else if (!(pdr_read_p (pdr1) && pdr_read_p (pdr2))
+	   && PDR_BASE_OBJECT_SET (pdr1) == PDR_BASE_OBJECT_SET (pdr2)
+	   && PDR_NB_SUBSCRIPTS (pdr1) == PDR_NB_SUBSCRIPTS (pdr2)
+	   && may_alias)
+    {
+      PDDR_DDP (res) = dependence_polyhedron (pdr1, pdr2, direction,
+					      original_scattering_p);
+      if (PDDR_DDP (res))
+	PDDR_KIND (res) = has_dependence;
+      else
+	PDDR_KIND (res) = no_dependence;
+    }
+  else
+    PDDR_KIND (res) = no_dependence;
 
   if (original_scattering_p)
     *x = res;
 
   return res;
+}
+
+/* Free the data dependence relation poly_ddr_p P.  */
+
+void
+free_poly_ddr (void *p)
+{
+  poly_ddr_p pddr = (poly_ddr_p) p;
+  ppl_delete_Pointset_Powerset_C_Polyhedron (PDDR_DDP (pddr));
+  free (pddr);
 }
 
 /* Return true when the data dependence relation between the data
@@ -635,7 +621,7 @@ graphite_legal_transform_dr (poly_dr_p pdr1, poly_dr_p pdr2)
      we get an empty intersection when the transform is legal:
      i.e. the transform should reverse no dependences, and so PT, the
      reversed transformed PDDR, should have no constraint from PO.  */
-  opddr = dependence_polyhedron (pdr1, pdr2, 1, true);
+  opddr = new_poly_ddr (pdr1, pdr2, 1, true);
 
   if (PDDR_KIND (opddr) == unknown_dependence)
     return false;
@@ -646,7 +632,7 @@ graphite_legal_transform_dr (poly_dr_p pdr1, poly_dr_p pdr2)
   if (pddr_is_empty (opddr))
     return true;
 
-  tpddr = dependence_polyhedron (pdr1, pdr2, -1, false);
+  tpddr = new_poly_ddr (pdr1, pdr2, -1, false);
 
   if (PDDR_KIND (tpddr) == unknown_dependence)
     {
@@ -768,7 +754,7 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
   graphite_dim_t ddim1 = pbb_dim_iter_domain (PDR_PBB (pdr1));
   ppl_dimension_type dim;
   bool empty_p;
-  poly_ddr_p pddr = dependence_polyhedron (pdr1, pdr2, 1, false);
+  poly_ddr_p pddr = new_poly_ddr (pdr1, pdr2, 1, false);
 
   if (PDDR_KIND (pddr) == unknown_dependence)
     {
@@ -818,36 +804,12 @@ dependency_between_pbbs_p (poly_bb_p pbb1, poly_bb_p pbb2, int level)
   return false;
 }
 
-/* Pretty print to FILE all the original data dependences of SCoP in
-   DOT format.  */
+/* When ORIG is true, pretty print to FILE all the original data
+   dependences of SCoP in DOT format, otherwise print the transformed
+   data deps.  */
 
 static void
-dot_original_deps_stmt_1 (FILE *file, scop_p scop)
-{
-  int i, j, k, l;
-  poly_bb_p pbb1, pbb2;
-  poly_dr_p pdr1, pdr2;
-
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
-    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
-      {
-	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
-	  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
-	    if (!pddr_is_empty (dependence_polyhedron (pdr1, pdr2, 1, true)))
-	      {
-		fprintf (file, "OS%d -> OS%d\n",
-			 pbb_index (pbb1), pbb_index (pbb2));
-		goto done;
-	      }
-      done:;
-      }
-}
-
-/* Pretty print to FILE all the transformed data dependences of SCoP in
-   DOT format.  */
-
-static void
-dot_transformed_deps_stmt_1 (FILE *file, scop_p scop)
+dot_deps_stmt_2 (FILE *file, scop_p scop, bool orig)
 {
   int i, j, k, l;
   poly_bb_p pbb1, pbb2;
@@ -859,11 +821,11 @@ dot_transformed_deps_stmt_1 (FILE *file, scop_p scop)
 	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
 	  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
 	    {
-	      poly_ddr_p pddr = dependence_polyhedron (pdr1, pdr2, 1, false);
+	      poly_ddr_p pddr = new_poly_ddr (pdr1, pdr2, 1, orig);
 
 	      if (!pddr_is_empty (pddr))
 		{
-		  fprintf (file, "TS%d -> TS%d\n",
+		  fprintf (file, orig ? "OS%d -> OS%d\n" : "TS%d -> TS%d\n",
 			   pbb_index (pbb1), pbb_index (pbb2));
 
 		  free_poly_ddr (pddr);
@@ -876,7 +838,6 @@ dot_transformed_deps_stmt_1 (FILE *file, scop_p scop)
       }
 }
 
-
 /* Pretty print to FILE all the data dependences of SCoP in DOT
    format.  */
 
@@ -885,17 +846,18 @@ dot_deps_stmt_1 (FILE *file, scop_p scop)
 {
   fputs ("digraph all {\n", file);
 
-  dot_original_deps_stmt_1 (file, scop);
-  dot_transformed_deps_stmt_1 (file, scop);
+  dot_deps_stmt_2 (file, scop, true);
+  dot_deps_stmt_2 (file, scop, false);
 
   fputs ("}\n\n", file);
 }
 
-/* Pretty print to FILE all the original data dependences of SCoP in
-   DOT format.  */
+/* When ORIG is true, pretty print to FILE all the original data
+   dependences of SCoP in DOT format, otherwise print the transformed
+   data deps.  */
 
 static void
-dot_original_deps (FILE *file, scop_p scop)
+dot_deps_2 (FILE *file, scop_p scop, bool orig)
 {
   int i, j, k, l;
   poly_bb_p pbb1, pbb2;
@@ -905,31 +867,12 @@ dot_original_deps (FILE *file, scop_p scop)
     FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
       FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
 	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
-	  if (!pddr_is_empty (dependence_polyhedron (pdr1, pdr2, 1, true)))
-	    fprintf (file, "OS%d_D%d -> OS%d_D%d\n",
-		     pbb_index (pbb1), PDR_ID (pdr1),
-		     pbb_index (pbb2), PDR_ID (pdr2));
-}
-
-/* Pretty print to FILE all the transformed data dependences of SCoP in
-   DOT format.  */
-
-static void
-dot_transformed_deps (FILE *file, scop_p scop)
-{
-  int i, j, k, l;
-  poly_bb_p pbb1, pbb2;
-  poly_dr_p pdr1, pdr2;
-
-  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
-    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
-      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
-	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
-	  {
-	    poly_ddr_p pddr = dependence_polyhedron (pdr1, pdr2, 1, false);
+          {
+	    poly_ddr_p pddr = new_poly_ddr (pdr1, pdr2, 1, orig);
 
 	    if (!pddr_is_empty (pddr))
-	      fprintf (file, "TS%d_D%d -> TS%d_D%d\n",
+	      fprintf (file, orig
+		       ? "OS%d_D%d -> OS%d_D%d\n" : "TS%d_D%d -> TS%d_D%d\n",
 		       pbb_index (pbb1), PDR_ID (pdr1),
 		       pbb_index (pbb2), PDR_ID (pdr2));
 
@@ -945,8 +888,8 @@ dot_deps_1 (FILE *file, scop_p scop)
 {
   fputs ("digraph all {\n", file);
 
-  dot_original_deps (file, scop);
-  dot_transformed_deps (file, scop);
+  dot_deps_2 (file, scop, true);
+  dot_deps_2 (file, scop, false);
 
   fputs ("}\n\n", file);
 }
