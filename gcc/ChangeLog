@@ -1,3 +1,9 @@
+2011-01-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/invoke.texi (Warning Options): Add missing hyphen.
+	(-fprofile-dir): Minor grammatical fixes.
+	(-fbranch-probabilities): Likewise.
+
 2011-01-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/45136
