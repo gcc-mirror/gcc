@@ -181,24 +181,6 @@ omega_no_procedure (omega_pb pb ATTRIBUTE_UNUSED)
 
 void (*omega_when_reduced) (omega_pb) = omega_no_procedure;
 
-/* Compute the greatest common divisor of A and B.  */
-
-static inline int
-gcd (int b, int a)
-{
-  if (b == 1)
-    return 1;
-
-  while (b != 0)
-    {
-      int t = b;
-      b = a % b;
-      a = t;
-    }
-
-  return a;
-}
-
 /* Print to FILE from PB equation E with all its coefficients
    multiplied by C.  */
 

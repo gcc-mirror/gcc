@@ -246,45 +246,6 @@ struct gimple_opt_pass pass_vectorize =
  }
 };
 
-/* Loop nest optimizations.  */
-
-static unsigned int
-tree_linear_transform (void)
-{
-  if (number_of_loops () <= 1)
-    return 0;
-
-  linear_transform_loops ();
-  return 0;
-}
-
-static bool
-gate_tree_linear_transform (void)
-{
-  return flag_tree_loop_linear != 0;
-}
-
-struct gimple_opt_pass pass_linear_transform =
-{
- {
-  GIMPLE_PASS,
-  "ltrans",				/* name */
-  gate_tree_linear_transform,		/* gate */
-  tree_linear_transform,       		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_LINEAR_TRANSFORM,  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_func
-    | TODO_update_ssa_only_virtuals
-    | TODO_ggc_collect			/* todo_flags_finish */
- }
-};
-
 /* GRAPHITE optimizations.  */
 
 static unsigned int
@@ -305,11 +266,16 @@ gate_graphite_transforms (void)
      is turned on.  */
   if (flag_loop_block
       || flag_loop_interchange
+      || flag_tree_loop_linear
       || flag_loop_strip_mine
       || flag_graphite_identity
       || flag_loop_parallelize_all
       || flag_loop_flatten)
     flag_graphite = 1;
+
+  /* Make flag_tree_loop_linear an alias of flag_loop_interchange.  */
+  if (flag_tree_loop_linear)
+    flag_loop_interchange = flag_tree_loop_linear;
 
   return flag_graphite != 0;
 }

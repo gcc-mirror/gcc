@@ -887,7 +887,6 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_record_bounds);
 	  NEXT_PASS (pass_check_data_deps);
 	  NEXT_PASS (pass_loop_distribution);
-	  NEXT_PASS (pass_linear_transform);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_graphite);
 	    {

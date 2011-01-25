@@ -228,4 +228,33 @@ exact_log2 (unsigned HOST_WIDE_INT x)
 
 #endif /* GCC_VERSION >= 3004 */
 
+/* Compute the greatest common divisor of two numbers using
+   Euclid's algorithm.  */
+
+static inline int
+gcd (int a, int b)
+{
+  int x, y, z;
+
+  x = abs (a);
+  y = abs (b);
+
+  while (x > 0)
+    {
+      z = y % x;
+      y = x;
+      x = z;
+    }
+
+  return y;
+}
+
+/* Compute the least common multiple of two numbers A and B .  */
+
+static inline int
+least_common_multiple (int a, int b)
+{
+  return (abs (a) * abs (b) / gcd (a, b));
+}
+
 #endif /* ! GCC_HWINT_H */

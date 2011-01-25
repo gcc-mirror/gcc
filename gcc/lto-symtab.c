@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "ggc.h"
-#include "lambda.h"	/* gcd */
 #include "hashtab.h"
 #include "plugin-api.h"
 #include "lto-streamer.h"

@@ -1,3 +1,48 @@
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gfortran.dg/graphite/interchange-4.f: New.
+	* gfortran.dg/graphite/interchange-5.f: New.
+
+	* gcc.dg/tree-ssa/ltrans-1.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-2.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-3.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-4.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-5.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-6.c: Removed.
+	* gcc.dg/tree-ssa/ltrans-8.c: Removed.
+	* gfortran.dg/ltrans-7.f90: Removed.
+	* gcc.dg/tree-ssa/data-dep-1.c: Removed.
+
+	* gcc.dg/pr18792.c: -> gcc.dg/graphite/pr18792.c
+	* gcc.dg/pr19910.c: -> gcc.dg/graphite/pr19910.c
+	* gcc.dg/tree-ssa/20041110-1.c: -> gcc.dg/graphite/pr20041110-1.c
+	* gcc.dg/tree-ssa/pr20256.c: -> gcc.dg/graphite/pr20256.c
+	* gcc.dg/pr23625.c: -> gcc.dg/graphite/pr23625.c
+	* gcc.dg/tree-ssa/pr23820.c: -> gcc.dg/graphite/pr23820.c
+	* gcc.dg/tree-ssa/pr24309.c: -> gcc.dg/graphite/pr24309.c
+	* gcc.dg/tree-ssa/pr26435.c: -> gcc.dg/graphite/pr26435.c
+	* gcc.dg/pr29330.c: -> gcc.dg/graphite/pr29330.c
+	* gcc.dg/pr29581-1.c: -> gcc.dg/graphite/pr29581-1.c
+	* gcc.dg/pr29581-2.c: -> gcc.dg/graphite/pr29581-2.c
+	* gcc.dg/pr29581-3.c: -> gcc.dg/graphite/pr29581-3.c
+	* gcc.dg/pr29581-4.c: -> gcc.dg/graphite/pr29581-4.c
+	* gcc.dg/tree-ssa/loop-27.c: -> gcc.dg/graphite/pr30565.c
+	* gcc.dg/tree-ssa/pr31183.c: -> gcc.dg/graphite/pr31183.c
+	* gcc.dg/tree-ssa/pr33576.c: -> gcc.dg/graphite/pr33576.c
+	* gcc.dg/tree-ssa/pr33766.c: -> gcc.dg/graphite/pr33766.c
+	* gcc.dg/pr34016.c: -> gcc.dg/graphite/pr34016.c
+	* gcc.dg/tree-ssa/pr34017.c: -> gcc.dg/graphite/pr34017.c
+	* gcc.dg/tree-ssa/pr34123.c: -> gcc.dg/graphite/pr34123.c
+	* gcc.dg/tree-ssa/pr36287.c: -> gcc.dg/graphite/pr36287.c
+	* gcc.dg/tree-ssa/pr37686.c: -> gcc.dg/graphite/pr37686.c
+	* gcc.dg/pr42917.c: -> gcc.dg/graphite/pr42917.c
+	* gcc.dg/tree-ssa/data-dep-1.c
+	* gfortran.dg/loop_nest_1.f90: -> gfortran.dg/graphite/pr29290.f90
+	* gfortran.dg/pr29581.f90: -> gfortran.dg/graphite/pr29581.f90
+	* gfortran.dg/pr36286.f90: -> gfortran.dg/graphite/pr36286.f90
+	* gfortran.dg/pr36922.f: -> gfortran.dg/graphite/pr36922.f
+	* gfortran.dg/pr39516.f: -> gfortran.dg/graphite/pr39516.f
+
 2011-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47265

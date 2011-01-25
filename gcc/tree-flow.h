@@ -856,6 +856,4 @@ void warn_function_noreturn (tree);
 
 void swap_tree_operands (gimple, tree *, tree *);
 
-int least_common_multiple (int, int);
-
 #endif /* _TREE_FLOW_H  */

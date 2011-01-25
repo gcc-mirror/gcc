@@ -240,6 +240,125 @@ name_to_copy_elt_hash (const void *aa)
   return (hashval_t) a->version;
 }
 
+/* A transformation matrix, which is a self-contained ROWSIZE x COLSIZE
+   matrix.  Rather than use floats, we simply keep a single DENOMINATOR that
+   represents the denominator for every element in the matrix.  */
+typedef struct lambda_trans_matrix_s
+{
+  lambda_matrix matrix;
+  int rowsize;
+  int colsize;
+  int denominator;
+} *lambda_trans_matrix;
+#define LTM_MATRIX(T) ((T)->matrix)
+#define LTM_ROWSIZE(T) ((T)->rowsize)
+#define LTM_COLSIZE(T) ((T)->colsize)
+#define LTM_DENOMINATOR(T) ((T)->denominator)
+
+/* Allocate a new transformation matrix.  */
+
+static lambda_trans_matrix
+lambda_trans_matrix_new (int colsize, int rowsize,
+			 struct obstack * lambda_obstack)
+{
+  lambda_trans_matrix ret;
+
+  ret = (lambda_trans_matrix)
+    obstack_alloc (lambda_obstack, sizeof (struct lambda_trans_matrix_s));
+  LTM_MATRIX (ret) = lambda_matrix_new (rowsize, colsize, lambda_obstack);
+  LTM_ROWSIZE (ret) = rowsize;
+  LTM_COLSIZE (ret) = colsize;
+  LTM_DENOMINATOR (ret) = 1;
+  return ret;
+}
+
+/* Multiply a vector VEC by a matrix MAT.
+   MAT is an M*N matrix, and VEC is a vector with length N.  The result
+   is stored in DEST which must be a vector of length M.  */
+
+static void
+lambda_matrix_vector_mult (lambda_matrix matrix, int m, int n,
+			   lambda_vector vec, lambda_vector dest)
+{
+  int i, j;
+
+  lambda_vector_clear (dest, m);
+  for (i = 0; i < m; i++)
+    for (j = 0; j < n; j++)
+      dest[i] += matrix[i][j] * vec[j];
+}
+
+/* Return true if TRANS is a legal transformation matrix that respects
+   the dependence vectors in DISTS and DIRS.  The conservative answer
+   is false.
+
+   "Wolfe proves that a unimodular transformation represented by the
+   matrix T is legal when applied to a loop nest with a set of
+   lexicographically non-negative distance vectors RDG if and only if
+   for each vector d in RDG, (T.d >= 0) is lexicographically positive.
+   i.e.: if and only if it transforms the lexicographically positive
+   distance vectors to lexicographically positive vectors.  Note that
+   a unimodular matrix must transform the zero vector (and only it) to
+   the zero vector." S.Muchnick.  */
+
+static bool
+lambda_transform_legal_p (lambda_trans_matrix trans,
+			  int nb_loops,
+			  VEC (ddr_p, heap) *dependence_relations)
+{
+  unsigned int i, j;
+  lambda_vector distres;
+  struct data_dependence_relation *ddr;
+
+  gcc_assert (LTM_COLSIZE (trans) == nb_loops
+	      && LTM_ROWSIZE (trans) == nb_loops);
+
+  /* When there are no dependences, the transformation is correct.  */
+  if (VEC_length (ddr_p, dependence_relations) == 0)
+    return true;
+
+  ddr = VEC_index (ddr_p, dependence_relations, 0);
+  if (ddr == NULL)
+    return true;
+
+  /* When there is an unknown relation in the dependence_relations, we
+     know that it is no worth looking at this loop nest: give up.  */
+  if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+    return false;
+
+  distres = lambda_vector_new (nb_loops);
+
+  /* For each distance vector in the dependence graph.  */
+  FOR_EACH_VEC_ELT (ddr_p, dependence_relations, i, ddr)
+    {
+      /* Don't care about relations for which we know that there is no
+	 dependence, nor about read-read (aka. output-dependences):
+	 these data accesses can happen in any order.  */
+      if (DDR_ARE_DEPENDENT (ddr) == chrec_known
+	  || (DR_IS_READ (DDR_A (ddr)) && DR_IS_READ (DDR_B (ddr))))
+	continue;
+
+      /* Conservatively answer: "this transformation is not valid".  */
+      if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+	return false;
+
+      /* If the dependence could not be captured by a distance vector,
+	 conservatively answer that the transform is not valid.  */
+      if (DDR_NUM_DIST_VECTS (ddr) == 0)
+	return false;
+
+      /* Compute trans.dist_vect */
+      for (j = 0; j < DDR_NUM_DIST_VECTS (ddr); j++)
+	{
+	  lambda_matrix_vector_mult (LTM_MATRIX (trans), nb_loops, nb_loops,
+				     DDR_DIST_VECT (ddr, j), distres);
+
+	  if (!lambda_vector_lexico_pos (distres, nb_loops))
+	    return false;
+	}
+    }
+  return true;
+}
 
 /* Data dependency analysis. Returns true if the iterations of LOOP
    are independent on each other (that is, if we can execute them

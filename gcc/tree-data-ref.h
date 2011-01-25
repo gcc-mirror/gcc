@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_DATA_REF_H
 
 #include "graphds.h"
-#include "lambda.h"
 #include "omega.h"
 #include "tree-chrec.h"
 
@@ -95,6 +94,19 @@ struct dr_alias
      reference.  This could be eliminated if we had alias oracle.  */
   bitmap vops;
 };
+
+/* An integer vector.  A vector formally consists of an element of a vector
+   space. A vector space is a set that is closed under vector addition
+   and scalar multiplication.  In this vector space, an element is a list of
+   integers.  */
+typedef int *lambda_vector;
+DEF_VEC_P(lambda_vector);
+DEF_VEC_ALLOC_P(lambda_vector,heap);
+DEF_VEC_ALLOC_P(lambda_vector,gc);
+
+/* An integer matrix.  A matrix consists of m vectors of length n (IE
+   all vectors are the same length).  */
+typedef lambda_vector *lambda_matrix;
 
 /* Each vector of the access matrix represents a linear access
    function for a subscript.  First elements correspond to the
@@ -494,6 +506,22 @@ ddrs_have_anti_deps (VEC (ddr_p, heap) *dependence_relations)
   return false;
 }
 
+/* Returns the dependence level for a vector DIST of size LENGTH.
+   LEVEL = 0 means a lexicographic dependence, i.e. a dependence due
+   to the sequence of statements, not carried by any loop.  */
+
+static inline unsigned
+dependence_level (lambda_vector dist_vect, int length)
+{
+  int i;
+
+  for (i = 0; i < length; i++)
+    if (dist_vect[i] != 0)
+      return i + 1;
+
+  return 0;
+}
+
 /* Return the dependence level for the DDR relation.  */
 
 static inline unsigned
@@ -629,16 +657,6 @@ rdg_has_similar_memory_accesses (struct graph *rdg, int v1, int v2)
 				       RDG_STMT (rdg, v2));
 }
 
-/* In lambda-code.c  */
-bool lambda_transform_legal_p (lambda_trans_matrix, int,
-			       VEC (ddr_p, heap) *);
-void lambda_collect_parameters (VEC (data_reference_p, heap) *,
-				VEC (tree, heap) **);
-bool lambda_compute_access_matrices (VEC (data_reference_p, heap) *,
-				     VEC (tree, heap) *,
-				     VEC (loop_p, heap) *,
-				     struct obstack *);
-
 /* In tree-data-ref.c  */
 void split_constant_offset (tree , tree *, tree *);
 
@@ -655,5 +673,87 @@ DEF_VEC_ALLOC_P (rdgc, heap);
 
 DEF_VEC_P (bitmap);
 DEF_VEC_ALLOC_P (bitmap, heap);
+
+/* Compute the greatest common divisor of a VECTOR of SIZE numbers.  */
+
+static inline int
+lambda_vector_gcd (lambda_vector vector, int size)
+{
+  int i;
+  int gcd1 = 0;
+
+  if (size > 0)
+    {
+      gcd1 = vector[0];
+      for (i = 1; i < size; i++)
+	gcd1 = gcd (gcd1, vector[i]);
+    }
+  return gcd1;
+}
+
+/* Allocate a new vector of given SIZE.  */
+
+static inline lambda_vector
+lambda_vector_new (int size)
+{
+  return (lambda_vector) ggc_alloc_cleared_atomic (sizeof (int) * size);
+}
+
+/* Clear out vector VEC1 of length SIZE.  */
+
+static inline void
+lambda_vector_clear (lambda_vector vec1, int size)
+{
+  memset (vec1, 0, size * sizeof (*vec1));
+}
+
+/* Returns true when the vector V is lexicographically positive, in
+   other words, when the first nonzero element is positive.  */
+
+static inline bool
+lambda_vector_lexico_pos (lambda_vector v,
+			  unsigned n)
+{
+  unsigned i;
+  for (i = 0; i < n; i++)
+    {
+      if (v[i] == 0)
+	continue;
+      if (v[i] < 0)
+	return false;
+      if (v[i] > 0)
+	return true;
+    }
+  return true;
+}
+
+/* Return true if vector VEC1 of length SIZE is the zero vector.  */
+
+static inline bool
+lambda_vector_zerop (lambda_vector vec1, int size)
+{
+  int i;
+  for (i = 0; i < size; i++)
+    if (vec1[i] != 0)
+      return false;
+  return true;
+}
+
+/* Allocate a matrix of M rows x  N cols.  */
+
+static inline lambda_matrix
+lambda_matrix_new (int m, int n, struct obstack *lambda_obstack)
+{
+  lambda_matrix mat;
+  int i;
+
+  mat = (lambda_matrix) obstack_alloc (lambda_obstack,
+				       sizeof (lambda_vector *) * m);
+
+  for (i = 0; i < m; i++)
+    mat[i] = lambda_vector_new (n);
+
+  return mat;
+}
 
 #endif  /* GCC_TREE_DATA_REF_H  */

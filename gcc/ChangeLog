@@ -1,3 +1,67 @@
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Makefile.in (LAMBDA_H): Removed.
+	(TREE_DATA_REF_H): Remove dependence on LAMBDA_H.
+	(OBJS-common): Remove dependence on lambda-code.o, lambda-mat.o,
+	lambda-trans.o, and tree-loop-linear.o.
+	(lto-symtab.o): Remove dependence on LAMBDA_H.
+	(tree-loop-linear.o): Remove rule.
+	(lambda-mat.o): Same.
+	(lambda-trans.o): Same.
+	(lambda-code.o): Same.
+	(tree-vect-loop.o): Add missing dependence on TREE_DATA_REF_H.
+	(tree-vect-slp.o): Same.
+	* hwint.h (gcd): Moved here.
+	(least_common_multiple): Same.
+	* lambda-code.c: Removed.
+	* lambda-mat.c: Removed.
+	* lambda-trans.c: Removed.
+	* lambda.h: Removed.
+	* tree-loop-linear.c: Removed.
+	* lto-symtab.c: Do not include lambda.h.
+	* omega.c (gcd): Removed.
+	* passes.c (init_optimization_passes): Remove pass_linear_transform.
+	* tree-data-ref.c (print_lambda_vector): Moved here.
+	(lambda_vector_copy): Same.
+	(lambda_matrix_copy): Same.
+	(lambda_matrix_id): Same.
+	(lambda_vector_first_nz): Same.
+	(lambda_matrix_row_add): Same.
+	(lambda_matrix_row_exchange): Same.
+	(lambda_vector_mult_const): Same.
+	(lambda_vector_negate): Same.
+	(lambda_matrix_row_negate): Same.
+	(lambda_vector_equal): Same.
+	(lambda_matrix_right_hermite): Same.
+	* tree-data-ref.h: Do not include lambda.h.
+	(lambda_vector): Moved here.
+	(lambda_matrix): Same.
+	(dependence_level): Same.
+	(lambda_transform_legal_p): Removed declaration.
+	(lambda_collect_parameters): Same.
+	(lambda_compute_access_matrices): Same.
+	(lambda_vector_gcd): Same.
+	(lambda_vector_new): Same.
+	(lambda_vector_clear): Same.
+	(lambda_vector_lexico_pos): Same.
+	(lambda_vector_zerop): Same.
+	(lambda_matrix_new): Same.
+	* tree-flow.h (least_common_multiple): Removed declaration.
+	* tree-parloops.c (lambda_trans_matrix): Moved here.
+	(LTM_MATRIX): Same.
+	(LTM_ROWSIZE): Same.
+	(LTM_COLSIZE): Same.
+	(LTM_DENOMINATOR): Same.
+	(lambda_trans_matrix_new): Same.
+	(lambda_matrix_vector_mult): Same.
+	(lambda_transform_legal_p): Same.
+	* tree-pass.h (pass_linear_transform): Removed declaration.
+	* tree-ssa-loop.c (tree_linear_transform): Removed.
+	(gate_tree_linear_transform): Removed.
+	(pass_linear_transform): Removed.
+	(gate_graphite_transforms): Make flag_tree_loop_linear an alias of
+	flag_loop_interchange.
+
 2011-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47265
