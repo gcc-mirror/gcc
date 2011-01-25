@@ -1,5 +1,10 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (new_pbb_from_pbb): Only copy PBB_DOMAIN
+	when it is initialized.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-scop-detection.c (stmt_has_simple_data_refs_p): Update
 	call to graphite_find_data_references_in_stmt.
 	* graphite-sese-to-poly.c (outermost_loop_in_sese_1): New.
