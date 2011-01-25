@@ -1,3 +1,12 @@
+2011-01-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (dr_indices_valid_in_loop): New.
+	(close_phi_written_to_memory): Call for_each_index with
+	dr_indices_valid_in_loop.
+
+	* gfortran.dg/graphite/id-24.f: New.
+	* gfortran.dg/graphite/id-25.f: New.
+
 2011-01-19  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (new_pbb_from_pbb): Only copy PBB_DOMAIN

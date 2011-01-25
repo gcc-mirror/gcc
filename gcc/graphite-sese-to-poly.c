@@ -2999,6 +2999,35 @@ remove_phi (gimple phi)
   remove_phi_node (&gsi, false);
 }
 
+/* Helper function for for_each_index.  For each INDEX of the data
+   reference REF, returns true when its indices are valid in the loop
+   nest LOOP passed in as DATA.  */
+
+static bool
+dr_indices_valid_in_loop (tree ref ATTRIBUTE_UNUSED, tree *index, void *data)
+{
+  loop_p loop;
+  basic_block header, def_bb;
+  gimple stmt;
+
+  if (TREE_CODE (*index) != SSA_NAME)
+    return true;
+
+  loop = *((loop_p *) data);
+  header = loop->header;
+  stmt = SSA_NAME_DEF_STMT (*index);
+
+  if (!stmt)
+    return true;
+
+  def_bb = gimple_bb (stmt);
+
+  if (!def_bb)
+    return true;
+
+  return dominated_by_p (CDI_DOMINATORS, header, def_bb);
+}
+
 /* When the result of a CLOSE_PHI is written to a memory location,
    return a pointer to that memory reference, otherwise return
    NULL_TREE.  */
@@ -3007,21 +3036,40 @@ static tree
 close_phi_written_to_memory (gimple close_phi)
 {
   imm_use_iterator imm_iter;
-  tree res, def = gimple_phi_result (close_phi);
   use_operand_p use_p;
   gimple stmt;
+  tree res, def = gimple_phi_result (close_phi);
 
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
     if ((stmt = USE_STMT (use_p))
 	&& gimple_code (stmt) == GIMPLE_ASSIGN
-	&& (res = gimple_assign_lhs (stmt))
-	&& (TREE_CODE (res) == ARRAY_REF
-	    || TREE_CODE (res) == MEM_REF
-	    || TREE_CODE (res) == VAR_DECL
-	    || TREE_CODE (res) == PARM_DECL
-	    || TREE_CODE (res) == RESULT_DECL))
-      return res;
+	&& (res = gimple_assign_lhs (stmt)))
+      {
+	switch (TREE_CODE (res))
+	  {
+	  case VAR_DECL:
+	  case PARM_DECL:
+	  case RESULT_DECL:
+	    return res;
 
+	  case ARRAY_REF:
+	  case MEM_REF:
+	    {
+	      tree arg = gimple_phi_arg_def (close_phi, 0);
+	      loop_p nest = loop_containing_stmt (SSA_NAME_DEF_STMT (arg));
+
+	      /* FIXME: this restriction is for id-{24,25}.f and
+		 could be handled by duplicating the computation of
+		 array indices before the loop of the close_phi.  */
+	      if (for_each_index (&res, dr_indices_valid_in_loop, &nest))
+		return res;
+	    }
+	    /* Fallthru.  */
+
+	  default:
+	    continue;
+	  }
+      }
   return NULL_TREE;
 }
 

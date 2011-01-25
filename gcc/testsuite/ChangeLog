@@ -1,5 +1,10 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gfortran.dg/graphite/id-24.f: New.
+	* gfortran.dg/graphite/id-25.f: New.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gfortran.dg/graphite/id-23.f: New.
 
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
