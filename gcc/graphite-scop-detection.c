@@ -263,7 +263,9 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop, gimple stmt)
   bool res = true;
   VEC (data_reference_p, heap) *drs = VEC_alloc (data_reference_p, heap, 5);
 
-  graphite_find_data_references_in_stmt (outermost_loop, stmt, &drs);
+  graphite_find_data_references_in_stmt (outermost_loop,
+					 loop_containing_stmt (stmt),
+					 stmt, &drs);
 
   FOR_EACH_VEC_ELT (data_reference_p, drs, j, dr)
     for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)

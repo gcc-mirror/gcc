@@ -407,9 +407,9 @@ extern void free_data_ref (data_reference_p);
 extern void free_data_refs (VEC (data_reference_p, heap) *);
 extern bool find_data_references_in_stmt (struct loop *, gimple,
 					  VEC (data_reference_p, heap) **);
-extern bool graphite_find_data_references_in_stmt (struct loop *, gimple,
+extern bool graphite_find_data_references_in_stmt (loop_p, loop_p, gimple,
 						   VEC (data_reference_p, heap) **);
-struct data_reference *create_data_ref (struct loop *, tree, gimple, bool);
+struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple, bool);
 extern bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
 extern void compute_all_dependences (VEC (data_reference_p, heap) *,
 				     VEC (ddr_p, heap) **, VEC (loop_p, heap) *,
