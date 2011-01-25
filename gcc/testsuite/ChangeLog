@@ -1,3 +1,11 @@
+2011-01-25  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.target/rx/builtins.c: Allow -fipa-cp-clone.
+	(saturate_add): Delete.
+	(exchange): Delete.
+	(main): Do not run saturate_add.
+	(set_interrupts): Delete.
+
 2011-01-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47448

@@ -902,9 +902,9 @@
 )
 
 (define_expand "adddi3"
-  [(set (match_operand:DI          0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "rx_source_operand" "")))]
+  [(set (match_operand:DI          0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (match_operand:DI 2 "rx_source_operand")))]
   ""
 {
   rtx op0l, op0h, op1l, op1h, op2l, op2h;
@@ -961,8 +961,18 @@
 
   if (rtx_equal_p (op0l, op1l))
     ;
+  /* It is preferable that op0l == op1l...  */
   else if (rtx_equal_p (op0l, op2l))
     x = op1l, op1l = op2l, op2l = x;
+  /* ... but it is only a requirement if op2l == MEM.  */
+  else if (MEM_P (op2l))
+    {
+      /* Let's hope that we still have a scratch register free.  */
+      gcc_assert (op1h != scratch);
+      emit_move_insn (scratch, op2l);
+      op2l = scratch;
+    }
+
   emit_insn (gen_addsi3_flags (op0l, op1l, op2l));
 
   if (rtx_equal_p (op0h, op1h))
@@ -977,22 +987,6 @@
   emit_insn (gen_adc_internal (op0h, op1h, op2h));
   DONE;
 })
-
-;; A pattern to add an integer to a register, regardless of the
-;; setting of the -mmax-constant-size command line switch.
-;; See rx.c:gen_safe_add() for more details.
-(define_insn "addsi3_unspec"
-  [(set (match_operand:SI          0 "register_operand"  "=r,r")
-	(plus:SI (match_operand:SI 1 "register_operand"  "%0,r")
-		 (const:SI (unspec:SI [(match_operand 2 "const_int_operand" "n,n")] UNSPEC_CONST))))
-   (clobber (reg:CC CC_REG))]
-  ""
-  "@
-  add\t%2, %0
-  add\t%2, %1, %0"
-  [(set_attr "timings" "11")
-   (set_attr "length"   "6")]
-)
 
 (define_insn "andsi3"
   [(set (match_operand:SI         0 "register_operand"  "=r,r,r,r,r,r,r,r,r")
@@ -1483,9 +1477,9 @@
 )
 
 (define_expand "subdi3"
-  [(set (match_operand:DI           0 "register_operand" "")
-	(minus:DI (match_operand:DI 1 "register_operand" "")
-		  (match_operand:DI 2 "rx_source_operand" "")))]
+  [(set (match_operand:DI           0 "register_operand")
+	(minus:DI (match_operand:DI 1 "register_operand")
+		  (match_operand:DI 2 "rx_compare_operand")))]
   ""
 {
   rtx op0l, op0h, op1l, op1h, op2l, op2h;
@@ -1504,7 +1498,7 @@
 (define_insn_and_split "subdi3_internal"
   [(set (match_operand:SI          0 "register_operand"   "=&r,&r")
 	(minus:SI (match_operand:SI 2 "register_operand"  "  0, r")
-		  (match_operand:SI 3 "rx_source_operand" "rnQ, r")))
+		  (match_operand:SI 3 "rx_compare_operand" "rQ, r")))
    (set (match_operand:SI          1 "register_operand"   "= r, r")
 	(minus:SI
 	  (minus:SI

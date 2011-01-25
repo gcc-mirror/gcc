@@ -251,6 +251,7 @@ enum reg_class
 
 #define LIBCALL_VALUE(MODE)				\
   gen_rtx_REG (((GET_MODE_CLASS (MODE) != MODE_INT	\
+                 || COMPLEX_MODE_P (MODE)		\
 		 || GET_MODE_SIZE (MODE) >= 4)		\
 		? (MODE)				\
 		: SImode),				\
