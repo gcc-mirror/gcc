@@ -5818,6 +5818,22 @@ fi
 
 if test "x$with_ppl" = "xno"; then
   with_cloog=no
+
+
+
+
+  if test "x${with_cloog}" != x \
+    || test "x${with_cloog_include}" != x \
+    || test "x${with_cloog_lib}" != x ; then
+    graphite_requested=yes
+  else
+    graphite_requested=no
+  fi
+
+
+  if test "${graphite_requested}" = yes; then
+    as_fn_error "Unable to find a usable PPL.  See config.log for details." "$LINENO" 5]
+  fi
 fi
 if test "x${with_cloog}" = x && test "x${with_cloog_include}" = x \
   && test "x${with_cloog_lib}" = x && test -d ${srcdir}/cloog; then
@@ -6090,7 +6106,7 @@ $as_echo "$gcc_cv_cloog_ct_0_15_5" >&6; }
     && test "x${clooglibs}" = x \
     && test "x${clooginc}" = x ; then
 
-    as_fn_error "Unable to find a usable CLooG. See config.log for details." "$LINENO" 5
+    as_fn_error "Unable to find a usable CLooG.  See config.log for details." "$LINENO" 5
   fi
 
 

@@ -1689,6 +1689,12 @@ dnl with user input.
 CLOOG_INIT_FLAGS
 if test "x$with_ppl" = "xno"; then
   with_cloog=no
+
+  dnl Only execute fail-action, if CLooG has been requested.
+  CLOOG_REQUESTED([graphite_requested=yes], [graphite_requested=no])
+  if test "${graphite_requested}" = yes; then
+    AC_MSG_ERROR([Unable to find a usable PPL.  See config.log for details.])]
+  fi
 fi
 if test "x${with_cloog}" = x && test "x${with_cloog_include}" = x \
   && test "x${with_cloog_lib}" = x && test -d ${srcdir}/cloog; then
@@ -1702,10 +1708,9 @@ if test "x$with_cloog" != "xno"; then
   dnl ignored.
   CLOOG_CHECK_VERSION(0,16,1)
 
-  dnl Only execute fail-action, if CLooG has been
-  dnl requested.
+  dnl Only execute fail-action, if CLooG has been requested.
   CLOOG_IF_FAILED([
-    AC_MSG_ERROR([Unable to find a usable CLooG. See config.log for details.])])
+    AC_MSG_ERROR([Unable to find a usable CLooG.  See config.log for details.])])
 fi
 
 # Check for LTO support.
