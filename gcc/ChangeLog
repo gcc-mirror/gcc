@@ -1,5 +1,12 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-scop-detection.c (same_close_phi_node): New.
+	(remove_duplicate_close_phi): New.
+	(make_close_phi_nodes_unique): New.
+	(canonicalize_loop_closed_ssa): Call make_close_phi_nodes_unique.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (new_poly_ddr): Call same_pdr_p.
 	* graphite-poly.h (same_pdr_p): Do not expect that the PDR_TYPE
 	of both data references to be the same.
