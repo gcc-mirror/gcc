@@ -11273,34 +11273,29 @@
 (define_expand "bswapsi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
   	(bswap:SI (match_operand:SI 1 "s_register_operand" "r")))]
-"TARGET_EITHER"
+"TARGET_EITHER && (arm_arch6 || !optimize_size)"
 "
-  if (!arm_arch6)
-    {
-      if (!optimize_size)
-	{
-	  rtx op2 = gen_reg_rtx (SImode);
-	  rtx op3 = gen_reg_rtx (SImode);
+    if (!arm_arch6)
+      {
+	rtx op2 = gen_reg_rtx (SImode);
+	rtx op3 = gen_reg_rtx (SImode);
 
-	  if (TARGET_THUMB)
-	    {
-	      rtx op4 = gen_reg_rtx (SImode);
-	      rtx op5 = gen_reg_rtx (SImode);
+	if (TARGET_THUMB)
+	  {
+	    rtx op4 = gen_reg_rtx (SImode);
+	    rtx op5 = gen_reg_rtx (SImode);
 
-	      emit_insn (gen_thumb_legacy_rev (operands[0], operands[1],
-					       op2, op3, op4, op5));
-	    }
-	  else
-	    {
-	      emit_insn (gen_arm_legacy_rev (operands[0], operands[1],
-					     op2, op3));
-	    }
+	    emit_insn (gen_thumb_legacy_rev (operands[0], operands[1],
+					     op2, op3, op4, op5));
+	  }
+	else
+	  {
+	    emit_insn (gen_arm_legacy_rev (operands[0], operands[1],
+					   op2, op3));
+	  }
 
-	  DONE;
-	}
-      else
-	FAIL;
-    }
+	DONE;
+      }
   "
 )
 
