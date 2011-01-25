@@ -1,5 +1,11 @@
 2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* doc/install.texi: Update the expected version number of PPL to 0.11.
+	* graphite-ppl.c (ppl_powerset_is_empty): Remove now dead code under
+	#if PPL_VERSION_MINOR < 11.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (new_poly_ddr): Inlined into
 	dependence_polyhedron.
 	(free_poly_ddr): Moved close by new_poly_ddr.

@@ -1668,9 +1668,9 @@ ENABLE_PPL_CHECK=yes)
 if test "x$with_ppl" != "xno" -a "${ENABLE_PPL_CHECK}" = "yes"; then
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $pplinc $gmpinc"
-  AC_MSG_CHECKING([for version 0.10 (or later revision) of PPL])
+  AC_MSG_CHECKING([for version 0.11 (or later revision) of PPL])
   AC_TRY_COMPILE([#include "ppl_c.h"],[
-  #if PPL_VERSION_MAJOR != 0 || PPL_VERSION_MINOR < 10
+  #if PPL_VERSION_MAJOR != 0 || PPL_VERSION_MINOR < 11
   choke me
   #endif
   ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); ppllibs= ; pplinc= ; with_ppl=no ])
