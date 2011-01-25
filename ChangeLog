@@ -1,3 +1,10 @@
+2011-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/cloog.m4 (CLOOG_REQUESTED): Use $2 if --without-cloog.
+	* configure.ac: If with_ppl is no, move setting with_cloog=no
+	after CLOOG_REQUESTED check.
+	* configure: Regenerated.
+
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* configure.ac: Call AC_MSG_ERROR when PPL 0.11 is not present and

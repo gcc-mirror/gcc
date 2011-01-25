@@ -1688,13 +1688,12 @@ dnl Provide configure switches and initialize clooginc & clooglibs
 dnl with user input.
 CLOOG_INIT_FLAGS
 if test "x$with_ppl" = "xno"; then
-  with_cloog=no
-
   dnl Only execute fail-action, if CLooG has been requested.
   CLOOG_REQUESTED([graphite_requested=yes], [graphite_requested=no])
   if test "${graphite_requested}" = yes; then
     AC_MSG_ERROR([Unable to find a usable PPL.  See config.log for details.])]
   fi
+  with_cloog=no
 fi
 if test "x${with_cloog}" = x && test "x${with_cloog_include}" = x \
   && test "x${with_cloog_lib}" = x && test -d ${srcdir}/cloog; then
