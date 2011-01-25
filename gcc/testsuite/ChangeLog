@@ -1,3 +1,8 @@
+2011-01-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/47411
+	* gcc.dg/torture/pr47411.c: New testcase.
+
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gfortran.dg/graphite/id-24.f: New.
