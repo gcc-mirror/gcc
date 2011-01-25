@@ -2903,12 +2903,12 @@ translate_scalar_reduction_to_array_for_stmt (scop_p scop, tree red,
 					      gimple stmt, gimple loop_phi)
 {
   tree res = gimple_phi_result (loop_phi);
-  gimple assign = gimple_build_assign (res, red);
+  gimple assign = gimple_build_assign (res, unshare_expr (red));
   gimple_stmt_iterator gsi;
 
   insert_stmts (scop, assign, NULL, gsi_after_labels (gimple_bb (loop_phi)));
 
-  assign = gimple_build_assign (red, gimple_assign_lhs (stmt));
+  assign = gimple_build_assign (unshare_expr (red), gimple_assign_lhs (stmt));
   gsi = gsi_for_stmt (stmt);
   gsi_next (&gsi);
   insert_stmts (scop, assign, NULL, gsi);
@@ -2949,6 +2949,29 @@ remove_phi (gimple phi)
   remove_phi_node (&gsi, false);
 }
 
+/* When the result of a CLOSE_PHI is written to a memory location,
+   return a pointer to that memory reference, otherwise return
+   NULL_TREE.  */
+
+static tree
+close_phi_written_to_memory (gimple close_phi)
+{
+  imm_use_iterator imm_iter;
+  tree res, def = gimple_phi_result (close_phi);
+  use_operand_p use_p;
+  gimple stmt;
+
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
+    if ((stmt = USE_STMT (use_p))
+	&& gimple_code (stmt) == GIMPLE_ASSIGN
+	&& (res = gimple_assign_lhs (stmt))
+	&& (TREE_CODE (res) == ARRAY_REF
+	    || TREE_CODE (res) == MEM_REF))
+      return res;
+
+  return NULL_TREE;
+}
+
 /* Rewrite out of SSA the reduction described by the loop phi nodes
    IN, and the close phi nodes OUT.  IN and OUT are structured by loop
    levels like this:
@@ -2964,9 +2987,9 @@ translate_scalar_reduction_to_array (scop_p scop,
 				     VEC (gimple, heap) *in,
 				     VEC (gimple, heap) *out)
 {
-  unsigned int i;
   gimple loop_phi;
-  tree red = NULL_TREE;
+  unsigned int i = VEC_length (gimple, out) - 1;
+  tree red = close_phi_written_to_memory (VEC_index (gimple, out, i));
 
   FOR_EACH_VEC_ELT (gimple, in, i, loop_phi)
     {
@@ -2980,8 +3003,10 @@ translate_scalar_reduction_to_array (scop_p scop,
 	  PBB_IS_REDUCTION (pbb) = true;
 	  gcc_assert (close_phi == loop_phi);
 
-	  red = create_zero_dim_array
-	    (gimple_assign_lhs (stmt), "Commutative_Associative_Reduction");
+	  if (!red)
+	    red = create_zero_dim_array
+	      (gimple_assign_lhs (stmt), "Commutative_Associative_Reduction");
+
 	  translate_scalar_reduction_to_array_for_stmt
 	    (scop, red, stmt, VEC_index (gimple, in, 1));
 	  continue;
@@ -2989,11 +3014,11 @@ translate_scalar_reduction_to_array (scop_p scop,
 
       if (i == VEC_length (gimple, in) - 1)
 	{
-	  insert_out_of_ssa_copy (scop, gimple_phi_result (close_phi), red,
-				  close_phi);
+	  insert_out_of_ssa_copy (scop, gimple_phi_result (close_phi),
+				  unshare_expr (red), close_phi);
 	  insert_out_of_ssa_copy_on_edge
 	    (scop, edge_initial_value_for_loop_phi (loop_phi),
-	     red, initial_value_for_loop_phi (loop_phi));
+	     unshare_expr (red), initial_value_for_loop_phi (loop_phi));
 	}
 
       remove_phi (loop_phi);

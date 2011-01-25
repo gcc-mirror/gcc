@@ -1,5 +1,17 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/graphite/block-0.c: Un-XFAILed.
+	* gcc.dg/graphite/block-1.c: Un-XFAILed.
+	* gcc.dg/graphite/block-7.c: Un-XFAILed.
+	* gcc.dg/graphite/block-8.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-12.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-14.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-15.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-8.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-mvt.c: Un-XFAILed.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gcc.dg/graphite/block-0.c: Add documentation.
 	* gcc.dg/graphite/block-4.c: Same.
 	* gcc.dg/graphite/block-7.c: Same.
