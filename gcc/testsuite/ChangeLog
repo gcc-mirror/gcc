@@ -1,3 +1,7 @@
+2011-01-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gfortran.dg/graphite/interchange-3.f90: Un-XFAILed.
+
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gcc.dg/graphite/block-0.c: Un-XFAILed.

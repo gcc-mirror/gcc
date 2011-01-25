@@ -1,5 +1,10 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (close_phi_written_to_memory): Also allow
+	VAR_DECL, PARM_DECL, and RESULT_DECL.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (reduction_dr_1): Allow several reductions
 	in a reduction PBB.
 	* graphite-sese-to-poly.c (split_reduction_stmt): Do not split PBBs
