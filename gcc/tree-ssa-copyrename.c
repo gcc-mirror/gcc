@@ -1,5 +1,5 @@
 /* Rename SSA copies.
-   Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
@@ -170,7 +170,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
       return false;
     }
 
-  /* Never attempt to coalesce 2 difference parameters.  */
+  /* Never attempt to coalesce 2 different parameters.  */
   if (TREE_CODE (root1) == PARM_DECL && TREE_CODE (root2) == PARM_DECL)
     {
       if (debug)
@@ -224,6 +224,18 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
     {
       ign1 = true;
       ign2 = false;
+    }
+
+  /* Don't coalesce if the new chosen root variable would be read-only.
+     If both ign1 && ign2, then the root var of the larger partition
+     wins, so reject in that case if any of the root vars is TREE_READONLY.
+     Otherwise reject only if the root var, on which replace_ssa_name_symbol
+     will be called below, is readonly.  */
+  if ((TREE_READONLY (root1) && ign2) || (TREE_READONLY (root2) && ign1))
+    {
+      if (debug)
+	fprintf (debug, " : Readonly variable.  No coalesce.\n");
+      return false;
     }
 
   /* Don't coalesce if the two variables aren't type compatible .  */

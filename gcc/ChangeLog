@@ -1,3 +1,10 @@
+2011-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47427
+	PR tree-optimization/47428
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Don't
+	coalesce if the new root var would be TREE_READONLY.
+
 2011-01-25  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/47414
