@@ -1,5 +1,5 @@
 /* Forward propagation of expressions for single use variables.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1114,7 +1114,7 @@ forward_propagate_addr_expr (tree name, tree rhs)
 	}
     }
 
-  return all;
+  return all && has_zero_uses (name);
 }
 
 /* Forward propagate the comparison defined in STMT like
