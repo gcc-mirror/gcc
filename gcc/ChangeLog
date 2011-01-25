@@ -1,5 +1,10 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (print_pddr): Call
+	ppl_io_fprint_Pointset_Powerset_C_Polyhedron.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-ppl.c (debug_gmp_value): New.
 	* graphite-ppl.h (debug_gmp_value): Declared.
 
