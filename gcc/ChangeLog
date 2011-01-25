@@ -1,5 +1,12 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-interchange.c (lst_interchange_profitable_p): Takes a loop
+	nest and two loop depths as parameters.
+	(lst_try_interchange_loops): Call lst_interchange_profitable_p after
+	lst_perfect_nestify.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (print_pddr): Call
 	ppl_io_fprint_Pointset_Powerset_C_Polyhedron.
 
