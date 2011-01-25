@@ -1,3 +1,8 @@
+2011-01-25  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config/m32r/m32r.c: Define TARGET_EXCEPT_UNWIND_INFO to
+	sjlj_except_unwind_info.
+
 2011-01-25  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47426
