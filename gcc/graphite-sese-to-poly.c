@@ -2152,9 +2152,11 @@ new_pbb_from_pbb (scop_p scop, poly_bb_p pbb, basic_block bb)
     if (VEC_index (poly_bb_p, SCOP_BBS (scop), index) == pbb)
       break;
 
+  if (PBB_DOMAIN (pbb))
+    ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
+      (&PBB_DOMAIN (pbb1), PBB_DOMAIN (pbb));
+
   GBB_PBB (gbb1) = pbb1;
-  ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
-    (&PBB_DOMAIN (pbb1), PBB_DOMAIN (pbb));
   GBB_CONDITIONS (gbb1) = VEC_copy (gimple, heap, GBB_CONDITIONS (gbb));
   GBB_CONDITION_CASES (gbb1) = VEC_copy (gimple, heap, GBB_CONDITION_CASES (gbb));
   VEC_safe_insert (poly_bb_p, heap, SCOP_BBS (scop), index + 1, pbb1);
