@@ -1,3 +1,7 @@
+2011-01-25  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* doc/install.texi: Document availability of cloog-0.16.
+
 2011-01-25  Vladimir Kargov  <kargov@gmail.com>
 
 	* graphite-scop-detection.c (canonicalize_loop_closed_ssa): Free
