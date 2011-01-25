@@ -1,5 +1,10 @@
 2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (build_pairwise_scheduling): Correctly compute
+	the "a followed by b" relation and document it.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (build_lexicographical_constraint): Stop the
 	iteration when the bag of constraints is empty.
 

@@ -347,23 +347,28 @@ build_pairwise_scheduling (graphite_dim_t dim,
   ppl_Pointset_Powerset_C_Polyhedron_t res;
   ppl_Polyhedron_t equalities;
   ppl_Constraint_t cstr;
+  graphite_dim_t a = pos;
+  graphite_dim_t b = pos + offset;
 
   ppl_new_C_Polyhedron_from_space_dimension (&equalities, dim, 0);
 
   switch (direction)
     {
-    case -1:
-      cstr = ppl_build_relation (dim, pos, pos + offset, 1,
+    case 1:
+      /* Builds "a + 1 <= b.  */
+      cstr = ppl_build_relation (dim, a, b, 1,
 				 PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
       break;
 
     case 0:
-      cstr = ppl_build_relation (dim, pos, pos + offset, 0,
+      /* Builds "a = b.  */
+      cstr = ppl_build_relation (dim, a, b, 0,
 				 PPL_CONSTRAINT_TYPE_EQUAL);
       break;
 
-    case 1:
-      cstr = ppl_build_relation (dim, pos, pos + offset, -1,
+    case -1:
+      /* Builds "a >= b + 1.  */
+      cstr = ppl_build_relation (dim, a, b, -1,
 				 PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);
       break;
 
