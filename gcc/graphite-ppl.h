@@ -47,7 +47,7 @@ void ppl_min_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t,
 ppl_Constraint_t ppl_build_relation (int, int, int, int,
 				     enum ppl_enum_Constraint_Type);
 void debug_gmp_value (mpz_t);
-bool ppl_powerset_is_empty (ppl_Pointset_Powerset_C_Polyhedron_t, int);
+bool ppl_powerset_is_empty (ppl_Pointset_Powerset_C_Polyhedron_t);
 
 
 /* Assigns to RES the value of the INTEGER_CST T.  */

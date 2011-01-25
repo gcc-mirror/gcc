@@ -1,3 +1,14 @@
+2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (build_lexicographical_constraint): Remove the
+	gdim parameter.
+	(build_lexicographical_constraint): Adjust call to ppl_powerset_is_empty.
+	(dependence_polyhedron): Same.
+	(graphite_legal_transform_dr): Same.
+	(graphite_carried_dependence_level_k): Same.
+	* graphite-ppl.c (ppl_powerset_is_empty): Remove the nb_params parameter.
+	* graphite-ppl.h (ppl_powerset_is_empty): Adjust declaration.
+
 2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c

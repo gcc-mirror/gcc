@@ -360,14 +360,13 @@ build_pairwise_scheduling (graphite_dim_t dim,
    the BAG polyhedron: T1|I1|T2|I2|S1|S2|G.  When DIRECTION is set to
    1, compute the direct dependence from PDR1 to PDR2, and when
    DIRECTION is -1, compute the reversed dependence relation, from
-   PDR2 to PDR1.  GDIM is the number of parameters in the scop.  */
+   PDR2 to PDR1.  */
 
 static ppl_Pointset_Powerset_C_Polyhedron_t
 build_lexicographical_constraint (ppl_Pointset_Powerset_C_Polyhedron_t bag,
 				  graphite_dim_t dim,
 				  graphite_dim_t tdim,
 				  graphite_dim_t offset,
-				  graphite_dim_t gdim,
 				  int direction)
 {
   graphite_dim_t i;
@@ -378,7 +377,7 @@ build_lexicographical_constraint (ppl_Pointset_Powerset_C_Polyhedron_t bag,
   lex = build_pairwise_scheduling (dim, 0, offset, direction);
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (lex, bag);
 
-  if (!ppl_powerset_is_empty (lex, gdim))
+  if (!ppl_powerset_is_empty (lex))
     ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (res, lex);
 
   ppl_delete_Pointset_Powerset_C_Polyhedron (lex);
@@ -391,13 +390,13 @@ build_lexicographical_constraint (ppl_Pointset_Powerset_C_Polyhedron_t bag,
       ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (bag, sceq);
       ppl_delete_Pointset_Powerset_C_Polyhedron (sceq);
 
-      if (ppl_powerset_is_empty (bag, gdim))
+      if (ppl_powerset_is_empty (bag))
 	break;
 
       lex = build_pairwise_scheduling (dim, i + 1, offset, direction);
       ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (lex, bag);
 
-      if (!ppl_powerset_is_empty (lex, gdim))
+      if (!ppl_powerset_is_empty (lex))
 	ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (res, lex);
 
       ppl_delete_Pointset_Powerset_C_Polyhedron (lex);
@@ -477,11 +476,11 @@ dependence_polyhedron (poly_dr_p pdr1, poly_dr_p pdr2,
   ppl_delete_Pointset_Powerset_C_Polyhedron (idr2);
   ppl_delete_Pointset_Powerset_C_Polyhedron (dreq);
 
-  if (ppl_powerset_is_empty (res, gdim))
+  if (ppl_powerset_is_empty (res))
     return NULL;
 
   lex = build_lexicographical_constraint (res, dim, MIN (tdim1, tdim2),
-					  tdim1 + ddim1, gdim, direction);
+					  tdim1 + ddim1, direction);
   ppl_delete_Pointset_Powerset_C_Polyhedron (res);
 
   return lex;
@@ -671,8 +670,7 @@ graphite_legal_transform_dr (poly_dr_p pdr1, poly_dr_p pdr2)
   ppl_insert_dimensions_pointset (pt, otdim1 + ttdim1 + ddim1, otdim2);
 
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (po_temp, pt);
-  is_empty_p = ppl_powerset_is_empty (po_temp,
-				      scop_nb_params (PBB_SCOP (pbb1)));
+  is_empty_p = ppl_powerset_is_empty (po_temp);
 
   ppl_delete_Pointset_Powerset_C_Polyhedron (po_temp);
   free_poly_ddr (tpddr);
@@ -773,8 +771,7 @@ graphite_carried_dependence_level_k (poly_dr_p pdr1, poly_dr_p pdr2,
   eqpp = build_pairwise_scheduling (dim, level, tdim1 + ddim1, 1);
 
   ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (eqpp, po);
-  empty_p = ppl_powerset_is_empty
-    (eqpp, scop_nb_params (PBB_SCOP (PDR_PBB (pdr1))));
+  empty_p = ppl_powerset_is_empty (eqpp);
 
   ppl_delete_Pointset_Powerset_C_Polyhedron (eqpp);
   free_poly_ddr (pddr);
