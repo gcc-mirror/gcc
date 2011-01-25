@@ -14,14 +14,15 @@ matmult (void)
 {
   int i, j, k;
 
+  for (i = 0; i < N; i++)
+    for (j = 0; j < N; j++)
+      A[i][j] = 0;
+
   /* This should be blocked.  */
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
-      {
-        A[i][j] = 0;
-        for (k = 0; k < N; k++)
-          A[i][j] += B[i][k] * C[k][j];
-      }
+      for (k = 0; k < N; k++)
+	A[i][j] += B[i][k] * C[k][j];
 }
 
 extern void abort ();

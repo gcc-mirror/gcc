@@ -193,7 +193,9 @@ dump_data_reference (FILE *outf,
 {
   unsigned int i;
 
-  fprintf (outf, "#(Data Ref: \n#  stmt: ");
+  fprintf (outf, "#(Data Ref: \n");
+  fprintf (outf, "#  bb: %d \n", gimple_bb (DR_STMT (dr))->index);
+  fprintf (outf, "#  stmt: ");
   print_gimple_stmt (outf, DR_STMT (dr), 0, 0);
   fprintf (outf, "#  ref: ");
   print_generic_stmt (outf, DR_REF (dr), 0);

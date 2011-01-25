@@ -1,5 +1,29 @@
 2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (new_poly_dr): Call ppl_powerset_is_empty.
+	(build_lexicographical_constraint): Same.
+	(dependence_polyhedron_1): Same.
+	(graphite_legal_transform_dr): Same.
+	(graphite_carried_dependence_level_k): Same.
+	* graphite-ppl.c (ppl_powerset_is_empty): New.
+	* graphite-ppl.h (ppl_powerset_is_empty): Declared.
+	* tree-data-ref.c (dump_data_reference): Print the basic block index.
+
+	* gcc.dg/graphite/block-0.c: Add documentation.
+	* gcc.dg/graphite/block-4.c: Same.
+	* gcc.dg/graphite/block-7.c: Same.
+	* gcc.dg/graphite/block-8.c: New.
+	* gcc.dg/graphite/interchange-1.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-11.c: Un-XFAILed.
+	* gcc.dg/graphite/interchange-12.c: Add documentation.
+	* gcc.dg/graphite/interchange-13.c: New.
+	* gcc.dg/graphite/interchange-14.c: New.
+	* gcc.dg/graphite/interchange-15.c: New.
+	* gcc.dg/graphite/interchange-8.c: Add documentation.
+	* gcc.dg/graphite/interchange-mvt.c: Same.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (build_pairwise_scheduling): Correctly compute
 	the "a followed by b" relation and document it.
 

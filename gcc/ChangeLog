@@ -1,5 +1,16 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (new_poly_dr): Call ppl_powerset_is_empty.
+	(build_lexicographical_constraint): Same.
+	(dependence_polyhedron_1): Same.
+	(graphite_legal_transform_dr): Same.
+	(graphite_carried_dependence_level_k): Same.
+	* graphite-ppl.c (ppl_powerset_is_empty): New.
+	* graphite-ppl.h (ppl_powerset_is_empty): Declared.
+	* tree-data-ref.c (dump_data_reference): Print the basic block index.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (build_pairwise_scheduling): Correctly compute
 	the "a followed by b" relation and document it.
 
