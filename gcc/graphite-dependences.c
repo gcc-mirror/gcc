@@ -334,7 +334,9 @@ dr_equality_constraints (graphite_dim_t dim,
 /* Builds scheduling inequality constraints: when DIRECTION is
    1 builds a GE constraint,
    0 builds an EQ constraint,
-   -1 builds a LE constraint.  */
+   -1 builds a LE constraint.
+   DIM is the dimension of the scheduling space.
+   POS and POS + OFFSET are the dimensions that are related.  */
 
 static ppl_Pointset_Powerset_C_Polyhedron_t
 build_pairwise_scheduling (graphite_dim_t dim,
@@ -416,6 +418,9 @@ build_lexicographical_constraint (ppl_Pointset_Powerset_C_Polyhedron_t bag,
       sceq = build_pairwise_scheduling (dim, i, offset, 0);
       ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (bag, sceq);
       ppl_delete_Pointset_Powerset_C_Polyhedron (sceq);
+
+      if (ppl_Pointset_Powerset_C_Polyhedron_is_empty (bag))
+	break;
 
       lex = build_pairwise_scheduling (dim, i + 1, offset, direction);
       ppl_Pointset_Powerset_C_Polyhedron_intersection_assign (lex, bag);

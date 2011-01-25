@@ -1,5 +1,10 @@
 2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (build_lexicographical_constraint): Stop the
+	iteration when the bag of constraints is empty.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-poly.c (pbb_remove_duplicate_pdrs): Make it work.
 
 2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
