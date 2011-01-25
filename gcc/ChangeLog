@@ -1,3 +1,10 @@
+2011-01-25  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/37273
+	* ira-costs.c (scan_one_insn): Detect constants living in memory and
+	handle them like argument loads from stack slots.  Do not double
+	count memory for memory constants and argument loads from stack slots.
+
 2011-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47427
