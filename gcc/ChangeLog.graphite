@@ -1,5 +1,9 @@
 2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-poly.c (pbb_remove_duplicate_pdrs): Make it work.
+
+2011-01-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-interchange.c (lst_interchange_profitable_p): Takes a loop
 	nest and two loop depths as parameters.
 	(lst_try_interchange_loops): Call lst_interchange_profitable_p after
