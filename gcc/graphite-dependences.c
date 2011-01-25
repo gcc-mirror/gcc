@@ -180,6 +180,7 @@ print_pddr (FILE *file, poly_ddr_p pddr)
       fprintf (file, "\n  dependence polyhedron (\n");
       print_dependence_polyhedron_layout (file, pddr);
       ppl_print_powerset_matrix (file, PDDR_DDP (pddr));
+      ppl_io_fprint_Pointset_Powerset_C_Polyhedron (file, PDDR_DDP (pddr));
       fprintf (file, ")\n");
     }
 
