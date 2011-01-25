@@ -1,5 +1,11 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (new_poly_ddr): Call same_pdr_p.
+	* graphite-poly.h (same_pdr_p): Do not expect that the PDR_TYPE
+	of both data references to be the same.
+
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (build_lexicographical_constraint): Remove the
 	gdim parameter.
 	(build_lexicographical_constraint): Adjust call to ppl_powerset_is_empty.
