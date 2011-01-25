@@ -1,3 +1,129 @@
+2010-12-29  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Makefile.in (graphite-opencl-codegen.o): Update dependences.
+	(graphite-opencl-meta-clast.o): Same.
+	(graphite-opencl.o): Same.
+	(refined-regions.o): Same.
+	* graphite-opencl-codegen.c: Do not include unnecessary .h files.
+	* graphite-opencl-meta-clast.c: Same.
+	* graphite-opencl.c: Same.
+	* refined-regions.c: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Use FOR_EACH_VEC_ELT.
+	* graphite-opencl-meta-clast.c: Same.
+	* graphite-opencl.c: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Do not include sys/time.h.
+	* graphite-opencl.c: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl.c (h_context, h_cmd_queue, h_program): Moved
+	out of ifdef HAVE_cloog section.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* Makefile.in (graphite-opencl.o): Depends on
+	graphite-opencl-functions.def.
+	* graphite-opencl-functions.def: New.
+	* graphite-opencl.c (enum OPENCL_FUNCTIONS): Read data from
+	graphite-opencl-functions.def.
+	(opencl_function_names): Same.
+	(opencl_create_function_decl): Use the enum OPENCL_FUNCTIONS
+	as indices of opencl_function_names.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Fix formatting.
+	* graphite-opencl-meta-clast.c: Same.
+	* graphite-opencl.c: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Fix formating problems.
+	* graphite-opencl-meta-clast.c: Same.
+	* graphite-opencl.c: Same.
+	* graphite-opencl.h: Same.
+
+2010-12-27  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-opencl-codegen.c: Sort topologically static functions.
+	* graphite-opencl.c: Same.
+
+2010-12-25  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-cloog-compat.h (cloog_names_nb_scattering): New.
+	(cloog_names_scattering): New.
+	* graphite-opencl-codegen.c (opencl_constant_expression_p): Use
+	clast_expr_* instead of expr_*.  Call clast_name_to_str.
+	(opencl_clast_name_to_tree): Now takes a clast_name_p in parameter.
+	(opencl_get_scat_real_name): Same.  Call clast_name_to_str.
+	(opencl_add_scat_as_arg): Same.
+	(opencl_print_local_vars): Call cloog_names_scattering and
+	cloog_names_nb_scattering.
+	(opencl_print_for): Do not call value_*.
+	(opencl_print_term): Same.
+	(opencl_print_expr): Use clast_expr_* instead of expr_*.
+	(opencl_print_sum): Same.
+	(opencl_print_binary): Same.
+
+2010-12-25  Alexey Kravets  <kayrick@ispras.ru>
+
+	* Makefile.in (OBJS-common): Add graphite-opencl-codegen.o,
+	graphite-opencl-meta-clast.o and graphite-opencl.o.
+	(graphite-opencl-codegen.o): New.
+	(graphite-opencl-meta-clast.o): New.
+	(graphite-opencl.o): New.
+	(GTFILES): Add graphite-opencl.c.
+	* common.opt (fgraphite-opencl): New.
+	(fgraphite-opencl-cpu): New.
+	(fgraphite-opencl-ignore-depth-heuristic): New.
+	(fgraphite-opencl-ignore-mem-heuristic): New.
+	(fgraphite-opencl-ignore-dep): New.
+	(fgraphite-opencl-ignore-types): New.
+	(fgraphite-opencl-depth-base): New.
+	(fgraphite-opencl-debug): New.
+	* graphite-opencl-codegen.c: New file.
+	* graphite-opencl-meta-clast.c: New file.
+	* graphite-opencl.c: New file.
+	* graphite-opencl.h: New file.
+	* graphite.c (graphite_transform_loops): Call graphite_opencl_init and
+	graphite_opencl_finalize.
+	* tree-ssa-loop.c (gate_graphite_transforms): Handle
+	flag_graphite_opencl.
+	* graphite-clast-to-gimple.c (gloog): Call opencl_transform_clast.
+	* dbgcnt.def (opencl_scop_cnt): New counter.
+
+2010-12-25  Alexander Monakov  <amonakov@ispras.ru>
+
+	* graphite-dependences.c (graphite_outer_subscript_bound): New.
+	(graphite_carried_dependence_level_k): Export.
+	* graphite-dependences.h (graphite_outer_subscript_bound): Declare.
+	(graphite_carried_dependence_level_k): Ditto.
+
+2010-12-25  Alexey Kravets  <kayrick@ispras.ru>
+
+	* graphite-clast-to-gimple.c (struct clast_name_index): Move
+	definition to graphite-clast-to-gimple.h.
+	(clast_name_to_index): Ditto.
+	(clast_name_index_elt_info): Ditto.
+	(eq_clast_name_indexes): Ditto.
+	(save_clast_name_index): Export.
+	(clast_name_to_gcc): Ditto.
+	(clast_to_gcc_expression): Ditto.
+	(gcc_type_for_clast_expr): Ditto.
+	(graphite_create_new_guard): Ditto.
+	(gcc_type_for_iv_of_clast_loop): Ditto.
+	(graphite_create_new_loop): Ditto.
+	(build_iv_mapping): Ditto.
+	(graphite_create_new_loop_guard): Ditto.
+	(debug_clast_name_index): New.
+	(debug_clast_name_indices): New debug function.
+
 2010-12-21  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/47021
