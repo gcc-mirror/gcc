@@ -1,3 +1,9 @@
+2011-01-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/47382
+	* g++.dg/torture/pr47382.C: New test.
+	* g++.dg/opt/devirt1.C: Xfail.
+
 2011-01-25  Yao Qi  <yao@codesourcery.com>
 
         PR target/45701

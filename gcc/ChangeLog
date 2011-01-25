@@ -1,3 +1,9 @@
+2011-01-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/47382
+	* gimple-fold.c (gimple_fold_obj_type_ref_call): Removed.
+	(gimple_fold_call): Do not call gimple_fold_obj_type_ref_call.
+
 2011-01-25  Joel Sherrill <joel.sherrill@oarcorp.com>
 
 	* config/m32r/m32r.c: Define TARGET_EXCEPT_UNWIND_INFO to
