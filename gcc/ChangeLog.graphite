@@ -1,3 +1,33 @@
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46970
+	* gcc.dg/graphite/pr46970.c: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46215
+	* gcc.dg/graphite/pr46215.c: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46168
+	* gcc.dg/graphite/pr46168.c: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/43657
+	* gcc.dg/graphite/pr43657.c: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/29832
+	* gfortran.dg/graphite/pr29832.f90: New.
+
+2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/43567
+	* gcc.dg/graphite/pr43567.c: New.
+
 2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* Makefile.in (LAMBDA_H): Removed.
