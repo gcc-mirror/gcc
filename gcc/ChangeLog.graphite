@@ -1,5 +1,10 @@
 2011-01-05  Vladimir Kargov  <kargov@gmail.com>
 
+	* graphite-scop-detection.c (get_outermost_loop_in_region): New.
+	(is_valid_loop_p): Correct loop passed to stmt_has_simple_data_refs_p
+
+2011-01-05  Vladimir Kargov  <kargov@gmail.com>
+
 	* graphite-scop-detection.c (canonicalize_loop_closed_ssa): Free
 	invalid postdominance info
 
