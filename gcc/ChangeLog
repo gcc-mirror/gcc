@@ -1,3 +1,12 @@
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47271
+	* tree-if-conv.c (bb_postdominates_preds): New.
+	(if_convertible_bb_p): Call bb_postdominates_preds.
+	(if_convertible_loop_p_1): Compute CDI_POST_DOMINATORS.
+	(predicate_scalar_phi): Call bb_postdominates_preds.
+
 2011-01-25  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.h (LIBCALL_VALUE): Do not promote complex types.

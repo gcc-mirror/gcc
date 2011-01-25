@@ -1,3 +1,9 @@
+2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47271
+	* gcc.dg/tree-ssa/ifc-pr47271.c: New.
+
 2011-01-25  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.target/rx/builtins.c: Allow -fipa-cp-clone.
