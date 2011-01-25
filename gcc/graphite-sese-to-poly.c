@@ -3159,6 +3159,9 @@ build_poly_scop (scop_p scop)
   if (!scop_ivs_can_be_represented (scop))
     return;
 
+  if (flag_associative_math)
+    rewrite_commutative_reductions_out_of_ssa (scop);
+
   build_sese_loop_nests (region);
   build_sese_conditions (region);
   find_scop_parameters (scop);
@@ -3175,8 +3178,6 @@ build_poly_scop (scop_p scop)
      representation to the polyhedral representation to avoid scev
      analysis failures.  That means that these functions will insert
      new data references that they create in the right place.  */
-  if (flag_associative_math)
-    rewrite_commutative_reductions_out_of_ssa (scop);
   rewrite_reductions_out_of_ssa (scop);
   rewrite_cross_bb_scalar_deps_out_of_ssa (scop);
 

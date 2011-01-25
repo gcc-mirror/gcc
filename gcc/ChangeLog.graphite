@@ -1,3 +1,9 @@
+2011-01-19  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (build_poly_scop): Move
+	rewrite_commutative_reductions_out_of_ssa before
+	find_scop_parameters.
+
 2011-01-18  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46970
