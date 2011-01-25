@@ -1,3 +1,10 @@
+2011-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47427
+	PR tree-optimization/47428
+	* gcc.c-torture/compile/pr47427.c: New test.
+	* gcc.c-torture/compile/pr47428.c: New test.
+
 2011-01-25  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/47411
