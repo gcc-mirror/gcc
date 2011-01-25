@@ -1,5 +1,13 @@
 2011-01-25  Tobias Burnus  <burnus@net-b.de>
 
+	Backport from mainline
+	2011-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/47331
+	* gfortran.dg/gomp/pr47331.f90: New test.
+
+2011-01-25  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/47448
 	* gfortran.dg/redefined_intrinsic_assignment_2.f90: New.
 

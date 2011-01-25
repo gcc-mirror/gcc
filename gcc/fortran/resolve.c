@@ -1810,11 +1810,14 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
       if (!gsym->ns->resolved)
 	{
 	  gfc_dt_list *old_dt_list;
+	  struct gfc_omp_saved_state old_omp_state;
 
 	  /* Stash away derived types so that the backend_decls do not
 	     get mixed up.  */
 	  old_dt_list = gfc_derived_types;
 	  gfc_derived_types = NULL;
+	  /* And stash away openmp state.  */
+	  gfc_omp_save_and_clear_state (&old_omp_state);
 
 	  gfc_resolve (gsym->ns);
 
@@ -1824,6 +1827,8 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
 	  /* Restore the derived types of this namespace.  */
 	  gfc_derived_types = old_dt_list;
+	  /* And openmp state.  */
+	  gfc_omp_restore_state (&old_omp_state);
 	}
 
       /* Make sure that translation for the gsymbol occurs before
