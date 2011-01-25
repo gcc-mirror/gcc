@@ -1,3 +1,8 @@
+2011-01-25  Vladimir Kargov  <kargov@gmail.com>
+
+	* graphite-scop-detection.c (canonicalize_loop_closed_ssa): Free
+	invalid postdominance info.
+
 2011-01-24  Jan Hubicka  <jh@suse.cz>
 
 	PR c/21659
@@ -9,7 +14,7 @@
 2011-01-24  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* machmode.def: Fixed comments.
-	
+
 2011-01-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	* emit-rtl.c (reg_attrs_htab_hash): Replace long by intptr_t.
@@ -17,7 +22,7 @@
 2011-01-24  Paul Koning  <ni1d@arrl.net>
 
 	* builtins.c (c_readstr): Fix byte order if BYTES_BIG_ENDIAN !=
-	WORDS_BIG_ENDIAN. 
+	WORDS_BIG_ENDIAN.
 
 2011-01-24  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -573,7 +578,7 @@
 	(*movsi_internal): Use "r" instead of "dax" in constraints.  Use "A"
 	as the source/destination of moves from/to SP.
 	(movsf): Only allow for AM33-2.
-	(*movsf_internal): Use "r" instead of "dax"; use "F" instead of 
+	(*movsf_internal): Use "r" instead of "dax"; use "F" instead of
 	any integer constant constraint.  Only allow for AM33-2.  Tidy
 	all of the alternative outputs.
 	(movdi, movdf, *am33_2_movdf, *mn10300_movdf): Remove.
@@ -1116,9 +1121,9 @@
 2011-01-13  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/45352
-	* sel-sched.c: Update copyright years. 
+	* sel-sched.c: Update copyright years.
 	(reset_sched_cycles_in_current_ebb): Also recheck the DFA state
-	in the advancing loop when we have issued issue_rate insns. 
+	in the advancing loop when we have issued issue_rate insns.
 
 2011-01-12  Richard Henderson  <rth@redhat.com>
 
@@ -1220,7 +1225,7 @@
 	* opts.c (common_handle_option): Disable ipa-reference with profile
 	feedback.
 
-2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>	
+2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-parser.c (c_parser_objc_at_property_declaration): Improved
 	error message.
@@ -1386,7 +1391,7 @@
 
 2011-01-10  Jan Hubicka  <jh@suse.cz>
 
-	PR tree-optimization/47234 
+	PR tree-optimization/47234
 	* tree-pass.h (TODO_rebuild_cgraph_edges): New TODO.
 	(pass_feedback_split_functions): Declare.
 	* passes.c (init_optimization_passes): Add ipa-split as subpass of

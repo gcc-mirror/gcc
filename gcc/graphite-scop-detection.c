@@ -1249,6 +1249,10 @@ canonicalize_loop_closed_ssa (loop_p loop)
 	      }
 	}
     }
+
+  /* The code above does not properly handle changes in the post dominance
+     information (yet).  */
+  free_dominance_info (CDI_POST_DOMINATORS);
 }
 
 /* Converts the current loop closed SSA form to a canonical form
