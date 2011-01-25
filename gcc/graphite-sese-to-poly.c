@@ -2640,7 +2640,9 @@ split_reduction_stmt (scop_p scop, gimple stmt)
 
   /* Do not split basic blocks with no writes to memory: the reduction
      will be the only write to memory.  */
-  if (nb_data_writes_in_bb (bb) == 0)
+  if (nb_data_writes_in_bb (bb) == 0
+      /* Or if we have already marked BB as a reduction.  */
+      || PBB_IS_REDUCTION (pbb_from_bb (bb)))
     return bb;
 
   e1 = split_pbb (scop, pbb, bb, stmt);

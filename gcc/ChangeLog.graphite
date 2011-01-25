@@ -1,5 +1,12 @@
 2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (reduction_dr_1): Allow several reductions
+	in a reduction PBB.
+	* graphite-sese-to-poly.c (split_reduction_stmt): Do not split PBBs
+	that have already been marked as PBB_IS_REDUCTION.
+
+2011-01-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-scop-detection.c (same_close_phi_node): New.
 	(remove_duplicate_close_phi): New.
 	(make_close_phi_nodes_unique): New.
