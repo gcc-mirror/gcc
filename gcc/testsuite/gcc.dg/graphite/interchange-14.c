@@ -18,8 +18,7 @@ matmult (void)
     for (j = 0; j < N; j++)
       A[i][j] = 0;
 
-  /* This should be interchanged twice: (i, k) and (j, i).  The
-     resulting nest should look like this (k, i, j).  */
+  /* Loops J and K should be interchanged.  */
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++)
       for (k = 0; k < N; k++)
@@ -55,5 +54,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "will be interchanged" 2 "graphite" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "will be interchanged" 1 "graphite" } } */
 /* { dg-final { cleanup-tree-dump "graphite" } } */
