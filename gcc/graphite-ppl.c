@@ -525,15 +525,6 @@ bool
 ppl_powerset_is_empty (ppl_Pointset_Powerset_C_Polyhedron_t ps,
 		       int nb_params ATTRIBUTE_UNUSED)
 {
-#if PPL_VERSION_MAJOR == 0 && PPL_VERSION_MINOR < 11
-  /* On PPL 0.10,
-     ppl_Pointset_Powerset_C_Polyhedron_contains_integer_point (ps)
-     takes too long on some cases and so we call _is_empty instead.  */
-  return ppl_Pointset_Powerset_C_Polyhedron_is_empty (ps);
-
-#else
-  /* On PPL 0.11 or later, we can check for integer feasibility using
-     the PIP solver.  */
   ppl_PIP_Problem_t pip;
   ppl_dimension_type d;
   ppl_const_Constraint_System_t pcs;
@@ -585,7 +576,6 @@ ppl_powerset_is_empty (ppl_Pointset_Powerset_C_Polyhedron_t ps,
     free (ds);
 
   return !has_integer_solutions;
-#endif
 }
 
 #endif
