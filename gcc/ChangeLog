@@ -1,3 +1,9 @@
+2011-01-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47426
+	* tree-ssa-structalias.c (ipa_pta_execute): Make externally
+	visible functions results escape.
+
 2011-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/45701
