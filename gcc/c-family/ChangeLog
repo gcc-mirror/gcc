@@ -1,3 +1,10 @@
+2011-01-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47473
+	* c-lex.c (interpret_float): If CPP_N_IMAGINARY, ensure
+	EXCESS_PRECISION_EXPR is created with COMPLEX_TYPE instead of
+	REAL_TYPE.
+
 2011-01-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-ada-spec.c (dump_generic_ada_node): Avoid dereferencing null type.
