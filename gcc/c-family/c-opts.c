@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
@@ -994,6 +994,12 @@ c_common_post_options (const char **pfilename)
   else
     {
       init_c_lex ();
+
+      /* When writing a PCH file, avoid reading some other PCH file,
+	 because the default address space slot then can't be used
+	 for the output PCH file.  */
+      if (pch_file)
+	c_common_no_more_pch ();
 
       /* Yuk.  WTF is this?  I do know ObjC relies on it somewhere.  */
       input_location = UNKNOWN_LOCATION;
