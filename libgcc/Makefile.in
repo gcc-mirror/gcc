@@ -41,6 +41,7 @@ enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
 
 host_noncanonical = @host_noncanonical@
+target_noncanonical = @target_noncanonical@
 
 # List of extra object files that should be compiled for this target machine.
 # The rules for compiling them should be in the t-* file for the machine.
@@ -175,6 +176,9 @@ STRIP_FOR_TARGET = $(STRIP)
 libsubdir = $(libdir)/gcc/$(host_noncanonical)/$(version)
 # Used to install the shared libgcc.
 slibdir = @slibdir@
+# Maybe used for DLLs on Windows targets.
+toolexecdir = @toolexecdir@
+toolexeclibdir = @toolexeclibdir@
 
 export AR_FOR_TARGET
 export AR_CREATE_FOR_TARGET
@@ -194,6 +198,8 @@ export STRIP_FOR_TARGET
 export RANLIB_FOR_TARGET
 export libsubdir
 export slibdir
+export toolexecdir
+export toolexeclibdir
 
 version := $(shell $(CC) -dumpversion)
 

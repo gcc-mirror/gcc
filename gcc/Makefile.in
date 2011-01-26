@@ -1909,6 +1909,7 @@ libgcc.mvars: config.status Makefile $(LIB2ADD) $(LIB2ADD_ST) specs \
 	echo GCC_EXTRA_PARTS = '$(GCC_EXTRA_PARTS)' >> tmp-libgcc.mvars
 	echo SHLIB_LINK = '$(subst $(GCC_FOR_TARGET),$$(GCC_FOR_TARGET),$(SHLIB_LINK))' >> tmp-libgcc.mvars
 	echo SHLIB_INSTALL = '$(SHLIB_INSTALL)' >> tmp-libgcc.mvars
+	echo SHLIB_DLLDIR = '$(SHLIB_DLLDIR)' >> tmp-libgcc.mvars
 	echo SHLIB_EXT = '$(SHLIB_EXT)' >> tmp-libgcc.mvars
 	echo SHLIB_MKMAP = '$(call srcdirify,$(SHLIB_MKMAP))' >> tmp-libgcc.mvars
 	echo SHLIB_MKMAP_OPTS = '$(SHLIB_MKMAP_OPTS)' >> tmp-libgcc.mvars
