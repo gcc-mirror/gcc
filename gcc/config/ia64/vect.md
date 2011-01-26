@@ -370,7 +370,7 @@
   [(set (match_operand:V2SI 0 "gr_register_operand" "")
 	(mult:V2SI (match_operand:V2SI 1 "gr_register_operand" "r")
 		   (match_operand:V2SI 2 "gr_register_operand" "r")))]
-  "!TARGET_BIG_ENDIAN"
+  ""
 {
   rtx t0, t1, t2, t3, t4, t5, t6, t7, x;
   rtx op1h = gen_lowpart (V4HImode, operands[1]);
@@ -390,8 +390,12 @@
      of the full 32-bit product.  */
 
   /* T0 = CDBA.  */
-  x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (4, const1_rtx, const0_rtx,
-					     GEN_INT (3), const2_rtx));
+  if (TARGET_BIG_ENDIAN)
+    x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (4, GEN_INT (3), const2_rtx,
+					       const1_rtx, const0_rtx));
+  else
+    x = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (4, const1_rtx, const0_rtx,
+					       GEN_INT (3), const2_rtx));
   x = gen_rtx_VEC_SELECT (V4HImode, op1h, x);
   emit_insn (gen_rtx_SET (VOIDmode, t0, x));
 
@@ -971,10 +975,20 @@
   ""
 {
   int mask;
-  mask  = INTVAL (operands[2]);
-  mask |= INTVAL (operands[3]) << 2;
-  mask |= INTVAL (operands[4]) << 4;
-  mask |= INTVAL (operands[5]) << 6;
+  if (TARGET_BIG_ENDIAN)
+    {
+      mask  = INTVAL (operands[2]) << 4;
+      mask |= INTVAL (operands[3]) << 6;
+      mask |= INTVAL (operands[4]);
+      mask |= INTVAL (operands[5]) << 2;
+    }
+  else
+    {
+      mask  = INTVAL (operands[2]);
+      mask |= INTVAL (operands[3]) << 2;
+      mask |= INTVAL (operands[4]) << 4;
+      mask |= INTVAL (operands[5]) << 6;
+    }
   operands[2] = GEN_INT (mask);
   return "%,mux2 %0 = %1, %2";
 }
@@ -988,16 +1002,19 @@
 		     (const_int 2)
 		     (const_int 1)
 		     (const_int 3)])))]
-  "!TARGET_BIG_ENDIAN")
+  "")
 
 (define_expand "vec_extract_evenv4hi"
   [(match_operand:V4HI 0 "gr_register_operand")
    (match_operand:V4HI 1 "gr_reg_or_0_operand")
    (match_operand:V4HI 2 "gr_reg_or_0_operand")]
-  "!TARGET_BIG_ENDIAN"
+  ""
 {
   rtx temp = gen_reg_rtx (V4HImode);
-  emit_insn (gen_mix2_r (temp, operands[1], operands[2]));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_mix2_l (temp, operands[1], operands[2]));
+  else
+    emit_insn (gen_mix2_r (temp, operands[1], operands[2]));
   emit_insn (gen_vec_extract_evenodd_helper (operands[0], temp));
   DONE;
 })
@@ -1006,10 +1023,13 @@
   [(match_operand:V4HI 0 "gr_register_operand")
    (match_operand:V4HI 1 "gr_reg_or_0_operand")
    (match_operand:V4HI 2 "gr_reg_or_0_operand")]
-  "!TARGET_BIG_ENDIAN"
+  ""
 {
   rtx temp = gen_reg_rtx (V4HImode);
-  emit_insn (gen_mix2_l (temp, operands[1], operands[2]));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_mix2_r (temp, operands[1], operands[2]));
+  else
+    emit_insn (gen_mix2_l (temp, operands[1], operands[2]));
   emit_insn (gen_vec_extract_evenodd_helper (operands[0], temp));
   DONE;
 })
@@ -1035,7 +1055,7 @@
 {
   /* Recall that vector elements are numbered in memory order.  */
   if (TARGET_BIG_ENDIAN)
-    return "%,unpack4.h %0 = %r1, %r2";
+    return "%,unpack4.l %0 = %r1, %r2";
   else
     return "%,unpack4.l %0 = %r2, %r1";
 }
@@ -1054,7 +1074,7 @@
 {
   /* Recall that vector elements are numbered in memory order.  */
   if (TARGET_BIG_ENDIAN)
-    return "%,unpack4.l %0 = %r1, %r2";
+    return "%,unpack4.h %0 = %r1, %r2";
   else
     return "%,unpack4.h %0 = %r2, %r1";
 }
@@ -1064,10 +1084,14 @@
   [(match_operand:V2SI 0 "gr_register_operand" "")
    (match_operand:V2SI 1 "gr_register_operand" "")
    (match_operand:V2SI 2 "gr_register_operand" "")]
-  "!TARGET_BIG_ENDIAN"
+  ""
 {
-  emit_insn (gen_vec_interleave_lowv2si (operands[0], operands[1],
-					 operands[2]));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_vec_interleave_highv2si (operands[0], operands[1],
+					   operands[2]));
+  else
+    emit_insn (gen_vec_interleave_lowv2si (operands[0], operands[1],
+					   operands[2]));
   DONE;
 })
 
@@ -1075,10 +1099,14 @@
   [(match_operand:V2SI 0 "gr_register_operand" "")
    (match_operand:V2SI 1 "gr_register_operand" "")
    (match_operand:V2SI 2 "gr_register_operand" "")]
-  "!TARGET_BIG_ENDIAN"
+  ""
 {
-  emit_insn (gen_vec_interleave_highv2si (operands[0], operands[1],
-					  operands[2]));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_vec_interleave_lowv2si (operands[0], operands[1],
+					    operands[2]));
+  else
+    emit_insn (gen_vec_interleave_highv2si (operands[0], operands[1],
+					    operands[2]));
   DONE;
 })
 
@@ -1594,11 +1622,14 @@
   [(match_operand:V4HI 0 "gr_register_operand" "")
    (match_operand:V2SI 1 "gr_register_operand" "")
    (match_operand:V2SI 2 "gr_register_operand" "")]
-  "!TARGET_BIG_ENDIAN"
+  ""
 {
   rtx op1 = gen_lowpart(V4HImode, operands[1]);
   rtx op2 = gen_lowpart(V4HImode, operands[2]);
-  emit_insn (gen_vec_extract_evenv4hi (operands[0], op1, op2));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_vec_extract_oddv4hi (operands[0], op1, op2));
+  else
+    emit_insn (gen_vec_extract_evenv4hi (operands[0], op1, op2));
   DONE;
 })
 

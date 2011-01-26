@@ -1,3 +1,17 @@
+2011-01-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/46997
+	* config/ia64/vect.md (mulv2si3): Enable and fix for TARGET_BIG_ENDIAN.
+	(*mux2): Ditto.
+	(vec_extract_evenodd_help): Ditto.
+	(vec_extract_evenv4hi): Ditto.
+	(vec_extract_oddv4hi): Ditto.
+	(vec_interleave_lowv2si): Ditto.
+	(vec_interleave_highv2si): Ditto.
+	(vec_extract_evenv2si): Ditto.
+	(vec_extract_oddv2si: Ditto.
+	(vec_pack_trunc_v2si): Ditto.
+
 2011-01-22  Jan Hubicka  <jh@suse.cz>
 
 	PR target/47237
