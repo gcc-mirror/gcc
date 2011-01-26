@@ -1,3 +1,9 @@
+2011-01-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/45454
+	* sel-sched.c (moveup_expr): Don't let debug insns prevent
+	non-debug insns from moving up.
+
 2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/40125
