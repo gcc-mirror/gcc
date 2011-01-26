@@ -1997,6 +1997,22 @@ compute_inline_parameters (struct cgraph_node *node)
 
   /* Can this function be inlined at all?  */
   node->local.inlinable = tree_inlinable_function_p (node->decl);
+
+  /* Inlinable functions always can change signature.  */
+  if (node->local.inlinable)
+    node->local.can_change_signature = true;
+  else
+    {
+      struct cgraph_edge *e;
+
+      /* Functions calling builtlin_apply can not change signature.  */
+      for (e = node->callees; e; e = e->next_callee)
+	if (DECL_BUILT_IN (e->callee->decl)
+	    && DECL_BUILT_IN_CLASS (e->callee->decl) == BUILT_IN_NORMAL
+	    && DECL_FUNCTION_CODE (e->callee->decl) == BUILT_IN_APPLY_ARGS)
+	  break;
+      node->local.can_change_signature = !e;
+    }
   if (node->local.inlinable && !node->local.disregard_inline_limits)
     node->local.disregard_inline_limits
       = DECL_DISREGARD_INLINE_LIMITS (node->decl);

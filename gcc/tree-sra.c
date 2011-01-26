@@ -4425,6 +4425,13 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
+  if (!node->local.can_change_signature)
+    {
+      if (dump_file)
+	fprintf (dump_file, "Function can not change signature.\n");
+      return false;
+    }
+
   if (!tree_versionable_function_p (node->decl))
     {
       if (dump_file)

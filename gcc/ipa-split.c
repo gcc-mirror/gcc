@@ -670,6 +670,7 @@ visit_bb (basic_block bb, basic_block return_bb,
 	     way to store builtin_stack_save result in non-SSA variable
 	     since all calls to those are compiler generated.  */
 	  case BUILT_IN_APPLY:
+	  case BUILT_IN_APPLY_ARGS:
 	  case BUILT_IN_VA_START:
 	    if (dump_file && (dump_flags & TDF_DETAILS))
 	      fprintf (dump_file,
