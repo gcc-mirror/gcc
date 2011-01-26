@@ -1,3 +1,10 @@
+2011-01-26  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR target/47246
+	* config/arm/arm.c (thumb2_legitimate_index_p): Change the
+	lower bound of the allowed Thumb-2 coprocessor load/store
+	index range to -256. Add explaining comment.
+
 2011-01-25  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_define): Improve lexing of macro expansion to only
