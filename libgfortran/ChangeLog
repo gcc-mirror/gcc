@@ -1,3 +1,7 @@
+2011-01-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* intrinsics/getlog.c (getlog): Fix label/statement issue.
+
 2011-01-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47375

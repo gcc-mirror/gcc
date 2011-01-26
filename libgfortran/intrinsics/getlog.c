@@ -115,5 +115,7 @@ PREFIX(getlog) (char * login, gfc_charlen_type login_len)
  cleanup:
 #ifdef HAVE_GETPWUID_R
   free (buf);
+#else
+  ;
 #endif
 }
