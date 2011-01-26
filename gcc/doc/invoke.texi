@@ -8509,7 +8509,7 @@ Select fraction of the maximal count of repetitions of basic block in program
 given basic block needs to have to be considered hot.
 
 @item hot-bb-frequency-fraction
-Select fraction of the maximal frequency of executions of basic block in
+Select fraction of the entry block frequency of executions of basic block in
 function given basic block needs to have to be considered hot
 
 @item max-predicted-iterations
