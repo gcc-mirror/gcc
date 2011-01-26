@@ -127,7 +127,6 @@
 %{shared:-Bdynamic} \
 %{symbolic:-Bsymbolic} \
 %{G*} \
-%{YP,*} \
 %{Qy:} %{!Qn:-Qy}"
 
 #undef  LIB_SPEC

@@ -250,7 +250,6 @@ extern unsigned int bfin_workarounds;
 %{static:-dn -Bstatic} \
 %{shared:-G -Bdynamic} \
 %{symbolic:-Bsymbolic} \
-%{YP,*} \
 %{Qy:} %{!Qn:-Qy} \
 -init __init -fini __fini "
 
