@@ -1,3 +1,8 @@
+2011-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47190
+	* gcc.dg/attr-weakref-3.c: New testcase.
+
 2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR c++/43601

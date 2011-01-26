@@ -1,5 +1,11 @@
 2011-01-26  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/47190
+	 * cgraphunit.c (process_common_attributes): New function.
+        (process_function_and_variable_attributes): Use it.
+
+2011-01-26  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/47423
 	* cgraphbuild.c (record_eh_tables): Record reference to personality
 	function.
