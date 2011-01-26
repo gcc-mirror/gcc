@@ -1,7 +1,7 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2006,
-   2007, 2009, 2010 Free Software Foundation, Inc.
+   2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Add %(asm_cpu_spec) to a generic definition of ASM_SPEC.  */
 #undef ASM_SPEC
 #define ASM_SPEC "%(asm_cpu_spec) %(asm_pcrel_spec) \
-  %{Qy:} %{!Qn:-Qy} %{Ym,*} %{Yd,*}"
+  %{Qy:} %{!Qn:-Qy} %{Ym,*}"
 
 #undef PREFERRED_STACK_BOUNDARY
 #define PREFERRED_STACK_BOUNDARY 32
