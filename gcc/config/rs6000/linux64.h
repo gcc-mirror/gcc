@@ -192,7 +192,7 @@ extern int dot_symbols;
 #endif
 #endif
 
-#define ASM_SPEC32 "-a32 %{Ym,*} \
+#define ASM_SPEC32 "-a32 \
 %{mrelocatable} %{mrelocatable-lib} %{fpic:-K PIC} %{fPIC:-K PIC} \
 %{memb} %{!memb: %{msdata=eabi: -memb}} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \

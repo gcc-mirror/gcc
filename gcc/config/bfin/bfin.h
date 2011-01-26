@@ -241,7 +241,6 @@ extern unsigned int bfin_workarounds;
 
 #undef  ASM_SPEC
 #define ASM_SPEC "\
-%{Ym,*} \
     %{mno-fdpic:-mnopic} %{mfdpic}"
 
 #define LINK_SPEC "\

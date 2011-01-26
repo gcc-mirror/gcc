@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Add %(asm_cpu_spec) to a generic definition of ASM_SPEC.  */
 #undef ASM_SPEC
 #define ASM_SPEC "%(asm_cpu_spec) %(asm_pcrel_spec) \
-  %{Qy:} %{!Qn:-Qy} %{Ym,*}"
+  %{Qy:} %{!Qn:-Qy}"
 
 #undef PREFERRED_STACK_BOUNDARY
 #define PREFERRED_STACK_BOUNDARY 32
