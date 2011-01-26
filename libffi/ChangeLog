@@ -1,3 +1,9 @@
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40125
+	* configure.ac (AM_LTLDFLAGS): Add -bindir option for windows DLLs.
+	* configure: Regenerate.
+
 2010-12-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR libffi/29152
