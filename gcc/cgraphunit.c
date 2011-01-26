@@ -791,6 +791,23 @@ cgraph_analyze_function (struct cgraph_node *node)
   current_function_decl = save;
 }
 
+/* Process attributes common for vars and functions.  */
+
+static void
+process_common_attributes (tree decl)
+{
+  tree weakref = lookup_attribute ("weakref", DECL_ATTRIBUTES (decl));
+
+  if (weakref && !lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
+    {
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "%<weakref%> attribute should be accompanied with"
+		  " an %<alias%> attribute");
+      DECL_WEAK (decl) = 0;
+      remove_attribute ("weakref", DECL_ATTRIBUTES (decl));
+    }
+}
+
 /* Look for externally_visible and used attributes and mark cgraph nodes
    accordingly.
 
@@ -843,6 +860,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	  else if (node->local.finalized)
 	     cgraph_mark_needed_node (node);
 	}
+      process_common_attributes (decl);
     }
   for (vnode = varpool_nodes; vnode != first_var; vnode = vnode->next)
     {
@@ -869,6 +887,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
 	  else if (vnode->finalized)
 	    varpool_mark_needed_node (vnode);
 	}
+      process_common_attributes (decl);
     }
 }
 
