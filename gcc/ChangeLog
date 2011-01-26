@@ -1,5 +1,26 @@
 2011-01-22  Jan Hubicka  <jh@suse.cz>
 
+	PR target/47237
+	* cgraph.h (cgraph_local_info): New field can_change_signature.
+	* ipa-cp.c (ipcp_update_callgraph): Only compute args_to_skip if callee
+	signature can change.
+	(ipcp_estimate_growth): Call sequence simplify only if calle signature
+	can change.
+	(ipcp_insert_stage): Only compute args_to_skip if signature can change.
+	(cgraph_function_versioning): We can not change signature of functions
+	that don't allow that.
+	* lto-cgraph.c (lto_output_node): Stream local.can_change_signature.
+	(lto_input_node): Likewise.
+	* ipa-inline.c (compute_inline_parameters): Compute local.can_change_signature.
+	* ipa-split.c (visit_bb): Never split away APPLY_ARGS.
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Give up on functions
+	that can not change signature.
+	* i386.c (ix86_function_regparm, ix86_function_sseregparm,
+	init_cumulative_args): Do not use local calling conventions for functions
+	that can not change signature.
+
+2011-01-22  Jan Hubicka  <jh@suse.cz>
+
 	* doc/invoke.texi (hot-bb-frequency-fraction): Commit forgotten hunk.
 
 2011-01-26  Richard Guenther  <rguenther@suse.de>
