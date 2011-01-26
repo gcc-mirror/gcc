@@ -1,3 +1,9 @@
+2011-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/44469
+	* cfgcleanup.c (try_optimize_cfg): Iterate in CFG layout mode too
+	after removing trivially dead basic blocks.
+
 2011-01-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/bfin/bfin.h (LINK_SPEC): Remove %{Qy:} %{!Qn:-Qy}.
