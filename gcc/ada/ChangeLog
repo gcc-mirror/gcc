@@ -1,3 +1,10 @@
+2011-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/47467
+	* targext.c: Include config.h.
+	* gcc-interface/Make-lang.in (ada/targext.o): Add $(CONFIG_H)
+	dependency.
+
 2011-01-04  Pascal Obry  <obry@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
