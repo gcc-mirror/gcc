@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2011-01-09 10:58+0100\n"
+"PO-Revision-Date: 2011-01-15 23:21+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -358,7 +358,7 @@ msgstr "kompilering avslutad.\n"
 #: diagnostic.c:508
 #, c-format
 msgid "%s:%d: confused by earlier errors, bailing out\n"
-msgstr "%s:%d: förvirrar av tidigare fel, hoppar ut\n"
+msgstr "%s:%d: förvirrad av tidigare fel, hoppar ut\n"
 
 #: diagnostic.c:874
 #, c-format
@@ -543,7 +543,7 @@ msgstr "  -print-file-name=<bib>   Visa hela sökvägen till länkbibliotek <bib>\n
 
 #: gcc.c:2906
 msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>\n"
-msgstr "  -print-prog-name=<prog>  Visa fulla sökvägen till kompilatorkomponenten <prog>\n"
+msgstr "  -print-prog-name=<prog>  Visa hela sökvägen till kompilatorkomponenten <prog>\n"
 
 #: gcc.c:2907
 msgid "  -print-multi-directory   Display the root directory for versions of libgcc\n"
@@ -3743,37 +3743,37 @@ msgstr "%s: I instansiering av %qs:\n"
 #: cp/error.c:2874
 #, c-format
 msgid "%s:%d:%d:   recursively instantiated from %qs\n"
-msgstr "%s:%d:%d:   rekursivt instantierad från %qs\n"
+msgstr "%s:%d:%d:   rekursivt instansierad från %qs\n"
 
 #: cp/error.c:2875
 #, c-format
 msgid "%s:%d:%d:   instantiated from %qs\n"
-msgstr "%s:%d:%d:   instantierad från %qs\n"
+msgstr "%s:%d:%d:   instansierad från %qs\n"
 
 #: cp/error.c:2880 cp/error.c:2881
 #, c-format
 msgid "%s:%d:   recursively instantiated from %qs\n"
-msgstr "%s:%d:   rekursivt instantierad från %qs\n"
+msgstr "%s:%d:   rekursivt instansierad från %qs\n"
 
 #: cp/error.c:2889
 #, c-format
 msgid "%s:%d:%d:   recursively instantiated from here"
-msgstr "%s:%d:%d:   rekursivt instantierad härifrån"
+msgstr "%s:%d:%d:   rekursivt instansierad härifrån"
 
 #: cp/error.c:2890
 #, c-format
 msgid "%s:%d:%d:   instantiated from here"
-msgstr "%s:%d:%d:   instantierad härifrån"
+msgstr "%s:%d:%d:   instansierad härifrån"
 
 #: cp/error.c:2895
 #, c-format
 msgid "%s:%d:   recursively instantiated from here"
-msgstr "%s:%d:   rekursivt instantierad härifrån"
+msgstr "%s:%d:   rekursivt instansierad härifrån"
 
 #: cp/error.c:2896
 #, c-format
 msgid "%s:%d:   instantiated from here"
-msgstr "%s:%d:   instantierad härifrån"
+msgstr "%s:%d:   instansierad härifrån"
 
 #: cp/error.c:2939
 #, c-format
@@ -26856,7 +26856,7 @@ msgstr "det går inte att deklarera pekare medlem av %q#T"
 #: cp/decl.c:8902
 #, gcc-internal-format
 msgid "cannot declare reference to qualified function type %qT"
-msgstr "det går inte att deklarera en referen till en kvalificerad funktionstyp %qT"
+msgstr "det går inte att deklarera en referens till en kvalificerad funktionstyp %qT"
 
 #: cp/decl.c:8903
 #, gcc-internal-format
