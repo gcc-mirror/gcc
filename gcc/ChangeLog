@@ -1,3 +1,13 @@
+2011-01-25  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/26854
+	* c-decl.c (struct c_scope): Add field has_jump_unsafe_decl.
+	(decl_jump_unsafe): Move higher in file, with no other change.
+	(bind): Set has_jump_unsafe_decl if appropriate.
+	(update_label_decls): Test has_jump_unsafe_decl to avoid loop.
+	(check_earlier_gotos): Likewise.
+	(c_check_switch_jump_warnings): Likewise.
+
 2011-01-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/invoke.texi (Warning Options): Add missing hyphen.
