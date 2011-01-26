@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 @c Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
@@ -2213,9 +2213,14 @@ On systems that support the @code{visibility} attribute, this
 attribute also implies ``default'' visibility.  It is an error to
 explicitly specify any other visibility.
 
-Currently, the @code{dllexport} attribute is ignored for inlined
-functions, unless the @option{-fkeep-inline-functions} flag has been
-used.  The attribute is also ignored for undefined symbols.
+In previous versions of GCC, the @code{dllexport} attribute was ignored 
+for inlined functions, unless the @option{-fkeep-inline-functions} flag
+had been used.  The default behaviour now is to emit all dllexported
+inline functions; however, this can cause object file-size bloat, in
+which case the old behaviour can be restored by using
+@option{-fno-keep-inline-dllexport}.
+
+The attribute is also ignored for undefined symbols.
 
 When applied to C++ classes, the attribute marks defined non-inlined
 member functions and static data members as exports.  Static consts

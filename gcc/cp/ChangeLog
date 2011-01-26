@@ -1,3 +1,8 @@
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* semantics.c (expand_or_defer_fn_1): Handle it.
+	* decl2.c (decl_needed_p): Likewise.
+
 2011-01-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47041

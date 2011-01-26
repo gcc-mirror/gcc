@@ -3482,7 +3482,8 @@ expand_or_defer_fn_1 (tree fn)
       if ((flag_keep_inline_functions
 	   && DECL_DECLARED_INLINE_P (fn)
 	   && !DECL_REALLY_EXTERN (fn))
-	  || lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn)))
+	  || (flag_keep_inline_dllexport
+	      && lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn))))
 	mark_needed (fn);
     }
 

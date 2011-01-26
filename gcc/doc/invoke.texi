@@ -6149,6 +6149,13 @@ abstract measurement of function's size.  In no way does it represent a count
 of assembly instructions and as such its exact meaning might change from one
 release to an another.
 
+@item -fno-keep-inline-dllexport
+@opindex -fno-keep-inline-dllexport
+This is a more fine-grained version of @option{-fkeep-inline-functions},
+which applies only to functions that are declared using the @code{dllexport}
+attribute or declspec (@xref{Function Attributes,,Declaring Attributes of
+Functions}.)
+
 @item -fkeep-inline-functions
 @opindex fkeep-inline-functions
 In C, emit @code{static} functions that are declared @code{inline}
