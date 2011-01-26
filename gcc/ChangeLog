@@ -1,3 +1,9 @@
+2011-01-26  DJ Delorie  <dj@redhat.com>
+
+	PR rtl-optimization/46878
+	* combine.c (insn_a_feeds_b): Check for the implicit cc0
+	setter/user dependency as well.
+
 2011-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/44469

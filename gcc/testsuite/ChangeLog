@@ -1,3 +1,8 @@
+2011-01-26  DJ Delorie  <dj@redhat.com>
+
+	PR rtl-optimization/46878
+	* gcc.dg/pr46878-1.c: New test.
+
 2011-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/47476
