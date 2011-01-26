@@ -7,5 +7,5 @@
 subroutine test(cha)
   implicit none
   character(len=10) :: cha(:)
-  namelist /z/  cha             ! { dg-error "must not have assumed shape" }
+  namelist /z/  cha             ! { dg-error "with assumed shape in namelist" }
 end subroutine test

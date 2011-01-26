@@ -4030,13 +4030,6 @@ gfc_match_namelist (void)
 	      gfc_error_check ();
 	    }
 
-	  if (sym->ts.type == BT_CHARACTER && sym->ts.u.cl->length == NULL)
-	    {
-	      gfc_error ("Assumed character length '%s' in namelist '%s' at "
-			 "%C is not allowed", sym->name, group_name->name);
-	      gfc_error_check ();
-	    }
-
 	  nl = gfc_get_namelist ();
 	  nl->sym = sym;
 	  sym->refs++;
