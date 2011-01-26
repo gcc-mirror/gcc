@@ -1,3 +1,8 @@
+2011-01-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/47467
+	* targext.c: Include target files if IN_RTS is defined.
+
 2011-01-26  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/47467
