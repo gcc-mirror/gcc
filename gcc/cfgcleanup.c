@@ -2341,8 +2341,7 @@ try_optimize_cfg (int mode)
 			}
 		    }
 		  delete_basic_block (b);
-		  if (!(mode & CLEANUP_CFGLAYOUT))
-		    changed = true;
+		  changed = true;
 		  /* Avoid trying to remove ENTRY_BLOCK_PTR.  */
 		  b = (c == ENTRY_BLOCK_PTR ? c->next_bb : c);
 		  continue;
