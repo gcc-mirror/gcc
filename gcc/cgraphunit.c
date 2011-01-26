@@ -2014,6 +2014,8 @@ cgraph_function_versioning (struct cgraph_node *old_version_node,
   if (!tree_versionable_function_p (old_decl))
     return NULL;
 
+  gcc_assert (old_version_node->local.can_change_signature || !args_to_skip);
+
   /* Make a new FUNCTION_DECL tree node for the
      new version. */
   if (!args_to_skip)

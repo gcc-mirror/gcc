@@ -2300,6 +2300,8 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   if (!flag_wpa)
     gcc_checking_assert  (tree_versionable_function_p (old_decl));
 
+  gcc_assert (old_node->local.can_change_signature || !args_to_skip);
+
   /* Make a new FUNCTION_DECL tree node */
   if (!args_to_skip)
     new_decl = copy_node (old_decl);

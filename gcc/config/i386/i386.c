@@ -5493,7 +5493,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
     {
       /* FIXME: remove this CONST_CAST when cgraph.[ch] is constified.  */
       struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE (decl));
-      if (i && i->local)
+      if (i && i->local && i->can_change_signature)
 	{
 	  int local_regparm, globals = 0, regno;
 
@@ -5570,7 +5570,7 @@ ix86_function_sseregparm (const_tree type, const_tree decl, bool warn)
     {
       /* FIXME: remove this CONST_CAST when cgraph.[ch] is constified.  */
       struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE(decl));
-      if (i && i->local)
+      if (i && i->local && i->can_change_signature)
 	return TARGET_SSE2 ? 2 : 1;
     }
 
@@ -5954,7 +5954,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
      va_start so for local functions maybe_vaarg can be made aggressive
      helping K&R code.
      FIXME: once typesytem is fixed, we won't need this code anymore.  */
-  if (i && i->local)
+  if (i && i->local && i->can_change_signature)
     fntype = TREE_TYPE (fndecl);
   cum->maybe_vaarg = (fntype
 		      ? (!prototype_p (fntype) || stdarg_p (fntype))

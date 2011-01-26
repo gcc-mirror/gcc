@@ -1040,25 +1040,29 @@ ipcp_update_callgraph (void)
   for (node = cgraph_nodes; node; node = node->next)
     if (node->analyzed && ipcp_node_is_clone (node))
       {
-	bitmap args_to_skip = BITMAP_ALLOC (NULL);
+	bitmap args_to_skip = NULL;
 	struct cgraph_node *orig_node = ipcp_get_orig_node (node);
         struct ipa_node_params *info = IPA_NODE_REF (orig_node);
         int i, count = ipa_get_param_count (info);
         struct cgraph_edge *cs, *next;
 
-	for (i = 0; i < count; i++)
+	if (node->local.can_change_signature)
 	  {
-	    struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
-
-	    /* We can proactively remove obviously unused arguments.  */
-	    if (!ipa_is_param_used (info, i))
+	    args_to_skip = BITMAP_ALLOC (NULL);
+	    for (i = 0; i < count; i++)
 	      {
-		bitmap_set_bit (args_to_skip, i);
-		continue;
-	      }
+		struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
 
-	    if (lat->type == IPA_CONST_VALUE)
-	      bitmap_set_bit (args_to_skip, i);
+		/* We can proactively remove obviously unused arguments.  */
+		if (!ipa_is_param_used (info, i))
+		  {
+		    bitmap_set_bit (args_to_skip, i);
+		    continue;
+		  }
+
+		if (lat->type == IPA_CONST_VALUE)
+		  bitmap_set_bit (args_to_skip, i);
+	      }
 	  }
 	for (cs = node->callers; cs; cs = next)
 	  {
@@ -1130,17 +1134,18 @@ ipcp_estimate_growth (struct cgraph_node *node)
 
   info = IPA_NODE_REF (node);
   count = ipa_get_param_count (info);
-  for (i = 0; i < count; i++)
-    {
-      struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+  if (node->local.can_change_signature)
+    for (i = 0; i < count; i++)
+      {
+	struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
 
-      /* We can proactively remove obviously unused arguments.  */
-      if (!ipa_is_param_used (info, i))
-	removable_args++;
+	/* We can proactively remove obviously unused arguments.  */
+	if (!ipa_is_param_used (info, i))
+	  removable_args++;
 
-      if (lat->type == IPA_CONST_VALUE)
-	removable_args++;
-    }
+	if (lat->type == IPA_CONST_VALUE)
+	  removable_args++;
+      }
 
   /* We make just very simple estimate of savings for removal of operand from
      call site.  Precise cost is dificult to get, as our size metric counts
@@ -1386,16 +1391,21 @@ ipcp_insert_stage (void)
       count = ipa_get_param_count (info);
 
       replace_trees = VEC_alloc (ipa_replace_map_p, gc, 1);
-      args_to_skip = BITMAP_GGC_ALLOC ();
+
+      if (node->local.can_change_signature)
+	args_to_skip = BITMAP_GGC_ALLOC ();
+      else
+	args_to_skip = NULL;
       for (i = 0; i < count; i++)
 	{
 	  struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
 	  parm_tree = ipa_get_param (info, i);
 
 	  /* We can proactively remove obviously unused arguments.  */
-          if (!ipa_is_param_used (info, i))
+	  if (!ipa_is_param_used (info, i))
 	    {
-	      bitmap_set_bit (args_to_skip, i);
+	      if (args_to_skip)
+	        bitmap_set_bit (args_to_skip, i);
 	      continue;
 	    }
 
@@ -1404,7 +1414,8 @@ ipcp_insert_stage (void)
 	      replace_param =
 		ipcp_create_replace_map (parm_tree, lat);
 	      VEC_safe_push (ipa_replace_map_p, gc, replace_trees, replace_param);
-	      bitmap_set_bit (args_to_skip, i);
+	      if (args_to_skip)
+	        bitmap_set_bit (args_to_skip, i);
 	    }
 	}
 

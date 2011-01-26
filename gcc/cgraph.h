@@ -114,6 +114,10 @@ struct GTY(()) cgraph_local_info {
      Currently computed and used only by ipa-cp.  */
   unsigned versionable : 1;
 
+  /* False when function calling convention and signature can not be changed.
+     This is the case when __builtin_apply_args is used.  */
+  unsigned can_change_signature : 1;
+
   /* True when function should be inlined independently on its size.  */
   unsigned disregard_inline_limits : 1;
 
