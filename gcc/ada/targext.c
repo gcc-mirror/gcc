@@ -33,6 +33,7 @@
 /*  extension for object and executable files. It is used by the compiler,  */
 /*  binder and tools.                                                       */
 
+#include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
