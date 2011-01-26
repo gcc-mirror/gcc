@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 /* It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "%{Qy:} %{!Qn:-Qy} -s \
+  "-s \
    %{fpic|fpie|fPIC|fPIE:-K PIC} %(asm_cpu)"
 
 /* Use the default.  */

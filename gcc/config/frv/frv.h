@@ -126,8 +126,7 @@
 %{static:-dn -Bstatic} \
 %{shared:-Bdynamic} \
 %{symbolic:-Bsymbolic} \
-%{G*} \
-%{Qy:} %{!Qn:-Qy}"
+%{G*}"
 
 #undef  LIB_SPEC
 #define LIB_SPEC "--start-group -lc -lsim --end-group"

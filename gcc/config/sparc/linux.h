@@ -85,7 +85,6 @@ along with GCC; see the file COPYING3.  If not see
 /* It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC "\
-%{!Qn:-Qy} \
 -s \
 %{fpic|fPIC|fpie|fPIE:-K PIC} \
 %{!.c:%{findirect-dispatch:-K PIC}} \
