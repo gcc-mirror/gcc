@@ -141,6 +141,11 @@ record_eh_tables (struct cgraph_node *node, struct function *fun)
 {
   eh_region i;
 
+  if (DECL_FUNCTION_PERSONALITY (node->decl))
+    ipa_record_reference (node, NULL,
+			  cgraph_node (DECL_FUNCTION_PERSONALITY (node->decl)),
+			  NULL, IPA_REF_ADDR, NULL);
+
   i = fun->eh->region_tree;
   if (!i)
     return;
