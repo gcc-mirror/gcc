@@ -1,3 +1,14 @@
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40125
+	* configure.ac: Call ACX_NONCANONICAL_TARGET.
+	(toolexecdir): Calculate and AC_SUBST.
+	(toolexeclibdir): Likewise.
+	* Makefile.in (target_noncanonical): Import.
+	(toolexecdir): Likewise.
+	(toolexeclibdir): Likewise.
+	* configure: Regenerate.
+
 2010-12-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR target/46040

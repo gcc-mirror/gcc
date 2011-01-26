@@ -1,3 +1,17 @@
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/40125
+	* config.gcc (i[34567]86-*-pe | i[34567]86-*-cygwin*): Select suitable
+	t-dlldir{,-x} fragment for build and add it to tmake_file.
+	(i[34567]86-*-mingw* | x86_64-*-mingw*): Likewise.
+	* Makefile.in (libgcc.mvars): Also export SHLIB_DLLDIR to libgcc.
+	* config/i386/t-dlldir: New file.
+	(SHLIB_DLLDIR): Define.
+	* config/i386/t-dlldir-x: New file.
+	(SHLIB_DLLDIR): Define.
+	* config/i386/t-cygming: Error out if SHLIB_DLLDIR is not set.
+	(SHLIB_INSTALL): Use it.
+
 2011-01-26  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR target/47246

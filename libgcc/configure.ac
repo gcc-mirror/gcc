@@ -104,7 +104,38 @@ esac
 
 AC_CANONICAL_HOST
 ACX_NONCANONICAL_HOST
+ACX_NONCANONICAL_TARGET
 GCC_TOPLEV_SUBDIRS
+
+# Calculate toolexeclibdir
+# Also toolexecdir, though it's only used in toolexeclibdir
+case ${version_specific_libs} in
+  yes)
+    # Need the gcc compiler version to know where to install libraries
+    # and header files if --enable-version-specific-runtime-libs option
+    # is selected.
+    toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
+    toolexeclibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
+    ;;
+  no)
+    if test -n "$with_cross_host" &&
+       test x"$with_cross_host" != x"no"; then
+      # Install a library built with a cross compiler in tooldir, not libdir.
+      toolexecdir='$(exec_prefix)/$(target_noncanonical)'
+      toolexeclibdir='$(toolexecdir)/lib'
+    else
+      toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
+      toolexeclibdir='$(libdir)'
+    fi
+    multi_os_directory=`$CC -print-multi-os-directory`
+    case $multi_os_directory in
+      .) ;; # Avoid trailing /.
+      *) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
+    esac
+    ;;
+esac
+AC_SUBST(toolexecdir)
+AC_SUBST(toolexeclibdir)
 
 dnl These must be called before AM_PROG_LIBTOOL, because it may want
 dnl to call AC_CHECK_PROG.
