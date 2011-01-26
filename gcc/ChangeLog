@@ -1,5 +1,17 @@
 2011-01-26  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/bfin/bfin.h (ASM_SPEC): Remove %{Ym,*}.
+	* config/frv/frv.h (ASM_SPEC): Likewise.
+	* config/m68k/linux.h (ASM_SPEC): Likewise.
+	* config/pa/pa-linux.h (ASM_SPEC): Likewise.
+	* config/rs6000/linux64.h (ASM_SPEC): Likewise.
+	* config/rs6000/vxworks.h (ASM_SPEC): Likewise.
+	* config/sparc/linux.h (ASM_SPEC): Likewise.
+	* config/sparc/linux64.h (ASM_SPEC): Likewise.
+	* config/sparc/sp-elf.h (ASM_SPEC): Likewise.
+
+2011-01-26  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/bfin/bfin.h (LINK_SPEC): Remove %{YP,*}.
 	* config/frv/frv.h (LINK_SPEC): Likewise.
 	* config/rs6000/sysv4.h (LINK_SPEC): Likewise.

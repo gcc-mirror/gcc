@@ -57,7 +57,7 @@
 
 #undef  ASM_SPEC
 #define ASM_SPEC "\
-%{G*} %{Ym,*} \
+%{G*} \
 %{mtomcat-stats} \
 %{!mno-eflags: \
     %{mcpu=*} \
