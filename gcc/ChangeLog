@@ -1,3 +1,9 @@
+2011-01-26  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/47464
+	* df-problems.c (can_move_insn_across): Use may_trap_or_fault_p
+	rather than may_trap_p as needed.
+
 2011-01-26  DJ Delorie  <dj@redhat.com>
 
 	PR rtl-optimization/46878
