@@ -619,7 +619,7 @@ extern int fixuplabelno;
 #undef	LINK_SPEC
 #define	LINK_SPEC "\
 %{h*} %{v:-V} %{!msdata=none:%{G*}} %{msdata=none:-G0} \
-%{YP,*} %{R*} \
+%{R*} \
 %{Qy:} %{!Qn:-Qy} \
 %(link_shlib) \
 %{!T*: %(link_start) } \
