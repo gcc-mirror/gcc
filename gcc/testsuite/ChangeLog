@@ -1,4 +1,9 @@
-2011-01-26  Richard Guenther  <rguenther@suse.de>
+2011-01-26  Jan Hubicka  <jh@suse.cz>
+
+	PR target/47237
+	* gcc.c-torture/execute/pr47237.c: New testcase.
+
+2011-01-26  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/47190
 	* gcc.dg/attr-weakref-3.c: New testcase.
