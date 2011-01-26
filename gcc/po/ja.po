@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2011-01-13 10:32+0900\n"
+"PO-Revision-Date: 2011-01-24 17:24+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -4005,9 +4005,8 @@ msgid "Unexpected end of format string"
 msgstr "予期しない書式文字列終了です"
 
 #: fortran/io.c:554
-#, fuzzy
 msgid "Zero width in format descriptor"
-msgstr "%s で幅 0 のフォーマットです"
+msgstr ""
 
 #: fortran/io.c:574
 msgid "Missing leading left parenthesis"
@@ -6091,15 +6090,15 @@ msgstr "double を dword 境界に整列する"
 
 #: config/i386/i386.opt:86
 msgid "Function starts are aligned to this power of 2"
-msgstr "関数の開始位置をこの値の二乗に整列する"
+msgstr "関数の開始位置をこの二の累乗に整列する"
 
 #: config/i386/i386.opt:90
 msgid "Jump targets are aligned to this power of 2"
-msgstr "ジャンプ先をこの値の二乗に整列する"
+msgstr "ジャンプ先をこの二の累乗に整列する"
 
 #: config/i386/i386.opt:94
 msgid "Loop code aligned to this power of 2"
-msgstr "ループコードをこの値の二乗に整列する"
+msgstr "ループコードをこの二の累乗に整列する"
 
 #: config/i386/i386.opt:98
 msgid "Align destination of the string operations"
@@ -6168,11 +6167,11 @@ msgstr "80387 浮動小数点精度を設定する (-mpc32, -mpc64, -mpc80)"
 
 #: config/i386/i386.opt:185
 msgid "Attempt to keep stack aligned to this power of 2"
-msgstr "できるだけスタックをこの値の二乗に整列する"
+msgstr "できるだけスタックをこの二の累乗に整列する"
 
 #: config/i386/i386.opt:189
 msgid "Assume incoming stack aligned to this power of 2"
-msgstr ""
+msgstr "入ってくるスタックがこの二の累乗に整列されていると見なす"
 
 #: config/i386/i386.opt:193
 msgid "Use push instructions to save outgoing arguments"
@@ -14453,7 +14452,7 @@ msgstr "%d 番目の %qE の引数用の互換性がない型です"
 #: c-typeck.c:5671
 #, gcc-internal-format
 msgid "incompatible types when assigning to type %qT from type %qT"
-msgstr "incompatible types when assigning to 型 %qT への型 %qT からの代入時に互換性のない型です"
+msgstr "型 %qT への型 %qT からの代入時に互換性のない型です"
 
 #: c-typeck.c:5676
 #, gcc-internal-format
@@ -16856,7 +16855,7 @@ msgstr "--help= オプションへの認識できない引数です: %q.*s"
 #: opts.c:1503
 #, gcc-internal-format
 msgid "structure alignment must be a small power of two, not %d"
-msgstr "構造体の整列は %d ではなく、小さな二の乗数でなければいけません"
+msgstr "構造体の整列は %d ではなく、小さな二の累乗でなければいけません"
 
 #: opts.c:1611
 #, gcc-internal-format
@@ -17398,14 +17397,14 @@ msgid "size of %q+D is larger than %wd bytes"
 msgstr "%q+D のサイズは %wd バイトより大きいです"
 
 #: stor-layout.c:1167
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "packed attribute causes inefficient alignment for %q+D"
-msgstr "packed 属性は `%s' に対して不効率なアラインメントを引き起こします"
+msgstr "%q+D の packed 属性は 非効率な整列の原因となりま"
 
 #: stor-layout.c:1171
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "packed attribute is unnecessary for %q+D"
-msgstr "packed 属性は `%s' には必要ありません"
+msgstr "packed 属性は %q+D には必要ありません"
 
 #: stor-layout.c:1189
 #, gcc-internal-format
@@ -17415,27 +17414,27 @@ msgstr ""
 #: stor-layout.c:1250
 #, gcc-internal-format
 msgid "offset of packed bit-field %qD has changed in GCC 4.4"
-msgstr ""
+msgstr "packed ビットフィールド %qD のオフセットは GCC 4.4 で変更されています"
 
 #: stor-layout.c:1556
 #, gcc-internal-format
 msgid "padding struct size to alignment boundary"
-msgstr "アラインメント境界のサイズに構造体をパディングします"
+msgstr ""
 
 #: stor-layout.c:1584
 #, gcc-internal-format
 msgid "packed attribute causes inefficient alignment for %qE"
-msgstr ""
+msgstr "packed 属性は %qE の非効率な整列の原因となります"
 
 #: stor-layout.c:1588
 #, gcc-internal-format
 msgid "packed attribute is unnecessary for %qE"
-msgstr ""
+msgstr "packed 属性は %qE には必要ありません"
 
 #: stor-layout.c:1594
 #, gcc-internal-format
 msgid "packed attribute causes inefficient alignment"
-msgstr ""
+msgstr "packed 属性は非効率な整列の原因となります"
 
 #: stor-layout.c:1596
 #, gcc-internal-format
@@ -17595,7 +17594,7 @@ msgstr "-fstack-protector はこのターゲットではサポートされてい
 #: toplev.c:1594
 #, gcc-internal-format
 msgid "unwind tables currently require a frame pointer for correctness"
-msgstr ""
+msgstr "巻き戻し (unwind) 表は現在のところ訂正用のフレームポインタを必要とします"
 
 #: toplev.c:1822
 #, gcc-internal-format
@@ -17630,7 +17629,7 @@ msgstr ""
 #: tree-cfg.c:2605 tree-cfg.c:3734
 #, gcc-internal-format
 msgid "INDIRECT_REF in gimple IL"
-msgstr ""
+msgstr "INDIRECT_REF が gimple IL 内にあります"
 
 #: tree-cfg.c:2613
 #, gcc-internal-format
@@ -17675,12 +17674,12 @@ msgstr "BIT_FIELD_REF への無効な位置またはサイズ被演算子です"
 #: tree-cfg.c:2735
 #, gcc-internal-format
 msgid "integral result type precision does not match field size of BIT_FIELD_REF"
-msgstr ""
+msgstr "整数結果の型精度が BIT_FIELD_REF のフィールドサイズに適合しません"
 
 #: tree-cfg.c:2743
 #, gcc-internal-format
 msgid "mode precision of non-integral result does not match field size of BIT_FIELD_REF"
-msgstr ""
+msgstr "非整数結果のモード精度が BIT_FIELD_REF のフィールドサイズに適合しません"
 
 #: tree-cfg.c:2754
 #, gcc-internal-format
@@ -17835,7 +17834,7 @@ msgstr "単項演算子内で無効な被演算子です"
 #: tree-cfg.c:3240
 #, gcc-internal-format
 msgid "invalid types in nop conversion"
-msgstr ""
+msgstr "nop 変換内で無効な型です"
 
 #: tree-cfg.c:3255
 #, gcc-internal-format
@@ -17895,7 +17894,7 @@ msgstr ""
 #: tree-cfg.c:3463
 #, gcc-internal-format
 msgid "invalid non-vector operands to vector valued plus"
-msgstr ""
+msgstr "ベクトル値加算への無効な非ベクトル被演算子です"
 
 #: tree-cfg.c:3483
 #, gcc-internal-format
@@ -17960,7 +17959,7 @@ msgstr ""
 #: tree-cfg.c:3791
 #, gcc-internal-format
 msgid "invalid COND_EXPR in gimple assignment"
-msgstr ""
+msgstr "gimple 代入内で無効な COND_EXPR です"
 
 #: tree-cfg.c:3856
 #, gcc-internal-format
@@ -18030,7 +18029,7 @@ msgstr "式内"
 #: tree-cfg.c:4175
 #, gcc-internal-format
 msgid "statement marked for throw, but doesn%'t"
-msgstr ""
+msgstr "文が throw とマークされていますが、 throw しません"
 
 #: tree-cfg.c:4180
 #, gcc-internal-format
@@ -18040,12 +18039,12 @@ msgstr ""
 #: tree-cfg.c:4252
 #, gcc-internal-format
 msgid "dead STMT in EH table"
-msgstr ""
+msgstr "EH 表内に不要な (dead) STMT があります"
 
 #: tree-cfg.c:4290
 #, gcc-internal-format
 msgid "gimple_bb (phi) is set to a wrong basic block"
-msgstr ""
+msgstr "gimple_bb (phi) が間違った基本ブロックに設定されています"
 
 #: tree-cfg.c:4301
 #, gcc-internal-format
@@ -18065,17 +18064,17 @@ msgstr ""
 #: tree-cfg.c:4344
 #, gcc-internal-format
 msgid "invalid GIMPLE statement"
-msgstr "無効な GIMPLE 式です"
+msgstr "無効な GIMPLE 文です"
 
 #: tree-cfg.c:4353
 #, gcc-internal-format
 msgid "gimple_bb (stmt) is set to a wrong basic block"
-msgstr ""
+msgstr "gimple_bb (stmt) が間違った基本ブロックに設定されています"
 
 #: tree-cfg.c:4366
 #, gcc-internal-format
 msgid "incorrect entry in label_to_block_map"
-msgstr ""
+msgstr "label_to_block_map 内に間違ったエントリがあります"
 
 #: tree-cfg.c:4376
 #, gcc-internal-format
@@ -18140,7 +18139,7 @@ msgstr ""
 #: tree-cfg.c:4591
 #, gcc-internal-format
 msgid "explicit goto at end of bb %d"
-msgstr ""
+msgstr "明示的な goto が基本ブロック %d の末尾にあります"
 
 #: tree-cfg.c:4625
 #, gcc-internal-format
@@ -18170,7 +18169,7 @@ msgstr ""
 #: tree-cfg.c:7343
 #, gcc-internal-format
 msgid "%<noreturn%> function does return"
-msgstr ""
+msgstr "%<noreturn%> 関数が戻り (return) ます"
 
 #: tree-cfg.c:7363
 #, gcc-internal-format
@@ -18180,12 +18179,12 @@ msgstr "制御が非 void 関数の終りに到達しました"
 #: tree-cfg.c:7499
 #, gcc-internal-format
 msgid "ignoring return value of %qD, declared with attribute warn_unused_result"
-msgstr ""
+msgstr "warn_unused_result 属性付きで宣言されている %qD の戻り値を無視しています"
 
 #: tree-cfg.c:7504
 #, gcc-internal-format
 msgid "ignoring return value of function declared with attribute warn_unused_result"
-msgstr ""
+msgstr "warn_unused_result 属性付きで宣言されている関数の戻り値を無視しています"
 
 #: tree-dump.c:934
 #, gcc-internal-format
@@ -18245,17 +18244,17 @@ msgstr ""
 #: tree-inline.c:2971
 #, gcc-internal-format
 msgid "function %q+F can never be copied because it receives a non-local goto"
-msgstr ""
+msgstr "関数 %q+F は非局所 goto を受け取るため決して複製されません"
 
 #: tree-inline.c:2985
 #, gcc-internal-format
 msgid "function %q+F can never be copied because it saves address of local label in a static variable"
-msgstr ""
+msgstr "関数 %q+F は静的変数内の局所ラベルのアドレスを保存するため、決して複写されません"
 
 #: tree-inline.c:3022
 #, gcc-internal-format
 msgid "function %q+F can never be inlined because it uses alloca (override using the always_inline attribute)"
-msgstr ""
+msgstr "関数 %q+F は alloca を使用しているため決してインライン化されません (always_inline 属性を上書きします)"
 
 #: tree-inline.c:3036
 #, gcc-internal-format
@@ -18315,12 +18314,12 @@ msgstr "mudflap 検査は ARRAY_RANGE_REF 用にはまだ実装されていま�
 #: tree-mudflap.c:1102
 #, gcc-internal-format
 msgid "mudflap cannot track %qE in stub function"
-msgstr ""
+msgstr "mudflap はスタブ関数内の %qE を追跡できません"
 
 #: tree-mudflap.c:1346
 #, gcc-internal-format
 msgid "mudflap cannot track unknown size extern %qE"
-msgstr ""
+msgstr "mudflap は不明なサイズの外部 (extern) %qE を追跡できません"
 
 #: tree-nomudflap.c:47
 #, gcc-internal-format
@@ -18333,9 +18332,9 @@ msgid "size of return value of %q+D is %u bytes"
 msgstr "%q+D の戻り値のサイズが %u バイトです"
 
 #: tree-optimize.c:453
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size of return value of %q+D is larger than %wd bytes"
-msgstr "`%s' の戻り値のサイズが %d バイトよりも大きくなります"
+msgstr "%q+D の戻り値のサイズが %wd バイトより大きいです"
 
 #: tree-outof-ssa.c:783 tree-outof-ssa.c:840 tree-ssa-coalesce.c:952
 #: tree-ssa-coalesce.c:967 tree-ssa-coalesce.c:1189 tree-ssa-live.c:1296
@@ -18980,7 +18979,7 @@ msgstr ""
 #: c-family/c-common.c:1572
 #, gcc-internal-format
 msgid "logical %<and%> of mutually exclusive tests is always false"
-msgstr ""
+msgstr "相互に排他的な値の論理 %<and%> 演算は常に偽 (false) となります"
 
 #: c-family/c-common.c:1607
 #, gcc-internal-format
@@ -19371,7 +19370,7 @@ msgstr "要求された整列が定数ではありません"
 #: c-family/c-common.c:6590
 #, gcc-internal-format
 msgid "requested alignment is not a power of 2"
-msgstr "要求された整列が 2 の乗数ではありません"
+msgstr "要求された整列が 2 の累乗ではありません"
 
 #: c-family/c-common.c:6595
 #, gcc-internal-format
@@ -19520,7 +19519,7 @@ msgstr "ベクトルのサイズが 0 です"
 #: ada/gcc-interface/utils.c:5447
 #, gcc-internal-format
 msgid "number of components of the vector not a power of two"
-msgstr "ベクトルの要素の数が 2 の乗数ではありません"
+msgstr "ベクトルの要素の数が 2 の累乗ではありません"
 
 #: c-family/c-common.c:7353 ada/gcc-interface/utils.c:5070
 #, gcc-internal-format
@@ -19573,14 +19572,14 @@ msgid "%qE attribute requires prototypes with named arguments"
 msgstr "%qE 属性は名前付き引数があるプロトタイプが必要です"
 
 #: c-family/c-common.c:7648
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to variadic functions"
-msgstr "`%s' 属性は関数に対してのみ適用されます"
+msgstr ""
 
 #: c-family/c-common.c:7660 ada/gcc-interface/utils.c:5160
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "requested position is not an integer constant"
-msgstr "要求された init_priority は整数型の定数ではありません"
+msgstr ""
 
 #: c-family/c-common.c:7668 ada/gcc-interface/utils.c:5167
 #, gcc-internal-format
@@ -19770,177 +19769,177 @@ msgstr "関数 %qD が %<asm%> の出力として使用されています"
 #: c-family/c-common.c:8629
 #, gcc-internal-format
 msgid "read-only location %qE used as %<asm%> output"
-msgstr ""
+msgstr "読み取り専用位置 %qE が %<asm%> の出力として使用されています"
 
 #: c-family/c-common.c:8642
 #, gcc-internal-format
 msgid "lvalue required as left operand of assignment"
-msgstr ""
+msgstr "代入の左側の被演算子として左辺値が必要です"
 
 #: c-family/c-common.c:8645
 #, gcc-internal-format
 msgid "lvalue required as increment operand"
-msgstr ""
+msgstr "インクリメントの被演算子として左辺値が必要です"
 
 #: c-family/c-common.c:8648
 #, gcc-internal-format
 msgid "lvalue required as decrement operand"
-msgstr ""
+msgstr "デクリメントの被演算子として左辺値が必要です"
 
 #: c-family/c-common.c:8651
 #, gcc-internal-format
 msgid "lvalue required as unary %<&%> operand"
-msgstr ""
+msgstr "単項 %<&%> の被演算子として左辺値が必要です"
 
 #: c-family/c-common.c:8654
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "lvalue required in asm statement"
-msgstr "asm 文の中に無効な左辺値"
+msgstr "アセンブラ文内に左辺値が必要です"
 
 #: c-family/c-common.c:8671
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type argument (have %qT)"
-msgstr "`%s' の引数として無効な型"
+msgstr "無効な型の引数です (%qT 型です)"
 
 #: c-family/c-common.c:8675
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type argument of array indexing (have %qT)"
-msgstr "`%s' の引数として無効な型"
+msgstr ""
 
 #: c-family/c-common.c:8680
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type argument of unary %<*%> (have %qT)"
-msgstr "`%s' の引数として無効な型"
+msgstr "単項演算子 %<*%> の無効な型の引数です (%qT 型です)"
 
 #: c-family/c-common.c:8685
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type argument of %<->%> (have %qT)"
-msgstr "`%s' の引数として無効な型"
+msgstr "%<->%> の無効な型の引数です (%qT 型です)"
 
 #: c-family/c-common.c:8690
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type argument of implicit conversion (have %qT)"
-msgstr "`%s' の引数として無効な型"
+msgstr "暗黙的な変換の無効な型の引数です (%qT 型です)"
 
 #: c-family/c-common.c:8821
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size of array is too large"
-msgstr "配列 `%s' の大きさが大きすぎます"
+msgstr "配列のサイズが大きすぎます"
 
 #: c-family/c-common.c:9080
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array subscript has type %<char%>"
-msgstr "配列の添字が `char' 型です"
+msgstr "配列の添字が %<char%> 型です"
 
 #: c-family/c-common.c:9115
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<+%> inside %<<<%>"
-msgstr "シフト中の + や - の周りでは括弧をつけることをお勧めします"
+msgstr "%<<<%> 内にある %<+%> の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9118
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<-%> inside %<<<%>"
-msgstr "シフト中の + や - の周りでは括弧をつけることをお勧めします"
+msgstr "%<<<%> 内にある %<-%> の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9124
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<+%> inside %<>>%>"
-msgstr "シフト中の + や - の周りでは括弧をつけることをお勧めします"
+msgstr "%<>>%> 内にある %<+%> の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9127
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<-%> inside %<>>%>"
-msgstr "シフト中の + や - の周りでは括弧をつけることをお勧めします"
+msgstr "%<>>%> 内にある %<-%> の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9133
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<&&%> within %<||%>"
-msgstr "|| と共に使われる && の周りでは括弧をつけることをお勧めします"
+msgstr "%<||%> 内にある %<&&%> の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9142
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around arithmetic in operand of %<|%>"
-msgstr "計算が | 演算子の項となる場合には括弧をつけることをお勧めします"
+msgstr "%<|%> の被演算子内にある計算の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9147
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<|%>"
-msgstr "比較が | 演算子の項となる場合には括弧をつけることをお勧めします"
+msgstr "%<|%> の被演算子内にある比較の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9151
 #, gcc-internal-format
 msgid "suggest parentheses around operand of %<!%> or change %<|%> to %<||%> or %<!%> to %<~%>"
-msgstr ""
+msgstr "%<!%> の被演算子の周りに小括弧を付ける、または %<|%> から %<||%> へ変更する、または %<!%> から %<~%> へ変更することを推奨します"
 
 #: c-family/c-common.c:9161
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around arithmetic in operand of %<^%>"
-msgstr "計算が ^ 演算子の項となる場合には括弧をつけることをお勧めします"
+msgstr "%<^%> の被演算子内にある計算の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9166
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<^%>"
-msgstr "計算が ^ 演算子の項となる場合には括弧をつけることをお勧めします"
+msgstr "%<^%> の被演算子内にある比較の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9172
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<+%> in operand of %<&%>"
-msgstr "& 演算子の周りの + や - の周りには括弧をつけることをお勧めします"
+msgstr "%<&%> の被演算子内にある %<+%> の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9175
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around %<-%> in operand of %<&%>"
-msgstr "& 演算子の周りの + や - の周りには括弧をつけることをお勧めします"
+msgstr "%<&%> の被演算子内にある %<-%> の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9180
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<&%>"
-msgstr "比較が & 演算子の項となる場合には括弧をつけることをお勧めします"
+msgstr "%<&%> の被演算子内にある比較の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9184
 #, gcc-internal-format
 msgid "suggest parentheses around operand of %<!%> or change %<&%> to %<&&%> or %<!%> to %<~%>"
-msgstr ""
+msgstr "%<!%> の被演算子の周りに小括弧を付ける、または %<&%> から %<&&%> へ変更する、または %<!%> から %<~%> へ変更することを推奨します"
 
 #: c-family/c-common.c:9192
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<==%>"
-msgstr "比較が | 演算子の項となる場合には括弧をつけることをお勧めします"
+msgstr "%<==%> の被演算子内にある比較の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9198
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "suggest parentheses around comparison in operand of %<!=%>"
-msgstr "比較が | 演算子の項となる場合には括弧をつけることをお勧めします"
+msgstr "%<!=%> の被演算子内にある比較の周りに小括弧を付けることを推奨します"
 
 #: c-family/c-common.c:9209
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparisons like %<X<=Y<=Z%> do not have their mathematical meaning"
-msgstr "X<=Y<=Z の様な比較は数学的な意味での結果をもたらしません"
+msgstr "%<X<=Y<=Z%> のような比較は数学と同じような意味にはなりません"
 
 #: c-family/c-common.c:9224
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "label %q+D defined but not used"
-msgstr "ラベル `%s' が定義されましたが使われていません"
+msgstr "ラベル %q+D が定義されていますが使用されていません"
 
 #: c-family/c-common.c:9226
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "label %q+D declared but not defined"
-msgstr "ラベル `%s' が使われましたが定義されていません"
+msgstr "ラベル %q+D が宣言されましたが定義されていません"
 
 #: c-family/c-common.c:9246
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "division by zero"
-msgstr "#if でゼロ除算が発生しました"
+msgstr "ゼロ除算が発生しました"
 
 #: c-family/c-common.c:9278
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison between types %qT and %qT"
-msgstr "ポインタと整数との比較を行なっています"
+msgstr "型 %qT と %qT の間での比較です"
 
 #: c-family/c-common.c:9329
 #, gcc-internal-format
 msgid "comparison between signed and unsigned integer expressions"
-msgstr "符合付きと符合無しの整数式同士の比較です"
+msgstr "符合付きと符合無しの整数式の間での比較です"
 
 #: c-family/c-common.c:9380
 #, gcc-internal-format
@@ -19960,7 +19959,7 @@ msgstr "~で反転された符合無し型と符合無し型との比較です"
 #: c-family/c-format.c:127 c-family/c-format.c:314
 #, gcc-internal-format
 msgid "format string has invalid operand number"
-msgstr "フォーマット文字列に不適切なオペランド数があります"
+msgstr "書式文字列が無効な被演算子数を持っています"
 
 #: c-family/c-format.c:144
 #, gcc-internal-format
@@ -19970,32 +19969,32 @@ msgstr "関数が文字列型を返しません"
 #: c-family/c-format.c:177
 #, gcc-internal-format
 msgid "format string argument is not a string type"
-msgstr ""
+msgstr "書式文字列引数が文字列型ではありません"
 
 #: c-family/c-format.c:203
 #, gcc-internal-format
 msgid "found a %<%s%> reference but the format argument should be a string"
-msgstr ""
+msgstr "%<%s%> 参照が見つかりましたが、書式引数は文字列であるべきです"
 
 #: c-family/c-format.c:206
 #, gcc-internal-format
 msgid "found a %qT but the format argument should be a string"
-msgstr ""
+msgstr "%qT 型が見つかりましたが書式引数は文字列であるべきです"
 
 #: c-family/c-format.c:216
 #, gcc-internal-format
 msgid "format argument should be a %<%s%> reference but a string was found"
-msgstr ""
+msgstr "書式引数は %<%s%> への参照であるべきですが、文字列が見つかりました"
 
 #: c-family/c-format.c:238
 #, gcc-internal-format
 msgid "format argument should be a %<%s%> reference"
-msgstr ""
+msgstr "書式引数は %<%s%> への参照であるべきです"
 
 #: c-family/c-format.c:282
 #, gcc-internal-format
 msgid "unrecognized format specifier"
-msgstr "認識できないフォーマット指定子"
+msgstr "認識できない書式指定です"
 
 #: c-family/c-format.c:297
 #, gcc-internal-format
@@ -20003,310 +20002,312 @@ msgid "%qE is only allowed in Objective-C dialects"
 msgstr ""
 
 #: c-family/c-format.c:306
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is an unrecognized format function type"
-msgstr "`%s' は認識できないフォーマット関数型です"
+msgstr "%qE は認識できない書式関数型です"
 
 #: c-family/c-format.c:320
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<...%> has invalid operand number"
-msgstr "フォーマット文字列に不適切なオペランド数があります"
+msgstr "%<...%> に無効な被演算子数があります"
 
 #: c-family/c-format.c:327
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "format string argument follows the args to be formatted"
-msgstr "フォーマット文字列引数がフォーマットされる引数の後に続いています"
+msgstr ""
 
 #: c-family/c-format.c:1066
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function might be possible candidate for %qs format attribute"
-msgstr "関数は恐らく `%s' format 属性の候補と思われます"
+msgstr "関数が %qs 書式属性の候補である可能性があります"
 
 #: c-family/c-format.c:1158 c-family/c-format.c:1179 c-family/c-format.c:2224
 #, gcc-internal-format
 msgid "missing $ operand number in format"
-msgstr "フォーマット内で $ 演算子番号を欠いています"
+msgstr "書式内に $ の被演算子番号がありません"
 
 #: c-family/c-format.c:1188
 #, gcc-internal-format
 msgid "%s does not support %%n$ operand number formats"
-msgstr "%s は %%n$ 演算子番号フォーマットを受け付けません"
+msgstr "%s は %%n$ 被演算子番号書式をサポートしません"
 
 #: c-family/c-format.c:1195
 #, gcc-internal-format
 msgid "operand number out of range in format"
-msgstr "演算子番号がフォーマットの範囲外です"
+msgstr "被演算子番号が書式の範囲外です"
 
 #: c-family/c-format.c:1218
 #, gcc-internal-format
 msgid "format argument %d used more than once in %s format"
-msgstr "フォーマット引数 %d が %s フォーマット中で二回以上使われました"
+msgstr "%d 番目の書式引数が %s 書式内で二回以上使用されています"
 
 #: c-family/c-format.c:1250
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "$ operand number used after format without operand number"
-msgstr "演算子番号が引数を取らないフォーマットで指定されました"
+msgstr "$ 被演算子番号が被演算子番号が無い書式の後に使用されています"
 
+# %d の位置の都合上 before を前と訳せないため意訳しています
+# 苦しい訳です
 #: c-family/c-format.c:1281
 #, gcc-internal-format
 msgid "format argument %d unused before used argument %d in $-style format"
-msgstr "$-式フォーマット内のフォーマット引数 %d が引数 %d が使われる前で未使用です"
+msgstr "$-スタイル書式内の %d 番目の引数が、後にある %d 番目の引数が使用されたにも関わらず使用されていません"
 
 #: c-family/c-format.c:1376
 #, gcc-internal-format
 msgid "format not a string literal, format string not checked"
-msgstr "フォーマットが文字列リテラルではありませんので、フォーマットは検査されません"
+msgstr "書式が文字列リテラルではありません。書式文字列は検査されません"
 
 #: c-family/c-format.c:1391 c-family/c-format.c:1394
 #, gcc-internal-format
 msgid "format not a string literal and no format arguments"
-msgstr "フォーマットは非文字列リテラルで、且つフォーマット引数を持ちません"
+msgstr "書式が文字列リテラルでは無く、かつ書式引数ではありません"
 
 #: c-family/c-format.c:1397
 #, gcc-internal-format
 msgid "format not a string literal, argument types not checked"
-msgstr "フォーマットは文字列リテラルではありませんので、引数の型は検査されません"
+msgstr "書式が文字列リテラルではありません。引数の型は検査されません"
 
 #: c-family/c-format.c:1410
 #, gcc-internal-format
 msgid "too many arguments for format"
-msgstr "フォーマットへの引数が多すぎます"
+msgstr "書式への引数が多すぎます"
 
 #: c-family/c-format.c:1413
 #, gcc-internal-format
 msgid "unused arguments in $-style format"
-msgstr "$-式のフォーマットで未使用の引数があります"
+msgstr "$-スタイルの書式で未使用の引数があります"
 
 #: c-family/c-format.c:1416
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "zero-length %s format string"
-msgstr "長さ 0 のフォーマット文字列"
+msgstr "長さが 0 の %s 書式文字列です"
 
 #: c-family/c-format.c:1420
 #, gcc-internal-format
 msgid "format is a wide character string"
-msgstr "フォーマットがワイド文字列です"
+msgstr "書式がワイド文字列です"
 
 #: c-family/c-format.c:1423
 #, gcc-internal-format
 msgid "unterminated format string"
-msgstr "終端されていないフォーマット文字列"
+msgstr "終端されていない書式文字列です"
 
 #: c-family/c-format.c:1667
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "spurious trailing %<%%%> in format"
-msgstr "フォーマットに `%%' の痕跡らしきものがあります"
+msgstr "書式内に誤った %<%%%> が最後にあります"
 
 #: c-family/c-format.c:1711 c-family/c-format.c:1991
 #, gcc-internal-format
 msgid "repeated %s in format"
-msgstr "フォーマット中で %s を繰り返しています"
+msgstr "書式内に %s の繰り返しがあります"
 
 #: c-family/c-format.c:1724
 #, gcc-internal-format
 msgid "missing fill character at end of strfmon format"
-msgstr "strfmon フォーマットの終りで詰め文字を欠いています"
+msgstr "strfmon 書式の最後に詰め文字がありません"
 
 #: c-family/c-format.c:1812
 #, gcc-internal-format
 msgid "zero width in %s format"
-msgstr "%s で幅 0 のフォーマットです"
+msgstr "%s 書式の幅が 0 です"
 
 #: c-family/c-format.c:1830
 #, gcc-internal-format
 msgid "empty left precision in %s format"
-msgstr "%s で空の左精度フォーマットです"
+msgstr "%s 書式の左精度が空です"
 
 #: c-family/c-format.c:1906
 #, gcc-internal-format
 msgid "empty precision in %s format"
-msgstr "%s で空の精度フォーマットです"
+msgstr "%s 書式の精度が空です"
 
 #: c-family/c-format.c:1975
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s does not support the %qs %s length modifier"
-msgstr "%s は `%s' %s 長さ修飾子を受け付けません"
+msgstr "%s は %qs %s 長さ修飾子をサポートしません"
 
 #: c-family/c-format.c:2008
 #, gcc-internal-format
 msgid "conversion lacks type at end of format"
-msgstr "フォーマットの終りで型変換文字が欠けています"
+msgstr "書式の最後に型変換がありません"
 
 #: c-family/c-format.c:2019
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown conversion type character %qc in format"
-msgstr "フォーマット内に不明な型変換文字 `%c' があります"
+msgstr "書式内に不明な型変換文字 %qc があります"
 
 #: c-family/c-format.c:2022
 #, gcc-internal-format
 msgid "unknown conversion type character 0x%x in format"
-msgstr "フォーマット内に不明な型変換文字 0x%x があります"
+msgstr "書式内に不明な型変換文字 0x%x があります"
 
 #: c-family/c-format.c:2029
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s does not support the %<%%%c%> %s format"
-msgstr "%s は `%%%s%c' %s フォーマットを受け付けません"
+msgstr "%s は %<%%%c%> %s 書式をサポートしません"
 
 #: c-family/c-format.c:2045
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s used with %<%%%c%> %s format"
-msgstr "%s が `%%%c' %s フォーマットと一緒に使われました"
+msgstr "%s が %<%%%c%> %s 書式と併せて使用されています"
 
 #: c-family/c-format.c:2054
 #, gcc-internal-format
 msgid "%s does not support %s"
-msgstr "%s は %s を受け付けません"
+msgstr "%s は %s をサポートしません"
 
 #: c-family/c-format.c:2064
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s does not support %s with the %<%%%c%> %s format"
-msgstr "%s は %s を `%%%c' %s フォーマットと一緒に使う事を受け付けません"
+msgstr "%s は %s と %<%%%c%> %s 書式を併せて使用することをサポートしません"
 
 #: c-family/c-format.c:2100
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s ignored with %s and %<%%%c%> %s format"
-msgstr "%s は %s 及び `%%%c' %s フォーマットと一緒に使うと無視されます"
+msgstr "%s は %s と %<%%%c%> %s 書式を併せて使用しているため無視されます"
 
 #: c-family/c-format.c:2104
 #, gcc-internal-format
 msgid "%s ignored with %s in %s format"
-msgstr "%s は %s を %s フォーマットで一緒に使うと無視されます"
+msgstr "%s は %s を %s 書式で使用しているため無視されます"
 
 #: c-family/c-format.c:2111
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of %s and %s together with %<%%%c%> %s format"
-msgstr "%s と %s とを `%%%c' %s フォーマットと一緒に使っています"
+msgstr "%s と %s を %<%%%c%> %s 書式で一緒に使用しています"
 
 #: c-family/c-format.c:2115
 #, gcc-internal-format
 msgid "use of %s and %s together in %s format"
-msgstr "%s と %s とを %s フォーマットの中で使っています"
+msgstr "%s と %s を %s 書式で一緒に使用しています"
 
 #: c-family/c-format.c:2134
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%%%c%> yields only last 2 digits of year in some locales"
-msgstr "`%%%c' はロケールによっては、年の下二桁だけをもたらします"
+msgstr "%<%%%c%> はいくつかのロケールでは年の下二桁のみを表します"
 
 #: c-family/c-format.c:2137
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<%%%c%> yields only last 2 digits of year"
-msgstr "`%%%c' は年の下二桁だけをもたらします"
+msgstr "%<%%%c%> は年の下二桁のみを表します"
 
 #. The end of the format string was reached.
 #: c-family/c-format.c:2154
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no closing %<]%> for %<%%[%> format"
-msgstr "`%%[' フォーマットを閉じる `]' がありません"
+msgstr "%<%%[%> 書式用の閉じる %<]%> がありません"
 
 #: c-family/c-format.c:2168
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of %qs length modifier with %qc type character"
-msgstr "`%s' 長さ修飾子を `%c' 型変換文字と一緒に使っています"
+msgstr "%qs 長さ修飾子を %qc 型変換文字で使用しています"
 
 #: c-family/c-format.c:2186
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s does not support the %<%%%s%c%> %s format"
-msgstr "%s は `%%%s%c' %s フォーマットを受け付けません"
+msgstr "%s は %<%%%s%c%> %s 書式をサポートしません"
 
 #: c-family/c-format.c:2203
 #, gcc-internal-format
 msgid "operand number specified with suppressed assignment"
-msgstr "演算子番号が代入の抑制と共に使われています"
+msgstr "被演算子番号が代入の抑制と共に使われています"
 
 #: c-family/c-format.c:2206
 #, gcc-internal-format
 msgid "operand number specified for format taking no argument"
-msgstr "演算子番号が引数を取らないフォーマットで指定されました"
+msgstr "被演算子番号が引数を取らない書式で指定さています"
 
 #: c-family/c-format.c:2291
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "embedded %<\\0%> in format"
-msgstr "フォーマットに `\\0' が埋め込まれています"
+msgstr "書式内に %<\\0%> が組み込まれています"
 
 #: c-family/c-format.c:2360
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "writing through null pointer (argument %d)"
-msgstr "null ポインタを書き込んでいます (引数 %d)"
+msgstr "NULL ポインタを通して書き込んでいます (第 %d 引数)"
 
 #: c-family/c-format.c:2368
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "reading through null pointer (argument %d)"
-msgstr "null ポインタを読込んでいます (引数 %d)"
+msgstr "NULL ポインタを通して読み込んでいます (第 %d 引数)"
 
 #: c-family/c-format.c:2388
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "writing into constant object (argument %d)"
-msgstr "定数オブジェクトに書き込んでいます (引数 %d)"
+msgstr "定数オブジェクトに書き込んでいます (第 %d 引数)"
 
 #: c-family/c-format.c:2399
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "extra type qualifiers in format argument (argument %d)"
-msgstr "フォーマット引数に余分な型修飾子があります (引数 %d)"
+msgstr "書式引数内に余分な型修飾子があります (第 %d 引数)"
 
 #: c-family/c-format.c:2515
 #, gcc-internal-format
 msgid "%s %<%s%.*s%> expects argument of type %<%s%s%>, but argument %d has type %qT"
-msgstr ""
+msgstr "%s %<%s%.*s%> は引数の型が %<%s%s%> であると予期されますが、第 %d 引数の型は %qT です"
 
 #: c-family/c-format.c:2522
 #, gcc-internal-format
 msgid "%s %<%s%.*s%> expects a matching %<%s%s%> argument"
-msgstr ""
+msgstr "%s %<%s%.*s%> は対応した %<%s%s%> 引数が予期されます"
 
 #: c-family/c-format.c:2530
 #, gcc-internal-format
 msgid "%s %<%s%.*s%> expects argument of type %<%T%s%>, but argument %d has type %qT"
-msgstr ""
+msgstr "%s %<%s%.*s%> は引数の型が %<%T%s%> であると予期されますが、第 %d 引数の型は %qT です"
 
 #: c-family/c-format.c:2537
 #, gcc-internal-format
 msgid "%s %<%s%.*s%> expects a matching %<%T%s%> argument"
-msgstr ""
+msgstr "%s %<%s%.*s%> は対応した %<%T%s%> 引数が予期されます"
 
 #: c-family/c-format.c:2597 c-family/c-format.c:2603 c-family/c-format.c:2754
 #, gcc-internal-format
 msgid "%<__gcc_host_wide_int__%> is not defined as a type"
-msgstr ""
+msgstr "%<__gcc_host_wide_int__%> が型として定義されていません"
 
 #: c-family/c-format.c:2610 c-family/c-format.c:2764
 #, gcc-internal-format
 msgid "%<__gcc_host_wide_int__%> is not defined as %<long%> or %<long long%>"
-msgstr ""
+msgstr "%<__gcc_host_wide_int__%> が %<long%> または %<long long%> として定義されていません"
 
 #: c-family/c-format.c:2660
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<locus%> is not defined as a type"
-msgstr "\"%s\" は定義されていません"
+msgstr "%<locus%> が型として定義されていません"
 
 #: c-family/c-format.c:2713
 #, gcc-internal-format
 msgid "%<location_t%> is not defined as a type"
-msgstr ""
+msgstr "%<location_t%> が型として定義されていません"
 
 #: c-family/c-format.c:2730
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<tree%> is not defined as a type"
-msgstr "\"%s\" は定義されていません"
+msgstr "%<tree%> が型として定義されていません"
 
 #: c-family/c-format.c:2735
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<tree%> is not defined as a pointer type"
-msgstr "ポインタ型に変換できません"
+msgstr "%<tree%> がポインタ型として定義されていません"
 
 #: c-family/c-format.c:3008
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "args to be formatted is not %<...%>"
-msgstr "フォーマットされる引数が、'...' になっていません"
+msgstr "書式解釈される引数が %<...%> ではありません"
 
 #: c-family/c-format.c:3020
 #, gcc-internal-format
 msgid "strftime formats cannot format arguments"
-msgstr "strftime フォーマットは引数をフォーマットできません"
+msgstr "strftime 書式は引数を書式解釈できません"
 
 #: c-family/c-lex.c:228
 #, gcc-internal-format
 msgid "badly nested C headers from preprocessor"
-msgstr "プリプロセッサから異常にネストされた C ヘッダです"
+msgstr "前処理から間違って入れ子になっている C ヘッダです"
 
 #: c-family/c-lex.c:263
 #, gcc-internal-format
@@ -20315,119 +20316,119 @@ msgstr "#pragma %s %s を無視します"
 
 #. ... or not.
 #: c-family/c-lex.c:385 c-family/c-lex.c:976
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stray %<@%> in program"
-msgstr "プログラムとして逸脱した文字 '%c'"
+msgstr "プログラム内に逸脱した %<@%> があります"
 
 #: c-family/c-lex.c:400
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stray %qs in program"
-msgstr "プログラムとして逸脱した文字 '%c'"
+msgstr "プログラム内に逸脱した %qs があります"
 
 #: c-family/c-lex.c:410
 #, gcc-internal-format
 msgid "missing terminating %c character"
-msgstr "%c 文字での終端を欠いています"
+msgstr "終端の %c 文字がありません"
 
 #: c-family/c-lex.c:412
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stray %qc in program"
-msgstr "プログラムとして逸脱した文字 '%c'"
+msgstr "プログラム内に逸脱した %qc があります"
 
 #: c-family/c-lex.c:414
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stray %<\\%o%> in program"
-msgstr "プログラムとして逸脱した文字 '\\%o'"
+msgstr "プログラム内に逸脱した %<\\%o%> があります"
 
 #: c-family/c-lex.c:586
 #, gcc-internal-format
 msgid "this decimal constant is unsigned only in ISO C90"
-msgstr ""
+msgstr "この十進定数は ISO C90 内でのみ符号無しです"
 
 #: c-family/c-lex.c:590
 #, gcc-internal-format
 msgid "this decimal constant would be unsigned in ISO C90"
-msgstr ""
+msgstr "この十進定数は ISO C90 ではおそらく符号無しです"
 
 #: c-family/c-lex.c:610
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "integer constant is too large for %<unsigned long%> type"
-msgstr "整数定数が大きすぎるので unsigned になりました"
+msgstr "整数定数が %<unsigned long%> 型に対して大きすぎます"
 
 #: c-family/c-lex.c:647
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unsuffixed float constant"
-msgstr "2 つの 'u' 接尾辞が整数定数についています"
+msgstr "接尾辞がない浮動小数定数です"
 
 #: c-family/c-lex.c:679
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unsupported non-standard suffix on floating constant"
-msgstr "浮動小数定数に 'f' と 'l' 接尾辞の両方があります"
+msgstr "浮動小数定数に関するサポートされていない非標準の接尾辞です"
 
 #: c-family/c-lex.c:684
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-standard suffix on floating constant"
-msgstr "浮動小数定数に 'f' と 'l' 接尾辞の両方があります"
+msgstr "浮動小数定数に関する非標準の接尾辞です"
 
 #: c-family/c-lex.c:738 c-family/c-lex.c:740
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "floating constant exceeds range of %qT"
-msgstr "浮動小数点数が '%s' の範囲を超えました"
+msgstr "浮動小数定数が %qT の範囲を超えています"
 
 #: c-family/c-lex.c:749
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "floating constant truncated to zero"
-msgstr "浮動小数定数を使い損ねました"
+msgstr "浮動小数定数が 0 に切り詰められました"
 
 #: c-family/c-lex.c:938
 #, gcc-internal-format
 msgid "repeated %<@%> before Objective-C string"
-msgstr ""
+msgstr "Objective-C 文字列の前に連続した %<@%> があります"
 
 #: c-family/c-lex.c:957 cp/parser.c:3375
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unsupported non-standard concatenation of string literals"
-msgstr "終端のない文字列リテラルの推定開始位置"
+msgstr "サポートされていない非標準の文字列リテラルの連結です"
 
 #: c-family/c-lex.c:985
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "traditional C rejects string constant concatenation"
-msgstr "古い C では文字列結合を拒否します"
+msgstr "伝統的な C では文字列定数の連結を拒否します"
 
 #: c-family/c-omp.c:122
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid expression type for %<#pragma omp atomic%>"
-msgstr "オペランドとして無効な式"
+msgstr ""
 
 #: c-family/c-omp.c:256 cp/semantics.c:4419
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type for iteration variable %qE"
-msgstr "`%s' はレジスタ変数としては無効なレジスタ名です"
+msgstr ""
 
 #: c-family/c-omp.c:269
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE is not initialized"
-msgstr "初期化子を欠いています"
+msgstr "%qE は初期化されていません"
 
 #: c-family/c-omp.c:286 cp/semantics.c:4334
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing controlling predicate"
-msgstr "述語の後ろの '(' を欠いています"
+msgstr ""
 
 #: c-family/c-omp.c:368 cp/semantics.c:4091
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid controlling predicate"
-msgstr "無効な制御式です"
+msgstr ""
 
 #: c-family/c-omp.c:375 cp/semantics.c:4340
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing increment expression"
-msgstr "代入の抑制"
+msgstr "インクリメント式がありません"
 
 #: c-family/c-omp.c:444 cp/semantics.c:4196
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid increment expression"
-msgstr "無効な制御式です"
+msgstr "無効なインクリメント式です"
 
 #: c-family/c-opts.c:303
 #, gcc-internal-format
@@ -20437,22 +20438,22 @@ msgstr "-I- が二回指定されました"
 #: c-family/c-opts.c:306
 #, gcc-internal-format
 msgid "obsolete option -I- used, please use -iquote instead"
-msgstr ""
+msgstr "廃止あれたオプション -I- が使用されています。代わりに -iquote を使用してください"
 
 #: c-family/c-opts.c:486
 #, gcc-internal-format
 msgid "-Werror=normalized=: set -Wnormalized=nfc"
-msgstr ""
+msgstr "-Werror=normalized=: -Wnormalized=nfc を設定します"
 
 #: c-family/c-opts.c:500
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %qs to %<-Wnormalized%> not recognized"
-msgstr "言語 %s は認識できません"
+msgstr "%<-Wnormalized%> への引数 %qs が認識できません"
 
 #: c-family/c-opts.c:723 fortran/cpp.c:347
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output filename specified twice"
-msgstr "出力ファイル名が二回指定されました"
+msgstr "出力ファイル名が二回指定されています"
 
 #: c-family/c-opts.c:852
 #, gcc-internal-format
@@ -20462,198 +20463,198 @@ msgstr ""
 #: c-family/c-opts.c:865
 #, gcc-internal-format
 msgid "-fno-gnu89-inline is only supported in GNU99 or C99 mode"
-msgstr ""
+msgstr "-fno-gnu89-inline は GNU99 または C99 モードでのみサポートされます"
 
 #: c-family/c-opts.c:944
 #, gcc-internal-format
 msgid "-Wformat-y2k ignored without -Wformat"
-msgstr "-Wformat-y2k は無視されました（-Wformat がありません）"
+msgstr "-Wformat-y2k は無視されました (-Wformat がありません)"
 
 #: c-family/c-opts.c:946
 #, gcc-internal-format
 msgid "-Wformat-extra-args ignored without -Wformat"
-msgstr "-Wformat-extra-args は無視されました（-Wformat がありません）"
+msgstr "-Wformat-extra-args は無視されました (-Wformat がありません)"
 
 #: c-family/c-opts.c:948
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-Wformat-zero-length ignored without -Wformat"
-msgstr "-Wformat-extra-args は無視されました（-Wformat がありません）"
+msgstr "-Wformat-zero-length は無視されました (-Wformat がありません)"
 
 #: c-family/c-opts.c:950
 #, gcc-internal-format
 msgid "-Wformat-nonliteral ignored without -Wformat"
-msgstr "-Wformat-nonliteral は無視されました（-Wformat がありません）"
+msgstr "-Wformat-nonliteral は無視されました (-Wformat がありません)"
 
 #: c-family/c-opts.c:952
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-Wformat-contains-nul ignored without -Wformat"
-msgstr "-Wformat-nonliteral は無視されました（-Wformat がありません）"
+msgstr "-Wformat-contains-nul は無視されました (-Wformat がありません)"
 
 #: c-family/c-opts.c:954
 #, gcc-internal-format
 msgid "-Wformat-security ignored without -Wformat"
-msgstr "-Wformat-security は無視されました（-Wformat がありません）"
+msgstr "-Wformat-security は無視されました (-Wformat がありません)"
 
 #: c-family/c-opts.c:984
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "opening output file %s: %m"
-msgstr "出力ファイル `%s' を open できません"
+msgstr "出力ファイル %s を開いています: %m"
 
 #: c-family/c-opts.c:989
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many filenames given.  Type %s --help for usage"
-msgstr "ファイル名が多すぎます。%s --help とタイプして使い方を見ましょう"
+msgstr "与えられたファイル名が多すぎます。使用法に関しては %s --help を参照してください"
 
 #: c-family/c-opts.c:1106
 #, gcc-internal-format
 msgid "opening dependency file %s: %m"
-msgstr ""
+msgstr "依存関係ファイル %s を開いています: %m"
 
 #: c-family/c-opts.c:1116
 #, gcc-internal-format
 msgid "closing dependency file %s: %m"
-msgstr ""
+msgstr "依存関係ファイル %s を開いています: %m"
 
 #: c-family/c-opts.c:1119
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "when writing output to %s: %m"
-msgstr "%s への書き込みエラーです"
+msgstr "出力を %s へ書き込み中です: %m"
 
 #: c-family/c-opts.c:1199
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "to generate dependencies you must specify either -M or -MM"
-msgstr "-M か -MM のいずれかを追加的に指定しなければなりません"
+msgstr "依存関係を生成するためには -M または -MM のいずれかを指定しなければいけません"
 
 #: c-family/c-opts.c:1222
 #, gcc-internal-format
 msgid "-MG may only be used with -M or -MM"
-msgstr ""
+msgstr "-MG は -M または -MM と併せてのみ使用できます"
 
 #: c-family/c-opts.c:1252
 #, gcc-internal-format
 msgid "-fdirectives-only is incompatible with -Wunused_macros"
-msgstr ""
+msgstr "-fdirectives-only は -Wunused_macros と併用できません"
 
 #: c-family/c-opts.c:1254
 #, gcc-internal-format
 msgid "-fdirectives-only is incompatible with -traditional"
-msgstr ""
+msgstr "-fdirectives-only は -traditional と併用できません"
 
 #: c-family/c-opts.c:1405
 #, gcc-internal-format
 msgid "too late for # directive to set debug directory"
-msgstr ""
+msgstr "デバッグディレクトリを設定する # 指示が遅すぎます"
 
 #: c-family/c-pch.c:132
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t create precompiled header %s: %m"
-msgstr "ディレクトリ %s を作成できません"
+msgstr "前処理済ヘッダ %s を作成できません: %m"
 
 #: c-family/c-pch.c:154
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t write to %s: %m"
-msgstr "%s へ書き込めません"
+msgstr "%s へ書き込めません: %m"
 
 #: c-family/c-pch.c:160
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not a valid output file"
-msgstr "\"%s\" は正常なファイル名ではありません"
+msgstr "%qs は有効な出力ファイルではありません"
 
 #: c-family/c-pch.c:191 c-family/c-pch.c:206 c-family/c-pch.c:223
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t write %s: %m"
-msgstr "%s へ書き込めません"
+msgstr "%s へ書き込めません: %m"
 
 #: c-family/c-pch.c:196 c-family/c-pch.c:213
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t seek in %s: %m"
-msgstr "%s を rewind できません"
+msgstr "%s 内で探査 (seek) できません: %m"
 
 #: c-family/c-pch.c:204 c-family/c-pch.c:251 c-family/c-pch.c:292
 #: c-family/c-pch.c:343
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t read %s: %m"
-msgstr "%s を rewind できません"
+msgstr "%s を読み込めません: %m"
 
 #: c-family/c-pch.c:481
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pch_preprocess pragma should only be used with -fpreprocessed"
-msgstr "-include や -imacros は -fpreprocessed と一緒に使うことはできません"
+msgstr "pch_preprocess pragma は -fpreprocessed と併せてのみ使用するべきです"
 
 #: c-family/c-pch.c:482
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use #include instead"
-msgstr "#include のネストが深すぎます"
+msgstr "代わりに #include を使用してください"
 
 #: c-family/c-pch.c:488
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: couldn%'t open PCH file: %m"
-msgstr "ダンプファイル %s を開けませんでした"
+msgstr "%s: PCH ファイルを開けませんでした: %m"
 
 #: c-family/c-pch.c:493
 #, gcc-internal-format
 msgid "use -Winvalid-pch for more information"
-msgstr ""
+msgstr "詳細については -Winvalid-pch を使用してください"
 
 #: c-family/c-pch.c:494
 #, gcc-internal-format
 msgid "%s: PCH file was invalid"
-msgstr ""
+msgstr "%s: PCH ファイルが無効です"
 
 #: c-family/c-pragma.c:101
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma pack (pop) encountered without matching #pragma pack (push)"
-msgstr "#pragma pack (pop) が、対応する #pragma pack (push, <n>) なしに出現しました"
+msgstr "#pragma pack (pop) で対応する #pragma pack (push) が無いものに遭遇しました"
 
 #: c-family/c-pragma.c:114
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma pack(pop, %E) encountered without matching #pragma pack(push, %E)"
-msgstr "#pragma pack(pop, %s) が、対応する #pragma pack(push, %s) なしに出現しました"
+msgstr "#pragma pack(pop, %E) で対応する #pragma pack(push, %E) が無いものに遭遇しました"
 
 #: c-family/c-pragma.c:144
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing %<(%> after %<#pragma pack%> - ignored"
-msgstr "おかしな #pragma align - 無視されました"
+msgstr "%<#pragma pack%> の後に %<(%> がありません - 無視されました"
 
 #: c-family/c-pragma.c:155 c-family/c-pragma.c:187
 #, gcc-internal-format
 msgid "invalid constant in %<#pragma pack%> - ignored"
-msgstr ""
+msgstr "%<#pragma pack%> 内で無効な定数です - 無視されました"
 
 #: c-family/c-pragma.c:159 c-family/c-pragma.c:201
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma pack%> - ignored"
-msgstr "おかしな #pragma align - 無視されました"
+msgstr "間違った形式の %<#pragma pack%> です - 無視されました"
 
 #: c-family/c-pragma.c:164
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma pack(push[, id][, <n>])%> - ignored"
-msgstr "おかしな #pragma align - 無視されました"
+msgstr "間違った形式の %<#pragma pack(push[, id][, <n>])%> です - 無視されました"
 
 #: c-family/c-pragma.c:166
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma pack(pop[, id])%> - ignored"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の %<#pragma pack(pop[, id])%> です - 無視されました"
 
 #: c-family/c-pragma.c:175
 #, gcc-internal-format
 msgid "unknown action %qE for %<#pragma pack%> - ignored"
-msgstr ""
+msgstr "不明なアクション %qE (%<#pragma pack%> 用) です - 無視されました"
 
 #: c-family/c-pragma.c:204
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma pack%>"
-msgstr "'#pragma pack' の末尾にゴミがあります"
+msgstr "%<#pragma pack%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:207
 #, gcc-internal-format
 msgid "#pragma pack has no effect with -fpack-struct - ignored"
-msgstr ""
+msgstr "#pragma pack は -fpack-struct と併せて使用しても効果がありません - 無視されました"
 
 #: c-family/c-pragma.c:227
 #, gcc-internal-format
 msgid "alignment must be a small power of two, not %d"
-msgstr ""
+msgstr "整列は %d ではなく、小さな二の累乗の数でなければいけません"
 
 #: c-family/c-pragma.c:267
 #, gcc-internal-format
@@ -20661,275 +20662,275 @@ msgid "applying #pragma weak %q+D after first use results in unspecified behavio
 msgstr ""
 
 #: c-family/c-pragma.c:345 c-family/c-pragma.c:350
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma weak, ignored"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の #pragma weak です。無視されました"
 
 #: c-family/c-pragma.c:354
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma weak%>"
-msgstr "#pragma weak の末尾にゴミがあります"
+msgstr "%<#pragma weak%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:424 c-family/c-pragma.c:426
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma redefine_extname, ignored"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の #pragma redefine_extname です。無視されました"
 
 #: c-family/c-pragma.c:429
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma redefine_extname%>"
-msgstr "#pragma weak の末尾にゴミがあります"
+msgstr "%<#pragma redefine_extname%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:444 c-family/c-pragma.c:536
 #, gcc-internal-format
 msgid "#pragma redefine_extname ignored due to conflict with previous rename"
-msgstr ""
+msgstr "#pragma redefine_extname は前の名前変更と競合するため無視されました"
 
 #: c-family/c-pragma.c:470
 #, gcc-internal-format
 msgid "#pragma redefine_extname ignored due to conflict with previous #pragma redefine_extname"
-msgstr ""
+msgstr "#pragma redefine_extname は前の #pragma redefine_extname と競合するため無視されました"
 
 #: c-family/c-pragma.c:490
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma extern_prefix, ignored"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の #pragma extern_prefix です。無視されました"
 
 #: c-family/c-pragma.c:493
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma extern_prefix%>"
-msgstr "#pragma %s の末尾にゴミ"
+msgstr "%<#pragma extern_prefix%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:500
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma extern_prefix not supported on this target"
-msgstr "スタック制限はこのターゲットでは実装されていません"
+msgstr "#pragma extern_prefix はこのターゲットではサポートされていません"
 
 #: c-family/c-pragma.c:527
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "asm declaration ignored due to conflict with previous rename"
-msgstr "`%s' のセクションは前方でに宣言されたものと衝突します"
+msgstr "アセンブラ宣言は前の名前変更と競合するため無視されました"
 
 #: c-family/c-pragma.c:560
 #, gcc-internal-format
 msgid "#pragma redefine_extname ignored due to conflict with __asm__ declaration"
-msgstr ""
+msgstr "#pragma redefine_extname は __asm__ 宣言と競合するため無視されました"
 
 #: c-family/c-pragma.c:622
 #, gcc-internal-format
 msgid "#pragma GCC visibility push() must specify default, internal, hidden or protected"
-msgstr ""
+msgstr "#pragma GCC visibility push() は default、internal、hidden または protected を指定しなければいけません"
 
 #: c-family/c-pragma.c:664
 #, gcc-internal-format
 msgid "#pragma GCC visibility must be followed by push or pop"
-msgstr ""
+msgstr "#pragma GCC visibility には push または pop を続けなければいけません"
 
 #: c-family/c-pragma.c:670
 #, gcc-internal-format
 msgid "no matching push for %<#pragma GCC visibility pop%>"
-msgstr ""
+msgstr "%<#pragma GCC visibility pop%> に対応する push がありません"
 
 #: c-family/c-pragma.c:675 c-family/c-pragma.c:682
 #, gcc-internal-format
 msgid "missing %<(%> after %<#pragma GCC visibility push%> - ignored"
-msgstr ""
+msgstr "%<#pragma GCC visibility push%> の後に %<(%> がありません - 無視されました"
 
 #: c-family/c-pragma.c:678
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma GCC visibility push"
-msgstr "おかしな #pragma ghs section"
+msgstr "誤った形式の #pragma GCC visibility push です"
 
 #: c-family/c-pragma.c:686
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma GCC visibility%>"
-msgstr "#pragma %s の末尾にゴミ"
+msgstr "%<#pragma GCC visibility%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:701
 #, gcc-internal-format
 msgid "missing [error|warning|ignored] after %<#pragma GCC diagnostic%>"
-msgstr ""
+msgstr "%<#pragma GCC diagnostic%> の後に [error|warning|ignored] がありません"
 
 #: c-family/c-pragma.c:720
 #, gcc-internal-format
 msgid "expected [error|warning|ignored|push|pop] after %<#pragma GCC diagnostic%>"
-msgstr ""
+msgstr "%<#pragma GCC diagnostic%> の後に [error|warning|ignored|push|pop] が予期されます"
 
 #: c-family/c-pragma.c:724
 #, gcc-internal-format
 msgid "missing option after %<#pragma GCC diagnostic%> kind"
-msgstr ""
+msgstr "%<#pragma GCC diagnostic%> 類の後にオプションがありません"
 
 #: c-family/c-pragma.c:736
 #, gcc-internal-format
 msgid "unknown option after %<#pragma GCC diagnostic%> kind"
-msgstr ""
+msgstr "%<#pragma GCC diagnostic%> の後に不明なオプションです"
 
 #: c-family/c-pragma.c:749
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma GCC option is not allowed inside functions"
-msgstr "ブレースでまとめられた式は関数の内側でのみ許されます"
+msgstr "#pragma GCC option は関数内では許可されていません"
 
 #: c-family/c-pragma.c:762
 #, gcc-internal-format
 msgid "%<#pragma GCC option%> is not a string"
-msgstr ""
+msgstr "%<#pragma GCC option%> が文字列ではありません"
 
 #: c-family/c-pragma.c:789
 #, gcc-internal-format
 msgid "%<#pragma GCC target (string [,string]...)%> does not have a final %<)%>"
-msgstr ""
+msgstr "%<#pragma GCC target (string [,string]...)%> に最後の %<)%> がありません"
 
 #: c-family/c-pragma.c:795
 #, gcc-internal-format
 msgid "#pragma GCC target string... is badly formed"
-msgstr ""
+msgstr "#pragma GCC target string... の形式に間違いがあります"
 
 #: c-family/c-pragma.c:818
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma GCC optimize is not allowed inside functions"
-msgstr "初期化子リストは非メンバ関数では使えません"
+msgstr "#pragma GCC optimize は関数内では許可されていません"
 
 #: c-family/c-pragma.c:831
 #, gcc-internal-format
 msgid "%<#pragma GCC optimize%> is not a string or number"
-msgstr ""
+msgstr "%<#pragma GCC optimize%> が文字列または番号ではありません"
 
 #: c-family/c-pragma.c:857
 #, gcc-internal-format
 msgid "%<#pragma GCC optimize (string [,string]...)%> does not have a final %<)%>"
-msgstr ""
+msgstr "%<#pragma GCC optimize (string [,string]...)%> に最後の %<)%> がありません"
 
 #: c-family/c-pragma.c:863
 #, gcc-internal-format
 msgid "#pragma GCC optimize string... is badly formed"
-msgstr ""
+msgstr "#pragma GCC optimize string... の形式に間違いがあります"
 
 #: c-family/c-pragma.c:905
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma push_options%>"
-msgstr "#pragma ghs section の終りにゴミがあります"
+msgstr "%<#pragma push_options%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:935
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma pop_options%>"
-msgstr "#pragma %s の末尾にゴミ"
+msgstr "%<#pragma pop_options%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:942
 #, gcc-internal-format
 msgid "%<#pragma GCC pop_options%> without a corresponding %<#pragma GCC push_options%>"
-msgstr ""
+msgstr "%<#pragma GCC pop_options%> に対応した %<#pragma GCC push_options%> がありません"
 
 #: c-family/c-pragma.c:984
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma reset_options%>"
-msgstr "#pragma ghs section の終りにゴミがあります"
+msgstr "%<#pragma reset_options%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:1022 c-family/c-pragma.c:1029
 #, gcc-internal-format
 msgid "expected a string after %<#pragma message%>"
-msgstr ""
+msgstr "%<#pragma message%> の後に文字列が予期されます"
 
 #: c-family/c-pragma.c:1024
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma message%>, ignored"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の %<#pragma message%> です。無視されました"
 
 #: c-family/c-pragma.c:1034
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma message%>"
-msgstr "#pragma map の終りにゴミがあります"
+msgstr "%<#pragma message%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:1037
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma message: %s"
-msgstr "不明な #pragma namespace %s です"
+msgstr "#pragma message: %s"
 
 #: c-family/c-pragma.c:1074
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid location for %<pragma %s%>, ignored"
-msgstr "おかしな #pragma map、無視されました"
+msgstr ""
 
 #: c-family/c-pragma.c:1081 c-family/c-pragma.c:1095
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma %s%>, ignored"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の %<#pragma %s%> です。無視されました"
 
 #: c-family/c-pragma.c:1101
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma %s%>"
-msgstr "#pragma %s の末尾にゴミ"
+msgstr "%<#pragma %s%> の末尾にゴミがあります"
 
 #: c-family/c-pragma.c:1119
 #, gcc-internal-format
 msgid "%<#pragma STDC FLOAT_CONST_DECIMAL64%> is not supported for C++"
-msgstr ""
+msgstr "%<#pragma STDC FLOAT_CONST_DECIMAL64%> は C++ 用にはサポートされていません"
 
 #: c-family/c-pragma.c:1128
 #, gcc-internal-format
 msgid "%<#pragma STDC FLOAT_CONST_DECIMAL64%> is not supported on this target"
-msgstr ""
+msgstr "%<#pragma STDC FLOAT_CONST_DECIMAL64%> はこのターゲットではサポートされていません"
 
 #: c-family/c-pragma.c:1134
 #, gcc-internal-format
 msgid "ISO C does not support %<#pragma STDC FLOAT_CONST_DECIMAL64%>"
-msgstr ""
+msgstr "ISO C は %<#pragma STDC FLOAT_CONST_DECIMAL64%> をサポートしません"
 
 #: c-family/c-semantics.c:167
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong type argument to %s"
-msgstr "abs への引数の型が間違っています"
+msgstr "%s への間違った型の引数です"
 
 #: config/darwin-c.c:85
 #, gcc-internal-format
 msgid "too many #pragma options align=reset"
-msgstr ""
+msgstr "#pragma options align=reset が多すぎます"
 
 #: config/darwin-c.c:105 config/darwin-c.c:108 config/darwin-c.c:110
 #: config/darwin-c.c:112
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma options', ignoring"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の '#pragma options' です。無視されました"
 
 #: config/darwin-c.c:115
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of '#pragma options'"
-msgstr "'#pragma %s' の最後にゴミがあります"
+msgstr "'#pragma options' の末尾にゴミがあります"
 
 #: config/darwin-c.c:125
 #, gcc-internal-format
 msgid "malformed '#pragma options align={mac68k|power|reset}', ignoring"
-msgstr ""
+msgstr "間違った形式の '#pragma options align={mac68k|power|reset}' です。無視されました"
 
 #: config/darwin-c.c:137
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing '(' after '#pragma unused', ignoring"
-msgstr "述語の後ろの '(' を欠いています"
+msgstr "'#pragma unused' の後に '(' がありません。無視されました"
 
 #: config/darwin-c.c:158
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing ')' after '#pragma unused', ignoring"
-msgstr "述語の後ろの '(' を欠いています"
+msgstr "'#pragma unused' の後に ')' がありません。無視されました"
 
 #: config/darwin-c.c:161
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of '#pragma unused'"
-msgstr "'#pragma %s' の最後にゴミがあります"
+msgstr "'#pragma unused' の末尾にゴミがあります"
 
 #: config/darwin-c.c:172
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma ms_struct', ignoring"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の '#pragma ms_struct' です。無視されました"
 
 #: config/darwin-c.c:180
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma ms_struct {on|off|reset}', ignoring"
-msgstr "おかしな #pragma ghs section"
+msgstr "間違った形式の '#pragma ms_struct {on|off|reset}' です。無視されました"
 
 #: config/darwin-c.c:183
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of '#pragma ms_struct'"
-msgstr "'#pragma %s' の最後にゴミがあります"
+msgstr "'#pragma ms_struct' の末尾にゴミがあります"
 
 #: config/darwin-c.c:409
 #, gcc-internal-format
@@ -20939,72 +20940,72 @@ msgstr ""
 #: config/darwin-c.c:592
 #, gcc-internal-format
 msgid "unknown value %qs of -mmacosx-version-min"
-msgstr ""
+msgstr "-mmacosx-version-min の不明な値 %qs です"
 
 #: config/darwin-driver.c:90
 #, gcc-internal-format
 msgid "sysctl for kern.osversion failed: %m"
-msgstr ""
+msgstr "kern.osversion の sysctl に失敗しました: %m"
 
 #: config/darwin-driver.c:136
 #, gcc-internal-format
 msgid "couldn%'t understand kern.osversion %q.*s"
-msgstr ""
+msgstr "kern.osversion %q.*s を解釈できません"
 
 #: config/darwin.c:1554
 #, gcc-internal-format
 msgid "failed to open temporary file %s for LTO output"
-msgstr ""
+msgstr "LTO 出力用一時ファイル %s を開くのに失敗しました"
 
 #: config/darwin.c:1642
 #, gcc-internal-format
 msgid "%qE 2.95 vtable-compatibility attribute applies only when compiling a kext"
-msgstr ""
+msgstr "%qE 2.95 vtable-compatibility 属性は kext をコンパイルするときのみ適用されます"
 
 #: config/darwin.c:1649
 #, gcc-internal-format
 msgid "%qE 2.95 vtable-compatibility attribute applies only to C++ classes"
-msgstr ""
+msgstr "%qE 2.95 vtable-compatibility 属性は C++ クラスへのみ適用されます"
 
 #: config/darwin.c:2284
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "internal and protected visibility attributes not supported in this configuration; ignored"
-msgstr "現在の設定では alias 定義はサポートされません -- 無視されました"
+msgstr "現在の設定では internal および protected visibility 属性はサポートされません。無視されました"
 
 #: config/darwin.c:2446
 #, gcc-internal-format
 msgid "failed to open temporary file %s with LTO output"
-msgstr ""
+msgstr "LTO 出力の一時ファイル %s を開くのに失敗しました"
 
 #: config/darwin.c:2601
 #, gcc-internal-format
 msgid "-mdynamic-no-pic overrides -fpic or -fPIC"
-msgstr ""
+msgstr "-mdynamic-no-pic は -fpic または -fPIC を上書きします"
 
 #: config/darwin.c:2781
 #, gcc-internal-format
 msgid "built-in function %qD requires the %<-mconstant-cfstrings%> flag"
-msgstr ""
+msgstr "組み込み関数 %qD は %<-mconstant-cfstrings%> フラグを要求します"
 
 #: config/darwin.c:2788
 #, gcc-internal-format
 msgid "built-in function %qD takes one argument only"
-msgstr ""
+msgstr "組み込み関数 %qD は単一の引数をとります"
 
 #: config/darwin.c:2833
 #, gcc-internal-format
 msgid "CFString literal is missing"
-msgstr ""
+msgstr "CFString リテラルがありません"
 
 #: config/darwin.c:2844
 #, gcc-internal-format
 msgid "CFString literal expression is not a string constant"
-msgstr ""
+msgstr "CFString リテラル式が文字列定数ではありません"
 
 #: config/darwin.c:2867
 #, gcc-internal-format
 msgid "%s in CFString literal"
-msgstr ""
+msgstr "CFString リテラル内に %s があります"
 
 #: config/host-darwin.c:61
 #, gcc-internal-format
@@ -21012,69 +21013,69 @@ msgid "couldn%'t unmap pch_address_space: %m"
 msgstr ""
 
 #: config/sol2-c.c:92 config/sol2-c.c:108
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma align%>, ignoring"
-msgstr "おかしな #pragma align - 無視されました"
+msgstr "間違った形式の %<#pragma align%> です。無視しています"
 
 #: config/sol2-c.c:101
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid alignment for %<#pragma align%>, ignoring"
-msgstr "おかしな #pragma align - 無視されました"
+msgstr "%<#pragma align%> への無効な引数です。無視しています"
 
 #: config/sol2-c.c:116
 #, gcc-internal-format
 msgid "%<#pragma align%> must appear before the declaration of %D, ignoring"
-msgstr ""
+msgstr "%<#pragma align%> は %D の前に現れなければいけません。無視しています"
 
 #: config/sol2-c.c:128 config/sol2-c.c:140
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma align%>"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の %<#pragma align%> です"
 
 #: config/sol2-c.c:135
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma align%>"
-msgstr "#pragma %s の末尾にゴミ"
+msgstr "%<#pragma align%> の末尾にゴミがあります"
 
 #: config/sol2-c.c:156 config/sol2-c.c:163
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma init%>, ignoring"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の %<#pragma init%> です。無視しています"
 
 #: config/sol2-c.c:187 config/sol2-c.c:199
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma init%>"
-msgstr "おかしな #pragma ghs section"
+msgstr "間違った形式の %<#pragma init%> です"
 
 #: config/sol2-c.c:194
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma init%>"
-msgstr "#pragma %s の末尾にゴミ"
+msgstr "%<#pragma init%> の末尾にゴミがあります"
 
 #: config/sol2-c.c:215 config/sol2-c.c:222
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma fini%>, ignoring"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の %<#pragma fini%> です。無視しています"
 
 #: config/sol2-c.c:246 config/sol2-c.c:258
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma fini%>"
-msgstr "おかしな #pragma ghs section"
+msgstr "間違った形式の %<#pragma fini%> です"
 
 #: config/sol2-c.c:253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of %<#pragma fini%>"
-msgstr "#pragma %s の末尾にゴミ"
+msgstr "%<#pragma fini%> の末尾にゴミがあります"
 
 #: config/sol2.c:54
 #, gcc-internal-format
 msgid "ignoring %<#pragma align%> for explicitly aligned %q+D"
-msgstr ""
+msgstr "明示的に整列されている %q+D 用の %<#pragma align%> を無視しています"
 
 #: config/vxworks.c:146
 #, gcc-internal-format
 msgid "PIC is only supported for RTPs"
-msgstr ""
+msgstr "PIC は RTP 用にのみサポートされています"
 
 #. Mach-O supports 'weak imports', and 'weak definitions' in coalesced
 #. sections.  machopic_select_section ensures that weak variables go in
@@ -21082,85 +21083,85 @@ msgstr ""
 #. not supported.  Weak symbols that aren't visible outside the .s file
 #. are not supported.
 #: config/darwin.h:430
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "alias definitions not supported in Mach-O; ignored"
-msgstr "現在の設定では alias 定義はサポートされません -- 無視されました"
+msgstr "別名定義は Mach-O ではサポートされていません。無視されました"
 
 #. No profiling.
 #: config/vx-common.h:89
 #, gcc-internal-format
 msgid "profiler support for VxWorks"
-msgstr ""
+msgstr "VxWorks 用のプロファイルサポート"
 
 #: config/alpha/alpha.c:236 config/rs6000/rs6000.c:4401
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mtls-size switch"
-msgstr "-mips スイッチに対する不正な値 (%s)"
+msgstr "-mtls-size スイッチ用の間違った値 %qs です"
 
 #: config/alpha/alpha.c:294
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-f%s ignored for Unicos/Mk (not supported)"
-msgstr "-f%s は 68HC11/68HC12 用としては無視されました (サポートされません)"
+msgstr "Unicos/Mk 用としては -f%s は無視されました (サポートされていません)"
 
 #: config/alpha/alpha.c:318
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mieee not supported on Unicos/Mk"
-msgstr "-pipe は実装されていません"
+msgstr "-mieee は Unicos/Mk 上ではサポートされていません"
 
 #: config/alpha/alpha.c:329
 #, gcc-internal-format
 msgid "-mieee-with-inexact not supported on Unicos/Mk"
-msgstr ""
+msgstr "-mieee-with-inexact は Unicos/Mk 上ではサポートされていません"
 
 #: config/alpha/alpha.c:346
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mtrap-precision switch"
-msgstr "-mtrap-precision スイッチにとっての不正な値 `%s'"
+msgstr "-mtrap-precision スイッチ用の間違った値 %qs です"
 
 #: config/alpha/alpha.c:360
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mfp-rounding-mode switch"
-msgstr "-mfp-rounding-mode スイッチにとっての不正な値 `%s'"
+msgstr "-mfp-rounding-mode スイッチ用の間違った値 %qs です"
 
 #: config/alpha/alpha.c:375
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mfp-trap-mode switch"
-msgstr "-mfp-trap-mode スイッチにとっての不正な値 `%s'"
+msgstr "-mfp-trap-mode スイッチ用の間違った値 %qs です"
 
 #: config/alpha/alpha.c:389
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mcpu switch"
-msgstr "-mcpu スイッチにとっての不正な値 `%s'"
+msgstr "-mcpu スイッチ用の間違った値 %qs です"
 
 #: config/alpha/alpha.c:401
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mtune switch"
-msgstr "-mcpu スイッチにとっての不正な値 `%s'"
+msgstr "-mtune スイッチ用の間違った値 %qs です"
 
 #: config/alpha/alpha.c:408
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "trap mode not supported on Unicos/Mk"
-msgstr "VAX 浮動小数ではトラップモードを利用できません"
+msgstr "Unicos/Mk 上ではトラップモードはサポートされていません"
 
 #: config/alpha/alpha.c:415
 #, gcc-internal-format
 msgid "fp software completion requires -mtrap-precision=i"
-msgstr "浮動小数点補完は -mtrap-precision=i を必要とします"
+msgstr "浮動小数点ソフトウェア補完には -mtrap-precision=i が必要です"
 
 #: config/alpha/alpha.c:431
 #, gcc-internal-format
 msgid "rounding mode not supported for VAX floats"
-msgstr "VAX 浮動小数では丸めモードを利用できません"
+msgstr "VAX 浮動小数では丸めモードはサポートされていません"
 
 #: config/alpha/alpha.c:436
 #, gcc-internal-format
 msgid "trap mode not supported for VAX floats"
-msgstr "VAX 浮動小数ではトラップモードを利用できません"
+msgstr "VAX 浮動小数ではトラップモードはサポートされていません"
 
 #: config/alpha/alpha.c:440
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "128-bit long double not supported for VAX floats"
-msgstr "VAX 浮動小数ではトラップモードを利用できません"
+msgstr "128 ビット long double は VAX 浮動小数用にはサポートされていません"
 
 #: config/alpha/alpha.c:468
 #, gcc-internal-format
@@ -21168,85 +21169,86 @@ msgid "L%d cache latency unknown for %s"
 msgstr "L%d キャッシュレイテンシは %s にとって不明です"
 
 #: config/alpha/alpha.c:483
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mmemory-latency"
-msgstr "`%s' は -mmemory-latency にとって不正な値です"
+msgstr "-mmemory-latency 用の間違った値 %qs です"
 
 #: config/alpha/alpha.c:6720 config/alpha/alpha.c:6723 config/s390/s390.c:9082
 #: config/s390/s390.c:9085
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad builtin fcode"
-msgstr "組み込みマクロ \"%s\" は無効です"
+msgstr "間違った組み込み fcode です"
 
 #: config/arc/arc.c:412
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument of %qE attribute is not a string constant"
-msgstr "asm テンプレートが文字列定数ではありません"
+msgstr "%qE 属性の引数が文字列定数ではありません"
 
 #: config/arc/arc.c:420
 #, gcc-internal-format
 msgid "argument of %qE attribute is not \"ilink1\" or \"ilink2\""
-msgstr ""
+msgstr "%qE 属性の引数が \"ilink1\" または \"ilink2\" ではありません"
 
 #: config/arm/arm.c:1320 config/sparc/sparc.c:862
 #, gcc-internal-format
 msgid "bad value (%s) for %s switch"
-msgstr "値 (%s) は %s switch にとって正しくありません"
+msgstr "間違った値 (%s) が %s スイッチ用に指定されています"
 
 #: config/arm/arm.c:1459
 #, gcc-internal-format
 msgid "switch -mcpu=%s conflicts with -march=%s switch"
-msgstr ""
+msgstr "-mcpu=%s スイッチが -march=%s スイッチと競合しています"
 
 #: config/arm/arm.c:1584
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid __fp16 format option: -mfp16-format=%s"
-msgstr "無効な --param オプション: %s"
+msgstr "無効な __fp16 書式オプションです: -mfp16-format=%s"
 
 #: config/arm/arm.c:1601
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid ABI option: -mabi=%s"
-msgstr "無効なオプション %s"
+msgstr "無効な ABI オプションです: -mabi=%s"
 
 #: config/arm/arm.c:1609
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "target CPU does not support ARM mode"
-msgstr "ターゲット CPU は APCS-32 をサポートしません"
+msgstr "ターゲット CPU は ARM モードをサポートしていません"
 
 #: config/arm/arm.c:1615
 #, gcc-internal-format
 msgid "target CPU does not support interworking"
-msgstr "ターゲット CPU は interworking をサポートしません"
+msgstr "ターゲット CPU は ARM/Thumb 相互利用をサポートしていません"
 
+# 公式な名前は Thumb であり THUMB ではない
 #: config/arm/arm.c:1621
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "target CPU does not support THUMB instructions"
-msgstr "ターゲット CPU は THUMB 命令をサポートしません"
+msgstr "ターゲット CPU は Thumb 命令をサポートしていません"
 
 #: config/arm/arm.c:1639
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "enabling backtrace support is only meaningful when compiling for the Thumb"
-msgstr "Thumb 用にコンパイルしたときのみ、意味のあるバックトレースを有効にします"
+msgstr "バックトレースサポートの有効化は Thumb 用にコンパイルしたときのみ意味があります"
 
 #: config/arm/arm.c:1642
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "enabling callee interworking support is only meaningful when compiling for the Thumb"
-msgstr "Thumb 用にコンパイルしたときのみ、被呼び出し側 interworking を有効にします"
+msgstr "呼び出し先 ARM/Thumb 相互利用有効化は Thumb 用にコンパイルしたときのみ意味があります"
 
 #: config/arm/arm.c:1646
 #, gcc-internal-format
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
-msgstr "-mapcs-stack-check は -mno-apcs-frame と共存できません"
+msgstr "-mapcs-stack-check と -mno-apcs-frame は併用できません"
 
 #: config/arm/arm.c:1654
 #, gcc-internal-format
 msgid "-fpic and -mapcs-reent are incompatible"
-msgstr "-fpic と -mapcs-reent は共存できません"
+msgstr "-fpic と -mapcs-reent は併用できません"
 
 #: config/arm/arm.c:1657
 #, gcc-internal-format
 msgid "APCS reentrant code not supported.  Ignored"
-msgstr "APCS 再入可能コードはサポートされません。無視されました"
+msgstr "APCS 再入可能コードはサポートされていません。無視されました"
 
 #: config/arm/arm.c:1665
 #, gcc-internal-format
@@ -21254,94 +21256,94 @@ msgid "-g with -mno-apcs-frame may not give sensible debugging"
 msgstr "-g に -mno-apcs-frame をつけると、きめ細かなデバッグはできないでしょう"
 
 #: config/arm/arm.c:1668
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing floating point arguments in fp regs not yet supported"
-msgstr "浮動小数点引数を浮動小数点レジスタで渡すことは、まだサポートされません"
+msgstr ""
 
 #: config/arm/arm.c:1728
 #, gcc-internal-format
 msgid "iwmmxt requires an AAPCS compatible ABI for proper operation"
-msgstr ""
+msgstr "iwmmxt は適切な操作用に AAPCS 互換 ABI を必要とします"
 
 #: config/arm/arm.c:1731
 #, gcc-internal-format
 msgid "iwmmxt abi requires an iwmmxt capable cpu"
-msgstr ""
+msgstr "iwmmxt ABI は iwmmxt 機能がある CPU を必要とします"
 
 #: config/arm/arm.c:1740
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid floating point emulation option: -mfpe=%s"
-msgstr "無効な浮動小数点エミュレートオプション: -mfpe-%s"
+msgstr "無効な浮動小数点エミュレーションオプションです: -mfpe=%s"
 
 #: config/arm/arm.c:1768
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid floating point option: -mfpu=%s"
-msgstr "無効な浮動小数点エミュレートオプション: -mfpe-%s"
+msgstr "無効な浮動小数点オプションです: -mfpu=%s"
 
 #: config/arm/arm.c:1807
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid floating point abi: -mfloat-abi=%s"
-msgstr "無効な浮動小数点エミュレートオプション: -mfpe-%s"
+msgstr "無効な浮動小数点 ABI です: -mfloat-abi=%s"
 
 #: config/arm/arm.c:1815
 #, gcc-internal-format
 msgid "FPA is unsupported in the AAPCS"
-msgstr ""
+msgstr "FPA は AAPCS 内ではサポートされていません"
 
 #: config/arm/arm.c:1820
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "AAPCS does not support -mcaller-super-interworking"
-msgstr "ターゲット CPU は interworking をサポートしません"
+msgstr "AAPCS は -mcaller-super-interworking をサポートしません"
 
 #: config/arm/arm.c:1823
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "AAPCS does not support -mcallee-super-interworking"
-msgstr "ターゲット CPU は interworking をサポートしません"
+msgstr "AAPCS は -mcallee-super-interworking をサポートしません"
 
 #: config/arm/arm.c:1830
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "iWMMXt and hardware floating point"
-msgstr "ハードウェア浮動小数点を利用する"
+msgstr "iWMMXt およびハードウェア浮動小数点"
 
 #: config/arm/arm.c:1834
 #, gcc-internal-format
 msgid "Thumb-2 iWMMXt"
-msgstr ""
+msgstr "Thumb-2 iWMMXt"
 
 #: config/arm/arm.c:1838
 #, gcc-internal-format
 msgid "__fp16 and no ldrh"
-msgstr ""
+msgstr "__fp16 かつ ldrh 無し"
 
 #: config/arm/arm.c:1858
 #, gcc-internal-format
 msgid "-mfloat-abi=hard and VFP"
-msgstr ""
+msgstr "-mfloat-abi=hard および VFP"
 
 #: config/arm/arm.c:1882
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid thread pointer option: -mtp=%s"
-msgstr "無効な浮動小数点エミュレートオプション: -mfpe-%s"
+msgstr "無効なスレッドポインタオプションです: -mtp=%s"
 
 #: config/arm/arm.c:1895
 #, gcc-internal-format
 msgid "can not use -mtp=cp15 with 16-bit Thumb"
-msgstr ""
+msgstr "-mtp=cp15 を 16 ビット Thumb で使用できません"
 
 #: config/arm/arm.c:1909
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "structure size boundary can only be set to %s"
-msgstr "構造体のサイズ境界は 8 又は 32 にしか設定できません"
+msgstr "構造体サイズ境界は %s にのみ設定できます"
 
 #: config/arm/arm.c:1915
 #, gcc-internal-format
 msgid "RTP PIC is incompatible with Thumb"
-msgstr ""
+msgstr "RTP PIC は Thumb では使用できません"
 
 #: config/arm/arm.c:1924
 #, gcc-internal-format
 msgid "RTP PIC is incompatible with -msingle-pic-base"
-msgstr ""
+msgstr "RTP PIC は -msingle-pic-base と併用できません"
 
 #: config/arm/arm.c:1936
 #, gcc-internal-format
@@ -21349,14 +21351,14 @@ msgid "-mpic-register= is useless without -fpic"
 msgstr "-mpic-register= は -fpic をつけないと役に立ちません"
 
 #: config/arm/arm.c:1945
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unable to use '%s' for PIC register"
-msgstr "'%s' を PIC のレジスタとして使うことができません"
+msgstr "PIC レジスタ用に '%s' を使用できません"
 
 #: config/arm/arm.c:1984
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-freorder-blocks-and-partition not supported on this architecture"
-msgstr "-fdata-sections はこのターゲットで受け入れられません"
+msgstr "-freorder-blocks-and-partition はこのアーキテクチャ上ではサポートされていません"
 
 #: config/arm/arm.c:3851
 #, gcc-internal-format
@@ -21376,7 +21378,7 @@ msgstr ""
 #: config/arm/arm.c:4067
 #, gcc-internal-format
 msgid "Thumb-1 hard-float VFP ABI"
-msgstr ""
+msgstr "Thumb-1 ハードウェア浮動小数 VFP ABI"
 
 #: config/arm/arm.c:4775 config/arm/arm.c:4793 config/avr/avr.c:4867
 #: config/avr/avr.c:4883 config/bfin/bfin.c:5562 config/bfin/bfin.c:5623
@@ -21388,19 +21390,19 @@ msgstr ""
 #: config/sh/sh.c:9002 config/sh/sh.c:9020 config/sh/sh.c:9049
 #: config/sh/sh.c:9131 config/sh/sh.c:9154 config/spu/spu.c:3875
 #: config/stormy16/stormy16.c:2222 config/v850/v850.c:2134
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to functions"
-msgstr "`%s' 属性は関数に対してのみ適用されます"
+msgstr "%qE 属性は関数へのみ適用されます"
 
 #: config/arm/arm.c:17651
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unable to compute real location of stacked parameter"
-msgstr "スタックに積まれた仮引数の実際の領域を計算できません"
+msgstr "スタックに積まれた仮引数の実際の位置を計算できません"
 
 #: config/arm/arm.c:19233
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument must be a constant"
-msgstr "`asm' の引数が定数文字列ではありません "
+msgstr "引数は定数でなければいけません"
 
 #. @@@ better error message
 #: config/arm/arm.c:19541 config/arm/arm.c:19578
@@ -21420,79 +21422,79 @@ msgid "no low registers available for popping high registers"
 msgstr "高位レジスタを pop する為に使用できる低位レジスタがありません"
 
 #: config/arm/arm.c:20622
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "interrupt Service Routines cannot be coded in Thumb mode"
-msgstr "Thumb モードでは割り込みサービスルーチンをコード化できません"
+msgstr "割り込みサービスルーチンを Thumb モードでコード化することはできません"
 
 #: config/arm/arm.c:22902
 #, gcc-internal-format
 msgid "the mangling of %<va_list%> has changed in GCC 4.4"
-msgstr ""
+msgstr "%<va_list%> の名前符号化 (mangle) 方法は GCC 4.4 で変更されました"
 
 #: config/arm/pe.c:158 config/mcore/mcore.c:2978
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initialized variable %q+D is marked dllimport"
-msgstr "初期化された変数 `%s' は dllimport マークされています"
+msgstr "初期化された変数 %q+D は dllimport とマークされています"
 
 #: config/arm/pe.c:167
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "static variable %q+D is marked dllimport"
-msgstr "静的変数 `%s' は dllimport とマークされています"
+msgstr "静的変数 %q+D が dllimport とマークされています"
 
 #: config/avr/avr.c:449
 #, gcc-internal-format
 msgid "'builtin_return_address' contains only 2 bytes of address"
-msgstr ""
+msgstr "'builtin_return_address' がアドレスの 2 バイトのみ含んでいます"
 
 #: config/avr/avr.c:1168
 #, gcc-internal-format
 msgid "pointer offset from symbol maybe incorrect"
-msgstr ""
+msgstr "シンボルからのポインタオフセットが間違っているようです"
 
 #: config/avr/avr.c:1225
 #, gcc-internal-format
 msgid "accessing data memory with program memory address"
-msgstr ""
+msgstr "プログラムメモリアドレスとしてデータメモリをアクセスしています"
 
 #: config/avr/avr.c:1265
 #, gcc-internal-format
 msgid "accessing program  memory with data memory address"
-msgstr ""
+msgstr "データメモリアドレスとしてプログラムメモリをアクセスしています"
 
 #: config/avr/avr.c:4681
 #, gcc-internal-format
 msgid "%qs appears to be a misspelled interrupt handler"
-msgstr ""
+msgstr "%qs は綴りが間違った割り込みハンドラのように見えます"
 
 #: config/avr/avr.c:4690
 #, gcc-internal-format
 msgid "%qs appears to be a misspelled signal handler"
-msgstr ""
+msgstr "%qs は綴りが間違ったシグナルハンドラのように見えます"
 
 #: config/avr/avr.c:4840
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "only initialized variables can be placed into program memory area"
-msgstr "プログラムメモリ領域内に配置できる変数だけを初期化しました"
+msgstr "初期化された変数のみプログラムメモリ領域内に配置できます"
 
 #: config/avr/avr.c:4974
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "only uninitialized variables can be placed in the .noinit section"
-msgstr "8 ビット領域内に配置できる変数だけが初期化されました"
+msgstr "初期化されていない変数のみ .noinit セクション内に配置できます"
 
 #: config/avr/avr.c:4988
 #, gcc-internal-format
 msgid "MCU %qs supported for assembler only"
-msgstr ""
+msgstr "MCU %qs はアセンブラのみ用にサポートされています"
 
 #: config/bfin/bfin.c:2567 config/m68k/m68k.c:544
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mshared-library-id=%s is not between 0 and %d"
-msgstr "-mregparm=%d が 0 から %d の間ではありません"
+msgstr "-mshared-library-id=%s が 0 から %d の間ではありません"
 
 #: config/bfin/bfin.c:2587
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mcpu=%s is not valid"
-msgstr "-mcpu=%s は -mips%d をサポートしません"
+msgstr "-mcpu=%s が無効です"
 
 #: config/bfin/bfin.c:2623
 #, gcc-internal-format
@@ -21502,12 +21504,12 @@ msgstr ""
 #: config/bfin/bfin.c:2684
 #, gcc-internal-format
 msgid "-mshared-library-id= specified without -mid-shared-library"
-msgstr ""
+msgstr "-mshared-library-id= が -mid-shared-library 無しで指定されました"
 
 #: config/bfin/bfin.c:2687
 #, gcc-internal-format
 msgid "can%'t use multiple stack checking methods together"
-msgstr ""
+msgstr "複数のスタック検査方法は併用できません"
 
 #: config/bfin/bfin.c:2690
 #, gcc-internal-format
@@ -21515,50 +21517,50 @@ msgid "ID shared libraries and FD-PIC mode can%'t be used together"
 msgstr ""
 
 #: config/bfin/bfin.c:2695 config/m68k/m68k.c:645
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot specify both -msep-data and -mid-shared-library"
-msgstr "-C と -o は両方を一緒に指定できません"
+msgstr "-msep-data と -mid-shared-library は併用できません"
 
 #: config/bfin/bfin.c:2715
 #, gcc-internal-format
 msgid "-mmulticore can only be used with BF561"
-msgstr ""
+msgstr "-mmulticore は BF561 でのみ使用できます"
 
 #: config/bfin/bfin.c:2718
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mcorea should be used with -mmulticore"
-msgstr "-frepo は -c 付きでなければなりません"
+msgstr "-mcorea は -mmulticore と併せて使用するべきです"
 
 #: config/bfin/bfin.c:2721
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mcoreb should be used with -mmulticore"
-msgstr "-frepo は -c 付きでなければなりません"
+msgstr "-mcoreb は -mmulticore と併せて使用するべきです"
 
 #: config/bfin/bfin.c:2724
 #, gcc-internal-format
 msgid "-mcorea and -mcoreb can%'t be used together"
-msgstr ""
+msgstr "-mcorea と -mcoreb は併用できません"
 
 #: config/bfin/bfin.c:5567
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multiple function type attributes specified"
-msgstr "重複するアクセス指定子"
+msgstr "複数の関数型属性が指定されています"
 
 #: config/bfin/bfin.c:5634
 #, gcc-internal-format
 msgid "can%'t apply both longcall and shortcall attributes to the same function"
-msgstr ""
+msgstr "同一の関数に longcall と shortcall 属性を両方適用することは出来ません"
 
 #: config/bfin/bfin.c:5684 config/i386/winnt.c:61 config/mep/mep.c:3880
 #: config/mep/mep.c:4018
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to variables"
-msgstr "`%s' 属性は型には適用されません"
+msgstr "%qE は変数にのみ適用できます"
 
 #: config/bfin/bfin.c:5691
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute cannot be specified for local variables"
-msgstr "section 属性はローカル変数に対しては指定できません"
+msgstr "%qE 属性は局所変数用には指定できません"
 
 #. This function is for retrieving a part of an instruction name for
 #. an operator, for immediate output.  If that ever happens for
@@ -21570,14 +21572,14 @@ msgid "MULT case in cris_op_str"
 msgstr ""
 
 #: config/cris/cris.c:857
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid use of ':' modifier"
-msgstr "void 式の不適切な使用"
+msgstr "':' 修飾子の無効な使用方法です"
 
 #: config/cris/cris.c:1044 config/moxie/moxie.c:189
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "internal error: bad register: %d"
-msgstr "内部エラー: "
+msgstr "内部エラー: 間違ったレジスタです: %d"
 
 #: config/cris/cris.c:1632
 #, gcc-internal-format
@@ -21587,33 +21589,33 @@ msgstr ""
 #: config/cris/cris.c:1729
 #, gcc-internal-format
 msgid "unknown cc_attr value"
-msgstr ""
+msgstr "不明な cc_attr 値です"
 
 #. If we get here, the caller got its initial tests wrong.
 #: config/cris/cris.c:2114
 #, gcc-internal-format
 msgid "internal error: cris_side_effect_mode_ok with bad operands"
-msgstr ""
+msgstr "内部エラー: 間違った被演算子を持つ cris_side_effect_mode_ok です"
 
 #: config/cris/cris.c:2406
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-max-stackframe=%d is not usable, not between 0 and %d"
-msgstr "-mregparm=%d が 0 から %d の間ではありません"
+msgstr "-max-stackframe=%d が使用できません。 0 と %d の間ではありません"
 
 #: config/cris/cris.c:2434
 #, gcc-internal-format
 msgid "unknown CRIS version specification in -march= or -mcpu= : %s"
-msgstr ""
+msgstr "-march= または -mcpu= 内で不明な CRIS バージョン指定があります: %s"
 
 #: config/cris/cris.c:2470
 #, gcc-internal-format
 msgid "unknown CRIS cpu version specification in -mtune= : %s"
-msgstr ""
+msgstr "-mtune= 内に不明な CRIS CPU バージョン指定があります: %s"
 
 #: config/cris/cris.c:2491
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fPIC and -fpic are not supported in this configuration"
-msgstr "%s はこのコンフィギュレーションではサポートされません"
+msgstr "-fPIC および -fpic はこの設定ではサポートされていません"
 
 #: config/cris/cris.c:2506
 #, gcc-internal-format
@@ -21633,17 +21635,17 @@ msgstr ""
 #: config/cris/cris.c:3078
 #, gcc-internal-format
 msgid "stackframe too big: %d bytes"
-msgstr ""
+msgstr "スタックフレームが大きすぎます: %d バイト"
 
 #: config/cris/cris.c:3570 config/cris/cris.c:3598
 #, gcc-internal-format
 msgid "expand_binop failed in movsi got"
-msgstr ""
+msgstr "movsi got 内で expand_binop に失敗しました"
 
 #: config/cris/cris.c:3680
 #, gcc-internal-format
 msgid "emitting PIC operand, but PIC register isn%'t set up"
-msgstr ""
+msgstr "PIC 被演算子を発行していますが、 PIC レジスタが設定されていません"
 
 #. Definitions for GCC.  Part of the machine description for CRIS.
 #. Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
@@ -21697,17 +21699,17 @@ msgstr ""
 #: config/cris/cris.h:881
 #, gcc-internal-format
 msgid "no FUNCTION_PROFILER for CRIS"
-msgstr ""
+msgstr "CRIS 用の FUNCTION_PROFILER がありません"
 
 #: config/crx/crx.h:342
 #, gcc-internal-format
 msgid "profiler support for CRX"
-msgstr ""
+msgstr "CRX 用のプロファイルサポート"
 
 #: config/frv/frv.c:8753
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "accumulator is not a constant integer"
-msgstr "`asm' の引数が定数文字列ではありません "
+msgstr ""
 
 #: config/frv/frv.c:8758
 #, gcc-internal-format
@@ -21720,84 +21722,84 @@ msgid "inappropriate accumulator for %qs"
 msgstr ""
 
 #: config/frv/frv.c:8845
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid IACC argument"
-msgstr "無効な型引数です"
+msgstr "無効な IACC 引数です"
 
 #: config/frv/frv.c:8868
 #, gcc-internal-format
 msgid "%qs expects a constant argument"
-msgstr ""
+msgstr "%qs には定数引数が予期されます"
 
 #: config/frv/frv.c:8873
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "constant argument out of range for %qs"
-msgstr "演算子番号がフォーマットの範囲外です"
+msgstr "%qs 用の定数引数が範囲外です"
 
 #: config/frv/frv.c:9354
 #, gcc-internal-format
 msgid "media functions are not available unless -mmedia is used"
-msgstr ""
+msgstr "メディア関数は -mmedia が使用されない限り利用できません"
 
 #: config/frv/frv.c:9366
 #, gcc-internal-format
 msgid "this media function is only available on the fr500"
-msgstr ""
+msgstr "このメディア関数は fr500 上でのみ利用できます"
 
 #: config/frv/frv.c:9394
 #, gcc-internal-format
 msgid "this media function is only available on the fr400 and fr550"
-msgstr ""
+msgstr "このメディア関数は fr400 と fr550 上でのみ利用できます"
 
 #: config/frv/frv.c:9413
 #, gcc-internal-format
 msgid "this builtin function is only available on the fr405 and fr450"
-msgstr ""
+msgstr "この組み込み関数は fr405 と fr450 上でのみ利用できます"
 
 #: config/frv/frv.c:9422
 #, gcc-internal-format
 msgid "this builtin function is only available on the fr500 and fr550"
-msgstr ""
+msgstr "この組み込み関数は fr500 と fr550 上でのみ利用できます"
 
 #: config/frv/frv.c:9434
 #, gcc-internal-format
 msgid "this builtin function is only available on the fr450"
-msgstr ""
+msgstr "この組み込み関数は fr450 上でのみ利用できます"
 
 #: config/h8300/h8300.c:343
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-ms2600 is used without -ms"
-msgstr "-ms2600 が -ms なしで使われました"
+msgstr "-ms2600 が -ms 無しで使用されています"
 
 #: config/h8300/h8300.c:349
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mn is used without -mh or -ms"
-msgstr "-ms2600 が -ms なしで使われました"
+msgstr "-mn が -mh または -ms 無しで使用されています"
 
 #: config/i386/host-cygwin.c:62
 #, gcc-internal-format
 msgid "can%'t extend PCH file: %m"
-msgstr ""
+msgstr "PCH ファイルを拡張できません: %m"
 
 #: config/i386/host-cygwin.c:73
 #, gcc-internal-format
 msgid "can%'t set position in PCH file: %m"
-msgstr ""
+msgstr "PCH ファイル内で位置を設定できません: %m"
 
 #: config/i386/i386.c:3357 config/i386/i386.c:3646
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for %stune=%s %s"
-msgstr "値 (%s) は %s switch にとって正しくありません"
+msgstr ""
 
 #: config/i386/i386.c:3360
 #, gcc-internal-format
 msgid "%stune=x86-64%s is deprecated; use %stune=k8%s or %stune=generic%s instead as appropriate"
-msgstr ""
+msgstr "%stune=x86-64%s は廃止されました。代わりに %stune=k8%s または %stune=generic%s の適切な方を使用してください"
 
 #: config/i386/i386.c:3406
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for %sstringop-strategy=%s %s"
-msgstr "値 (%s) は %s switch にとって正しくありません"
+msgstr ""
 
 #: config/i386/i386.c:3423
 #, gcc-internal-format
@@ -21805,34 +21807,34 @@ msgid "unknown ABI (%s) for %sabi=%s %s"
 msgstr ""
 
 #: config/i386/i386.c:3438
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "code model %s does not support PIC mode"
-msgstr "%s は %s を受け付けません"
+msgstr "コードモデル %s は PIC モードをサポートしません"
 
 #: config/i386/i386.c:3444
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for %scmodel=%s %s"
-msgstr "-mcmodel= スイッチにとって不正な値 (%s)"
+msgstr ""
 
 #: config/i386/i386.c:3468
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for %sasm=%s %s"
-msgstr "値 (%s) は %s switch にとって正しくありません"
+msgstr ""
 
 #: config/i386/i386.c:3472
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "code model %qs not supported in the %s bit mode"
-msgstr "-mcmodel= は 32 bit システム上ではサポートされません"
+msgstr "コードモデル %qs は %s ビットモード内ではサポートされません"
 
 #: config/i386/i386.c:3475
 #, gcc-internal-format
 msgid "%i-bit mode not compiled in"
-msgstr ""
+msgstr "%i ビットモードが使用できるようにコンパイルされていません"
 
 #: config/i386/i386.c:3487 config/i386/i386.c:3608
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "CPU you selected does not support x86-64 instruction set"
-msgstr "ターゲット CPU は THUMB 命令をサポートしません"
+msgstr "選択した CPU は x86-64 命令セットをサポートしていません"
 
 #: config/i386/i386.c:3578
 #, gcc-internal-format
@@ -21840,99 +21842,99 @@ msgid "generic CPU can be used only for %stune=%s %s"
 msgstr ""
 
 #: config/i386/i386.c:3581
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for %sarch=%s %s"
-msgstr "-march= スイッチに対する不正な値 (%s)"
+msgstr ""
 
 #: config/i386/i386.c:3696
 #, gcc-internal-format
 msgid "%sregparm%s is ignored in 64-bit mode"
-msgstr ""
+msgstr "%sregparm%s は 64 ビットモードでは無視されます"
 
 #: config/i386/i386.c:3699
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%sregparm=%d%s is not between 0 and %d"
-msgstr "-mregparm=%d が 0 から %d の間ではありません"
+msgstr "%sregparm=%d%s が 0 と %d の間ではありません"
 
 #: config/i386/i386.c:3712
 #, gcc-internal-format
 msgid "%salign-loops%s is obsolete, use -falign-loops%s"
-msgstr ""
+msgstr "%salign-loops%s は廃止予定です。-falign-loops%s を使用してください"
 
 #: config/i386/i386.c:3718 config/i386/i386.c:3733 config/i386/i386.c:3748
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%salign-loops=%d%s is not between 0 and %d"
-msgstr "-malign-loops=%d が 0 から %d の間ではありません"
+msgstr "%salign-loops=%d%s が 0 と %d の間ではありません"
 
 #: config/i386/i386.c:3727
 #, gcc-internal-format
 msgid "%salign-jumps%s is obsolete, use -falign-jumps%s"
-msgstr ""
+msgstr "%salign-jumps%s は廃止予定です。-falign-jumps%s を使用してください"
 
 #: config/i386/i386.c:3742
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%salign-functions%s is obsolete, use -falign-functions%s"
-msgstr "-malign-functions=%d が 0 から %d の間ではありません"
+msgstr "%salign-functions%s は廃止予定です。-falign-functions%s を使用してください"
 
 #: config/i386/i386.c:3777
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%sbranch-cost=%d%s is not between 0 and 5"
-msgstr "-mbranch-cost=%d が 0 から 5 の間ではありません"
+msgstr "%sbranch-cost=%d%s が 0 と 5 の間ではありません"
 
 #: config/i386/i386.c:3785
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%slarge-data-threshold=%d%s is negative"
-msgstr "%s ローテート回数が負の値です"
+msgstr "%slarge-data-threshold=%d%s が負です"
 
 #: config/i386/i386.c:3797
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for %stls-dialect=%s %s"
-msgstr "値 (%s) は %s switch にとって正しくありません"
+msgstr ""
 
 #: config/i386/i386.c:3805
 #, gcc-internal-format
 msgid "pc%d is not valid precision setting (32, 64 or 80)"
-msgstr ""
+msgstr "pc%d は有効な精度設定 (32、64 または 80) ではありません"
 
 #: config/i386/i386.c:3821
 #, gcc-internal-format
 msgid "%srtd%s is ignored in 64bit mode"
-msgstr ""
+msgstr "%srtd%s は 64 ビットモードでは無視されます"
 
 #: config/i386/i386.c:3881
 #, gcc-internal-format
 msgid "%spreferred-stack-boundary%s is not supported for this target"
-msgstr ""
+msgstr "%spreferred-stack-boundary%s はこのターゲットではサポートされていません"
 
 #: config/i386/i386.c:3884
 #, gcc-internal-format
 msgid "%spreferred-stack-boundary=%d%s is not between %d and %d"
-msgstr ""
+msgstr "%spreferred-stack-boundary=%d%s が %d と %d の間ではありません"
 
 #: config/i386/i386.c:3904
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mincoming-stack-boundary=%d is not between %d and 12"
-msgstr "-mpreferred-stack-boundary=%d が 2 から 31 の間ではありません"
+msgstr "-mincoming-stack-boundary=%d が %d と 12 の間ではありません"
 
 #: config/i386/i386.c:3917
 #, gcc-internal-format
 msgid "%ssseregparm%s used without SSE enabled"
-msgstr ""
+msgstr "%ssseregparm%s が SSE が有効ではない状態で使用されています"
 
 #: config/i386/i386.c:3928 config/i386/i386.c:3942
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "SSE instruction set disabled, using 387 arithmetics"
-msgstr "関数ポインタが計算で使われました"
+msgstr "SSE 命令セットが無効になっています。 387 数値演算を使用します"
 
 #: config/i386/i386.c:3947
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "387 instruction set disabled, using SSE arithmetics"
-msgstr "関数ポインタが計算で使われました"
+msgstr "387 命令セットが無効になっています。SSE 数値演算を使用します"
 
 #: config/i386/i386.c:3954
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for %sfpmath=%s %s"
-msgstr "-march= スイッチに対する不正な値 (%s)"
+msgstr ""
 
 #: config/i386/i386.c:3970
 #, gcc-internal-format
@@ -21957,92 +21959,92 @@ msgstr ""
 #: config/i386/i386.c:4097
 #, gcc-internal-format
 msgid "-mno-fentry isn%'t compatible with SEH"
-msgstr ""
+msgstr "-mno-fentry は SEH と互換性がありません"
 
 #: config/i386/i386.c:4511
 #, gcc-internal-format
 msgid "attribute(target(\"%s\")) is unknown"
-msgstr ""
+msgstr "attribute(target(\"%s\")) が不明です"
 
 #: config/i386/i386.c:4533
 #, gcc-internal-format
 msgid "option(\"%s\") was already specified"
-msgstr ""
+msgstr "option(\"%s\") は既に指定されています"
 
 #: config/i386/i386.c:5147 config/i386/i386.c:5198
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "fastcall and regparm attributes are not compatible"
-msgstr "shared と mdll とは共存できません"
+msgstr "fastcall と regparm 属性は併用できません"
 
 #: config/i386/i386.c:5152
 #, gcc-internal-format
 msgid "regparam and thiscall attributes are not compatible"
-msgstr ""
+msgstr "regparam と thiscall 属性は併用できません"
 
 #: config/i386/i386.c:5159 config/i386/i386.c:29109
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute requires an integer constant argument"
-msgstr "3 つの 'l' 接尾辞が整数定数についています"
+msgstr "%qE 属性には整数定数引数が必要です"
 
 #: config/i386/i386.c:5165
 #, gcc-internal-format
 msgid "argument to %qE attribute larger than %d"
-msgstr ""
+msgstr "%qE 属性への引数が %d より大きいです"
 
 #: config/i386/i386.c:5190 config/i386/i386.c:5233
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "fastcall and cdecl attributes are not compatible"
-msgstr "shared と mdll とは共存できません"
+msgstr "fastcall と cdecl 属性は併用できません"
 
 #: config/i386/i386.c:5194
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "fastcall and stdcall attributes are not compatible"
-msgstr "shared と mdll とは共存できません"
+msgstr "fastcall と stdcall 属性は併用できません"
 
 #: config/i386/i386.c:5202 config/i386/i386.c:5251
 #, gcc-internal-format
 msgid "fastcall and thiscall attributes are not compatible"
-msgstr ""
+msgstr "fastcall と thiscall 属性は併用できません"
 
 #: config/i386/i386.c:5212 config/i386/i386.c:5229
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stdcall and cdecl attributes are not compatible"
-msgstr "shared と mdll とは共存できません"
+msgstr "stdcall と cdecl 属性は併用できません"
 
 #: config/i386/i386.c:5216
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stdcall and fastcall attributes are not compatible"
-msgstr "shared と mdll とは共存できません"
+msgstr "stdcall と fastcall 属性は併用できません"
 
 #: config/i386/i386.c:5220 config/i386/i386.c:5247
 #, gcc-internal-format
 msgid "stdcall and thiscall attributes are not compatible"
-msgstr ""
+msgstr "stdcall と thiscall 属性は併用できません"
 
 #: config/i386/i386.c:5237 config/i386/i386.c:5255
 #, gcc-internal-format
 msgid "cdecl and thiscall attributes are not compatible"
-msgstr ""
+msgstr "cdecl と thiscall 属性は併用できません"
 
 #: config/i386/i386.c:5243
 #, gcc-internal-format
 msgid "%qE attribute is used for none class-method"
-msgstr ""
+msgstr "%qE 属性が非クラスメソッド用に使用されています"
 
 #: config/i386/i386.c:5397
 #, gcc-internal-format
 msgid "calling %qD with attribute sseregparm without SSE/SSE2 enabled"
-msgstr ""
+msgstr "SSE/SSE2 が有効でない状態で sseregparm 属性付きの %qD を呼び出しています"
 
 #: config/i386/i386.c:5400
 #, gcc-internal-format
 msgid "calling %qT with attribute sseregparm without SSE/SSE2 enabled"
-msgstr ""
+msgstr "SSE/SSE2 が有効でない状態で sseregparm 属性付きの %qT を呼び出しています<"
 
 #: config/i386/i386.c:5617
 #, gcc-internal-format
 msgid "ms_hook_prologue is not compatible with nested function"
-msgstr ""
+msgstr "ms_hook_prologue は入れ子になった関数と両立できません"
 
 #: config/i386/i386.c:5769
 #, gcc-internal-format
@@ -22057,72 +22059,72 @@ msgstr ""
 #: config/i386/i386.c:6074
 #, gcc-internal-format
 msgid "the ABI of passing struct with a flexible array member has changed in GCC 4.4"
-msgstr ""
+msgstr "可変長配列メンバを持つ構造体を渡す ABI は GCC 4.4 で変更になっています"
 
 #: config/i386/i386.c:6190
 #, gcc-internal-format
 msgid "the ABI of passing union with long double has changed in GCC 4.4"
-msgstr ""
+msgstr "long double を持つ共用体を渡す ABI は GCC 4.4 で変更になっています"
 
 #: config/i386/i386.c:6305
 #, gcc-internal-format
 msgid "the ABI of passing structure with complex float member has changed in GCC 4.4"
-msgstr ""
+msgstr "複素浮動小数メンバを持つ構造体を渡す ABI は GCC 4.4 で変更になっています"
 
 #: config/i386/i386.c:6451
 #, gcc-internal-format
 msgid "SSE register return with SSE disabled"
-msgstr ""
+msgstr "SSE が無効の状態で SSE レジスタを戻して (return) います"
 
 #: config/i386/i386.c:6457
 #, gcc-internal-format
 msgid "SSE register argument with SSE disabled"
-msgstr ""
+msgstr "SSE が無効の状態で SSE レジスタ引数があります"
 
 #: config/i386/i386.c:6473
 #, gcc-internal-format
 msgid "x87 register return with x87 disabled"
-msgstr ""
+msgstr "x87 が無効な状態で x87 レジスタを戻して (return) います"
 
 #: config/i386/i386.c:6851
 #, gcc-internal-format
 msgid "SSE vector argument without SSE enabled changes the ABI"
-msgstr ""
+msgstr "SSE が有効でない状態での SSE ベクトル引数は ABI を変更します"
 
 #: config/i386/i386.c:6889
 #, gcc-internal-format
 msgid "MMX vector argument without MMX enabled changes the ABI"
-msgstr ""
+msgstr "MMX が有効でない状態での MMX ベクトル引数は ABI を変更します"
 
 #: config/i386/i386.c:7261
 #, gcc-internal-format
 msgid "The ABI for passing parameters with %d-byte alignment has changed in GCC 4.6"
-msgstr ""
+msgstr "%d バイト整列の仮引数を渡す ABI は GCC 4.6 で変更になっています"
 
 #: config/i386/i386.c:7570
 #, gcc-internal-format
 msgid "SSE vector return without SSE enabled changes the ABI"
-msgstr ""
+msgstr "SSE が有効でない状態での SSE ベクトル戻し (return) は ABI を変更します"
 
 #: config/i386/i386.c:7580
 #, gcc-internal-format
 msgid "MMX vector return without MMX enabled changes the ABI"
-msgstr ""
+msgstr "MMX が有効でない状態での MMX ベクトル戻し (return) は ABI を変更します"
 
 #: config/i386/i386.c:9006
 #, gcc-internal-format
 msgid "%<-fsplit-stack%> currently only supported on GNU/Linux"
-msgstr ""
+msgstr "%<-fsplit-stack%> は現在のところ GNU/Linux 上でのみサポートされています"
 
 #: config/i386/i386.c:9012
 #, gcc-internal-format
 msgid "%<-fsplit-stack%> requires assembler support for CFI directives"
-msgstr ""
+msgstr "%<-fsplit-stack%> はアセンブラが CFI 指示をサポートしている必要があります"
 
 #: config/i386/i386.c:10167
 #, gcc-internal-format
 msgid "ms_hook_prologue attribute isn%'t compatible with -mfentry for 32-bit"
-msgstr ""
+msgstr "ms_hook_prologue 属性は 32 ビット用の -mfentry と併用できません"
 
 #: config/i386/i386.c:11135
 #, gcc-internal-format
@@ -22157,54 +22159,54 @@ msgid "non-integer operand used with operand code '%c'"
 msgstr ""
 
 #: config/i386/i386.c:25819 config/i386/i386.c:27203
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "last argument must be an immediate"
-msgstr "マスクは即値でなければなりません"
+msgstr "最後の引数は即値でなければいけません"
 
 #: config/i386/i386.c:26116
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the fifth argument must be a 8-bit immediate"
-msgstr "セレクタは即値でなければなりません"
+msgstr "第五引数は 8 ビット即値でなければいけません"
 
 #: config/i386/i386.c:26211
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the third argument must be a 8-bit immediate"
-msgstr "セレクタは即値でなければなりません"
+msgstr "第三引数は 8 ビット即値でなければいけません"
 
 #: config/i386/i386.c:26568
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the last argument must be a 4-bit immediate"
-msgstr "セレクタは即値でなければなりません"
+msgstr "最後の引数は 4 ビット即値でなければいけません"
 
 #: config/i386/i386.c:26577
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the last argument must be a 2-bit immediate"
-msgstr "セレクタは即値でなければなりません"
+msgstr "最後の引数は 2 ビット即値でなければいけません"
 
 #: config/i386/i386.c:26586
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the last argument must be a 1-bit immediate"
-msgstr "セレクタは即値でなければなりません"
+msgstr "最後の引数は 1 ビット即値でなければいけません"
 
 #: config/i386/i386.c:26595
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the last argument must be a 5-bit immediate"
-msgstr "セレクタは即値でなければなりません"
+msgstr "最後の引数は 5 ビット即値でなければいけません"
 
 #: config/i386/i386.c:26604
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the next to last argument must be an 8-bit immediate"
-msgstr "セレクタは即値でなければなりません"
+msgstr "最後の引数の前の引数は 8 ビット即値でなければいけません"
 
 #: config/i386/i386.c:26608 config/i386/i386.c:26820
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the last argument must be an 8-bit immediate"
-msgstr "セレクタは即値でなければなりません"
+msgstr "最後の引数は 8 ビット即値でなければいけません"
 
 #: config/i386/i386.c:26818
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the last argument must be a 32-bit immediate"
-msgstr "セレクタは即値でなければなりません"
+msgstr "最後の引数は 32 ビット即値でなければいけません"
 
 #: config/i386/i386.c:26884 config/rs6000/rs6000.c:11450
 #, gcc-internal-format
@@ -22217,69 +22219,69 @@ msgid "%qE needs unknown isa option"
 msgstr ""
 
 #: config/i386/i386.c:27031
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE needs isa option %s"
-msgstr "無効なオプション %s"
+msgstr "%qE は isa オプション %s が必要です"
 
 #: config/i386/i386.c:29096
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only available for 32-bit"
-msgstr "`%s' 属性は型には適用されません"
+msgstr "%qE 属性は 32 ビットでのみ使用できます"
 
 #: config/i386/i386.c:29117
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument to %qE attribute is neither zero, nor one"
-msgstr "asm テンプレートが文字列定数ではありません"
+msgstr "%qE 属性への引数が 0 でも 1 でもありません"
 
 #: config/i386/i386.c:29147
 #, gcc-internal-format
 msgid "%qE attribute only available for 64-bit"
-msgstr ""
+msgstr "%qE 属性は 64 ビットでのみ使用できます"
 
 #: config/i386/i386.c:29158 config/i386/i386.c:29167
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ms_abi and sysv_abi attributes are not compatible"
-msgstr "shared と mdll とは共存できません"
+msgstr "ms_abi と sysv_abi 属性は互換性がありません"
 
 #: config/i386/i386.c:29205 config/rs6000/rs6000.c:24997
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE incompatible attribute ignored"
-msgstr "`%s' 属性は無視されました"
+msgstr "互換性がない %qE 属性は無視されました"
 
 #: config/i386/i386.c:33370
 #, gcc-internal-format
 msgid "vector permutation requires vector constant"
-msgstr ""
+msgstr "ベクトル順列はベクトル定数である必要があります"
 
 #: config/i386/i386.c:33380
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid vector permutation constant"
-msgstr "無効な句読点 `%c' が制約内にあります"
+msgstr "無効なベクトル順列定数です"
 
 #: config/i386/i386.c:33428
 #, gcc-internal-format
 msgid "vector permutation (%d %d)"
-msgstr ""
+msgstr "ベクトル順列 (%d %d)"
 
 #: config/i386/i386.c:33431
 #, gcc-internal-format
 msgid "vector permutation (%d %d %d %d)"
-msgstr ""
+msgstr "ベクトル順列 (%d %d %d %d)"
 
 #: config/i386/i386.c:33435
 #, gcc-internal-format
 msgid "vector permutation (%d %d %d %d %d %d %d %d)"
-msgstr ""
+msgstr "ベクトル順列 (%d %d %d %d %d %d %d %d)"
 
 #: config/i386/i386.c:33440
 #, gcc-internal-format
 msgid "vector permutation (%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)"
-msgstr ""
+msgstr "ベクトル順列 (%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)"
 
 #: config/i386/winnt.c:83
 #, gcc-internal-format
 msgid "%qE attribute applies only to initialized variables with external linkage"
-msgstr ""
+msgstr "%qE 属性は外部リンクされている初期化された変数にのみ適用できます"
 
 #: config/i386/winnt.c:145 config/sh/symbian-c.c:96
 #: config/sh/symbian-cxx.c:120
@@ -22288,77 +22290,77 @@ msgid "definition of static data member %q+D of dllimport%'d class"
 msgstr ""
 
 #: config/i386/winnt.c:308
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D:'selectany' attribute applies only to initialized objects"
-msgstr "`%s' 属性は関数に対してのみ適用されます"
+msgstr "%q+D:'selectany' 属性は初期化されたオブジェクトにのみ適用できます"
 
 #: config/i386/winnt.c:452
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D causes a section type conflict"
-msgstr "%s はセクションタイプの競合を引き起こします"
+msgstr "%q+D はセクション型の競合の原因となります"
 
 #: config/i386/cygming.h:200
 #, gcc-internal-format
 msgid "-fPIC ignored for target (all code is position independent)"
-msgstr ""
+msgstr "-fPIC はターゲットでは無視されます (全てのコード配置非依存です)"
 
 #: config/i386/cygming.h:206
 #, gcc-internal-format
 msgid "-f%s ignored for target (all code is position independent)"
-msgstr "-f%s はターゲットで無視されます (全てのコードは位置非依存です)"
+msgstr "-f%s はターゲットでは無視されます (全てのコードは位置非依存です)"
 
 #: config/i386/djgpp.h:175
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mbnu210 is ignored (option is obsolete)"
-msgstr "-mbnu210 は無視されました(廃れたオプションです)"
+msgstr "-mbnu210 は無視されます (オプションは廃止されています)"
 
 #: config/i386/i386-interix.h:253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ms-bitfields not supported for objc"
-msgstr "-pipe は実装されていません"
+msgstr "ms-bitfields は objc 用にはサポートされていません"
 
 #. Don't allow flag_pic to propagate since invalid relocations will
 #. result otherwise.
 #: config/i386/netware.h:84
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fPIC and -fpic are not supported for this target"
-msgstr "-fdata-sections はこのターゲットで受け入れられません"
+msgstr "-fPIC and -fpic はこのターゲットではサポートされていません"
 
 #: config/ia64/ia64-c.c:52
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma builtin"
-msgstr "おかしな #pragma implementation"
+msgstr "間違った形式の #pragma builtin です"
 
 #: config/ia64/ia64.c:694
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid argument of %qE attribute"
-msgstr "`%s' の引数として無効な型"
+msgstr "%qE 属性の無効な引数です"
 
 #: config/ia64/ia64.c:707
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "an address area attribute cannot be specified for local variables"
-msgstr "データ領域属性をローカル変数には指定できません"
+msgstr "アドレス領域属性は局所変数用には指定できません"
 
 #: config/ia64/ia64.c:714
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address area of %q+D conflicts with previous declaration"
-msgstr "データ領域 '%s' は前の宣言と矛盾します"
+msgstr "%q+D  のアドレス領域は前の宣言と競合しています"
 
 #: config/ia64/ia64.c:722
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address area attribute cannot be specified for functions"
-msgstr "データ領域属性をローカル変数には指定できません"
+msgstr "アドレス領域属性は関数用には指定できません"
 
 #: config/ia64/ia64.c:763
 #, gcc-internal-format
 msgid "%qE attribute requires a string constant argument"
-msgstr ""
+msgstr "%qE 属性は文字列定数引数を必要とします"
 
 #: config/ia64/ia64.c:5655 config/pa/pa.c:420 config/sh/sh.c:8850
 #: config/spu/spu.c:5079
 #, gcc-internal-format
 msgid "value of -mfixed-range must have form REG1-REG2"
-msgstr "-mfixed-range の値は REG1-REG2 形式を持たねばなりません"
+msgstr "-mfixed-range の値は REG1-REG2 形式でなければいけません"
 
 #: config/ia64/ia64.c:5682 config/pa/pa.c:447 config/sh/sh.c:8876
 #: config/spu/spu.c:5105
@@ -22367,29 +22369,29 @@ msgid "%s-%s is an empty range"
 msgstr "%s-%s が空の範囲です"
 
 #: config/ia64/ia64.c:5710
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %<%s%> for -mtls-size= switch"
-msgstr "-mabi= スイッチに対する不正な値 (%s)"
+msgstr "-mtls-size= スイッチ用の間違った値 %<%s%> です"
 
 #: config/ia64/ia64.c:5735
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %<%s%> for -mtune= switch"
-msgstr "-mcpu= スイッチに対する不正な値 (%s)"
+msgstr "-mtune= スイッチ用の間違った値 %<%s%> です"
 
 #: config/ia64/ia64.c:11007
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "version attribute is not a string"
-msgstr "#line の後の二つ目のトークンが文字列ではありません"
+msgstr "version 属性が文字列ではありません"
 
 #: config/iq2000/iq2000.c:1870
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "gp_offset (%ld) or end_offset (%ld) is less than zero"
-msgstr "gp_offset (%ld) 又は end_offset (%ld) がゼロよりも小さくなっています"
+msgstr "gp_offset (%ld) または end_offset (%ld) が 0 より小さいです"
 
 #: config/iq2000/iq2000.c:2649
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %qd is not a constant"
-msgstr "`asm' の引数が定数文字列ではありません "
+msgstr "引数 %qd が定数ではありません"
 
 #: config/iq2000/iq2000.c:2951 config/xtensa/xtensa.c:2389
 #, gcc-internal-format
@@ -22407,24 +22409,24 @@ msgid "PRINT_OPERAND null pointer"
 msgstr "PRINT_OPERAND NULL ポインタ"
 
 #: config/m32c/m32c-pragma.c:61
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of #pragma GCC memregs [0..16]"
-msgstr "#pragma %s の末尾にゴミ"
+msgstr "#pragma GCC memregs [0..16] の末尾にゴミがあります"
 
 #: config/m32c/m32c-pragma.c:68
 #, gcc-internal-format
 msgid "#pragma GCC memregs must precede any function decls"
-msgstr ""
+msgstr "#pragma GCC memregs は全ての関数宣言の前になければいけません"
 
 #: config/m32c/m32c-pragma.c:76 config/m32c/m32c-pragma.c:83
 #, gcc-internal-format
 msgid "#pragma GCC memregs takes a number [0..16]"
-msgstr ""
+msgstr "#pragma GCC memregs は数値 [0..16] をとります"
 
 #: config/m32c/m32c-pragma.c:111
 #, gcc-internal-format
 msgid "junk at end of #pragma ADDRESS"
-msgstr ""
+msgstr "#pragma ADDRESS の末尾にゴミがあります"
 
 #: config/m32c/m32c-pragma.c:116
 #, gcc-internal-format
@@ -22432,40 +22434,40 @@ msgid "malformed #pragma ADDRESS variable address"
 msgstr ""
 
 #: config/m32c/m32c.c:441
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid target memregs value '%d'"
-msgstr "無効なパラメタ値 `%s'"
+msgstr ""
 
 #: config/m32c/m32c.c:3160
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute is not supported for R8C target"
-msgstr "セクション属性はこのターゲットでは実装されていません"
+msgstr "%qE 属性は R8C ターゲット用にはサポートされていません"
 
 #. The argument must be a constant integer.
 #: config/m32c/m32c.c:3176 config/sh/sh.c:9057 config/sh/sh.c:9163
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute argument not an integer constant"
-msgstr "要求された init_priority は整数型の定数ではありません"
+msgstr "%qE 属性の引数が整数定数ではありません"
 
 #: config/m32c/m32c.c:3185
 #, gcc-internal-format
 msgid "%qE attribute argument should be between 18 to 255"
-msgstr ""
+msgstr "%qE 属性の引数は 18 から 255 の間であるべきです"
 
 #: config/m32c/m32c.c:4443
 #, gcc-internal-format
 msgid "%<bank_switch%> has no effect on non-interrupt functions"
-msgstr ""
+msgstr "%<bank_switch%> は非割り込み関数では効果がありません"
 
 #: config/m32c/m32c.c:4544
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<fast_interrupt%> attribute directive ignored"
-msgstr "`%s' 属性の疑似命令が無視されました"
+msgstr "%<fast_interrupt%> 属性指示は無視されました"
 
 #: config/m32r/m32r.c:442
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid argument of %qs attribute"
-msgstr "`%s' の引数として無効な型"
+msgstr "%qs 属性の引数が無効です"
 
 #: config/m68hc11/m68hc11.c:328
 #, gcc-internal-format
@@ -22475,272 +22477,272 @@ msgstr "-f%s は 68HC11/68HC12 用としては無視されました (サポー�
 #: config/m68hc11/m68hc11.c:1308
 #, gcc-internal-format
 msgid "%<trap%> and %<far%> attributes are not compatible, ignoring %<far%>"
-msgstr ""
+msgstr "%<trap%> と %<far%> 属性は併用できません。%<far%> を無視しています"
 
 #: config/m68hc11/m68hc11.c:1315
 #, gcc-internal-format
 msgid "%<trap%> attribute is already used"
-msgstr ""
+msgstr "%<trap%> は既に使用されています"
 
 #: config/m68k/m68k.c:586
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mcpu=%s conflicts with -march=%s"
-msgstr "-mcpu=%s スイッチは -march= スイッチと競合します"
+msgstr "-mcpu=%s が -march=%s と競合しています"
 
 #: config/m68k/m68k.c:657
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mpcrel -fPIC is not currently supported on selected cpu"
-msgstr "今のところ 68000 や 68010 では -fPIC がサポートされていません\n"
+msgstr "-mpcrel -fPIC は選択した CPU 上では現在のところサポートされていません"
 
 #: config/m68k/m68k.c:719
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-falign-labels=%d is not supported"
-msgstr "-pipe は実装されていません"
+msgstr "-falign-labels=%d はサポートされていません"
 
 #: config/m68k/m68k.c:724
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-falign-loops=%d is not supported"
-msgstr "-mips%d はサポートされません"
+msgstr "-falign-loops=%d はサポートされていません"
 
 #: config/m68k/m68k.c:827
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multiple interrupt attributes not allowed"
-msgstr "セクション属性は `%s' には使えません"
+msgstr "複数の割り込み属性は許可されていません"
 
 #: config/m68k/m68k.c:834
 #, gcc-internal-format
 msgid "interrupt_thread is available only on fido"
-msgstr ""
+msgstr "interrupt_thread は fido 上でのみ使用出来ます"
 
 #: config/m68k/m68k.c:1163 config/rs6000/rs6000.c:19380
 #, gcc-internal-format
 msgid "stack limit expression is not supported"
-msgstr "スタック制限式を受け付けません"
+msgstr "スタック制限式はサポートされていません"
 
 #: config/mep/mep-pragma.c:71
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of #pragma io_volatile"
-msgstr "#pragma map の終りにゴミがあります"
+msgstr "#pragma io_volatile の末尾にゴミがあります"
 
 #: config/mep/mep-pragma.c:85
 #, gcc-internal-format
 msgid "#pragma io_volatile takes only on or off"
-msgstr ""
+msgstr "#pragma io_volatile は on または off のいずれかのみをとります"
 
 #: config/mep/mep-pragma.c:124
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid coprocessor register range"
-msgstr "`%s' はレジスタ変数としては無効なレジスタ名です"
+msgstr "無効なコプロセッサレジスタ範囲です"
 
 #: config/mep/mep-pragma.c:144
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid coprocessor register %qE"
-msgstr "無効なプリプロセスディレクティヴ #%s"
+msgstr "無効なコプロセッサレジスタ %qE です"
 
 #: config/mep/mep-pragma.c:167
 #, gcc-internal-format
 msgid "malformed coprocessor register"
-msgstr ""
+msgstr "間違った形式のコプロセッサレジスタです"
 
 #: config/mep/mep-pragma.c:254
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of #pragma GCC coprocessor width"
-msgstr "#pragma GCC java_exceptions の末尾にゴミ"
+msgstr "#pragma GCC coprocessor width の末尾にゴミがあります"
 
 #: config/mep/mep-pragma.c:261
 #, gcc-internal-format
 msgid "#pragma GCC coprocessor width takes only 32 or 64"
-msgstr ""
+msgstr "#pragma GCC coprocessor width は 32 または 64 のみをとります"
 
 #: config/mep/mep-pragma.c:295
 #, gcc-internal-format
 msgid "#pragma GCC coprocessor subclass letter must be in [ABCD]"
-msgstr ""
+msgstr "#pragma GCC coprocessor subclass の文字は [ABCD] のどれかでなければいけません"
 
 #: config/mep/mep-pragma.c:300
 #, gcc-internal-format
 msgid "#pragma GCC coprocessor subclass '%c' already defined"
-msgstr ""
+msgstr "#pragma GCC coprocessor subclass '%c' は既に定義されています"
 
 #: config/mep/mep-pragma.c:318
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma GCC coprocessor subclass"
-msgstr "おかしな #pragma ghs section"
+msgstr "間違った形式の #pragma GCC coprocessor subclass です"
 
 #: config/mep/mep-pragma.c:340
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma disinterrupt"
-msgstr "おかしな #pragma ghs section"
+msgstr "間違った形式の #pragma disinterrupt です"
 
 #: config/mep/mep-pragma.c:354
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma GCC coprocessor"
-msgstr "おかしな #pragma map、無視されました"
+msgstr "間違った形式の #pragma GCC coprocessor です"
 
 #: config/mep/mep-pragma.c:359
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "coprocessor not enabled"
-msgstr "有効オプション: "
+msgstr "コプロセッサが有効ではありません"
 
 #: config/mep/mep-pragma.c:370
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown #pragma GCC coprocessor %E"
-msgstr "不明な #pragma namespace %s です"
+msgstr "不明な #pragma GCC coprocessor %E です"
 
 #: config/mep/mep-pragma.c:392
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma call"
-msgstr "おかしな #pragma ghs section"
+msgstr "間違った形式の #pragma call です"
 
 #: config/mep/mep.c:317
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fpic is not supported"
-msgstr "-pipe は実装されていません"
+msgstr "-fpic はサポートされていません"
 
 #: config/mep/mep.c:319
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fPIC is not supported"
-msgstr "-pipe は実装されていません"
+msgstr "-fPIC はサポートされていません"
 
 #: config/mep/mep.c:321
 #, gcc-internal-format
 msgid "only one of -ms and -mm may be given"
-msgstr ""
+msgstr "-ms と -mm のうち一つだけ指定できます"
 
 #: config/mep/mep.c:323
 #, gcc-internal-format
 msgid "only one of -ms and -ml may be given"
-msgstr ""
+msgstr "-ms と -ml のうち一つだけ指定できます"
 
 #: config/mep/mep.c:325
 #, gcc-internal-format
 msgid "only one of -mm and -ml may be given"
-msgstr ""
+msgstr "-mm と -ml のうち一つだけ指定できます"
 
 #: config/mep/mep.c:327
 #, gcc-internal-format
 msgid "only one of -ms and -mtiny= may be given"
-msgstr ""
+msgstr "-ms と -mtiny= のうち一つだけ指定できます"
 
 #: config/mep/mep.c:329
 #, gcc-internal-format
 msgid "only one of -mm and -mtiny= may be given"
-msgstr ""
+msgstr "-mm と -mtiny= のうち一つだけ指定できます"
 
 #: config/mep/mep.c:331
 #, gcc-internal-format
 msgid "-mclip currently has no effect without -mminmax"
-msgstr ""
+msgstr "-mclip は現在のところ -mminmax が無い場合には効果がありません"
 
 #: config/mep/mep.c:338
 #, gcc-internal-format
 msgid "-mc= must be -mc=tiny, -mc=near, or -mc=far"
-msgstr ""
+msgstr "-mc= は -mc=tiny、-mc=near または -mc=far でなければいけません"
 
 #: config/mep/mep.c:1465
 #, gcc-internal-format
 msgid "unusual TP-relative address"
-msgstr ""
+msgstr "通常ではない TP 関連アドレスです"
 
 #: config/mep/mep.c:3437
 #, gcc-internal-format
 msgid "unconvertible operand %c %qs"
-msgstr ""
+msgstr "変換できない被演算子 %c %qs です"
 
 #: config/mep/mep.c:3887 config/mep/mep.c:3950
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address region attributes not allowed with auto storage class"
-msgstr "セクション属性は `%s' には使えません"
+msgstr "アドレス範囲 (address region) 属性は自動記憶域クラスでは許可されていません"
 
 #: config/mep/mep.c:3893 config/mep/mep.c:3956
 #, gcc-internal-format
 msgid "address region attributes on pointed-to types ignored"
-msgstr ""
+msgstr "型を指しているアドレス範囲 (address region) 属性は無視されました"
 
 #: config/mep/mep.c:3942
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to variables and functions"
-msgstr "`%s' 属性は関数に対してのみ適用されます"
+msgstr "%qE 属性は変数および関数へのみ適用できます"
 
 #: config/mep/mep.c:3962 config/mep/mep.c:4274
 #, gcc-internal-format
 msgid "duplicate address region attribute %qE in declaration of %qE on line %d"
-msgstr ""
+msgstr "重複したアドレス範囲 (address region) 属性 %qE が宣言 %qE (%d 行) 内にあります"
 
 #: config/mep/mep.c:3996
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot inline interrupt function %qE"
-msgstr "`main' を inline 関数にはできません"
+msgstr "割り込み関数 %qE をインライン化できません"
 
 #: config/mep/mep.c:4002
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "interrupt function must have return type of void"
-msgstr "`operator delete' の戻り型は `void' でなければなりません"
+msgstr "割り込み関数の戻り型は void でなければいけません"
 
 #: config/mep/mep.c:4007
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "interrupt function must have no arguments"
-msgstr "関数ポインタが計算で使われました"
+msgstr "割り込み関数は引数無しでなければいけません"
 
 #: config/mep/mep.c:4028
 #, gcc-internal-format
 msgid "%qE attribute allows only an integer constant argument"
-msgstr ""
+msgstr "%qE 属性は整数定数引数のみ許可されています"
 
 #: config/mep/mep.c:4061
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to functions, not %s"
-msgstr "`%s' 属性は関数に対してのみ適用されます"
+msgstr "%qE 属性は関数へのみ適用出来ます。%s へは適用できません"
 
 #: config/mep/mep.c:4071
 #, gcc-internal-format
 msgid "to describe a pointer to a VLIW function, use syntax like this:"
-msgstr ""
+msgstr "VLIW 関数へのポインタを記述するためには次のような構文を使用してください:"
 
 #: config/mep/mep.c:4072
 #, gcc-internal-format
 msgid "  typedef int (__vliw *vfuncptr) ();"
-msgstr ""
+msgstr "  typedef int (__vliw *vfuncptr) ();"
 
 #: config/mep/mep.c:4079
 #, gcc-internal-format
 msgid "to describe an array of VLIW function pointers, use syntax like this:"
-msgstr ""
+msgstr "VLIW 関数ポインタの配列を記述するためには次のような構文を使用してください:"
 
 #: config/mep/mep.c:4080
 #, gcc-internal-format
 msgid "  typedef int (__vliw *vfuncptr[]) ();"
-msgstr ""
+msgstr "  typedef int (__vliw *vfuncptr[]) ();"
 
 #: config/mep/mep.c:4085
 #, gcc-internal-format
 msgid "VLIW functions are not allowed without a VLIW configuration"
-msgstr ""
+msgstr "VLIW 関数は VLIW 設定外では許可されていません"
 
 #: config/mep/mep.c:4233
 #, gcc-internal-format
 msgid "\"#pragma disinterrupt %s\" not used"
-msgstr ""
+msgstr "\"#pragma disinterrupt %s\" が使用されていません"
 
 #: config/mep/mep.c:4399
 #, gcc-internal-format
 msgid "__io address 0x%x is the same for %qE and %qE"
-msgstr ""
+msgstr "__io address 0x%x が %qE と %qE 用で同一です"
 
 #: config/mep/mep.c:4547
 #, gcc-internal-format
 msgid "variable %s (%ld bytes) is too large for the %s section (%d bytes)"
-msgstr ""
+msgstr "変数 %s (%ld バイト) は %s セクション (%d バイト) 用には大きすぎます"
 
 #: config/mep/mep.c:4645
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %D of type %<io%> must be uninitialized"
-msgstr "可変長オブジェクトは初期化されないことになるでしょう"
+msgstr "%<io%> 型の変数 %D を初期化してはいけません"
 
 #: config/mep/mep.c:4650
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable %D of type %<cb%> must be uninitialized"
-msgstr "可変長オブジェクトは初期化されないことになるでしょう"
+msgstr "%<cb%> 型の変数 %D を初期化してはいけません"
 
 #: config/mep/mep.c:6100
 #, gcc-internal-format
@@ -22748,129 +22750,129 @@ msgid "coprocessor intrinsic %qs is not available in this configuration"
 msgstr ""
 
 #: config/mep/mep.c:6103
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not available in VLIW functions"
-msgstr "`this' は静的メンバ関数から使用できません"
+msgstr "%qs は VLIW 関数内では使用出来ません"
 
 #: config/mep/mep.c:6106
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not available in non-VLIW functions"
-msgstr "`%s' は通常、非 static な関数です"
+msgstr "%qs は非 VLIW 関数内では使用出来ません"
 
 #: config/mep/mep.c:6268 config/mep/mep.c:6385
 #, gcc-internal-format
 msgid "argument %d of %qE must be in the range %d...%d"
-msgstr ""
+msgstr "%d 番目の %qE の引数は %d...%d の範囲でなければいけません"
 
 #: config/mep/mep.c:6271
 #, gcc-internal-format
 msgid "argument %d of %qE must be a multiple of %d"
-msgstr ""
+msgstr "%d 番目の %qE の引数は %d の倍数でなければいけません"
 
 #: config/mep/mep.c:6324
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too few arguments to %qE"
-msgstr "関数への引数が少なすぎます"
+msgstr "%qE への引数が少なすぎます"
 
 #: config/mep/mep.c:6329
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to %qE"
-msgstr "関数に対する引数が多すぎます"
+msgstr "%qE への引数が多すぎます"
 
 #: config/mep/mep.c:6347
 #, gcc-internal-format
 msgid "argument %d of %qE must be an address"
-msgstr ""
+msgstr "%d 番目の %qE の引数はアドレスでなければいけません"
 
 #: config/mep/mep.c:7143
 #, gcc-internal-format
 msgid "2 byte cop instructions are not allowed in 64-bit VLIW mode"
-msgstr ""
+msgstr "2 バイト cop 命令は 64 ビット VLIW モードでは許可されていません"
 
 #: config/mep/mep.c:7149
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unexpected %d byte cop instruction"
-msgstr "認識できない wide sub 命令です"
+msgstr "予期しない %d バイト cop 命令です"
 
 #: config/microblaze/microblaze.c:1283
 #, gcc-internal-format
 msgid "-mno-clearbss is deprecated; use -fno-zero-initialized-in-bss"
-msgstr ""
+msgstr "-mno-clearbss は廃止されました。-fno-zero-initialized-in-bss を使用してください"
 
 #: config/microblaze/microblaze.c:1286
 #, gcc-internal-format
 msgid "-mxl_stack_check is deprecated; use -fstack-check"
-msgstr ""
+msgstr "-mxl_stack_check は廃止されました。-fstack-check を使用してください"
 
 #: config/microblaze/microblaze.c:1311
 #, gcc-internal-format
 msgid "%qs is an invalid argument to -mcpu="
-msgstr ""
+msgstr "%qs は -mcpu= への引数としては無効です"
 
 #: config/microblaze/microblaze.c:1360
 #, gcc-internal-format
 msgid "-mxl-multiply-high can be used only with -mcpu=v6.00.a or greater"
-msgstr ""
+msgstr "-mxl-multiply-high は -mcpu=v6.00.a またはそれ以上でのみ使用出来ます"
 
 #: config/microblaze/microblaze.c:1364
 #, gcc-internal-format
 msgid "-mxl-multiply-high requires -mno-xl-soft-mul"
-msgstr ""
+msgstr "-mxl-multiply-high は -mno-xl-soft-mul が必要です"
 
 #: config/mips/mips.c:1369 config/mips/mips.c:1371
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs attribute only applies to functions"
-msgstr "`%s' 属性は関数に対してのみ適用されます"
+msgstr "%qs 属性は関数へのみ適用出来ます"
 
 #: config/mips/mips.c:1381
 #, gcc-internal-format
 msgid "%qE cannot have both %<mips16%> and %<nomips16%> attributes"
-msgstr ""
+msgstr "%qE は %<mips16%> と %<nomips16%> 属性の両方を持つことは出来ません"
 
 #: config/mips/mips.c:1403 config/mips/mips.c:1406
 #, gcc-internal-format
 msgid "%qE redeclared with conflicting %qs attributes"
-msgstr ""
+msgstr "%qE が競合する %qs 属性付きで再宣言されました"
 
 #: config/mips/mips.c:2917
 #, gcc-internal-format
 msgid "MIPS16 TLS"
-msgstr ""
+msgstr "MIPS16 TLS"
 
 #: config/mips/mips.c:6408
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot handle inconsistent calls to %qs"
-msgstr "`%s' への矛盾した呼び出しを捕捉できません"
+msgstr "一貫していない %qs への呼び出しを取り扱えません"
 
 #: config/mips/mips.c:9223
 #, gcc-internal-format
 msgid "the %<interrupt%> attribute requires a MIPS32r2 processor"
-msgstr ""
+msgstr "%<interrupt%> 属性は MIPS32r2 プロセッサが必要です"
 
 #: config/mips/mips.c:9225
 #, gcc-internal-format
 msgid "the %<interrupt%> attribute requires %<-msoft-float%>"
-msgstr ""
+msgstr "%<interrupt%> 属性は %<-msoft-float%> が必要です"
 
 #: config/mips/mips.c:9227
 #, gcc-internal-format
 msgid "interrupt handlers cannot be MIPS16 functions"
-msgstr ""
+msgstr "割り込みハンドラが MIPS16 関数ではいけません"
 
 #: config/mips/mips.c:13210
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid argument to built-in function"
-msgstr "関数に対する引数が多すぎます"
+msgstr "組み込み関数への無効な引数です"
 
 #: config/mips/mips.c:13451
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "built-in function %qE not supported for MIPS16"
-msgstr "組み込み関数 `%s' は現在サポートされていません"
+msgstr "組み込み関数 %qE は MIPS16 用にはサポートされていません"
 
 #: config/mips/mips.c:14041
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs does not support MIPS16 code"
-msgstr "%s は %s を受け付けません"
+msgstr "%qs は MIPS16 コードをサポートしません"
 
 #: config/mips/mips.c:15262
 #, gcc-internal-format
@@ -22888,9 +22890,9 @@ msgid "hard-float MIPS16 code for ABIs other than o32 and o64"
 msgstr ""
 
 #: config/mips/mips.c:15404
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "CPU names must be lower case"
-msgstr "シンボル名を小文字とする"
+msgstr "CPU 名は小文字でなければいけません"
 
 #: config/mips/mips.c:15557
 #, gcc-internal-format
@@ -22900,47 +22902,47 @@ msgstr ""
 #: config/mips/mips.c:15573
 #, gcc-internal-format
 msgid "%<-march=%s%> is not compatible with the selected ABI"
-msgstr ""
+msgstr "%<-march=%s%> は選択した ABI とは互換性がありません"
 
 #: config/mips/mips.c:15588
 #, gcc-internal-format
 msgid "%<-mgp64%> used with a 32-bit processor"
-msgstr ""
+msgstr "%<-mgp64%> が 32 ビットプロセッサで使用されています"
 
 #: config/mips/mips.c:15590
 #, gcc-internal-format
 msgid "%<-mgp32%> used with a 64-bit ABI"
-msgstr ""
+msgstr "%<-mgp32%> が 64 ビット ABI で使用されています"
 
 #: config/mips/mips.c:15592
 #, gcc-internal-format
 msgid "%<-mgp64%> used with a 32-bit ABI"
-msgstr ""
+msgstr "%<-mgp64%> が 32 ビット ABI で使用されています"
 
 #: config/mips/mips.c:15608 config/mips/mips.c:15610 config/mips/mips.c:15677
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unsupported combination: %s"
-msgstr "サポートされていないバージョンです"
+msgstr "サポートされていない組み合わせです: %s"
 
 #: config/mips/mips.c:15614
 #, gcc-internal-format
 msgid "%<-mgp32%> and %<-mfp64%> can only be combined if the target supports the mfhc1 and mthc1 instructions"
-msgstr ""
+msgstr "%<-mgp32%> と %<-mfp64%> はターゲットが mfhc1 と mthc1 命令をサポートしている時のみ組み合わせることができます"
 
 #: config/mips/mips.c:15617
 #, gcc-internal-format
 msgid "%<-mgp32%> and %<-mfp64%> can only be combined when using the o32 ABI"
-msgstr ""
+msgstr "%<-mgp32%> と %<-mfp64%> は o32 ABI を使用している時のみ組み合わせることができます"
 
 #: config/mips/mips.c:15671
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the %qs architecture does not support branch-likely instructions"
-msgstr "ターゲット CPU は THUMB 命令をサポートしません"
+msgstr "%qs アーキテクチャは branch-likely 命令をサポートしていません"
 
 #: config/mips/mips.c:15711
 #, gcc-internal-format
 msgid "%<-mno-gpopt%> needs %<-mexplicit-relocs%>"
-msgstr ""
+msgstr "%<-mno-gpopt%> は %<-mexplicit-relocs%> が必要です"
 
 #: config/mips/mips.c:15719 config/mips/mips.c:15722
 #, gcc-internal-format
@@ -22950,32 +22952,32 @@ msgstr ""
 #: config/mips/mips.c:15736
 #, gcc-internal-format
 msgid "%<-mips3d%> requires %<-mpaired-single%>"
-msgstr ""
+msgstr "%<-mips3d%> は %<-mpaired-single%> が必要です"
 
 #: config/mips/mips.c:15745
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs must be used with %qs"
-msgstr "-frepo は -c 付きでなければなりません"
+msgstr "%qs は %qs と併用しなければいけません"
 
 #: config/mips/mips.c:15752
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the %qs architecture does not support paired-single instructions"
-msgstr "ターゲット CPU は THUMB 命令をサポートしません"
+msgstr "%qs アーキテクチャは paired-single 命令をサポートしていません"
 
 #: config/mips/mips.c:15758
 #, gcc-internal-format
 msgid "%qs requires a target that provides the %qs instruction"
-msgstr ""
+msgstr "%qs はターゲットが %qs 命令を提供していることが必要となります"
 
 #: config/mips/mips.c:15863
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs requires branch-likely instructions"
-msgstr "ビットフィールド命令を使用する"
+msgstr "%qs は branch-likely 命令が必要となります"
 
 #: config/mips/mips.c:15867
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "the %qs architecture does not support the synci instruction"
-msgstr "ターゲット CPU は THUMB 命令をサポートしません"
+msgstr "%qs アーキテクチャは synci 命令をサポートしていません"
 
 #: config/mips/mips.c:16339
 #, gcc-internal-format
@@ -22983,14 +22985,14 @@ msgid "mips16 function profiling"
 msgstr "mips16 関数プロファイル"
 
 #: config/mmix/mmix.c:286
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-f%s not supported: ignored"
-msgstr "-mips%d はサポートされません"
+msgstr "-f%s はサポートされていません: 無視されました"
 
 #: config/mmix/mmix.c:773
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "support for mode %qs"
-msgstr "モード `%s' に対するデータ型がありません"
+msgstr ""
 
 #: config/mmix/mmix.c:787
 #, gcc-internal-format
@@ -23005,58 +23007,58 @@ msgstr ""
 #: config/mmix/mmix.c:988
 #, gcc-internal-format
 msgid "MMIX Internal: Last named vararg would not fit in a register"
-msgstr ""
+msgstr "MMIX 内部: 最後の名前付き vararg がレジスタに適合しません"
 
 #: config/mmix/mmix.c:1597 config/mmix/mmix.c:1621 config/mmix/mmix.c:1737
 #, gcc-internal-format
 msgid "MMIX Internal: Bad register: %d"
-msgstr ""
+msgstr "MMIX 内部: 間違ったレジスタです: %d"
 
 #. Presumably there's a missing case above if we get here.
 #: config/mmix/mmix.c:1729
 #, gcc-internal-format
 msgid "MMIX Internal: Missing %qc case in mmix_print_operand"
-msgstr ""
+msgstr "MMIX 内部: mmix_print_operand 内に %qc case がありません"
 
 #: config/mmix/mmix.c:2015
 #, gcc-internal-format
 msgid "stack frame not a multiple of 8 bytes: %wd"
-msgstr ""
+msgstr "スタックフレームが 8 バイトの倍数ではありません: %wd"
 
 #: config/mmix/mmix.c:2249
 #, gcc-internal-format
 msgid "stack frame not a multiple of octabyte: %wd"
-msgstr ""
+msgstr "スタックフレームが 8 バイトの倍数ではありません: %wd"
 
 #: config/mmix/mmix.c:2533 config/mmix/mmix.c:2597
 #, gcc-internal-format
 msgid "MMIX Internal: %s is not a shiftable int"
-msgstr ""
+msgstr "MMIX 内部: %s はシフト演算可能な int ではありません"
 
 #: config/mn10300/mn10300.c:145
 #, gcc-internal-format
 msgid "-mtune= expects mn10300, am33, am33-2, or am34"
-msgstr ""
+msgstr "-mtune= は mn10300、am33、am33-2 または am34 が予期されます"
 
 #: config/pa/pa.c:555
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PIC code generation is not supported in the portable runtime model"
-msgstr "PIC コード生成は可搬実行時モデルではサポートされません\n"
+msgstr "PIC コード生成は移植性があるランタイムモデル内ではサポートされていません"
 
 #: config/pa/pa.c:560
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PIC code generation is not compatible with fast indirect calls"
-msgstr "PIC コード生成は高速間接呼び出しと相容れません\n"
+msgstr "PIC コード生成は高速間接呼び出しと併用できません"
 
 #: config/pa/pa.c:565
 #, gcc-internal-format
 msgid "-g is only supported when using GAS on this processor,"
-msgstr "-g はこのプロセッサでは GAS を使用する時だけサポートされます"
+msgstr "-g はこのプロセッサでは GAS を使用する時だけサポートされます。"
 
 #: config/pa/pa.c:566
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-g option disabled"
-msgstr "-g オプションを無効化しました。"
+msgstr "-g オプションが無効になりました"
 
 #: config/pa/pa.c:8579
 #, gcc-internal-format
@@ -23071,7 +23073,7 @@ msgstr ""
 #: config/picochip/picochip.c:438
 #, gcc-internal-format
 msgid "invalid AE type specified (%s)"
-msgstr ""
+msgstr "無効な AE 型が指定されています (%s)"
 
 #: config/picochip/picochip.c:461
 #, gcc-internal-format
@@ -23116,17 +23118,17 @@ msgstr ""
 #: config/picochip/picochip.c:2316 config/picochip/picochip.c:2376
 #, gcc-internal-format
 msgid "%s: at least one operand can%'t be handled"
-msgstr ""
+msgstr "%s: 一つ以上の被演算子を取り扱えません"
 
 #: config/picochip/picochip.c:2457
 #, gcc-internal-format
 msgid "unknown short branch in %s (type %d)"
-msgstr ""
+msgstr "%s 内に不明な短い分岐があります (型 %d)"
 
 #: config/picochip/picochip.c:2494
 #, gcc-internal-format
 msgid "unknown long branch in %s (type %d)"
-msgstr ""
+msgstr "%s 内に不明な長い分岐があります (型 %d)"
 
 #: config/picochip/picochip.c:2534 config/picochip/picochip.c:2602
 #, gcc-internal-format
@@ -23141,23 +23143,23 @@ msgstr ""
 #: config/picochip/picochip.c:3439
 #, gcc-internal-format
 msgid "too many ALU instructions emitted (%d)"
-msgstr ""
+msgstr "多すぎる ALU 命令が発行されました (%d)"
 
 #: config/picochip/picochip.c:4071 config/picochip/picochip.c:4164
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: Second source operand is not a constant"
-msgstr "#line の後の二つ目のトークンが文字列ではありません"
+msgstr ""
 
 #: config/picochip/picochip.c:4074 config/picochip/picochip.c:4125
 #: config/picochip/picochip.c:4167
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: Third source operand is not a constant"
-msgstr "要求されたアラインメントが定数ではありません"
+msgstr ""
 
 #: config/picochip/picochip.c:4128
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: Fourth source operand is not a constant"
-msgstr "出力オペランドが `asm' 内で定数です"
+msgstr ""
 
 #: config/picochip/picochip.c:4423
 #, gcc-internal-format
@@ -23167,22 +23169,22 @@ msgstr ""
 #: config/rs6000/host-darwin.c:60
 #, gcc-internal-format
 msgid "Segmentation Fault (code)"
-msgstr ""
+msgstr "セグメンテーション違反 (コード)"
 
 #: config/rs6000/host-darwin.c:130
 #, gcc-internal-format
 msgid "Segmentation Fault"
-msgstr ""
+msgstr "セグメンテーション違反"
 
 #: config/rs6000/host-darwin.c:144
 #, gcc-internal-format
 msgid "While setting up signal stack: %m"
-msgstr ""
+msgstr "シグナルスタックをセットアップ中: %m"
 
 #: config/rs6000/host-darwin.c:150
 #, gcc-internal-format
 msgid "While setting up signal handler: %m"
-msgstr ""
+msgstr "シグナルハンドラをセットアップ中: %m"
 
 #. Handle the machine specific pragma longcall.  Its syntax is
 #.
@@ -23194,64 +23196,64 @@ msgstr ""
 #. whether or not new function declarations receive a longcall
 #. attribute by default.
 #: config/rs6000/rs6000-c.c:51
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ignoring malformed #pragma longcall"
-msgstr "#pragma %s を無視します"
+msgstr "間違った形式の #pragma longcall を無視しています"
 
 #: config/rs6000/rs6000-c.c:64
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing open paren"
-msgstr "Code 属性を欠いています"
+msgstr "開く小括弧がありません"
 
 #: config/rs6000/rs6000-c.c:66
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing number"
-msgstr "名前を欠いています"
+msgstr "数値がありません"
 
 #: config/rs6000/rs6000-c.c:68
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "missing close paren"
-msgstr "クラス名を欠いています"
+msgstr "閉じる小括弧がありません"
 
 #: config/rs6000/rs6000-c.c:71
 #, gcc-internal-format
 msgid "number must be 0 or 1"
-msgstr ""
+msgstr "数値は 0 または 1 でなければいけません"
 
 #: config/rs6000/rs6000-c.c:74
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "junk at end of #pragma longcall"
-msgstr "#pragma map の終りにゴミがあります"
+msgstr "#pragma longcall の末尾にゴミがあります"
 
 #: config/rs6000/rs6000-c.c:3267
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s only accepts %d arguments"
-msgstr "`%s' は 0 か 2 個の引数しかとりません"
+msgstr "%s は %d 個の引数のみ受け付けます"
 
 #: config/rs6000/rs6000-c.c:3272
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s only accepts 1 argument"
-msgstr "#%s に引数がありません"
+msgstr "%s は 1 個の引数のみ受け付けます"
 
 #: config/rs6000/rs6000-c.c:3277
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s only accepts 2 arguments"
-msgstr "`%s' は 0 か 2 個の引数しかとりません"
+msgstr "%s は 2 この引数のみ受け付けます"
 
 #: config/rs6000/rs6000-c.c:3342
 #, gcc-internal-format
 msgid "vec_extract only accepts 2 arguments"
-msgstr ""
+msgstr "vec_extract は 2 個の引数のみ受け付けます"
 
 #: config/rs6000/rs6000-c.c:3418
 #, gcc-internal-format
 msgid "vec_insert only accepts 3 arguments"
-msgstr ""
+msgstr "vec_insert は 3 個の引数のみ受け付けます"
 
 #: config/rs6000/rs6000-c.c:3521
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing arg %d of %qE discards qualifiers frompointer target type"
-msgstr "キャストによってポインタが示す型から修飾子が切り捨てられます"
+msgstr ""
 
 #: config/rs6000/rs6000-c.c:3564
 #, gcc-internal-format
@@ -23261,27 +23263,27 @@ msgstr ""
 #: config/rs6000/rs6000.c:2516
 #, gcc-internal-format
 msgid "-mrecip requires -ffinite-math or -ffast-math"
-msgstr ""
+msgstr "-mrecip は -ffinite-math または -ffast-math が必要となります"
 
 #: config/rs6000/rs6000.c:2518
 #, gcc-internal-format
 msgid "-mrecip requires -fno-trapping-math or -ffast-math"
-msgstr ""
+msgstr "-mrecip は -fno-trapping-math または -ffast-math が必要となります"
 
 #: config/rs6000/rs6000.c:2520
 #, gcc-internal-format
 msgid "-mrecip requires -freciprocal-math or -ffast-math"
-msgstr ""
+msgstr "-mrecip は -freciprocal-math または -ffast-math が必要となります"
 
 #: config/rs6000/rs6000.c:2614
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-m64 requires PowerPC64 architecture, enabling"
-msgstr "PowerPC64 アーキテクチャでないと -maix64 を有効にはできません"
+msgstr ""
 
 #: config/rs6000/rs6000.c:2739
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "AltiVec not supported in this target"
-msgstr "スタック制限はこのターゲットでは実装されていません"
+msgstr ""
 
 #: config/rs6000/rs6000.c:2741
 #, gcc-internal-format
@@ -23291,70 +23293,70 @@ msgstr ""
 #: config/rs6000/rs6000.c:2768
 #, gcc-internal-format
 msgid "-mmultiple is not supported on little endian systems"
-msgstr "-mmultiple はリトルエンディアンシステム上では受け入れられません"
+msgstr "-mmultiple はリトルエンディアンシステム上ではサポートされていません"
 
 #: config/rs6000/rs6000.c:2775
 #, gcc-internal-format
 msgid "-mstring is not supported on little endian systems"
-msgstr "-mstring はリトルエンディアンシステム上では受け入れられません"
+msgstr "-mstring はリトルエンディアンシステム上ではサポートされていません"
 
 #: config/rs6000/rs6000.c:2881
 #, gcc-internal-format
 msgid "unknown vectorization library ABI type (%s) for -mveclibabi= switch"
-msgstr ""
+msgstr "-mveclibabi= スイッチ用の不明なベクトルライブラリ ABI 型 (%s) です"
 
 #: config/rs6000/rs6000.c:2893
 #, gcc-internal-format
 msgid "target attribute or pragma changes long double size"
-msgstr ""
+msgstr "target 属性または pragma が long double のサイズを変更します"
 
 #: config/rs6000/rs6000.c:2914 config/rs6000/rs6000.c:2929
 #, gcc-internal-format
 msgid "target attribute or pragma changes AltiVec ABI"
-msgstr ""
+msgstr "target 属性または pragma が AltiVec ABI を変更します"
 
 #: config/rs6000/rs6000.c:2946
 #, gcc-internal-format
 msgid "target attribute or pragma changes darwin64 ABI"
-msgstr ""
+msgstr "target 属性または pragma が darwin64 ABI を変更します"
 
 #: config/rs6000/rs6000.c:2987
 #, gcc-internal-format
 msgid "target attribute or pragma changes SPE ABI"
-msgstr ""
+msgstr "target 属性または pragma が SPE ABI を変更します"
 
 #: config/rs6000/rs6000.c:3309
 #, gcc-internal-format
 msgid "target attribute or pragma changes single precision floating point"
-msgstr ""
+msgstr "target 属性または pragma が単精度浮動小数点を変更します"
 
 #: config/rs6000/rs6000.c:3312
 #, gcc-internal-format
 msgid "target attribute or pragma changes double precision floating point"
-msgstr ""
+msgstr "target 属性または pragma が倍精度浮動小数点を変更します"
 
 #: config/rs6000/rs6000.c:3356
 #, gcc-internal-format
 msgid "unknown option for -mrecip=%s"
-msgstr ""
+msgstr "-mrecip=%s 用の不明なオプションです"
 
 #: config/rs6000/rs6000.c:3823
 #, gcc-internal-format
 msgid "unknown -m%s= option specified: '%s'"
-msgstr ""
+msgstr "不明な -m%s= オプションが指定されました: '%s'"
 
 #: config/rs6000/rs6000.c:3858
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown value %s for -mfpu"
-msgstr "-mcpu スイッチにとっての不正な値 `%s'"
+msgstr "-mfpu 用の不明な値 %s です"
 
 #: config/rs6000/rs6000.c:4245
 #, gcc-internal-format
 msgid "invalid option for -mcmodel: '%s'"
-msgstr ""
+msgstr "-mcmodel 用の無効なオプションです: '%s'"
 
 #: config/rs6000/rs6000.c:4375
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown -mdebug-%s switch"
 msgstr "不明な -mdebug-%s スイッチです"
 
@@ -23366,72 +23368,72 @@ msgstr ""
 #: config/rs6000/rs6000.c:4461
 #, gcc-internal-format
 msgid "using darwin64 ABI"
-msgstr ""
+msgstr "darwin64 ABI を使用しています"
 
 #: config/rs6000/rs6000.c:4466
 #, gcc-internal-format
 msgid "using old darwin ABI"
-msgstr ""
+msgstr "古い darwin ABI を使用しています"
 
 #: config/rs6000/rs6000.c:4473
 #, gcc-internal-format
 msgid "using IBM extended precision long double"
-msgstr ""
+msgstr "IBM 拡張精度 long double を使用しています"
 
 #: config/rs6000/rs6000.c:4479
 #, gcc-internal-format
 msgid "using IEEE extended precision long double"
-msgstr ""
+msgstr "IEEE 拡張精度 long double を使用しています"
 
 #: config/rs6000/rs6000.c:4484
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown ABI specified: '%s'"
-msgstr "不明なマシンモード `%s'"
+msgstr "不明な ABI が指定されました: '%s'"
 
 #: config/rs6000/rs6000.c:4493
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -mcpu"
-msgstr "-mcpu スイッチにとっての不正な値 `%s'"
+msgstr "-mcpu 用の間違った値 %s です"
 
 #: config/rs6000/rs6000.c:4500
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -mtune"
-msgstr "-mcpu スイッチにとっての不正な値 `%s'"
+msgstr "-mtune 用の間違った値 %s です"
 
 #: config/rs6000/rs6000.c:4511
 #, gcc-internal-format
 msgid "unknown -mtraceback arg %qs; expecting %<full%>, %<partial%> or %<none%>"
-msgstr ""
+msgstr "不明な -mtraceback 引数 %qs です。%<full%>、%<partial%> または %<none%> が予期されます"
 
 #: config/rs6000/rs6000.c:4525
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid option for -mfloat-gprs: '%s'"
-msgstr "無効なオプション `-mshort-data-%s'"
+msgstr "-mfloat-gprs 用の無効なオプションです: '%s'"
 
 #: config/rs6000/rs6000.c:4535
 #, gcc-internal-format
 msgid "unknown switch -mlong-double-%s"
-msgstr ""
+msgstr "不明なスイッチ -mlong-double-%s です"
 
 #: config/rs6000/rs6000.c:4556
 #, gcc-internal-format
 msgid "-malign-power is not supported for 64-bit Darwin; it is incompatible with the installed C and C++ libraries"
-msgstr ""
+msgstr "-malign-power は 64 ビット Darwin ではサポートされていません。インストールされている C および C++ ライブラリと互換性がありません"
 
 #: config/rs6000/rs6000.c:4564
 #, gcc-internal-format
 msgid "unknown -malign-XXXXX option specified: '%s'"
-msgstr ""
+msgstr "不明な -malign-XXXXX オプションが指定されました: '%s'"
 
 #: config/rs6000/rs6000.c:4571
 #, gcc-internal-format
 msgid "-msingle-float option equivalent to -mhard-float"
-msgstr ""
+msgstr "-msingle-float オプションは -mhard-float と等価です"
 
 #: config/rs6000/rs6000.c:4587
 #, gcc-internal-format
 msgid "-msimple-fpu option ignored"
-msgstr ""
+msgstr "-msimple-fpu オプションは無視されました"
 
 #: config/rs6000/rs6000.c:7846
 #, gcc-internal-format
@@ -23456,47 +23458,47 @@ msgstr ""
 #: config/rs6000/rs6000.c:9796
 #, gcc-internal-format
 msgid "internal error: builtin function to %s already processed"
-msgstr ""
+msgstr "内部エラー: %s への組み込み関数は既に処理されています"
 
 #: config/rs6000/rs6000.c:10743
 #, gcc-internal-format
 msgid "argument 1 must be a 5-bit signed literal"
-msgstr ""
+msgstr "第一引数は 5 ビット符号付きリテラルでなければいけません"
 
 #: config/rs6000/rs6000.c:10846 config/rs6000/rs6000.c:11820
 #, gcc-internal-format
 msgid "argument 2 must be a 5-bit unsigned literal"
-msgstr ""
+msgstr "第二引数は 5 ビット符号無しリテラルでなければいけません"
 
 #: config/rs6000/rs6000.c:10885
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of __builtin_altivec_predicate must be a constant"
-msgstr "`__builtin_eh_return_regno' の引数は定数でなければなりません"
+msgstr "__builtin_altivec_predicate の第一引数は定数でなければいけません"
 
 #: config/rs6000/rs6000.c:10937
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of __builtin_altivec_predicate is out of range"
-msgstr "`__builtin_args_info' の引数が範囲外です"
+msgstr "__builtin_altivec_predicate の第一引数が範囲外です"
 
 #: config/rs6000/rs6000.c:11194
 #, gcc-internal-format
 msgid "argument 3 must be a 4-bit unsigned literal"
-msgstr ""
+msgstr "第三引数は 4 ビット符号無しリテラルでなければいけません"
 
 #: config/rs6000/rs6000.c:11212
 #, gcc-internal-format
 msgid "argument 3 must be a 2-bit unsigned literal"
-msgstr ""
+msgstr "第三引数は 2 ビット符号無しリテラルでなければいけません"
 
 #: config/rs6000/rs6000.c:11224
 #, gcc-internal-format
 msgid "argument 3 must be a 1-bit unsigned literal"
-msgstr ""
+msgstr "第三引数は 1 ビット符号無しリテラルでなければいけません"
 
 #: config/rs6000/rs6000.c:11395
 #, gcc-internal-format
 msgid "argument to %qs must be a 2-bit unsigned literal"
-msgstr ""
+msgstr "%qs への引数は 2 ビット符号無しリテラルでなければいけません"
 
 #: config/rs6000/rs6000.c:11539
 #, gcc-internal-format
@@ -23506,47 +23508,47 @@ msgstr ""
 #: config/rs6000/rs6000.c:11630
 #, gcc-internal-format
 msgid "argument to dss must be a 2-bit unsigned literal"
-msgstr ""
+msgstr "dss への引数は 2 ビット符号無しリテラルでなければいけません"
 
 #: config/rs6000/rs6000.c:11940
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of __builtin_paired_predicate must be a constant"
-msgstr "`__builtin_args_info' の引数は定数でなければなりません"
+msgstr "__builtin_paired_predicate の第一引数は定数でなければいけません"
 
 #: config/rs6000/rs6000.c:11987
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of __builtin_paired_predicate is out of range"
-msgstr "`__builtin_args_info' の引数が範囲外です"
+msgstr "__builtin_paired_predicate の第一引数が範囲外です"
 
 #: config/rs6000/rs6000.c:12012
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of __builtin_spe_predicate must be a constant"
-msgstr "`__builtin_eh_return_regno' の引数は定数でなければなりません"
+msgstr "__builtin_spe_predicate の第一引数は定数でなければいけません"
 
 #: config/rs6000/rs6000.c:12084
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of __builtin_spe_predicate is out of range"
-msgstr "`__builtin_args_info' の引数が範囲外です"
+msgstr "__builtin_spe_predicate の第一引数が範囲外です"
 
 #: config/rs6000/rs6000.c:13450
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "internal error: builtin function %s had no type"
-msgstr "内部エラー - 未定義型の使用です"
+msgstr "内部エラー: 組み込み関数 %s に型がありません"
 
 #: config/rs6000/rs6000.c:13457
 #, gcc-internal-format
 msgid "internal error: builtin function %s had an unexpected return type %s"
-msgstr ""
+msgstr "内部エラー: 組み込み関数 %s が予期しない戻り型 %s を持っています"
 
 #: config/rs6000/rs6000.c:13470
 #, gcc-internal-format
 msgid "internal error: builtin function %s, argument %d had unexpected argument type %s"
-msgstr ""
+msgstr "内部エラー: 組み込み関数 %s の第 %d 引数が予期しない引数型 %s を持っています"
 
 #: config/rs6000/rs6000.c:19350
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stack frame too large"
-msgstr "%s は大きすぎます"
+msgstr "スタックフレームが大きすぎます"
 
 #: config/rs6000/rs6000.c:19874
 #, gcc-internal-format
@@ -23561,126 +23563,126 @@ msgstr ""
 #: config/rs6000/rs6000.c:24784
 #, gcc-internal-format
 msgid "use of %<long double%> in AltiVec types is invalid"
-msgstr ""
+msgstr "AltiVec 型内での %<long double%> の使用は無効です"
 
 #: config/rs6000/rs6000.c:24786
 #, gcc-internal-format
 msgid "use of boolean types in AltiVec types is invalid"
-msgstr ""
+msgstr "AltiVec 型内での真偽型 (boolean) の使用は無効です"
 
 #: config/rs6000/rs6000.c:24788
 #, gcc-internal-format
 msgid "use of %<complex%> in AltiVec types is invalid"
-msgstr ""
+msgstr "AltiVec 型内での %<complex%> の使用は無効です"
 
 #: config/rs6000/rs6000.c:24790
 #, gcc-internal-format
 msgid "use of decimal floating point types in AltiVec types is invalid"
-msgstr ""
+msgstr "AltiVec 型内での十進浮動小数点の使用は無効です"
 
 #: config/rs6000/rs6000.c:24796
 #, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is invalid for 64-bit code without -mvsx"
-msgstr ""
+msgstr "-mvsx 無しで 64 ビットコード用の AltiVec 型内での %<long%> の使用は無効です"
 
 #: config/rs6000/rs6000.c:24799
 #, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is deprecated; use %<int%>"
-msgstr ""
+msgstr "AltiVec 型内での %<long%> の使用は廃止されました。%<int%> を使用してください"
 
 #: config/rs6000/rs6000.c:24804
 #, gcc-internal-format
 msgid "use of %<long long%> in AltiVec types is invalid without -mvsx"
-msgstr ""
+msgstr "-mvsx 無しで AltiVec 型内での %<long long%> の使用は無効です"
 
 #: config/rs6000/rs6000.c:24807
 #, gcc-internal-format
 msgid "use of %<double%> in AltiVec types is invalid without -mvsx"
-msgstr ""
+msgstr "-mvsx 無しで AltiVec 型内での %<double%> の使用は無効です"
 
 #: config/rs6000/rs6000.c:27263
 #, gcc-internal-format
 msgid "emitting microcode insn %s\t[%s] #%d"
-msgstr ""
+msgstr "マイクロコード命令 %s\t[%s] #%d を発行しています"
 
 #: config/rs6000/rs6000.c:27267
 #, gcc-internal-format
 msgid "emitting conditional microcode insn %s\t[%s] #%d"
-msgstr ""
+msgstr "条件付きマイクロコード命令 %s\t[%s] #%d を発行しています"
 
 #: config/rs6000/rs6000.c:27470
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid cpu \"%s\" for %s\"%s\"%s"
-msgstr "%2$s に対する引数 %1$s が間違っています"
+msgstr "CPU \"%s\" は %s\"%s\"%s 用には無効です"
 
 #: config/rs6000/rs6000.c:27473
 #, gcc-internal-format
 msgid "%s\"%s\"%s is not allowed"
-msgstr ""
+msgstr "%s\"%s\"%s は許可されていません"
 
 #: config/rs6000/rs6000.c:27475
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s\"%s\"%s is invalid"
-msgstr "-mcpu=%s は -mips%d をサポートしません"
+msgstr "%s\"%s\"%s は無効です"
 
 #: config/rs6000/aix43.h:32 config/rs6000/aix51.h:32 config/rs6000/aix52.h:32
 #: config/rs6000/aix53.h:32 config/rs6000/aix61.h:32
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-maix64 and POWER architecture are incompatible"
-msgstr "-maix64 と POWER アーキテクチャとでは互換性がありません"
+msgstr "-maix64 と POWER アーキテクチャは互換性がありません"
 
 #: config/rs6000/aix43.h:37 config/rs6000/aix51.h:37 config/rs6000/aix52.h:37
 #: config/rs6000/aix53.h:37 config/rs6000/aix61.h:37
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-maix64 requires PowerPC64 architecture remain enabled"
-msgstr "PowerPC64 アーキテクチャでないと -maix64 を有効にはできません"
+msgstr "-maix64 は PowerPC64 アーキテクチャが有効のまま残されていることが必要です"
 
 #: config/rs6000/aix43.h:43 config/rs6000/aix52.h:43 config/rs6000/aix53.h:43
 #: config/rs6000/aix61.h:43
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "soft-float and long-double-128 are incompatible"
-msgstr "-mrelocatable と -mcall-%s とは共存できません"
+msgstr "soft-float と long-double-128 は互換性がありません"
 
 #: config/rs6000/aix43.h:47 config/rs6000/aix51.h:41 config/rs6000/aix52.h:47
 #: config/rs6000/aix53.h:47 config/rs6000/aix61.h:47
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-maix64 required: 64-bit computation with 32-bit addressing not yet supported"
-msgstr "-maix64 要求: 32 bit アドレシング下の 64 bit 計算はまだ利用できません"
+msgstr "-maix64 が必要です: 32 ビットアドレスでの 64 ビット計算はまだサポートされていません"
 
 #: config/rs6000/e500.h:40
 #, gcc-internal-format
 msgid "AltiVec and E500 instructions cannot coexist"
-msgstr ""
+msgstr "AltiVec と E500 命令は同時に存在できません"
 
 #: config/rs6000/e500.h:42
 #, gcc-internal-format
 msgid "VSX and E500 instructions cannot coexist"
-msgstr ""
+msgstr "VSX と E500 命令は同時に存在できません"
 
 #: config/rs6000/e500.h:44
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "64-bit E500 not supported"
-msgstr "-pipe は実装されていません"
+msgstr "64 ビット E500 はサポートされていません"
 
 #: config/rs6000/e500.h:46
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "E500 and FPRs not supported"
-msgstr "MCU `%s' はサポートされません"
+msgstr "E500 と FPR はサポートされていません"
 
 #: config/rs6000/eabispe.h:41 config/rs6000/linuxspe.h:41
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-m64 not supported in this configuration"
-msgstr "%s はこのコンフィギュレーションではサポートされません"
+msgstr "-m64 はこの設定ではサポートされていません"
 
 #: config/rs6000/linux64.h:124
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-m64 requires a PowerPC64 cpu"
-msgstr "PowerPC64 アーキテクチャでないと -maix64 を有効にはできません"
+msgstr "-m64 は PowerPC64 CPU が必要です"
 
 #: config/rs6000/linux64.h:130
 #, gcc-internal-format
 msgid "-mcmodel incompatible with other toc options"
-msgstr ""
+msgstr "-mcmodel は他の toc オプションと互換性がありません"
 
 #. Definitions for __builtin_return_address and __builtin_frame_address.
 #. __builtin_return_address (0) should give link register (65), enable
@@ -23702,69 +23704,69 @@ msgstr "RETURN_ADDRESS_OFFSET はサポートされていません"
 #. The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
 #. get control in TARGET_OPTION_OVERRIDE.
 #: config/rs6000/sysv4.h:116
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value for -mcall-%s"
-msgstr "-mcall-%s スイッチにとっての不正な値"
+msgstr "-mcall-%s 用の間違った値です"
 
 #: config/rs6000/sysv4.h:132
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value for -msdata=%s"
-msgstr "-msdata=%s スイッチに対する不正な値"
+msgstr "-msdata=%s 用の間違った値です"
 
 #: config/rs6000/sysv4.h:149
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mrelocatable and -msdata=%s are incompatible"
-msgstr "-mrelocatable と -msdata=%s とは共存できません"
+msgstr "-mrelocatable と -msdata=%s は併用できません"
 
 #: config/rs6000/sysv4.h:158
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-f%s and -msdata=%s are incompatible"
-msgstr "-f%s と -msdata=%s は共存できません"
+msgstr "-f%s と -msdata=%s は併用できません"
 
 #: config/rs6000/sysv4.h:167
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-msdata=%s and -mcall-%s are incompatible"
-msgstr "-msdata=%s と -mcall-%s とは共存できません"
+msgstr "-msdata=%s と -mcall-%s は併用できません"
 
 #: config/rs6000/sysv4.h:176
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mrelocatable and -mno-minimal-toc are incompatible"
-msgstr "-mrelocatable と -mno-minimal-toc とは共存できません"
+msgstr "-mrelocatable と -mno-minimal-toc は併用できません"
 
 #: config/rs6000/sysv4.h:182
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mrelocatable and -mcall-%s are incompatible"
-msgstr "-mrelocatable と -mcall-%s とは共存できません"
+msgstr "-mrelocatable と -mcall-%s は併用できません"
 
 #: config/rs6000/sysv4.h:189
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fPIC and -mcall-%s are incompatible"
-msgstr "-fPIC と -mcall-%s は共存できません"
+msgstr "-fPIC と -mcall-%s は併用できません"
 
 #: config/rs6000/sysv4.h:196
 #, gcc-internal-format
 msgid "-mcall-aixdesc must be big endian"
-msgstr "-mcall-aixdesc はビッグエンディアンでなければなりません"
+msgstr "-mcall-aixdesc はビッグエンディアンでなければいけません"
 
 #: config/rs6000/sysv4.h:201
 #, gcc-internal-format
 msgid "-msecure-plt not supported by your assembler"
-msgstr ""
+msgstr "-msecure-plt は使用するアセンブラでサポートされていません"
 
 #: config/rs6000/sysv4.h:220
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-m%s not supported in this configuration"
-msgstr "%s はこのコンフィギュレーションではサポートされません"
+msgstr "-m%s はこの設定ではサポートされていません"
 
 #: config/rx/rx.c:428
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unreocgnized control register number: %d - using 'psw'"
-msgstr "認識できないレジスタ名 `%s'"
+msgstr "認識出来ない制御レジスタ番号です: %d - 'psw' を使用します"
 
 #: config/rx/rx.c:2026
 #, gcc-internal-format
 msgid "__builtin_rx_%s takes 'C', 'Z', 'S', 'O', 'I', or 'U'"
-msgstr ""
+msgstr "__builtin_rx_%s は 'C'、'Z'、'S'、'O'、'I' または 'U' をとります"
 
 #: config/rx/rx.c:2028
 #, gcc-internal-format
@@ -23772,24 +23774,24 @@ msgid "use __builtin_rx_mvtc (0, ... ) to write arbitrary values to PSW"
 msgstr ""
 
 #: config/rx/rx.c:2085 config/xtensa/xtensa.c:3079 config/xtensa/xtensa.c:3119
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad builtin code"
-msgstr "組み込みマクロ \"%s\" は無効です"
+msgstr "間違った組み込みコードです"
 
 #: config/rx/rx.c:2211
 #, gcc-internal-format
 msgid "unrecognized argument '%s' to -mcpu= option"
-msgstr ""
+msgstr "-mcpu= オプションへの認識出来ない引数 '%s' です"
 
 #: config/rx/rx.c:2216
 #, gcc-internal-format
 msgid "the RX200 cpu does not have FPU hardware"
-msgstr ""
+msgstr "RX200 CPU は FPU ハードウェアを持っていません"
 
 #: config/rx/rx.c:2249
 #, gcc-internal-format
 msgid "RX FPU instructions do not support NaNs and infinities"
-msgstr ""
+msgstr "RX FPU 命令は NaNs と無限大をサポートしません"
 
 #: config/s390/s390.c:1576
 #, gcc-internal-format
@@ -23799,37 +23801,37 @@ msgstr ""
 #: config/s390/s390.c:1583
 #, gcc-internal-format
 msgid "stack size must be an exact power of 2"
-msgstr ""
+msgstr "スタックサイズは 2 の累乗でなければいけません"
 
 #: config/s390/s390.c:1634
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "z/Architecture mode not supported on %s"
-msgstr "VAX 浮動小数ではトラップモードを利用できません"
+msgstr "z/Architecture モードは %s 上ではサポートされていません"
 
 #: config/s390/s390.c:1636
 #, gcc-internal-format
 msgid "64-bit ABI not supported in ESA/390 mode"
-msgstr ""
+msgstr "64 ビット ABI は ESA/390 モード内ではサポートされていません"
 
 #: config/s390/s390.c:1643
 #, gcc-internal-format
 msgid "hardware decimal floating point instructions not available on %s"
-msgstr ""
+msgstr "ハードウェア十進浮動小数点命令は %s 上では使用出来ません"
 
 #: config/s390/s390.c:1646
 #, gcc-internal-format
 msgid "hardware decimal floating point instructions not available in ESA/390 mode"
-msgstr ""
+msgstr "ハードウェア十進浮動小数点命令は ESA/390 モードでは使用出来ません"
 
 #: config/s390/s390.c:1656
 #, gcc-internal-format
 msgid "-mhard-dfp can%'t be used in conjunction with -msoft-float"
-msgstr ""
+msgstr "-mhard-dfp は -msoft-float と併用できません"
 
 #: config/s390/s390.c:1680
 #, gcc-internal-format
 msgid "-mbackchain -mpacked-stack -mhard-float are not supported in combination"
-msgstr ""
+msgstr "-mbackchain -mpacked-stack -mhard-float の組み合わせはサポートされていません"
 
 #: config/s390/s390.c:1686
 #, gcc-internal-format
@@ -23839,112 +23841,112 @@ msgstr ""
 #: config/s390/s390.c:1688
 #, gcc-internal-format
 msgid "stack size must not be greater than 64k"
-msgstr ""
+msgstr "スタックサイズは 64k より大きくてはいけません"
 
 #: config/s390/s390.c:1691
 #, gcc-internal-format
 msgid "-mstack-guard implies use of -mstack-size"
-msgstr ""
+msgstr "-mstack-guard は -mstack-size を暗黙的に使用します"
 
 #: config/s390/s390.c:5134
 #, gcc-internal-format
 msgid "symbolic memory references are only supported on z10 or later"
-msgstr ""
+msgstr "シンボルによるメモリ参照は z10 またはそれ以降でのみサポートされます"
 
 #: config/s390/s390.c:5203
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid comparison operator for 'E' output modifier"
-msgstr "'b' 修飾子に対する無効な被演算子"
+msgstr "'E' 出力修飾子用の無効な比較演算子です"
 
 #: config/s390/s390.c:5223
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid reference for 'J' output modifier"
-msgstr "'b' 修飾子に対する無効な被演算子"
+msgstr "'J' 出力修飾子用の無効な参照です"
 
 #: config/s390/s390.c:5237
 #, gcc-internal-format
 msgid "memory reference expected for 'O' output modifier"
-msgstr ""
+msgstr "'O' 出力修飾子用にはメモリ参照が予期されます"
 
 #: config/s390/s390.c:5247
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid address for 'O' output modifier"
-msgstr "'O' 修飾子に対する無効な被演算子"
+msgstr "'O' 出力修飾子用の無効なアドレスです"
 
 #: config/s390/s390.c:5265
 #, gcc-internal-format
 msgid "memory reference expected for 'R' output modifier"
-msgstr ""
+msgstr "'R' 出力修飾子用にはメモリ参照が予期されます"
 
 #: config/s390/s390.c:5275
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid address for 'R' output modifier"
-msgstr "'b' 修飾子に対する無効な被演算子"
+msgstr "'R' 出力修飾子用の無効なアドレスです"
 
 #: config/s390/s390.c:5293
 #, gcc-internal-format
 msgid "memory reference expected for 'S' output modifier"
-msgstr ""
+msgstr "'S' 出力修飾子用にはメモリ参照が予期されます"
 
 #: config/s390/s390.c:5302
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid address for 'S' output modifier"
-msgstr "'b' 修飾子に対する無効な被演算子"
+msgstr "'S' 出力修飾子用の無効なアドレスです"
 
 #: config/s390/s390.c:5322
 #, gcc-internal-format
 msgid "register or memory expression expected for 'N' output modifier"
-msgstr ""
+msgstr "'N' 出力修飾子用にはレジスタまたはメモリ式が予期されます"
 
 #: config/s390/s390.c:5331
 #, gcc-internal-format
 msgid "register or memory expression expected for 'M' output modifier"
-msgstr ""
+msgstr "'M' 出力修飾子用にはレジスタまたはメモリ式が予期されます"
 
 #: config/s390/s390.c:5394
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid constant - try using an output modifier"
-msgstr "無効な被演算子出力コード"
+msgstr "無効な定数です - 出力修飾子の使用を試みてください"
 
 #: config/s390/s390.c:5396
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid constant for output modifier '%c'"
-msgstr "'o' 修飾子に対する無効な被演算子"
+msgstr "出力修飾子 '%c' 用の無効な定数です"
 
 #: config/s390/s390.c:5402
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid expression - try using an output modifier"
-msgstr "オペランドとして無効な式"
+msgstr "無効な式です - 出力修飾子の使用を試みてください"
 
 #: config/s390/s390.c:5404
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid expression for output modifier '%c'"
-msgstr "'o' 修飾子に対する無効な被演算子"
+msgstr "出力修飾子 '%c' 用の無効な式です"
 
 #: config/s390/s390.c:7324
 #, gcc-internal-format
 msgid "total size of local variables exceeds architecture limit"
-msgstr ""
+msgstr "局所変数の合計サイズがアーキテクチャの制限を超過しています"
 
 #: config/s390/s390.c:8025 config/s390/s390.c:8041
 #, gcc-internal-format
 msgid "frame size of function %qs is "
-msgstr ""
+msgstr "関数 %qs のフレームサイズ: "
 
 #: config/s390/s390.c:8070
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "frame size of %qs is "
-msgstr "`%s' の領域サイズがわかりません"
+msgstr "%qs のフレームサイズ: "
 
 #: config/s390/s390.c:8074
 #, gcc-internal-format
 msgid "%qs uses dynamic stack allocation"
-msgstr ""
+msgstr "%qs は動的スタック割り当てを使用します"
 
 #: config/score/score3.c:650 config/score/score7.c:649
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-fPIC and -G are incompatible"
-msgstr "-fPIC と -mcall-%s は共存できません"
+msgstr "-fPIC と -G は併用できません"
 
 #: config/sh/sh.c:932
 #, gcc-internal-format
@@ -23957,45 +23959,45 @@ msgid "unwind tables currently require either a frame pointer or -maccumulate-ou
 msgstr ""
 
 #: config/sh/sh.c:7781
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__builtin_saveregs not supported by this subtarget"
-msgstr "__builtin_saveregs はこのターゲットでは実装されていません"
+msgstr ""
 
 #: config/sh/sh.c:8938
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to interrupt functions"
-msgstr "`%s' 属性は関数に対してのみ適用されます"
+msgstr "%qE 属性は割り込み関数へのみ適用されます"
 
 #: config/sh/sh.c:8996
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute is supported only for SH2A"
-msgstr "init_priority 属性はこのプラットフォームではサポートされていません"
+msgstr "%qE 属性は SH2A 用にのみサポートされています"
 
 #: config/sh/sh.c:9026
 #, gcc-internal-format
 msgid "attribute interrupt_handler is not compatible with -m5-compact"
-msgstr ""
+msgstr "interrupt_handler 属性は -m5-compact と併用できません"
 
 #: config/sh/sh.c:9043
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute only applies to SH2A"
-msgstr "`%s' 属性は型には適用されません"
+msgstr "%qE 属性は SH2A へのみ適用されます"
 
 #: config/sh/sh.c:9065
 #, gcc-internal-format
 msgid "%qE attribute argument should be between 0 to 255"
-msgstr ""
+msgstr "%qE 属性引数は 0 と 255 の間であるべきです"
 
 #. The argument must be a constant string.
 #: config/sh/sh.c:9138
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE attribute argument not a string constant"
-msgstr "asm テンプレートが文字列定数ではありません"
+msgstr "%qE 属性の引数が文字列定数ではありません"
 
 #: config/sh/sh.c:11702
 #, gcc-internal-format
 msgid "r0 needs to be available as a call-clobbered register"
-msgstr ""
+msgstr "r0 は呼び出しによって上書きされるレジスタとして利用できる必要があります"
 
 #: config/sh/sh.c:11723
 #, gcc-internal-format
@@ -24008,9 +24010,9 @@ msgid "need a call-clobbered target register"
 msgstr ""
 
 #: config/sh/symbian-base.c:112
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE declared as both exported to and imported from a DLL"
-msgstr "`%s' が DLL から import、DLL に export の両方として宣言されました"
+msgstr ""
 
 #: config/sh/symbian-base.c:119
 #, gcc-internal-format
@@ -24031,14 +24033,14 @@ msgstr ""
 #: config/sh/symbian-cxx.c:554 config/sh/symbian-cxx.c:561
 #: ada/gcc-interface/utils.c:5018 ada/gcc-interface/utils.c:5196
 #: ada/gcc-interface/utils.c:5238 ada/gcc-interface/utils.c:5298
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs attribute ignored"
-msgstr "`%s' 属性は無視されました"
+msgstr "%qs 属性が無視されました"
 
 #: config/sh/symbian-cxx.c:106
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inline function %q+D is declared as dllimport: attribute ignored"
-msgstr "組み込み関数 `%s' は非関数として宣言されました"
+msgstr ""
 
 #. FIXME
 #: config/sh/netbsd-elf.h:94
@@ -24050,37 +24052,37 @@ msgstr ""
 #: config/sh/vxworks.h:43
 #, gcc-internal-format
 msgid "-mrelax is only supported for RTP PIC"
-msgstr ""
+msgstr "-mrelax は RTP PIC 用にのみサポートされています"
 
 #: config/sparc/sparc.c:799
 #, gcc-internal-format
 msgid "%s is not supported by this configuration"
-msgstr "%s はこのコンフィギュレーションではサポートされません"
+msgstr "%s はこの設定ではサポートされていません"
 
 #: config/sparc/sparc.c:806
 #, gcc-internal-format
 msgid "-mlong-double-64 not allowed with -m64"
-msgstr "-m64 指定モードでは -mlong-double-64 は許可されません"
+msgstr "-mlong-double-64 は -m64 と併用することは許可されていません"
 
 #: config/sparc/sparc.c:826
 #, gcc-internal-format
 msgid "bad value (%s) for -mcmodel= switch"
-msgstr "-mcmodel= スイッチにとって不正な値 (%s)"
+msgstr "-mcmodel= スイッチ用の誤った値 %s です"
 
 #: config/sparc/sparc.c:831
 #, gcc-internal-format
 msgid "-mcmodel= is not supported on 32 bit systems"
-msgstr "-mcmodel= は 32 bit システム上ではサポートされません"
+msgstr "-mcmodel= は 32 ビットシステム上ではサポートされていません"
 
 #: config/spu/spu-c.c:135
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "insufficient arguments to overloaded function %s"
-msgstr "関数 `%s' への引数が少なすぎます"
+msgstr "オーバーロードされた関数 %s への不十分な引数です"
 
 #: config/spu/spu-c.c:166
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "too many arguments to overloaded function %s"
-msgstr "関数 `%s' に対する引数が多すぎます"
+msgstr "オーバーロードされた関数 %s への引数が多すぎます"
 
 #: config/spu/spu-c.c:178
 #, gcc-internal-format
@@ -24090,17 +24092,17 @@ msgstr ""
 #: config/spu/spu.c:544 config/spu/spu.c:555
 #, gcc-internal-format
 msgid "unknown architecture %qs"
-msgstr ""
+msgstr "不明なアーキテクチャ %qs です"
 
 #: config/spu/spu.c:5359 config/spu/spu.c:5362
 #, gcc-internal-format
 msgid "creating run-time relocation for %qD"
-msgstr ""
+msgstr "%qD 用の実行時再配置を作成しています"
 
 #: config/spu/spu.c:5367 config/spu/spu.c:5369
 #, gcc-internal-format
 msgid "creating run-time relocation"
-msgstr ""
+msgstr "実行時再配置を作成しています"
 
 #: config/spu/spu.c:6428
 #, gcc-internal-format
