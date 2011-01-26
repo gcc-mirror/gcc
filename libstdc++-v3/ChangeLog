@@ -1,3 +1,20 @@
+2011-01-26  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/numeric (inner_product, partial_sum):
+        Qualify subsequent call with __gnu_parallel instead of
+        _GLIBCXX_STD_P to reenable parallel execution without ambiguity.
+        * include/parallel/algobase.h (equal): Likewise.
+        * include/parallel/algo.h (find_first_of, search_n, merge,
+        nth_element, partial_sort, max_element, min_element): Likewise.
+        * testsuite/25_algorithms/headers/algorithm/
+        parallel_algorithm_mixed1.cc (main): Add respective test cases.
+        * testsuite/25_algorithms/headers/algorithm/
+        parallel_algorithm_mixed2.cc (main): Likewise.
+        * testsuite/26_numerics/headers/numeric/
+        parallel_numeric_mixed1.cc (main): Likewise.
+        * testsuite/26_numerics/headers/numeric/
+        parallel_numeric_mixed2.cc (main): Likewise.
+
 2011-01-24  Graham Reed  <greed@pobox.com>
 
 	PR libstdc++/47387

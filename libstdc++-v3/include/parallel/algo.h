@@ -292,7 +292,7 @@ namespace __parallel
       typedef typename _IIterTraits::value_type _IValueType;
       typedef typename iteratorf_traits::value_type _FValueType;
 
-      return _GLIBCXX_STD_P::find_first_of(__begin1, __end1, __begin2, __end2,
+      return __gnu_parallel::find_first_of(__begin1, __end1, __begin2, __end2,
                          __gnu_parallel::_EqualTo<_IValueType, _FValueType>());
     }
 
@@ -1160,7 +1160,7 @@ namespace __parallel
              const _Tp& __val)
     {
       typedef typename iterator_traits<_FIterator>::value_type _ValueType;
-      return _GLIBCXX_STD_P::search_n(__begin, __end, __count, __val,
+      return __gnu_parallel::search_n(__begin, __end, __count, __val,
                       __gnu_parallel::_EqualTo<_ValueType, _Tp>());
     }
 
@@ -2086,7 +2086,7 @@ namespace __parallel
       typedef typename _Iterator1Traits::value_type _ValueType1;
       typedef typename _Iterator2Traits::value_type _ValueType2;
 
-      return _GLIBCXX_STD_P::merge(__begin1, __end1, __begin2, __end2,
+      return __gnu_parallel::merge(__begin1, __end1, __begin2, __end2,
                   __result, __gnu_parallel::_Less<_ValueType1, _ValueType2>());
     }
 
@@ -2128,7 +2128,7 @@ namespace __parallel
     {
       typedef iterator_traits<_RAIter> _TraitsType;
       typedef typename _TraitsType::value_type _ValueType;
-      _GLIBCXX_STD_P::nth_element(__begin, __nth, __end,
+      __gnu_parallel::nth_element(__begin, __nth, __end,
                                   std::less<_ValueType>());
     }
 
@@ -2171,7 +2171,7 @@ namespace __parallel
     {
       typedef iterator_traits<_RAIter> _TraitsType;
       typedef typename _TraitsType::value_type _ValueType;
-      _GLIBCXX_STD_P::partial_sort(__begin, __middle, __end,
+      __gnu_parallel::partial_sort(__begin, __middle, __end,
                                    std::less<_ValueType>());
     }
 
@@ -2241,7 +2241,7 @@ namespace __parallel
     max_element(_FIterator __begin, _FIterator __end)
     {
       typedef typename iterator_traits<_FIterator>::value_type _ValueType;
-      return _GLIBCXX_STD_P::max_element(__begin, __end,
+      return __gnu_parallel::max_element(__begin, __end,
                                          std::less<_ValueType>());
     }
 
@@ -2333,7 +2333,7 @@ namespace __parallel
     min_element(_FIterator __begin, _FIterator __end)
     {
       typedef typename iterator_traits<_FIterator>::value_type _ValueType;
-      return _GLIBCXX_STD_P::min_element(__begin, __end,
+      return __gnu_parallel::min_element(__begin, __end,
                                          std::less<_ValueType>());
     }
 
