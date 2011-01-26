@@ -11138,7 +11138,15 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
     return error_mark_node;
 
   bool is_constant_initializer = TREE_CONSTANT(values);
-  bool is_in_function = context->function() != NULL;
+
+  // We have to copy the initial values into heap memory if we are in
+  // a function or if the values are not constants.  We also have to
+  // copy them if they may contain pointers in a non-constant context,
+  // as otherwise the garbage collector won't see them.
+  bool copy_to_heap = (context->function() != NULL
+		       || !is_constant_initializer
+		       || (element_type->has_pointer()
+			   && !context->is_const()));
 
   if (is_constant_initializer)
     {
@@ -11148,12 +11156,12 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
       TREE_PUBLIC(tmp) = 0;
       TREE_STATIC(tmp) = 1;
       DECL_ARTIFICIAL(tmp) = 1;
-      if (is_in_function)
+      if (copy_to_heap)
 	{
-	  // If this is not a function, we will only initialize the
-	  // value once, so we can use this directly rather than
-	  // copying it.  In that case we can't make it read-only,
-	  // because the program is permitted to change it.
+	  // If we are not copying the value to the heap, we will only
+	  // initialize the value once, so we can use this directly
+	  // rather than copying it.  In that case we can't make it
+	  // read-only, because the program is permitted to change it.
 	  TREE_READONLY(tmp) = 1;
 	  TREE_CONSTANT(tmp) = 1;
 	}
@@ -11164,10 +11172,9 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
 
   tree space;
   tree set;
-  if (!is_in_function && is_constant_initializer)
+  if (!copy_to_heap)
     {
-      // Outside of a function, we know the initializer will only run
-      // once.
+      // the initializer will only run once.
       space = build_fold_addr_expr(values);
       set = NULL_TREE;
     }
@@ -11214,7 +11221,7 @@ Open_array_construction_expression::do_get_tree(Translate_context* context)
   tree constructor = build_constructor(type_tree, init);
   if (constructor == error_mark_node)
     return error_mark_node;
-  if (!is_in_function && is_constant_initializer)
+  if (!copy_to_heap)
     TREE_CONSTANT(constructor) = 1;
 
   if (set == NULL_TREE)
