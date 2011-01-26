@@ -1,3 +1,18 @@
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* gcc.dg/dll-9a.c: New test file.
+	* gcc.dg/dll-11.c: Likewise.
+	* gcc.dg/dll-12.c: Likewise.
+	* gcc.dg/dll-12a.c: Likewise.
+	* gcc.dg/dll-11a.c: Likewise.
+	* gcc.dg/dll-9.c: Likewise.
+	* gcc.dg/dll-10.c: Likewise.
+	* gcc.dg/dll-10a.c: Likewise.
+	* g++.dg/ext/dllexport4a.cc: Likewise.
+	* g++.dg/ext/dllexport4.C: Likewise.
+	* g++.dg/ext/dllexport5.C: Likewise.
+	* g++.dg/ext/dllexport5a.cc: Likewise.
+
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46970

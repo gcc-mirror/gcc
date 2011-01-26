@@ -1,7 +1,7 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1781,7 +1781,8 @@ decl_needed_p (tree decl)
       return true;
   /* Functions marked "dllexport" must be emitted so that they are
      visible to other DLLs.  */
-  if (lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
+  if (flag_keep_inline_dllexport
+      && lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
     return true;
   /* Otherwise, DECL does not need to be emitted -- yet.  A subsequent
      reference to DECL might cause it to be emitted later.  */

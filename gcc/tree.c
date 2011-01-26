@@ -1,7 +1,7 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5509,7 +5509,8 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
         DECL_DLLIMPORT_P (node) = 1;
     }
   else if (TREE_CODE (node) == FUNCTION_DECL
-	   && DECL_DECLARED_INLINE_P (node))
+	   && DECL_DECLARED_INLINE_P (node)
+	   && flag_keep_inline_dllexport)
     /* An exported function, even if inline, must be emitted.  */
     DECL_EXTERNAL (node) = 0;
 

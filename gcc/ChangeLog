@@ -1,3 +1,9 @@
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* tree.c (handle_dll_attribute): Handle it.
+	* doc/extend.texi (@item dllexport): Mention it.
+	* doc/invoke.texi (@item -fno-keep-inline-dllexport): Document it.
+
 2011-01-25  Ian Lance Taylor  <iant@google.com>
 
 	PR tree-optimization/26854

@@ -1,3 +1,7 @@
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* c.opt (-fkeep-inline-dllexport): New switch.
+
 2011-01-12  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/32511

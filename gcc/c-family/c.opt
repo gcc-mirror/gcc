@@ -1,6 +1,6 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-; Free Software Foundation, Inc.
+; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+; 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -813,6 +813,10 @@ Emit implicit instantiations of templates
 ffriend-injection
 C++ ObjC++ Var(flag_friend_injection)
 Inject friend functions into enclosing namespace
+
+fkeep-inline-dllexport
+C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+Don't emit dllexported inline functions unless needed
 
 flabels-ok
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
