@@ -1,3 +1,9 @@
+2011-01-26  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47423
+	* cgraphbuild.c (record_eh_tables): Record reference to personality
+	function.
+
 2011-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/45454
