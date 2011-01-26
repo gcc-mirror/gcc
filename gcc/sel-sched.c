@@ -2142,6 +2142,15 @@ moveup_expr (expr_t expr, insn_t through_insn, bool inside_insn_group,
   ds_t *has_dep_p;
   ds_t full_ds;
 
+  /* ??? We use dependencies of non-debug insns on debug insns to
+     indicate that the debug insns need to be reset if the non-debug
+     insn is pulled ahead of it.  It's hard to figure out how to
+     introduce such a notion in sel-sched, but it already fails to
+     support debug insns in other ways, so we just go ahead and
+     let the deug insns go corrupt for now.  */
+  if (DEBUG_INSN_P (through_insn) && !DEBUG_INSN_P (insn))
+    return MOVEUP_EXPR_SAME;
+
   /* When inside_insn_group, delegate to the helper.  */
   if (inside_insn_group)
     return moveup_expr_inside_insn_group (expr, through_insn);
