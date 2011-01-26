@@ -3960,7 +3960,7 @@ can_move_insns_across (rtx from, rtx to, rtx across_from, rtx across_to,
 	break;
       if (NONDEBUG_INSN_P (insn))
 	{
-	  if (may_trap_p (PATTERN (insn))
+	  if (may_trap_or_fault_p (PATTERN (insn))
 	      && (trapping_insns_in_across || other_branch_live != NULL))
 	    break;
 
