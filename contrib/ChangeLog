@@ -1,3 +1,10 @@
+2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* patch_tester.sh (nopristinecache): New shell var, set according
+	to presence or absence of new -nopristinecache option.
+	(usage): Document new option.
+	(bootntest_pristine): Implement it.
+
 2010-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* make_sunver.pl: Use elfdump -s to extract symbols if possible,
