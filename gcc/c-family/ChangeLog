@@ -1,3 +1,7 @@
+2011-01-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (dump_generic_ada_node): Avoid dereferencing null type.
+
 2011-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR pch/47430
