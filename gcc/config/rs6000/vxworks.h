@@ -86,7 +86,6 @@ VXWORKS_ADDITIONAL_CPP_SPEC
 #define ASM_SPEC \
 "%(asm_cpu) \
  %{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
- %{Qy:} %{!Qn:-Qy} \
  %{mrelocatable} %{mrelocatable-lib} %{fpic:-K PIC} %{fPIC:-K PIC} -mbig"
 
 #undef  LIB_SPEC

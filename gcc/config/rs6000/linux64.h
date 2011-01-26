@@ -207,7 +207,6 @@ extern int dot_symbols;
 
 #define ASM_SPEC_COMMON "%(asm_cpu) \
 %{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
-%{Qy:} %{!Qn:-Qy} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
 
 #undef	SUBSUBTARGET_EXTRA_SPECS

@@ -249,7 +249,6 @@ extern unsigned int bfin_workarounds;
 %{static:-dn -Bstatic} \
 %{shared:-G -Bdynamic} \
 %{symbolic:-Bsymbolic} \
-%{Qy:} %{!Qn:-Qy} \
 -init __init -fini __fini "
 
 /* Generate DSP instructions, like DSP halfword loads */
