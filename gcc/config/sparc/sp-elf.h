@@ -24,8 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
-/* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
-   It's safe to pass -s always, even if -g is not used.  */
+/* It's safe to pass -s always, even if -g is not used.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
   "%{Qy:} %{!Qn:-Qy} %{Ym,*} -s \
