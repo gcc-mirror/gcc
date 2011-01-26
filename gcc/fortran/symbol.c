@@ -390,6 +390,14 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       goto conflict_std;
     }
 
+  if (attr->in_namelist && (attr->allocatable || attr->pointer))
+    {
+      a1 = in_namelist;
+      a2 = attr->allocatable ? allocatable : pointer;
+      standard = GFC_STD_F2003;
+      goto conflict_std;
+    }
+
   /* Check for attributes not allowed in a BLOCK DATA.  */
   if (gfc_current_state () == COMP_BLOCK_DATA)
     {
@@ -494,9 +502,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (in_equivalence, entry);
   conf (in_equivalence, allocatable);
   conf (in_equivalence, threadprivate);
-
-  conf (in_namelist, pointer);
-  conf (in_namelist, allocatable);
 
   conf (entry, result);
 

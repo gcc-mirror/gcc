@@ -24,5 +24,5 @@ type region_struct
 end type
 
 type (c_struct) curve(10)
-namelist / params / curve ! { dg-error "NAMELIST object .curve. in namelist .params. at .1. cannot have POINTER components" }
+namelist / params / curve ! { dg-error "ALLOCATABLE or POINTER components and thus requires a defined input/output" }
 end program
