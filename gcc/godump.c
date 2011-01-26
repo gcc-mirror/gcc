@@ -79,6 +79,8 @@ go_define (unsigned int lineno, const char *buffer)
   const char *name_end;
   char *out_buffer;
   char *q;
+  bool saw_operand;
+  bool need_operand;
   char *copy;
   hashval_t hashval;
   void **slot;
@@ -115,77 +117,252 @@ go_define (unsigned int lineno, const char *buffer)
      initial underscore, and let the user undo this as needed.  */
   out_buffer = XNEWVEC (char, strlen (p) * 2 + 1);
   q = out_buffer;
+  saw_operand = false;
+  need_operand = false;
   while (*p != '\0')
     {
-      if (ISALPHA (*p) || *p == '_')
+      switch (*p)
 	{
-	  const char *start;
-	  char *n;
+	case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+	case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
+	case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
+	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
+	case 'Y': case 'Z':
+	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+	case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
+	case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
+	case 's': case 't': case 'u': case 'v': case 'w': case 'x':
+	case 'y': case 'z':
+	case '_':
+	  {
+	    /* The start of an identifier.  Technically we should also
+	       worry about UTF-8 identifiers, but they are not a
+	       problem for practical uses of -fdump-go-spec so we
+	       don't worry about them.  */
+	    const char *start;
+	    char *n;
 
-	  start = p;
-	  while (ISALNUM (*p) || *p == '_')
-	    ++p;
-	  n = XALLOCAVEC (char, p - start + 1);
-	  memcpy (n, start, p - start);
-	  n[p - start] = '\0';
-	  slot = htab_find_slot (macro_hash, n, NO_INSERT);
-	  if (slot == NULL || *slot == NULL)
-	    {
-	      /* This is a reference to a name which was not defined
-		 as a macro.  */
-	      fprintf (go_dump_file, "// unknowndefine %s\n", buffer);
-	      return;
-	    }
-
-	  *q++ = '_';
-	  memcpy (q, start, p - start);
-	  q += p - start;
-	}
-      else if (ISDIGIT (*p)
-	       || (*p == '.' && ISDIGIT (p[1])))
-	{
-	  const char *start;
-	  bool is_hex;
-
-	  start = p;
-	  is_hex = false;
-	  if (*p == '0' && (p[1] == 'x' || p[1] == 'X'))
-	    {
-	      p += 2;
-	      is_hex = true;
-	    }
-	  while (ISDIGIT (*p) || *p == '.' || *p == 'e' || *p == 'E'
-		 || (is_hex
-		     && ((*p >= 'a' && *p <= 'f')
-			 || (*p >= 'A' && *p <= 'F'))))
-	    ++p;
-	  memcpy (q, start, p - start);
-	  q += p - start;
-	  while (*p == 'u' || *p == 'U' || *p == 'l' || *p == 'L'
-		 || *p == 'f' || *p == 'F'
-		 || *p == 'd' || *p == 'D')
-	    {
-	      /* Go doesn't use any of these trailing type
-		 modifiers.  */
+	    start = p;
+	    while (ISALNUM (*p) || *p == '_')
 	      ++p;
+	    n = XALLOCAVEC (char, p - start + 1);
+	    memcpy (n, start, p - start);
+	    n[p - start] = '\0';
+	    slot = htab_find_slot (macro_hash, n, NO_INSERT);
+	    if (slot == NULL || *slot == NULL)
+	      {
+		/* This is a reference to a name which was not defined
+		   as a macro.  */
+		goto unknown;
+	      }
+
+	    *q++ = '_';
+	    memcpy (q, start, p - start);
+	    q += p - start;
+
+	    saw_operand = true;
+	    need_operand = false;
+	  }
+	  break;
+
+	case '.':
+	  if (!ISDIGIT (p[1]))
+	    goto unknown;
+	  /* Fall through.  */
+	case '0': case '1': case '2': case '3': case '4':
+	case '5': case '6': case '7': case '8': case '9':
+	  {
+	    const char *start;
+	    bool is_hex;
+
+	    start = p;
+	    is_hex = false;
+	    if (*p == '0' && (p[1] == 'x' || p[1] == 'X'))
+	      {
+		p += 2;
+		is_hex = true;
+	      }
+	    while (ISDIGIT (*p) || *p == '.' || *p == 'e' || *p == 'E'
+		   || (is_hex
+		       && ((*p >= 'a' && *p <= 'f')
+			   || (*p >= 'A' && *p <= 'F'))))
+	      ++p;
+	    memcpy (q, start, p - start);
+	    q += p - start;
+	    while (*p == 'u' || *p == 'U' || *p == 'l' || *p == 'L'
+		   || *p == 'f' || *p == 'F'
+		   || *p == 'd' || *p == 'D')
+	      {
+		/* Go doesn't use any of these trailing type
+		   modifiers.  */
+		++p;
+	      }
+
+	    /* We'll pick up the exponent, if any, as an
+	       expression.  */
+
+	    saw_operand = true;
+	    need_operand = false;
+	  }
+	  break;
+
+	case ' ': case '\t':
+	  *q++ = *p++;
+	  break;
+
+	case '(':
+	  /* Always OK, not part of an operand, presumed to start an
+	     operand.  */
+	  *q++ = *p++;
+	  saw_operand = false;
+	  need_operand = false;
+	  break;
+
+	case ')':
+	  /* OK if we don't need an operand, and presumed to indicate
+	     an operand.  */
+	  if (need_operand)
+	    goto unknown;
+	  *q++ = *p++;
+	  saw_operand = true;
+	  break;
+
+	case '+': case '-':
+	  /* Always OK, but not part of an operand.  */
+	  *q++ = *p++;
+	  saw_operand = false;
+	  break;
+
+	case '*': case '/': case '%': case '|': case '&': case '^':
+	  /* Must be a binary operator.  */
+	  if (!saw_operand)
+	    goto unknown;
+	  *q++ = *p++;
+	  saw_operand = false;
+	  need_operand = true;
+	  break;
+
+	case '=':
+	  *q++ = *p++;
+	  if (*p != '=')
+	    goto unknown;
+	  /* Must be a binary operator.  */
+	  if (!saw_operand)
+	    goto unknown;
+	  *q++ = *p++;
+	  saw_operand = false;
+	  need_operand = true;
+	  break;
+
+	case '!':
+	  *q++ = *p++;
+	  if (*p == '=')
+	    {
+	      /* Must be a binary operator.  */
+	      if (!saw_operand)
+		goto unknown;
+	      *q++ = *p++;
+	      saw_operand = false;
+	      need_operand = true;
 	    }
-	}
-      else if (ISSPACE (*p)
-	       || *p == '+' || *p == '-'
-	       || *p == '*' || *p == '/' || *p == '%'
-	       || *p == '|' || *p == '&'
-	       || *p == '>' || *p == '<'
-	       || *p == '!'
-	       || *p == '(' || *p == ')'
-	       || *p == '"' || *p == '\'')
-	*q++ = *p++;
-      else
-	{
-	  /* Something we don't recognize.  */
-	  fprintf (go_dump_file, "// unknowndefine %s\n", buffer);
-	  return;
+	  else
+	    {
+	      /* Must be a unary operator.  */
+	      if (saw_operand)
+		goto unknown;
+	      need_operand = true;
+	    }
+	  break;
+
+	case '<': case '>':
+	  /* Must be a binary operand, may be << or >> or <= or >=.  */
+	  if (!saw_operand)
+	    goto unknown;
+	  *q++ = *p++;
+	  if (*p == *(p - 1) || *p == '=')
+	    *q++ = *p++;
+	  saw_operand = false;
+	  need_operand = true;
+	  break;
+
+	case '~':
+	  /* Must be a unary operand, must be translated for Go.  */
+	  if (saw_operand)
+	    goto unknown;
+	  *q++ = '^';
+	  p++;
+	  need_operand = true;
+	  break;
+
+	case '"':
+	case '\'':
+	  {
+	    char quote = *p;
+	    *q++ = *p++;
+	    while (*p != quote)
+	      {
+		int c;
+
+		if (*p == '\0')
+		  goto unknown;
+
+		if (*p != '\\')
+		  {
+		    *q++ = *p++;
+		    continue;
+		  }
+
+		*q++ = *p++;
+		switch (*p)
+		  {
+		  case '0': case '1': case '2': case '3':
+		  case '4': case '5': case '6': case '7':
+		    c = 0;
+		    while (*p >= '0' && *p <= '7')
+		      {
+			*q++ = *p++;
+			++c;
+		      }
+		    /* Go octal characters are always 3
+		       digits.  */
+		    if (c != 3)
+		      goto unknown;
+		    break;
+
+		  case 'x':
+		    *q++ = *p++;
+		    c = 0;
+		    while (ISXDIGIT (*p))
+		      {
+			*q++ = *p++;
+			++c;
+		      }
+		    /* Go hex characters are always 2 digits.  */
+		    if (c != 2)
+		      goto unknown;
+		    break;
+
+		  case 'a': case 'b': case 'f': case 'n': case 'r':
+		  case 't': case 'v': case '\\': case '\'': case '"':
+		    *q++ = *p++;
+		    break;
+
+		  default:
+		    goto unknown;
+		  }
+	      }
+	    *q++ = *p++;
+	    break;
+	  }
+
+	default:
+	  goto unknown;
 	}
     }
+
+  if (need_operand)
+    goto unknown;
+
   *q = '\0';
 
   slot = htab_find_slot_with_hash (macro_hash, copy, hashval, INSERT);
@@ -194,6 +371,12 @@ go_define (unsigned int lineno, const char *buffer)
   fprintf (go_dump_file, "const _%s = %s\n", copy, out_buffer);
 
   XDELETEVEC (out_buffer);
+  return;
+
+ unknown:
+  fprintf (go_dump_file, "// unknowndefine %s\n", buffer);
+  XDELETEVEC (out_buffer);
+  XDELETEVEC (copy);
 }
 
 /* A macro undef.  */

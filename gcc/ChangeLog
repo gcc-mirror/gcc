@@ -1,3 +1,8 @@
+2011-01-25  Ian Lance Taylor  <iant@google.com>
+
+	* godump.c (go_define): Improve lexing of macro expansion to only
+	accept expressions which match Go spec.
+
 2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR c++/43601
