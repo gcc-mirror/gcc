@@ -1,5 +1,6 @@
 2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	PR c++/43601
 	* gcc.dg/dll-9a.c: New test file.
 	* gcc.dg/dll-11.c: Likewise.
 	* gcc.dg/dll-12.c: Likewise.

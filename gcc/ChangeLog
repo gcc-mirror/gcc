@@ -1,5 +1,6 @@
 2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	PR c++/43601
 	* tree.c (handle_dll_attribute): Handle it.
 	* doc/extend.texi (@item dllexport): Mention it.
 	* doc/invoke.texi (@item -fno-keep-inline-dllexport): Document it.
