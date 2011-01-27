@@ -1,3 +1,8 @@
+2011-01-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* lib/compat.exp (compat-execute): Pass -Wl,--extra-stack-space=8192
+	when using auto-overlay support on the SPU.
+
 2011-01-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/44174
