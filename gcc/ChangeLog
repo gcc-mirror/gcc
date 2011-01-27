@@ -1,3 +1,9 @@
+2011-01-26  Mikael Pettersson <mikpe@it.uu.se>
+
+	PR rtl-optimization/46856
+	* postreload.c (reload_combine_recognize_const_pattern): Do not
+	separate cc0 setter and user on cc0 targets.
+
 2011-01-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR c/43082
