@@ -10270,6 +10270,10 @@ c_objc_common_truthvalue_conversion (location_t location, tree expr)
       error_at (location, "used union type value where scalar is required");
       return error_mark_node;
 
+    case VOID_TYPE:
+      error_at (location, "void value not ignored as it ought to be");
+      return error_mark_node;
+
     case FUNCTION_TYPE:
       gcc_unreachable ();
 
@@ -10282,8 +10286,8 @@ c_objc_common_truthvalue_conversion (location_t location, tree expr)
   if (int_operands)
     expr = remove_c_maybe_const_expr (expr);
 
-  /* ??? Should we also give an error for void and vectors rather than
-     leaving those to give errors later?  */
+  /* ??? Should we also give an error for vectors rather than leaving
+     those to give errors later?  */
   expr = c_common_truthvalue_conversion (location, expr);
 
   if (TREE_CODE (expr) == INTEGER_CST && int_operands && !int_const)
