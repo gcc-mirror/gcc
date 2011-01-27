@@ -3763,7 +3763,7 @@ Struct_type::fill_in_tree(Gogo* gogo, tree type)
       // Don't follow pointers yet, so that we don't get confused by a
       // pointer to an array of this struct type.
       tree field_type_tree;
-      if (p->type()->points_to() != NULL)
+      if (p->type()->points_to() != NULL || p->type()->function_type() != NULL)
 	{
 	  field_type_tree = ptr_type_node;
 	  has_pointer = true;
@@ -3793,7 +3793,8 @@ Struct_type::fill_in_tree(Gogo* gogo, tree type)
 	   p != this->fields_->end();
 	   ++p, field = DECL_CHAIN(field))
 	{
-	  if (p->type()->points_to() != NULL)
+	  if (p->type()->points_to() != NULL
+	      || p->type()->function_type() != NULL)
 	    TREE_TYPE(field) = p->type()->get_tree(gogo);
 	}
     }
