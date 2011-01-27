@@ -4671,8 +4671,8 @@ go/printer/check: $(CHECK_DEPS)
 .PHONY: go/printer/check
 
 go/libscanner.a: $(go_go_scanner_files) bytes.gox container/vector.gox fmt.gox \
-		go/token.gox io.gox os.gox sort.gox strconv.gox unicode.gox \
-		utf8.gox
+		go/token.gox io.gox os.gox path.gox sort.gox strconv.gox \
+		unicode.gox utf8.gox
 	$(BUILDARCHIVE)
 go/libscanner.la: go/libscanner.a
 go/scanner/check: $(CHECK_DEPS)
