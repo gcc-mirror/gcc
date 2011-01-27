@@ -872,7 +872,7 @@ extern int fixuplabelno;
 
 /* NetBSD support.  */
 #define LIB_NETBSD_SPEC "\
-%{profile:-lgmon -lc_p} %{!profile:-lc}"
+-lc"
 
 #define	STARTFILE_NETBSD_SPEC "\
 ncrti.o%s crt0.o%s \
