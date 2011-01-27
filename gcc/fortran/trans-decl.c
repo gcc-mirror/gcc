@@ -4602,16 +4602,18 @@ gfc_generate_function_code (gfc_namespace * ns)
 	    && sym->attr.function
 	    && !sym->attr.pointer)
 	{
-	  if (sym->ts.type == BT_DERIVED
-	      && sym->ts.u.derived->attr.alloc_comp)
+	  if (sym->attr.allocatable && sym->attr.dimension == 0
+	      && sym->result == sym)
+	    gfc_add_modify (&init, result, fold_convert (TREE_TYPE (result),
+							 null_pointer_node));
+	  else if (sym->ts.type == BT_DERIVED
+	      && sym->ts.u.derived->attr.alloc_comp
+	      && !sym->attr.allocatable)
 	    {
 	      rank = sym->as ? sym->as->rank : 0;
 	      tmp = gfc_nullify_alloc_comp (sym->ts.u.derived, result, rank);
 	      gfc_add_expr_to_block (&init, tmp);
 	    }
-	  else if (sym->attr.allocatable && sym->attr.dimension == 0)
-	    gfc_add_modify (&init, result, fold_convert (TREE_TYPE (result),
-							 null_pointer_node));
 	}
 
       if (result == NULL_TREE)

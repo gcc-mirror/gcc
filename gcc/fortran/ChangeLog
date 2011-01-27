@@ -1,5 +1,11 @@
 2011-01-27  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/47474
+	* trans-decl.c (gfc_generate_function_code): Fix init
+	of allocatable result variable with allocatable components.
+
+2011-01-27  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/47472
 	* options.c (gfc_handle_module_path_options): Save
 	module path without trailing slash as include path.
