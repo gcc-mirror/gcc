@@ -133,6 +133,11 @@ grep '^const _SOMAXCONN' gen-sysinfo.go |
 grep '^const _SHUT_' gen-sysinfo.go |
   sed -e 's/^\(const \)_\(SHUT[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
 
+# The net package requires a definition for IPV6ONLY.
+if ! grep '^const IPV6_V6ONLY ' ${OUT} >/dev/null 2>&1; then
+  echo "const IPV6_V6ONLY = 0" >> ${OUT}
+fi
+
 # pathconf constants.
 grep '^const __PC' gen-sysinfo.go |
   sed -e 's/^\(const \)__\(PC[^= ]*\)\(.*\)$/\1\2 = __\2/' >> ${OUT}
