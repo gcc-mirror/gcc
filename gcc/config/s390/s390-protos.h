@@ -70,7 +70,6 @@ extern int legitimate_constant_p (rtx);
 extern bool legitimate_reload_constant_p (rtx);
 extern rtx legitimize_pic_address (rtx, rtx);
 extern rtx legitimize_reload_address (rtx, enum machine_mode, int, int);
-extern enum reg_class s390_preferred_reload_class (rtx, enum reg_class);
 extern enum reg_class s390_secondary_input_reload_class (enum reg_class,
 							 enum machine_mode,
 							 rtx);

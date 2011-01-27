@@ -2951,8 +2951,8 @@ legitimate_reload_fp_constant_p (rtx op)
 /* Given an rtx OP being reloaded into a reg required to be in class RCLASS,
    return the class of reg to actually use.  */
 
-enum reg_class
-s390_preferred_reload_class (rtx op, enum reg_class rclass)
+static reg_class_t
+s390_preferred_reload_class (rtx op, reg_class_t rclass)
 {
   switch (GET_CODE (op))
     {
@@ -10716,6 +10716,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P s390_scalar_mode_supported_p
+
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS s390_preferred_reload_class
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD s390_secondary_reload
