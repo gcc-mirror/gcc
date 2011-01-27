@@ -1,3 +1,9 @@
+2011-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47285
+	* io/write_float.def (output_float): Return SUCCESS or FAILURE and use
+	the result to set the padding.
+
 2011-01-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	* intrinsics/getlog.c (getlog): Fix label/statement issue.

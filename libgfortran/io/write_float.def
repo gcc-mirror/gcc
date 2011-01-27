@@ -61,7 +61,7 @@ calculate_sign (st_parameter_dt *dtp, int negative_flag)
 
 /* Output a real number according to its format which is FMT_G free.  */
 
-static void
+static try
 output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size, 
 	      int sign_bit, bool zero_flag, int ndigits, int edigits)
 {
@@ -126,17 +126,17 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	{
 	  out = write_block (dtp, w);
 	  if (out == NULL)
-	    return;
+	    return FAILURE;
 
 	  if (unlikely (is_char4_unit (dtp)))
 	    {
 	      gfc_char4_t *out4 = (gfc_char4_t *) out;
 	      *out4 = '0';
-	      return;
+	      return SUCCESS;
 	    }
 
 	  *out = '0';
-	  return;
+	  return SUCCESS;
 	}
 	      
     }
@@ -181,13 +181,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	{
 	  generate_error (&dtp->common, LIBERROR_FORMAT, "Precision not "
 			  "greater than zero in format specifier 'E' or 'D'");
-	  return;
+	  return FAILURE;
 	}
       if (i <= -d || i >= d + 2)
 	{
 	  generate_error (&dtp->common, LIBERROR_FORMAT, "Scale factor "
 			  "out of range in format specifier 'E' or 'D'");
-	  return;
+	  return FAILURE;
 	}
 
       if (!zero_flag)
@@ -433,7 +433,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   /* Create the ouput buffer.  */
   out = write_block (dtp, w);
   if (out == NULL)
-    return;
+    return FAILURE;
 
   /* Check the value fits in the specified field width.  */
   if (nblanks < 0 || edigits == -1)
@@ -442,10 +442,10 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	{
 	  gfc_char4_t *out4 = (gfc_char4_t *) out;
 	  memset4 (out4, '*', w);
-	  return;
+	  return FAILURE;
 	}
       star_fill (out, w);
-      return;
+      return FAILURE;
     }
 
   /* See if we have space for a zero before the decimal point.  */
@@ -553,7 +553,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  memset4 (out4, ' ' , nblanks);
 	  dtp->u.p.no_leading_blank = 0;
 	}
-      return;
+      return SUCCESS;
     } /* End of character(kind=4) internal unit code.  */
 
   /* Pad to full field width.  */
@@ -649,6 +649,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 #undef STR
 #undef STR1
 #undef MIN_FIELD_WIDTH
+  return SUCCESS;
 }
 
 
@@ -821,8 +822,9 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   GFC_REAL_ ## x rexp_d;\
   int low, high, mid;\
   int ubound, lbound;\
-  char *p;\
+  char *p, pad = ' ';\
   int save_scale_factor, nb = 0;\
+  try result;\
 \
   save_scale_factor = dtp->u.p.scale_factor;\
   newf = (fnode *) get_mem (sizeof (fnode));\
@@ -876,11 +878,14 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
 	}\
     }\
 \
+  if (e > 4)\
+    e = 4;\
   if (e < 0)\
     nb = 4;\
   else\
     nb = e + 2;\
 \
+  nb = nb >= w ? 0 : nb;\
   newf->format = FMT_F;\
   newf->u.real.w = f->u.real.w - nb;\
 \
@@ -892,8 +897,8 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   dtp->u.p.scale_factor = 0;\
 \
  finish:\
-  output_float (dtp, newf, buffer, size, sign_bit, zero_flag, ndigits, \
-		edigits);\
+  result = output_float (dtp, newf, buffer, size, sign_bit, zero_flag, \
+			 ndigits, edigits);\
   dtp->u.p.scale_factor = save_scale_factor;\
 \
   free (newf);\
@@ -903,13 +908,15 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
       p = write_block (dtp, nb);\
       if (p == NULL)\
 	return;\
+      if (result == FAILURE)\
+        pad = '*';\
       if (unlikely (is_char4_unit (dtp)))\
 	{\
 	  gfc_char4_t *p4 = (gfc_char4_t *) p;\
-	  memset4 (p4, ' ', nb);\
+	  memset4 (p4, pad, nb);\
 	}\
       else\
-	memset (p, ' ', nb);\
+	memset (p, pad, nb);\
     }\
 }\
 
