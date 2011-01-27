@@ -1,3 +1,8 @@
+2011-01-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/sysv4.h (LIB_NETBSD_SPEC): Don't handle -profile.
+	* config/rs6000/vxworks.h (CC1_SPEC): Don't handle -profile.
+
 2011-01-27  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/s390/s390.h (PREFERRED_RELOAD_CLASS): Remove.
