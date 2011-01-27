@@ -1,3 +1,8 @@
+2011-01-27  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/46949
+	* gcc.dg/attr-weakref-4.c: New testcase
+
 2011-01-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/47228

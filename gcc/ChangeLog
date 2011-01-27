@@ -1,3 +1,9 @@
+2011-01-27  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/46949
+	* cgraphunit.c (process_common_attributes): Fix use of remove_attribute.
+	(process_function_and_variable_attributes): Check defined weakrefs.
+
 2011-01-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/47228
