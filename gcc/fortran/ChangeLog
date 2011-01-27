@@ -1,3 +1,9 @@
+2011-01-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47472
+	* options.c (gfc_handle_module_path_options): Save
+	module path without trailing slash as include path.
+
 2011-01-25  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47448
