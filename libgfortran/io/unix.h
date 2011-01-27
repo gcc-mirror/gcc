@@ -170,7 +170,16 @@ internal_proto(flush_if_preconnected);
 extern int stream_isatty (stream *);
 internal_proto(stream_isatty);
 
-extern char * stream_ttyname (stream *);
+#ifndef TTY_NAME_MAX
+#ifdef _POSIX_TTY_NAME_MAX
+#define TTY_NAME_MAX _POSIX_TTY_NAME_MAX
+#else
+/* sysconf(_SC_TTY_NAME_MAX) = 32 which should be enough.  */
+#define TTY_NAME_MAX 32
+#endif
+#endif
+
+extern int stream_ttyname (stream *, char *, size_t);
 internal_proto(stream_ttyname);
 
 extern int unpack_filename (char *, const char *, int);

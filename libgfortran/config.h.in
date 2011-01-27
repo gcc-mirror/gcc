@@ -807,6 +807,9 @@
 /* Define to 1 if you have the `ttyname' function. */
 #undef HAVE_TTYNAME
 
+/* Define to 1 if you have the `ttyname_r' function. */
+#undef HAVE_TTYNAME_R
+
 /* Define to 1 if the system has the type `uintptr_t'. */
 #undef HAVE_UINTPTR_T
 

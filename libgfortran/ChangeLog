@@ -1,5 +1,18 @@
 2011-01-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR libfortran/47432
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Add check for ttyname_r.
+	* io/unix.h: Add TTY_NAME_MAX, change stream_ttyname prototype.
+	* io/unix.c (stream_ttyname): Use ttyname_r if available, conform
+	to new prototype.
+	* io/inquire.c (inquire_via_unit): Use changed stream_ttyname.
+	* io/intrinsics.c (ttynam_sub): Likewise.
+	(ttynam): Likewise.
+
+2011-01-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR libfortran/47491
 	* configure.ac: Call AC_USE_SYSTEM_EXTENSIONS to enable common
 	extensions.

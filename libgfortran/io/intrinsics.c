@@ -1,6 +1,7 @@
 /* Implementation of the FGET, FGETC, FPUT, FPUTC, FLUSH 
    FTELL, TTYNAM and ISATTY intrinsics.
-   Copyright (C) 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2010, 2011 Free Software
+   Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -351,22 +352,23 @@ void
 ttynam_sub (int *unit, char * name, gfc_charlen_type name_len)
 {
   gfc_unit *u;
-  char * n;
-  int i;
+  int nlen;
+  int err = 1;
 
-  memset (name, ' ', name_len);
   u = find_unit (*unit);
   if (u != NULL)
     {
-      n = stream_ttyname (u->s);
-      if (n != NULL)
+      err = stream_ttyname (u->s, name, name_len);
+      if (err == 0)
 	{
-	  i = 0;
-	  while (*n && i < name_len)
-	    name[i++] = *(n++);
+	  nlen = strlen (name);
+	  memset (&name[nlen], ' ', name_len - nlen);
 	}
+
       unlock_unit (u);
     }
+  if (err != 0)
+    memset (name, ' ', name_len);
 }
 
 
@@ -381,14 +383,15 @@ ttynam (char ** name, gfc_charlen_type * name_len, int unit)
   u = find_unit (unit);
   if (u != NULL)
     {
-      *name = stream_ttyname (u->s);
-      if (*name != NULL)
+      *name = get_mem (TTY_NAME_MAX);
+      int err = stream_ttyname (u->s, *name, TTY_NAME_MAX);
+      if (err == 0)
 	{
 	  *name_len = strlen (*name);
-	  *name = strdup (*name);
 	  unlock_unit (u);
 	  return;
 	}
+      free (*name);
       unlock_unit (u);
     }
 
