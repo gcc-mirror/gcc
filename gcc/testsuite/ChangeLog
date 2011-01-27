@@ -1,3 +1,7 @@
+2011-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/tree-ssa/pr42585.c: Disable on s390 and s390x.
+
 2011-01-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* lib/compat.exp (compat-execute): Pass -Wl,--extra-stack-space=8192
