@@ -1,5 +1,17 @@
 2011-01-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	PR libfortran/47431
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Add check for ctime_r().
+	* intrinsics/ctime.c (ctime_r): Fallback implementation.
+	(fdate): Use ctime_r() instead of ctime().
+	(fdate_sub): Likewise.
+	(ctime): Likewise.
+	(ctime_sub): Likewise.
+
+2011-01-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR libfortran/47432
 	* config.h.in: Regenerated.
 	* configure: Regenerated.

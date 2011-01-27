@@ -1,8 +1,8 @@
 /* Implementation of the CTIME and FDATE g77 intrinsics.
-   Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009, 2011 Free Software Foundation, Inc.
    Contributed by François-Xavier Coudert <coudert@clipper.ens.fr>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -41,6 +41,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <string.h>
 
 
+#ifndef HAVE_CTIME_R
+static char *
+ctime_r (const time_t * timep, char * buf __attribute__((unused)))
+{
+#ifdef HAVE_CTIME
+  return ctime (timep);
+#else
+  return NULL;
+#endif
+}
+#endif
+
+/* ctime_r() buffer size needs to be at least 26 bytes.  */
+#define CSZ 26
+
 extern void fdate (char **, gfc_charlen_type *);
 export_proto(fdate);
 
@@ -48,9 +63,10 @@ void
 fdate (char ** date, gfc_charlen_type * date_len)
 {
 #if defined(HAVE_TIME) && defined(HAVE_CTIME)
+  char cbuf[CSZ];
   int i;
   time_t now = time(NULL);
-  *date = ctime (&now);
+  *date = ctime_r (&now, cbuf);
   if (*date != NULL)
     {
       *date = strdup (*date);
@@ -79,6 +95,7 @@ void
 fdate_sub (char * date, gfc_charlen_type date_len)
 {
 #if defined(HAVE_TIME) && defined(HAVE_CTIME)
+  char cbuf[CSZ];
   int i;
   char *d;
   time_t now = time(NULL);
@@ -86,7 +103,7 @@ fdate_sub (char * date, gfc_charlen_type date_len)
   
   memset (date, ' ', date_len);
 #if defined(HAVE_TIME) && defined(HAVE_CTIME)
-  d = ctime (&now);
+  d = ctime_r (&now, cbuf);
   if (d != NULL)
     {
       i = 0;
@@ -105,9 +122,10 @@ void
 PREFIX(ctime) (char ** date, gfc_charlen_type * date_len, GFC_INTEGER_8 t)
 {
 #if defined(HAVE_CTIME)
+  char cbuf[CSZ];
   time_t now = t;
   int i;
-  *date = ctime (&now);
+  *date = ctime_r (&now, cbuf);
   if (*date != NULL)
     {
       *date = strdup (*date);
@@ -136,6 +154,7 @@ void
 ctime_sub (GFC_INTEGER_8 * t, char * date, gfc_charlen_type date_len)
 {
 #if defined(HAVE_CTIME)
+  char cbuf[CSZ];
   int i;
   char *d;
   time_t now = *t;
@@ -143,7 +162,7 @@ ctime_sub (GFC_INTEGER_8 * t, char * date, gfc_charlen_type date_len)
   
   memset (date, ' ', date_len);
 #if defined(HAVE_CTIME)
-  d = ctime (&now);
+  d = ctime_r (&now, cbuf);
   if (d != NULL)
     {
       i = 0;
