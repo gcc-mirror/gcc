@@ -2739,15 +2739,13 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	      && !contains_bitfld_comp_ref_p (lhs)
 	      && !access_has_children_p (lacc))
 	    {
-	      lhs = build_ref_for_offset (loc, lhs, 0, TREE_TYPE (rhs),
-					  gsi, false);
+	      lhs = build_ref_for_model (loc, lhs, 0, racc, gsi, false);
 	      gimple_assign_set_lhs (*stmt, lhs);
 	    }
 	  else if (AGGREGATE_TYPE_P (TREE_TYPE (rhs))
 		   && !contains_vce_or_bfcref_p (rhs)
 		   && !access_has_children_p (racc))
-	    rhs = build_ref_for_offset (loc, rhs, 0, TREE_TYPE (lhs),
-					gsi, false);
+	    rhs = build_ref_for_model (loc, rhs, 0, lacc, gsi, false);
 
 	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
 	    {
