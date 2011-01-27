@@ -82,6 +82,8 @@ else
   LIBGFOR_IS_NATIVE=true
 fi
 
+AC_USE_SYSTEM_EXTENSIONS
+
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
 case ${version_specific_libs} in

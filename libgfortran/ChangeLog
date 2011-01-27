@@ -1,3 +1,11 @@
+2011-01-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47491
+	* configure.ac: Call AC_USE_SYSTEM_EXTENSIONS to enable common
+	extensions.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2011-01-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/47285
