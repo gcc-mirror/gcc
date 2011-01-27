@@ -1,3 +1,9 @@
+2011-01-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/47228
+	* tree-sra.c (sra_modify_assign): Use build_ref_for_model instead of
+	build_ref_for_offset.
+
 2011-01-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu-elf.h (ASM_SPEC): Remove.

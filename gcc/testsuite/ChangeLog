@@ -1,3 +1,8 @@
+2011-01-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/47228
+	* gcc.dg/torture/pr47228.c: New test.
+
 2011-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/tree-ssa/pr42585.c: Disable on s390 and s390x.
