@@ -1,3 +1,7 @@
+2011-01-27  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu-elf.h (ASM_SPEC): Remove.
+
 2011-01-26  Mikael Pettersson <mikpe@it.uu.se>
 
 	PR rtl-optimization/46856

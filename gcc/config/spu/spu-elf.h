@@ -78,6 +78,3 @@
       mcache-size=8  :-lgcc_cache8k; \
                      :-lgcc_cache64k}"
 
-#undef ASM_SPEC
-#define ASM_SPEC  ""
-
