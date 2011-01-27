@@ -43,6 +43,7 @@ cat > sysinfo.c <<EOF
 #include <sys/ptrace.h>
 #endif
 #include <sys/resource.h>
+#include <sys/uio.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/time.h>
