@@ -33,7 +33,7 @@ type RawSockaddrInet6 struct {
 }
 
 func (sa *RawSockaddrInet6) setLen() Socklen_t {
-	sa.raw.Len = SizeofSockaddrInet6
+	sa.Len = SizeofSockaddrInet6
 	return SizeofSockaddrInet6
 }
 
