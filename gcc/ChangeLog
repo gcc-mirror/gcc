@@ -1,3 +1,10 @@
+2011-01-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR c/43082
+	* c-typeck.c (c_objc_common_truthvalue_conversion): If we are
+	passed a VOID_TYPE expression, immediately emit an error and
+	return error_mark_node.
+
 2011-01-26  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/47464

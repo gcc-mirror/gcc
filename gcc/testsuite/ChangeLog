@@ -1,3 +1,9 @@
+2011-01-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+	    Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/43082
+	* gcc.dg/pr43082.c: New.
+
 2011-01-26  DJ Delorie  <dj@redhat.com>
 
 	PR rtl-optimization/46878
