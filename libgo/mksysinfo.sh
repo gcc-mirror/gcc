@@ -21,8 +21,6 @@ OUT=tmp-sysinfo.go
 
 set -e
 
-rm -f sysinfo.go
-
 rm -f sysinfo.c
 cat > sysinfo.c <<EOF
 #include "config.h"
@@ -388,5 +386,4 @@ echo $msghdr | \
       -e 's/msg_flags/Flags/' \
     >> ${OUT}
 
-mv -f ${OUT} sysinfo.go
 exit $?
