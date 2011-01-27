@@ -1,3 +1,11 @@
+2011-01-27  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/s390/s390.h (PREFERRED_RELOAD_CLASS): Remove.
+	* config/s390/s390-protos.h (s390_preferred_reload_class): Remove.
+	* config/s390/s390.c (TARGET_PREFERRED_RELOAD_CLASS): Define.
+	(s390_preferred_reload_class): Make static. Change return and
+	'rclass' argument type to reg_class_t.
+
 2011-01-27  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/46949
