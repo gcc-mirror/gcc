@@ -1811,18 +1811,29 @@ stream_isatty (stream *s)
   return isatty (((unix_stream *) s)->fd);
 }
 
-char *
-#ifdef HAVE_TTYNAME
-stream_ttyname (stream *s)
+int
+stream_ttyname (stream *s  __attribute__ ((unused)),
+		char * buf  __attribute__ ((unused)),
+		size_t buflen  __attribute__ ((unused)))
 {
-  return ttyname (((unix_stream *) s)->fd);
-}
+#ifdef HAVE_TTYNAME_R
+  return ttyname_r (((unix_stream *) s)->fd, buf, buflen);
+#elif defined HAVE_TTYNAME
+  char *p;
+  size_t plen;
+  p = ttyname (((unix_stream *) s)->fd);
+  if (!p)
+    return errno;
+  plen = strlen (p);
+  if (buflen < plen)
+    plen = buflen;
+  memcpy (buf, p, plen);
+  return 0;
 #else
-stream_ttyname (stream *s __attribute__ ((unused)))
-{
-  return NULL;
-}
+  return ENOSYS;
 #endif
+}
+
 
 
 

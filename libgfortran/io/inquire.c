@@ -1,8 +1,8 @@
-/* Copyright (C) 2002, 2003, 2005, 2007, 2009, 2010
+/* Copyright (C) 2002, 2003, 2005, 2007, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -68,16 +68,17 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
   if ((cf & IOPARM_INQUIRE_HAS_NAME) != 0
       && u != NULL && u->flags.status != STATUS_SCRATCH)
     {
-#ifdef HAVE_TTYNAME
+#if defined(HAVE_TTYNAME_R) || defined(HAVE_TTYNAME)
       if (u->unit_number == options.stdin_unit
 	  || u->unit_number == options.stdout_unit
 	  || u->unit_number == options.stderr_unit)
 	{
-	  char * tmp = stream_ttyname (u->s);
-	  if (tmp != NULL)
+	  int err = stream_ttyname (u->s, iqp->name, iqp->name_len);
+	  if (err == 0)
 	    {
-	      int tmplen = strlen (tmp);
-	      fstrcpy (iqp->name, iqp->name_len, tmp, tmplen);
+	      gfc_charlen_type tmplen = strlen (iqp->name);
+	      if (iqp->name_len > tmplen)
+		memset (&iqp->name[tmplen], ' ', iqp->name_len - tmplen);
 	    }
 	  else /* If ttyname does not work, go with the default.  */
 	    fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
