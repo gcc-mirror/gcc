@@ -288,6 +288,7 @@ proc compat-execute { src1 sid use_alt } {
     # Use automatic overlay support to make them fit.
     if { [check_effective_target_spu_auto_overlay] } {
 	set extra_flags_1 "$extra_flags_1 -Wl,--auto-overlay"
+	set extra_flags_1 "$extra_flags_1 -Wl,--extra-stack-space=8192"
 	set extra_flags_1 "$extra_flags_1 -ffunction-sections"
 	set extra_flags_2 "$extra_flags_2 -ffunction-sections"
 	set extra_flags_3 "$extra_flags_3 -ffunction-sections"
