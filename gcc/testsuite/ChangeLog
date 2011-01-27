@@ -1,4 +1,9 @@
-2011-01-26  Mikael Pettersson <mikpe@it.uu.se>
+2011-01-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/44174
+	* gcc.target/i386/asm-6.c: New test.
+
+2011-01-26  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR rtl-optimization/46856
 	* gcc.c-torture/compile/pr46856.c: New test.
