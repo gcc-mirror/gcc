@@ -29,7 +29,7 @@ cat > sysinfo.c <<EOF
 #if defined(__sun__) && defined(__svr4__)
 /* Needed by Solaris header files.  */
 #define _XOPEN_SOURCE 600
-#define _EXTENSIONS_
+#define __EXTENSIONS__
 #endif
 
 #include <sys/types.h>
