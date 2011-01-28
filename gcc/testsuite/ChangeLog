@@ -1,3 +1,8 @@
+2011-01-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47507
+	* gfortran.dg/pure_formal_1.f90: New.
+
 2011-01-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/42894

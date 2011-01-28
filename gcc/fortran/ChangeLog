@@ -1,5 +1,11 @@
 2011-01-28  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/47507
+	* resolve.c (resolve_formal_arglist): Allow arguments with VALUE
+	attribute also without INTENT.
+
+2011-01-28  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.texi (Fortran 2003 status): Mention support for
 	nonconstant namelist variables.
 
