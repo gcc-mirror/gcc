@@ -47,6 +47,13 @@ func (file *File) Close() Error {
 	if e := syscall.Close(file.fd); e != 0 {
 		err = &PathError{"close", file.name, Errno(e)}
 	}
+
+	if file.dirinfo != nil {
+		if libc_closedir(file.dirinfo.dir) < 0  && err == nil {
+			err = &PathError{"closedir", file.name, Errno(syscall.GetErrno())}
+		}
+	}
+
 	file.fd = -1 // so it can't be closed again
 
 	// no need for a finalizer anymore
