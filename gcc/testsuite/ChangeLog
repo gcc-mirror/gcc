@@ -1,3 +1,8 @@
+2011-01-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47285
+	* gfortran.dg/fmt_g.f: New test.
+
 2011-01-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47507
