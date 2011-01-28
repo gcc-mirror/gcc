@@ -1037,6 +1037,10 @@ go_netchan_files = \
 	go/netchan/export.go \
 	go/netchan/import.go
 
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_sys_file = go/os/sys_bsd.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_TRUE@@LIBGO_IS_SOLARIS_FALSE@go_os_sys_file = go/os/sys_uname.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_os_sys_file = go/os/sys_uname.go
+@LIBGO_IS_LINUX_TRUE@go_os_sys_file = go/os/sys_linux.go
 go_os_files = \
 	go/os/dir.go \
 	go/os/env.go \
@@ -1049,7 +1053,7 @@ go_os_files = \
 	go/os/path.go \
 	go/os/proc.go \
 	go/os/stat.go \
-	go/os/sys_linux.go \
+	$(go_os_sys_file) \
 	go/os/time.go \
 	go/os/types.go
 
