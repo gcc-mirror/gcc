@@ -1,3 +1,11 @@
+2011-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/42894
+	* varasm.c (force_const_mem): Store copy of x in desc->constant
+	instead of x itself.
+	* expr.c (emit_move_insn): Add a copy of y_cst instead of y_cst
+	itself into REG_EQUAL note.
+
 2011-01-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/freebsd.opt (posix, rdynamic): New Driver options.
