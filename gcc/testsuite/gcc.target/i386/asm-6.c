@@ -3,6 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -fpic" { target fpic } } */
+/* { dg-xfail-if "" { i?86-pc-solaris2.1[0-9] && ilp32 } } */
 
 int f0 (int, int, int, int, int);
 int f1 (void);
