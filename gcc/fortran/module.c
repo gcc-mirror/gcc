@@ -2138,6 +2138,20 @@ mio_typespec (gfc_typespec *ts)
   else
     mio_charlen (&ts->u.cl);
 
+  /* So as not to disturb the existing API, use an ATOM_NAME to
+     transmit deferred characteristic for characters (F2003).  */
+  if (iomode == IO_OUTPUT)
+    {
+      if (ts->type == BT_CHARACTER && ts->deferred)
+	write_atom (ATOM_NAME, "DEFERRED_CL");
+    }
+  else if (peek_atom () != ATOM_RPAREN)
+    {
+      if (parse_atom () != ATOM_NAME)
+	bad_module ("Expected string");
+      ts->deferred = 1;
+    }
+
   mio_rparen ();
 }
 

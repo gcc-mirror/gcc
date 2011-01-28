@@ -1,3 +1,17 @@
+2011-01-28  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/45170
+	PR fortran/35810
+	PR fortran/47350
+	* gfortran.dg/realloc_on_assign_3.f03: New test.
+	* gfortran.dg/realloc_on_assign_4.f03: New test.
+	* gfortran.dg/realloc_on_assign_5.f90: New test.
+	* gfortran.dg/allocatable_function_5.f90: New test.
+	* gfortran.dg/allocate_deferred_char_scalar_1.f90: New test.
+	* gfortran.dg/deferred_type_param_2.f90: Remove two "not yet
+	implemented" dg-errors.
+
 2011-01-27  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/46949

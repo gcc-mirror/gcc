@@ -34,9 +34,9 @@ subroutine three()
   str1 = ["abc"]
   pstr2 => str1
 
-  allocate (character(len=77) :: str1(1)) ! OK ! { dg-error "not yet implemented" }
-  allocate (pstr, source=str2)  ! OK  ! { dg-error "not yet implemented" }
-  allocate (pstr, mold=str2) ! { dg-error "requires either a type-spec or SOURCE tag" }
+  allocate (character(len=77) :: str1(1))
+  allocate (pstr, source=str2)
+  allocate (pstr, mold=str2)
   allocate (pstr) ! { dg-error "requires either a type-spec or SOURCE tag" }
   allocate (character(len=:) :: str1(1)) ! { dg-error "cannot contain a deferred type parameter" }
 

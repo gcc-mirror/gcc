@@ -2093,6 +2093,18 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	   return 0;
 	 }
 
+      if ((f->sym->attr.pointer || f->sym->attr.allocatable)
+	    && f->sym->ts.deferred != a->expr->ts.deferred
+	    && a->expr->ts.type == BT_CHARACTER)
+	{
+	  if (where)
+	    gfc_error ("Actual argument argument at %L to allocatable or "
+		       "pointer dummy argument '%s' must have a deferred "
+		       "length type parameter if and only if the dummy has one",
+		       &a->expr->where, f->sym->name);
+	  return 0;
+	}
+
       actual_size = get_expr_storage_size (a->expr);
       formal_size = get_sym_storage_size (f->sym);
       if (actual_size != 0
@@ -2101,14 +2113,14 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
 	    gfc_warning ("Character length of actual argument shorter "
-			"than of dummy argument '%s' (%lu/%lu) at %L",
-			f->sym->name, actual_size, formal_size,
-			&a->expr->where);
+			 "than of dummy argument '%s' (%lu/%lu) at %L",
+			 f->sym->name, actual_size, formal_size,
+			 &a->expr->where);
           else if (where)
 	    gfc_warning ("Actual argument contains too few "
-			"elements for dummy argument '%s' (%lu/%lu) at %L",
-			f->sym->name, actual_size, formal_size,
-			&a->expr->where);
+			 "elements for dummy argument '%s' (%lu/%lu) at %L",
+			 f->sym->name, actual_size, formal_size,
+			 &a->expr->where);
 	  return  0;
 	}
 

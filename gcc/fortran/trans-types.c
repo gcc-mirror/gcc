@@ -1,6 +1,6 @@
 /* Backend support for Fortran 95 basic types and derived types.
    Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010
+   2010, 2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -2352,7 +2352,6 @@ gfc_get_function_type (gfc_symbol * sym)
   tree typelist;
   gfc_formal_arglist *f;
   gfc_symbol *arg;
-  int nstr;
   int alternate_return;
 
   /* Make sure this symbol is a function, a subroutine or the main
@@ -2363,7 +2362,6 @@ gfc_get_function_type (gfc_symbol * sym)
   if (sym->backend_decl)
     return TREE_TYPE (sym->backend_decl);
 
-  nstr = 0;
   alternate_return = 0;
   typelist = NULL_TREE;
 
@@ -2392,7 +2390,16 @@ gfc_get_function_type (gfc_symbol * sym)
 
       typelist = gfc_chainon_list (typelist, type);
       if (arg->ts.type == BT_CHARACTER)
-	typelist = gfc_chainon_list (typelist, gfc_charlen_type_node);
+	{
+	  if (!arg->ts.deferred)
+	    /* Transfer by value.  */
+	    typelist = gfc_chainon_list (typelist, gfc_charlen_type_node);
+	  else
+	    /* Deferred character lengths are transferred by reference
+	       so that the value can be returned.  */
+	    typelist = gfc_chainon_list (typelist,
+				build_pointer_type (gfc_charlen_type_node));
+	}
     }
 
   /* Build the argument types for the function.  */
@@ -2428,8 +2435,7 @@ gfc_get_function_type (gfc_symbol * sym)
 	     Contained procedures could pass by value as these are never
 	     used without an explicit interface, and cannot be passed as
 	     actual parameters for a dummy procedure.  */
-	  if (arg->ts.type == BT_CHARACTER && !sym->attr.is_bind_c)
-            nstr++;
+
 	  typelist = gfc_chainon_list (typelist, type);
 	}
       else
@@ -2440,8 +2446,22 @@ gfc_get_function_type (gfc_symbol * sym)
     }
 
   /* Add hidden string length parameters.  */
-  while (nstr--)
-    typelist = gfc_chainon_list (typelist, gfc_charlen_type_node);
+  for (f = sym->formal; f; f = f->next)
+    {
+      arg = f->sym;
+      if (arg && arg->ts.type == BT_CHARACTER && !sym->attr.is_bind_c)
+	{
+	  if (!arg->ts.deferred)
+	    /* Transfer by value.  */
+	    type = gfc_charlen_type_node;
+	  else
+	    /* Deferred character lengths are transferred by reference
+	       so that the value can be returned.  */
+	    type = build_pointer_type (gfc_charlen_type_node);
+
+	  typelist = gfc_chainon_list (typelist, type);
+	}
+    }
 
   if (typelist)
     typelist = chainon (typelist, void_list_node);

@@ -500,7 +500,7 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
   if (sym->result->ts.type == BT_CHARACTER)
     {
       gfc_charlen *cl = sym->result->ts.u.cl;
-      if (!cl || !cl->length)
+      if ((!cl || !cl->length) && !sym->result->ts.deferred)
 	{
 	  /* See if this is a module-procedure and adapt error message
 	     accordingly.  */
@@ -2990,6 +2990,7 @@ resolve_function (gfc_expr *expr)
       && sym->ts.u.cl
       && sym->ts.u.cl->length == NULL
       && !sym->attr.dummy
+      && !sym->ts.deferred
       && expr->value.function.esym == NULL
       && !sym->attr.contained)
     {
@@ -6916,12 +6917,6 @@ check_symbols:
     }
 
 success:
-  if (e->ts.deferred)
-    {
-      gfc_error ("Support for entity at %L with deferred type parameter "
-		 "not yet implemented", &e->where);
-      return FAILURE;
-    }
   return SUCCESS;
 
 failure:
@@ -10267,8 +10262,11 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	}
 
       /* Appendix B.2 of the standard.  Contained functions give an
-	 error anyway.  Fixed-form is likely to be F77/legacy.  */
-      if (!sym->attr.contained && gfc_current_form != FORM_FIXED)
+	 error anyway.  Fixed-form is likely to be F77/legacy. Deferred
+	 character length is an F2003 feature.  */
+      if (!sym->attr.contained
+	    && gfc_current_form != FORM_FIXED
+	    && !sym->ts.deferred)
 	gfc_notify_std (GFC_STD_F95_OBS, "Obsolescent feature: "
 			"CHARACTER(*) function '%s' at %L",
 			sym->name, &sym->declared_at);
@@ -11605,7 +11603,8 @@ resolve_fl_derived (gfc_symbol *sym)
 	  return FAILURE;
 	}
 
-      if (c->ts.type == BT_CHARACTER && !c->attr.proc_pointer)
+      if (c->ts.type == BT_CHARACTER && !c->attr.proc_pointer
+	    && !c->ts.deferred)
 	{
 	 if (c->ts.u.cl->length == NULL
 	     || (resolve_charlen (c->ts.u.cl) == FAILURE)
@@ -11617,6 +11616,15 @@ resolve_fl_derived (gfc_symbol *sym)
 			c->ts.u.cl->length ? &c->ts.u.cl->length->where : &c->loc);
 	     return FAILURE;
 	   }
+	}
+
+      if (c->ts.type == BT_CHARACTER && c->ts.deferred
+	  && !c->attr.pointer && !c->attr.allocatable)
+	{
+	  gfc_error ("Character component '%s' of '%s' at %L with deferred "
+		     "length must be a POINTER or ALLOCATABLE",
+		     c->name, sym->name, &c->loc);
+	  return FAILURE;
 	}
 
       if (c->ts.type == BT_DERIVED
