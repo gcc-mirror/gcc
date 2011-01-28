@@ -1,3 +1,16 @@
+2011-01-29  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47311
+	* cp-tree.h (fixup_template_parms): Declare.
+	* pt.c (end_template_parm_list): Do not fixup template parms here.
+	(fixup_template_parms): Remove static. Fix typo in the
+	comments. Remove useless code statement.
+	(fixup_template_parm): For a template template parameter, fixup
+	its attributes before fixing up its type.
+	* parser.c
+	(cp_parser_template_declaration_after_export): After parsing
+	template parameters fixup their types.
+
 2011-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/47476

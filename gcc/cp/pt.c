@@ -194,7 +194,6 @@ static tree template_parm_to_arg (tree t);
 static tree current_template_args (void);
 static tree fixup_template_type_parm_type (tree, int);
 static tree fixup_template_parm_index (tree, tree, int);
-static void fixup_template_parms (void);
 static tree tsubst_template_parm (tree, tree, tsubst_flags_t);
 
 /* Make the current scope suitable for access checking when we are
@@ -3614,8 +3613,6 @@ end_template_parm_list (tree parms)
       TREE_CHAIN (parm) = NULL_TREE;
     }
 
-  fixup_template_parms ();
-
   --processing_template_parmlist;
 
   return saved_parmlist;
@@ -3774,21 +3771,16 @@ fixup_template_parm (tree parm_desc,
     {
       /* PARM is a template template parameter. This is going to
 	 be interesting.  */
-      tree tparms, targs, innermost_args;
+      tree tparms, targs, innermost_args, t;
       int j;
 
-      /* First, fix up the type of the parm.  */
+      /* First, fix up the parms of the template template parm
+	 because the parms are involved in defining the new canonical
+	 type of the template template parm.  */
 
-      tree t =
-	fixup_template_type_parm_type (TREE_TYPE (parm), num_parms);
-      TREE_TYPE (parm) = t;
-
-      TREE_VEC_ELT (fixedup_args, idx) =
-	template_parm_to_arg (parm_desc);
-
-      /* Now we need to substitute the template parm types that
-	 have been fixed up so far into the non-type template
-	 parms of this template template parm. E.g, consider this:
+      /* So we need to substitute the template parm types that have
+	 been fixed up so far into the template parms of this template
+	 template parm. E.g, consider this:
 
 	 template<class T, template<T u> class TT> class S;
 
@@ -3827,6 +3819,14 @@ fixup_template_parm (tree parm_desc,
 			       TREE_VEC_LENGTH (tparms),
 			       targs);
 	}
+
+      /* Now fix up the type of the template template parm.  */
+
+      t = fixup_template_type_parm_type (TREE_TYPE (parm), num_parms);
+      TREE_TYPE (parm) = t;
+
+      TREE_VEC_ELT (fixedup_args, idx) =
+	template_parm_to_arg (parm_desc);
     }
   else if (TREE_CODE (parm) == PARM_DECL)
     {
@@ -3882,11 +3882,11 @@ fixup_template_parm (tree parm_desc,
   pop_deferring_access_checks ();
 }
 
-/* Walk current the template parms and properly compute the canonical
+/* Walk the current template parms and properly compute the canonical
    types of the dependent types created during
    cp_parser_template_parameter_list.  */
 
-static void
+void
 fixup_template_parms (void)
 {
   tree arglist;
@@ -3910,8 +3910,6 @@ fixup_template_parms (void)
      argument.  */
   arglist = current_template_args ();
   arglist = add_outermost_template_args (arglist, fixedup_args);
-
-  fixedup_args = INNERMOST_TEMPLATE_ARGS (arglist);
 
   /* Let's do the proper fixup now.  */
   for (i = 0; i < num_parms; ++i)
