@@ -64,7 +64,7 @@ cat > sysinfo.c <<EOF
 #include <unistd.h>
 EOF
 
-${CC} -fdump-go-spec=gen-sysinfo.go -S -o sysinfo.s sysinfo.c
+${CC} -fdump-go-spec=gen-sysinfo.go -std=gnu99 -S -o sysinfo.s sysinfo.c
 
 echo 'package syscall' > ${OUT}
 
