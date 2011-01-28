@@ -1,3 +1,8 @@
+2011-01-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/atomic_base.h: Do not include <stddef.h>.
+	(kill_dependency): Uglify ret.
+
 2011-01-26  Johannes Singler  <singler@kit.edu>
 
         * include/parallel/numeric (inner_product, partial_sum):
