@@ -1,3 +1,9 @@
+2011-01-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_static_dynamic): IRIX 6 ld supports
+	-Bstatic/-Bdynamic.
+	* configure: Regenerate.
+
 2011-01-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/sysv4.h (LIB_NETBSD_SPEC): Don't handle -profile.
