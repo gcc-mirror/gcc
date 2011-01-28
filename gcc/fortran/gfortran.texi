@@ -856,6 +856,9 @@ the @code{SELECTED_CHAR_KIND} and @code{NEW_LINE} intrinsic functions.
 @item Support for binary, octal and hexadecimal (BOZ) constants in the
 intrinsic functions @code{INT}, @code{REAL}, @code{CMPLX} and @code{DBLE}.
 
+@item Support for namelist variables with allocatable and pointer
+attribute and nonconstant length type parameter.
+
 @item
 @cindex array, constructors
 @cindex @code{[...]}

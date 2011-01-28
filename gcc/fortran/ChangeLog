@@ -1,3 +1,8 @@
+2011-01-28  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (Fortran 2003 status): Mention support for
+	nonconstant namelist variables.
+
 2011-01-28  Paul Thomas  <pault@gcc.gnu.org>
 	    Tobias Burnus  <burnus@gcc.gnu.org>
 
