@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2011-01-27 20:20+0900\n"
+"PO-Revision-Date: 2011-01-28 23:06+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -25037,7 +25037,7 @@ msgstr "コンストラクタが無いクラス内に非静的定数メンバ %q
 #: cp/class.c:4667
 #, gcc-internal-format
 msgid "%q+D declared to take const reference, but implicit declaration would take non-const"
-msgstr ""
+msgstr "%q+D は定数参照を取るように宣言されていますが、暗黙的な宣言では非定数参照を取ります"
 
 #: cp/class.c:4670
 #, gcc-internal-format
@@ -25047,62 +25047,62 @@ msgstr ""
 #: cp/class.c:4894
 #, gcc-internal-format
 msgid "offset of virtual base %qT is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "仮想基底 %qT のオフセットは ABI に適合していないため将来のバージョンの GCC では変更になるかもしれません"
 
 #: cp/class.c:4995
 #, gcc-internal-format
 msgid "direct base %qT inaccessible in %qT due to ambiguity"
-msgstr ""
+msgstr "直接の基底 %qT は曖昧なため %qT 内でアクセスできません"
 
 #: cp/class.c:5007
 #, gcc-internal-format
 msgid "virtual base %qT inaccessible in %qT due to ambiguity"
-msgstr ""
+msgstr "仮想基底 %qT は曖昧なため %qT 内ではアクセスできません"
 
 #: cp/class.c:5193
 #, gcc-internal-format
 msgid "size assigned to %qT may not be ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "%qT へ代入されたサイズは ABI に適合していないかもしれないため将来のバージョンの GCC では変更になるかもしれません"
 
 #: cp/class.c:5233
 #, gcc-internal-format
 msgid "the offset of %qD may not be ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "%qD のオフセットは ABI に適合していないかもしれないため将来のバージョンの GCC では変更になるかもしれません"
 
 #: cp/class.c:5261
 #, gcc-internal-format
 msgid "offset of %q+D is not ABI-compliant and may change in a future version of GCC"
-msgstr ""
+msgstr "%q+D のオフセットは ABI に適合していないため将来のバージョンの GCC では変更になるかもしれません"
 
 #: cp/class.c:5271
 #, gcc-internal-format
 msgid "%q+D contains empty classes which may cause base classes to be placed at different locations in a future version of GCC"
-msgstr ""
+msgstr "%q+D は空のクラスを含んでいるため将来のバージョンの GCC では基底クラスが別の場所に配置されるかもしれません"
 
 #: cp/class.c:5359
 #, gcc-internal-format
 msgid "layout of classes derived from empty class %qT may change in a future version of GCC"
-msgstr ""
+msgstr "空のクラス %qT から得られたクラスの配置は将来のバージョンの GCC では変更になるかもしれません"
 
 #: cp/class.c:5512 cp/decl.c:11309 cp/parser.c:17464
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redefinition of %q#T"
-msgstr "`%s' が再定義されました"
+msgstr "%q#T が再定義されています"
 
 #: cp/class.c:5664
 #, gcc-internal-format
 msgid "%q#T has virtual functions and accessible non-virtual destructor"
-msgstr ""
+msgstr "%q#T は仮想関数を持っており非仮想デストラクタからアクセス可能です"
 
 #: cp/class.c:5769
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "trying to finish struct, but kicked out due to previous parse errors"
-msgstr "構文解析が構造体の終りに差し掛かりましたが、前のエラーのせいで文脈を見失いました"
+msgstr ""
 
 #: cp/class.c:6261
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "language string %<\"%E\"%> not recognized"
-msgstr "言語文字列 `\"%s\"' は認識されません"
+msgstr "言語文字列 %<\"%E\"%> は認識できません"
 
 #: cp/class.c:6351
 #, gcc-internal-format
@@ -25112,17 +25112,17 @@ msgstr ""
 #: cp/class.c:6475
 #, gcc-internal-format
 msgid "no matches converting function %qD to type %q#T"
-msgstr ""
+msgstr "関数 %qD から型 %q#T への変換が適合しません"
 
 #: cp/class.c:6505
 #, gcc-internal-format
 msgid "converting overloaded function %qD to type %q#T is ambiguous"
-msgstr ""
+msgstr "オーバーロードされた関数 %qD から型 %q#T への変換は曖昧です"
 
 #: cp/class.c:6532
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "assuming pointer to member %qD"
-msgstr "   ポインタからメンバへの変換で"
+msgstr "メンバ %qD へのポインタと見なしています"
 
 #: cp/class.c:6535
 #, gcc-internal-format
@@ -25132,12 +25132,12 @@ msgstr ""
 #: cp/class.c:6597 cp/class.c:6631
 #, gcc-internal-format
 msgid "not enough type information"
-msgstr "不十分な型情報"
+msgstr "型情報が不十分です"
 
 #: cp/class.c:6614
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument of type %qT does not match %qT"
-msgstr "仮引数 `%s' はプロトタイプに一致しません"
+msgstr "型 %qT の引数が %qT と一致しません"
 
 #. [basic.scope.class]
 #.
@@ -25145,19 +25145,19 @@ msgstr "仮引数 `%s' はプロトタイプに一致しません"
 #. in its context and when re-evaluated in the completed scope of
 #. S.
 #: cp/class.c:6925 cp/decl.c:1261 cp/name-lookup.c:524
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %q#D"
-msgstr "`%s' が再宣言されました"
+msgstr "%q#D が宣言されています"
 
 #: cp/class.c:6926
 #, gcc-internal-format
 msgid "changes meaning of %qD from %q+#D"
-msgstr ""
+msgstr "%qD の意味の %q+#D からの変更です"
 
 #: cp/cp-gimplify.c:93
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "continue statement not within loop or switch"
-msgstr "break 文が loop または switch の中にありません"
+msgstr "ループまたは switch 内に無い continue です"
 
 #: cp/cp-gimplify.c:1257
 #, gcc-internal-format
@@ -25167,17 +25167,17 @@ msgstr ""
 #: cp/cvt.c:90
 #, gcc-internal-format
 msgid "can%'t convert from incomplete type %qT to %qT"
-msgstr ""
+msgstr "不完全型 %qT から %qT へ変換できません"
 
 #: cp/cvt.c:99
 #, gcc-internal-format
 msgid "conversion of %qE from %qT to %qT is ambiguous"
-msgstr ""
+msgstr "%qE の %qT から %qT への変換は曖昧です"
 
 #: cp/cvt.c:168 cp/cvt.c:193 cp/cvt.c:238
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot convert %qE from type %qT to type %qT"
-msgstr "ポインタ型に変換できません"
+msgstr "%qE を型 %qT から型 %qT へ変換できません"
 
 #: cp/cvt.c:370
 #, gcc-internal-format
@@ -25210,39 +25210,39 @@ msgid "casting %qT to %qT does not dereference pointer"
 msgstr ""
 
 #: cp/cvt.c:498
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot convert type %qT to type %qT"
-msgstr "ポインタ型に変換できません"
+msgstr "型 %qT から型 %qT へ変換できません"
 
 #: cp/cvt.c:698
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion from %q#T to %q#T"
-msgstr "NaN から整数への変換です"
+msgstr "%q#T から %q#T への変換です"
 
 #: cp/cvt.c:714
 #, gcc-internal-format
 msgid "the result of the conversion is unspecified because %qE is outside the range of type %qT"
-msgstr ""
+msgstr "%qE が型 %qT の範囲外にあるので変換結果は不定です"
 
 #: cp/cvt.c:725 cp/cvt.c:750
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#T used where a %qT was expected"
-msgstr "浮動小数点型があるべき箇所で、集合体の値が使われました"
+msgstr "%q#T が %qT が予期される場所で使用されました"
 
 #: cp/cvt.c:765
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#T used where a floating point value was expected"
-msgstr "浮動小数点数があるべき箇所で、ポインタ値が使われました"
+msgstr "%q#T が浮動小数点値が予期される場所で使用されました"
 
 #: cp/cvt.c:825
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion from %qT to non-scalar type %qT requested"
-msgstr "非スカラー型への変換が要求されます"
+msgstr "%qT から非スカラ型 %qT への変換が要求されました"
 
 #: cp/cvt.c:883
 #, gcc-internal-format
 msgid "pseudo-destructor is not called"
-msgstr ""
+msgstr "疑似デストラクタが呼び出されません"
 
 #: cp/cvt.c:956
 #, gcc-internal-format
@@ -25472,7 +25472,7 @@ msgstr ""
 #: cp/cvt.c:1295
 #, gcc-internal-format
 msgid "statement has no effect"
-msgstr ""
+msgstr "文は効果がありません"
 
 #: cp/cvt.c:1299
 #, gcc-internal-format
@@ -25480,14 +25480,14 @@ msgid "for increment expression has no effect"
 msgstr ""
 
 #: cp/cvt.c:1448
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "converting NULL to non-pointer type"
-msgstr "不完全型への変換です"
+msgstr "NULL から非ポインタ型へ変換しています"
 
 #: cp/cvt.c:1560
 #, gcc-internal-format
 msgid "ambiguous default type conversion from %qT"
-msgstr ""
+msgstr "%qT からのデフォルトの型変換が曖昧です"
 
 #: cp/cvt.c:1562
 #, gcc-internal-format
@@ -25497,17 +25497,19 @@ msgstr ""
 #: cp/decl.c:636
 #, gcc-internal-format
 msgid "variable %q+D set but not used"
+msgstr "変数 %q+D が設定されましたが使用されていません"
+
+# ここより下の数文は一つの文が2個以上の msgid に分割されています
+# 訳すのは非常に困難です
+#: cp/decl.c:1097
+#, gcc-internal-format
+msgid "%qD was declared %<extern%> and later %<static%>"
 msgstr ""
 
-#: cp/decl.c:1097
-#, fuzzy, gcc-internal-format
-msgid "%qD was declared %<extern%> and later %<static%>"
-msgstr "`%s' は `extern' と宣言され、後で `static' と宣言されました"
-
 #: cp/decl.c:1098 cp/decl.c:1677 objc/objc-act.c:4486 objc/objc-act.c:9559
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %q+D"
-msgstr "前方での `%s' の宣言"
+msgstr ""
 
 #: cp/decl.c:1130
 #, gcc-internal-format
@@ -25515,9 +25517,9 @@ msgid "declaration of %qF has a different exception specifier"
 msgstr ""
 
 #: cp/decl.c:1132
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "from previous declaration %q+F"
-msgstr "`%s' の前方宣言がありません"
+msgstr ""
 
 #: cp/decl.c:1157
 #, gcc-internal-format
@@ -25530,100 +25532,100 @@ msgid "from previous declaration %q+D"
 msgstr ""
 
 #: cp/decl.c:1214
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %q+D redeclared as inline"
-msgstr "関数が大きすぎて inline にできません"
+msgstr ""
 
 #: cp/decl.c:1216
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %q+D with attribute noinline"
-msgstr "前方での `%s' の宣言"
+msgstr ""
 
 #: cp/decl.c:1223
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %q+D redeclared with attribute noinline"
-msgstr "関数が大きすぎて inline にできません"
+msgstr ""
 
 #: cp/decl.c:1225
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %q+D was inline"
-msgstr "前方での `%s' の宣言"
+msgstr ""
 
 #: cp/decl.c:1249 cp/decl.c:1323
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "shadowing built-in function %q#D"
-msgstr "組み込み関数 `%s' を覆い隠します"
+msgstr "組み込み関数 %q#D を覆い隠しています"
 
 #: cp/decl.c:1250 cp/decl.c:1324
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "shadowing library function %q#D"
-msgstr "ライブラリ関数 `%s' を覆い隠します"
+msgstr "ライブラリ関数 %q#D を覆い隠しています"
 
 #: cp/decl.c:1257
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "library function %q#D redeclared as non-function %q#D"
-msgstr "ライブラリ関数 `%s' は非関数として宣言されました"
+msgstr "ライブラリ関数 %q#D は非関数 %q#D として再宣言されています"
 
 #: cp/decl.c:1262
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicts with built-in declaration %q#D"
-msgstr "`%s' の宣言が矛盾しています"
+msgstr ""
 
 #: cp/decl.c:1316 cp/decl.c:1443 cp/decl.c:1459
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "new declaration %q#D"
-msgstr "空の宣言です"
+msgstr ""
 
 #: cp/decl.c:1317
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguates built-in declaration %q#D"
-msgstr "ラベルの宣言 `%s' が重複しています"
+msgstr ""
 
 #: cp/decl.c:1407
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#D redeclared as different kind of symbol"
-msgstr "`%s' が別のシンボル種として再宣言されました"
+msgstr ""
 
 #: cp/decl.c:1410
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %q+#D"
-msgstr "前方での `%s' の宣言"
+msgstr ""
 
 #: cp/decl.c:1429
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of template %q#D"
-msgstr "`enum %s' の再宣言"
+msgstr ""
 
 #: cp/decl.c:1430 cp/name-lookup.c:525 cp/name-lookup.c:811
 #: cp/name-lookup.c:822
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicts with previous declaration %q+#D"
-msgstr "`%s' のセクションは前方でに宣言されたものと衝突します"
+msgstr ""
 
 #: cp/decl.c:1444 cp/decl.c:1460
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ambiguates old declaration %q+#D"
-msgstr "ラベルの宣言 `%s' が重複しています"
+msgstr ""
 
 #: cp/decl.c:1452
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of C function %q#D conflicts with"
-msgstr "%s: 関数 `%s' の宣言が変換されていません\n"
+msgstr ""
 
 #: cp/decl.c:1454
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration %q+#D here"
-msgstr "前方での `%s' の宣言"
+msgstr ""
 
 #: cp/decl.c:1468
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicting declaration %q#D"
-msgstr "`%s' の宣言が矛盾しています"
+msgstr ""
 
 #: cp/decl.c:1469
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+D has a previous declaration as %q#D"
-msgstr "前方での `%s' の宣言"
+msgstr ""
 
 #. [namespace.alias]
 #.
@@ -25638,35 +25640,35 @@ msgid "declaration of namespace %qD conflicts with"
 msgstr ""
 
 #: cp/decl.c:1522
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of namespace %q+D here"
-msgstr "前方での `%s' の宣言"
+msgstr ""
 
 #: cp/decl.c:1533
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q+#D previously defined here"
-msgstr "`%s' は前にここで定義されました"
+msgstr ""
 
 #. Prototype decl follows defn w/o prototype.
 #: cp/decl.c:1543
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "prototype for %q+#D"
-msgstr "`%s' のプロトタイプが後ろにあります"
+msgstr ""
 
 #: cp/decl.c:1545
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "follows non-prototype definition here"
-msgstr "非プロトタイプ定義がここにあります"
+msgstr ""
 
 #: cp/decl.c:1585
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "previous declaration of %q+#D with %qL linkage"
-msgstr "前方での `%s' の宣言"
+msgstr ""
 
 #: cp/decl.c:1587
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicts with new declaration with %qL linkage"
-msgstr "`%s' の宣言が矛盾しています"
+msgstr ""
 
 #: cp/decl.c:1610 cp/decl.c:1616
 #, gcc-internal-format
@@ -25679,19 +25681,19 @@ msgid "after previous specification in %q+#D"
 msgstr ""
 
 #: cp/decl.c:1676
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redundant redeclaration of %qD in same scope"
-msgstr "`%s' の冗長な再宣言が同一スコープ内にあります"
+msgstr ""
 
 #: cp/decl.c:1682
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "deleted definition of %qD"
-msgstr "`%s' のネストした再定義"
+msgstr ""
 
 #: cp/decl.c:1683
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "after previous declaration %q+D"
-msgstr "前方での `%s' の宣言"
+msgstr ""
 
 #. From [temp.expl.spec]:
 #.
@@ -25712,20 +25714,20 @@ msgid "%q+D: visibility attribute ignored because it"
 msgstr ""
 
 #: cp/decl.c:2137
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conflicts with previous declaration here"
-msgstr "`%s' のセクションは前方でに宣言されたものと衝突します"
+msgstr ""
 
 #. Reject two definitions.
 #: cp/decl.c:2299 cp/decl.c:2328 cp/decl.c:2357 cp/decl.c:2374 cp/decl.c:2446
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redefinition of %q#D"
-msgstr "`%s' が再定義されました"
+msgstr ""
 
 #: cp/decl.c:2315
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD conflicts with used function"
-msgstr "`%s' のセクションは前方でに宣言されたものと衝突します"
+msgstr ""
 
 #: cp/decl.c:2325
 #, gcc-internal-format
@@ -25751,24 +25753,24 @@ msgid "redeclaration of friend %q#D may not have default template arguments"
 msgstr ""
 
 #: cp/decl.c:2417
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "thread-local declaration of %q#D follows non-thread-local declaration"
-msgstr "`%s' の宣言はグローバル宣言を覆い隠します"
+msgstr ""
 
 #: cp/decl.c:2420
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-thread-local declaration of %q#D follows thread-local declaration"
-msgstr "`%s' の宣言はグローバル宣言を覆い隠します"
+msgstr ""
 
 #: cp/decl.c:2435 cp/decl.c:2454
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "redeclaration of %q#D"
-msgstr "`%s' が再宣言されました"
+msgstr ""
 
 #: cp/decl.c:2598
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "jump to label %qD"
-msgstr "case ラベルにジャンプしています"
+msgstr ""
 
 #: cp/decl.c:2600
 #, gcc-internal-format
@@ -25786,9 +25788,9 @@ msgid "  exits OpenMP structured block"
 msgstr ""
 
 #: cp/decl.c:2642
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "  crosses initialization of %q+#D"
-msgstr "(`%s' の初期化は不完全です)"
+msgstr ""
 
 #: cp/decl.c:2644 cp/decl.c:2760
 #, gcc-internal-format
@@ -27582,12 +27584,12 @@ msgstr ""
 #: cp/decl2.c:319
 #, gcc-internal-format
 msgid "name missing for member function"
-msgstr "メンバ関数の名前を欠いています"
+msgstr "メンバ関数の名前がありません"
 
 #: cp/decl2.c:390 cp/decl2.c:404
 #, gcc-internal-format
 msgid "ambiguous conversion for array subscript"
-msgstr "配列の添字に対する曖昧な変換"
+msgstr "配列の添字用の曖昧な変換です"
 
 #: cp/decl2.c:398
 #, gcc-internal-format
@@ -27597,37 +27599,37 @@ msgstr ""
 #: cp/decl2.c:441
 #, gcc-internal-format
 msgid "deleting array %q#D"
-msgstr ""
+msgstr "配列 %q#D を削除しています"
 
 #: cp/decl2.c:447
 #, gcc-internal-format
 msgid "type %q#T argument given to %<delete%>, expected pointer"
-msgstr ""
+msgstr "%<delete%> に与えられる型 %q#T の引数はポインタが予期されます"
 
 #: cp/decl2.c:459
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot delete a function.  Only pointer-to-objects are valid arguments to %<delete%>"
-msgstr "関数は delete できません。 オブジェクトへのポインタだけが `delete' 引数として有効です"
+msgstr "関数を削除 (delete) できません。%<delete%> の有効な引数はオブジェクトへのポインタのみです"
 
 #: cp/decl2.c:467
 #, gcc-internal-format
 msgid "deleting %qT is undefined"
-msgstr ""
+msgstr "%qT の削除は定義されていません"
 
 #: cp/decl2.c:510 cp/pt.c:4760
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "template declaration of %q#D"
-msgstr "空の宣言です"
+msgstr "%q#D のテンプレート宣言です"
 
 #: cp/decl2.c:562
 #, gcc-internal-format
 msgid "Java method %qD has non-Java return type %qT"
-msgstr ""
+msgstr "Java メソッド %qD が非 Java 戻り型 %qT を持ちます"
 
 #: cp/decl2.c:579
 #, gcc-internal-format
 msgid "Java method %qD has non-Java parameter type %qT"
-msgstr ""
+msgstr "Java メソッド %qD が非 Java 仮引数型 %qT を持ちます"
 
 #: cp/decl2.c:628
 #, gcc-internal-format
@@ -27637,17 +27639,17 @@ msgstr ""
 #: cp/decl2.c:696
 #, gcc-internal-format
 msgid "prototype for %q#D does not match any in class %qT"
-msgstr ""
+msgstr "%q#D 用のプロトタイプがクラス %qT 内のどれとも一致しません"
 
 #: cp/decl2.c:772
 #, gcc-internal-format
 msgid "local class %q#T shall not have static data member %q#D"
-msgstr ""
+msgstr "局所クラス %q#T は静的データメンバ %q#D を持っていてはいけません"
 
 #: cp/decl2.c:833
 #, gcc-internal-format
 msgid "explicit template argument list not allowed"
-msgstr ""
+msgstr "明示的なテンプレート引数リストは許可されていません"
 
 #: cp/decl2.c:839
 #, gcc-internal-format
@@ -27657,57 +27659,57 @@ msgstr ""
 #: cp/decl2.c:875
 #, gcc-internal-format
 msgid "%qD is already defined in %qT"
-msgstr ""
+msgstr "%qD は既に %qT 内で定義されています"
 
 #: cp/decl2.c:910
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid initializer for member function %qD"
-msgstr "無効なビット列初期化子です"
+msgstr "メンバ関数 %qD 用の無効な初期化子です"
 
 #: cp/decl2.c:916
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "initializer specified for static member function %qD"
-msgstr "コンストラクタの静的メンバ初期化子は無効です"
+msgstr "静的メンバ関数 %qD 用の初期化子が指定されています"
 
 #: cp/decl2.c:938
 #, gcc-internal-format
 msgid "field initializer is not constant"
-msgstr "フィールド初期設定子が定数ではありません"
+msgstr "フィールド初期化子が定数ではありません"
 
 #: cp/decl2.c:965
 #, gcc-internal-format
 msgid "%<asm%> specifiers are not permitted on non-static data members"
-msgstr ""
+msgstr "%<asm%> 指定は非静的データメンバに関しては許可されていません"
 
 #: cp/decl2.c:1017
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bit-field %qD with non-integral type"
-msgstr "ビットフィールド `%s' の幅が整数定数ではありません"
+msgstr "非整数型のビットフィールド %qD です"
 
 #: cp/decl2.c:1023
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot declare %qD to be a bit-field type"
-msgstr "`::main' を template としては宣言できません"
+msgstr "%qD をビットフィールド型として宣言できません"
 
 #: cp/decl2.c:1033
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot declare bit-field %qD with function type"
-msgstr "関数型に対して new を適用できません"
+msgstr "ビットフィールド %qD を関数型として宣言できません"
 
 #: cp/decl2.c:1040
 #, gcc-internal-format
 msgid "%qD is already defined in the class %qT"
-msgstr ""
+msgstr "%qD は既にクラス %qT 内で定義されています"
 
 #: cp/decl2.c:1047
 #, gcc-internal-format
 msgid "static member %qD cannot be a bit-field"
-msgstr ""
+msgstr "静的メンバ %qD はビットフィールドに出来ません"
 
 #: cp/decl2.c:1056
 #, gcc-internal-format
 msgid "width of bit-field %qD has non-integral type %qT"
-msgstr ""
+msgstr "ビットフィールドの幅が %qD 非整数型 %qT です"
 
 #: cp/decl2.c:1308
 #, gcc-internal-format
@@ -27720,14 +27722,14 @@ msgid "namespace-scope anonymous aggregates must be static"
 msgstr "anonumous 名前空間の集合体は static でなければなりません"
 
 #: cp/decl2.c:1403
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "anonymous union with no members"
-msgstr "無名共用体にメンバがありません"
+msgstr "メンバがない無名共用体です"
 
 #: cp/decl2.c:1440
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<operator new%> must return type %qT"
-msgstr "`operator delete' の戻り型は `void' でなければなりません"
+msgstr "%<operator new%> の戻り型は %qT でなければいけません"
 
 #. [basic.stc.dynamic.allocation]
 #.
@@ -27736,12 +27738,12 @@ msgstr "`operator delete' の戻り型は `void' でなければなりません"
 #: cp/decl2.c:1451
 #, gcc-internal-format
 msgid "the first parameter of %<operator new%> cannot have a default argument"
-msgstr ""
+msgstr "%<operator new%> の第一引数はデフォルト引数を持っていてはいけません"
 
 #: cp/decl2.c:1467
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<operator new%> takes type %<size_t%> (%qT) as first parameter"
-msgstr "`operator new' は第一引数として `size_t' をとります"
+msgstr "%<operator new%> は第一引数として型 %<size_t%> (%qT) をとります"
 
 #: cp/decl2.c:1496
 #, fuzzy, gcc-internal-format
