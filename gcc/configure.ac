@@ -3123,6 +3123,10 @@ elif test x$gcc_cv_ld != x; then
       gcc_cv_ld_static_dynamic=yes
   else
     case "$target" in
+      # IRIX 6 ld supports -Bstatic/-Bdynamic.
+      mips-sgi-irix6*)
+        gcc_cv_ld_static_dynamic=yes
+        ;;
       # Solaris 2 ld always supports -Bstatic/-Bdynamic.
       *-*-solaris2*)
         gcc_cv_ld_static_dynamic=yes
