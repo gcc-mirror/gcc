@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,6 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <stddef.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -72,8 +71,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline _Tp
     kill_dependency(_Tp __y)
     {
-      _Tp ret(__y);
-      return ret;
+      _Tp __ret(__y);
+      return __ret;
     }
 
   /**
