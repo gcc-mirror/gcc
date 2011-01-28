@@ -1,5 +1,9 @@
 2011-01-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.dg/pr47276.c: Add dg-require-visibility.
+
+2011-01-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.target/i386/asm-6.c: XFAIL on i?86-pc-solaris2.1[0-9] && ilp32.
 
 2011-01-28  Paul Thomas  <pault@gcc.gnu.org>
