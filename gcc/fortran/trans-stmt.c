@@ -1,5 +1,6 @@
 /* Statement translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -4507,14 +4508,73 @@ gfc_trans_allocate (gfc_code * code)
 	      else
 		memsz = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->expr3->ts));
 	    }
+	  else if (al->expr->ts.type == BT_CHARACTER
+		     && al->expr->ts.deferred && code->expr3)
+	    {
+	      if (!code->expr3->ts.u.cl->backend_decl)
+		{
+		  /* Convert and use the length expression.  */
+		  gfc_se se_sz;
+		  gfc_init_se (&se_sz, NULL);
+		  if (code->expr3->expr_type == EXPR_VARIABLE
+			|| code->expr3->expr_type == EXPR_CONSTANT)
+		    {
+		      gfc_conv_expr (&se_sz, code->expr3);
+		      memsz = se_sz.string_length;
+		    }
+		  else
+		    {
+		      gfc_conv_expr (&se_sz, code->ext.alloc.ts.u.cl->length);
+		      memsz = se_sz.expr;
+		    }
+		  if (TREE_CODE (se.string_length) == VAR_DECL)
+                    gfc_add_modify (&block, se.string_length,
+				    fold_convert (TREE_TYPE (se.string_length),
+						  memsz));
+		}
+	      else
+		/* Otherwise use the stored string length.  */
+		memsz = code->expr3->ts.u.cl->backend_decl;
+	      tmp = al->expr->ts.u.cl->backend_decl;
+
+	      /* Store the string length.  */
+	      if (tmp && TREE_CODE (tmp) == VAR_DECL)
+		gfc_add_modify (&block, tmp, fold_convert (TREE_TYPE (tmp),
+				memsz));
+
+	      /* Convert to size in bytes, using the character KIND.  */
+	      tmp = TREE_TYPE (gfc_typenode_for_spec (&al->expr->ts));
+	      tmp = TYPE_SIZE_UNIT (tmp);
+	      memsz = fold_build2_loc (input_location, MULT_EXPR,
+				       TREE_TYPE (tmp), tmp,
+				       fold_convert (TREE_TYPE (tmp), memsz));
+	    }
 	  else if (code->ext.alloc.ts.type != BT_UNKNOWN)
 	    memsz = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->ext.alloc.ts));
 	  else
 	    memsz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (se.expr)));
 
 	  if (expr->ts.type == BT_CHARACTER && memsz == NULL_TREE)
-	    memsz = se.string_length;
-
+	    {
+	      if (expr->ts.deferred)
+		{
+		  gfc_se se_sz;
+		  gfc_init_se (&se_sz, NULL);
+		  gfc_conv_expr (&se_sz, code->ext.alloc.ts.u.cl->length);
+		  memsz = se_sz.expr;
+                  gfc_add_modify (&block, se.string_length,
+				  fold_convert (TREE_TYPE (se.string_length),
+						memsz));
+		}
+	      else
+		memsz = se.string_length;
+	      /* Convert to size in bytes, using the character KIND.  */
+	      tmp = TREE_TYPE (gfc_typenode_for_spec (&code->ext.alloc.ts));
+	      tmp = TYPE_SIZE_UNIT (tmp);
+	      memsz = fold_build2_loc (input_location, MULT_EXPR,
+				       TREE_TYPE (tmp), tmp,
+				       fold_convert (TREE_TYPE (tmp), memsz));
+	    }
 	  /* Allocate - for non-pointers with re-alloc checking.  */
 	  {
 	    gfc_ref *ref;

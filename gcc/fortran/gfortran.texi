@@ -830,10 +830,11 @@ type-specification with type parameter and for allocation and initialization
 from a @code{SOURCE=} expression; @code{ALLOCATE} and @code{DEALLOCATE}
 optionally return an error message string via @code{ERRMSG=}.
 
-@item Reallocation on assignment for arrays: If an intrinsic assignment is
+@item Reallocation on assignment: If an intrinsic assignment is
 used, an allocatable variable on the left-hand side is automatically allocated
-(if unallocated) or reallocated (if the shape is different). Currently, the
-reallocation for scalars is not implemented.
+(if unallocated) or reallocated (if the shape is different). Currently, scalar
+deferred character length left-hand sides are correctly handled but arrays
+are not yet fully implemented.
 
 @item Transferring of allocations via @code{MOVE_ALLOC}.
 

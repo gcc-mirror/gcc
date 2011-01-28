@@ -1,3 +1,50 @@
+2011-01-28  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/45170
+	PR fortran/35810
+	PR fortran/47350
+	* interface.c (compare_actual_formal): An allocatable or pointer
+	deferred length actual is only allowed if the formal argument
+	is also deferred length. Clean up whitespace.
+	* trans-expr.c (gfc_conv_procedure_call): Pass string length for
+	deferred character length formal arguments by reference. Do the
+	same for function results.
+	(gfc_trans_pointer_assignment): Do not do runtime check of lhs
+	and rhs character lengths, if deferred length lhs.  In this case
+	set the lhs character length to that of the rhs.
+	(gfc_conv_string_parameter): Remove assert that string length is
+	an integer type.
+	(is_scalar_reallocatable_lhs): New function.
+	(alloc_scalar_allocatable_for_assignment): New function.
+	(gfc_trans_assignment_1): Call above new function. If the rhs is
+	a deferred character length itself, makes ure that the function
+	is called before reallocation, so that the length is available.
+	(gfc_trans_asssignment): Remove error about assignment to
+	deferred length character variables.
+	* gfortran.texi : Update entry about (re)allocation on
+	assignment.
+	* trans-stmt.c (gfc_trans_allocate): Add code to handle deferred
+	length character variables.
+	* module.c (mio_typespec): Transfer deferred characteristic.
+	* trans-types.c (gfc_get_function_type): New code to generate
+	hidden typelist, so that those character lengths that are
+	passed by reference get the right type.
+	* resolve.c (resolve_contained_fntype): Supress error for
+	deferred character length functions.
+	(resolve_function, resolve_fl_procedure) The same.
+	(check_symbols): Remove the error that support for
+	entity with deferred type parameter is not yet implemented.
+	(resolve_fl_derived): The same.
+	match.c (alloc_opt_list): Allow MOLD for deferred length object.
+	* trans-decl.c (gfc_get_symbol_decl): For deferred character
+	length dummies, generate a local variable for string length.
+	(create_function_arglist): Hidden length can be a pointer.
+	(gfc_trans_deferred_vars): For deferred character length
+	results and dummies, assign the string length to the local
+	variable from the hidden argument on entry and the other way
+	round on exit, as appropriate.
+
 2011-01-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47474

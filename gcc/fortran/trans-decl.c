@@ -1,5 +1,6 @@
 /* Backend function setup
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Paul Brook
 
@@ -1067,6 +1068,21 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	gfc_find_derived_vtab (c->ts.u.derived);
     }
 
+  /* All deferred character length procedures need to retain the backend
+     decl, which is a pointer to the character length in the caller's
+     namespace and to declare a local character length.  */
+  if (!byref && sym->attr.function
+	&& sym->ts.type == BT_CHARACTER
+	&& sym->ts.deferred
+	&& sym->ts.u.cl->passed_length == NULL
+	&& sym->ts.u.cl->backend_decl
+	&& TREE_CODE (sym->ts.u.cl->backend_decl) == PARM_DECL)
+    {
+      sym->ts.u.cl->passed_length = sym->ts.u.cl->backend_decl;
+      sym->ts.u.cl->backend_decl = NULL_TREE;
+      length = gfc_create_string_length (sym);
+    }
+
   if ((sym->attr.dummy && ! sym->attr.function) || (sym->attr.result && byref))
     {
       /* Return via extra parameter.  */
@@ -1087,6 +1103,20 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       /* Create a character length variable.  */
       if (sym->ts.type == BT_CHARACTER)
 	{
+	  /* For a deferred dummy, make a new string length variable.  */
+	  if (sym->ts.deferred
+		&&
+	     (sym->ts.u.cl->passed_length == sym->ts.u.cl->backend_decl))
+	    sym->ts.u.cl->backend_decl = NULL_TREE;
+
+	  if (sym->ts.deferred && sym->attr.result
+		&& sym->ts.u.cl->passed_length == NULL
+		&& sym->ts.u.cl->backend_decl)
+	    {
+	      sym->ts.u.cl->passed_length = sym->ts.u.cl->backend_decl;
+	      sym->ts.u.cl->backend_decl = NULL_TREE;
+	    }
+
 	  if (sym->ts.u.cl->backend_decl == NULL_TREE)
 	    length = gfc_create_string_length (sym);
 	  else
@@ -1793,7 +1823,6 @@ create_function_arglist (gfc_symbol * sym)
 	{
 	  /* Length of character result.  */
 	  tree len_type = TREE_VALUE (TREE_CHAIN (typelist));
-	  gcc_assert (len_type == gfc_charlen_type_node);
 
 	  length = build_decl (input_location,
 			       PARM_DECL,
@@ -1879,7 +1908,10 @@ create_function_arglist (gfc_symbol * sym)
 	{
 	  tree len_type = TREE_VALUE (hidden_typelist);
 	  tree length = NULL_TREE;
-	  gcc_assert (len_type == gfc_charlen_type_node);
+	  if (!f->sym->ts.deferred)
+	    gcc_assert (len_type == gfc_charlen_type_node);
+	  else
+	    gcc_assert (POINTER_TYPE_P (len_type));
 
 	  strcpy (&name[1], f->sym->name);
 	  name[0] = '_';
@@ -3182,6 +3214,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
   gfc_formal_arglist *f;
   stmtblock_t tmpblock;
   bool seen_trans_deferred_array = false;
+  tree tmp = NULL;
+  gfc_expr *e;
+  gfc_se se;
+  stmtblock_t init;
 
   /* Deal with implicit return variables.  Explicit return variables will
      already have been added.  */
@@ -3213,7 +3249,34 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	}
       else if (proc_sym->ts.type == BT_CHARACTER)
 	{
-	  if (TREE_CODE (proc_sym->ts.u.cl->backend_decl) == VAR_DECL)
+	  if (proc_sym->ts.deferred)
+	    {
+	      tmp = NULL;
+	      gfc_start_block (&init);
+	      /* Zero the string length on entry.  */
+	      gfc_add_modify (&init, proc_sym->ts.u.cl->backend_decl,
+			      build_int_cst (gfc_charlen_type_node, 0));
+	      /* Null the pointer.  */
+	      e = gfc_lval_expr_from_sym (proc_sym);
+	      gfc_init_se (&se, NULL);
+	      se.want_pointer = 1;
+	      gfc_conv_expr (&se, e);
+	      gfc_free_expr (e);
+	      tmp = se.expr;
+	      gfc_add_modify (&init, tmp,
+			      fold_convert (TREE_TYPE (se.expr),
+					    null_pointer_node));
+
+	      /* Pass back the string length on exit.  */
+	      tmp = proc_sym->ts.u.cl->passed_length;
+	      tmp = build_fold_indirect_ref_loc (input_location, tmp);
+	      tmp = fold_convert (gfc_charlen_type_node, tmp);
+	      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+				     gfc_charlen_type_node, tmp,
+				     proc_sym->ts.u.cl->backend_decl);
+	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
+	    }
+	  else if (TREE_CODE (proc_sym->ts.u.cl->backend_decl) == VAR_DECL)
 	    gfc_trans_dummy_character (proc_sym, proc_sym->ts.u.cl, block);
 	}
       else
@@ -3304,7 +3367,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	  if (sym_has_alloc_comp && !seen_trans_deferred_array)
 	    gfc_trans_deferred_array (sym, block);
 	}
-      else if (!sym->attr.dummy
+      else if ((!sym->attr.dummy || sym->ts.deferred)
 		&& (sym->attr.allocatable
 		    || (sym->ts.type == BT_CLASS
 			&& CLASS_DATA (sym)->attr.allocatable)))
@@ -3313,11 +3376,6 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    {
 	      /* Nullify and automatic deallocation of allocatable
 		 scalars.  */
-	      tree tmp = NULL;
-	      gfc_expr *e;
-	      gfc_se se;
-	      stmtblock_t init;
-
 	      e = gfc_lval_expr_from_sym (sym);
 	      if (sym->ts.type == BT_CLASS)
 		gfc_add_data_component (e);
@@ -3327,15 +3385,44 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      gfc_conv_expr (&se, e);
 	      gfc_free_expr (e);
 
-	      /* Nullify when entering the scope.  */
 	      gfc_start_block (&init);
-	      gfc_add_modify (&init, se.expr,
-			      fold_convert (TREE_TYPE (se.expr),
-					    null_pointer_node));
+
+	      if (!sym->attr.dummy || sym->attr.intent == INTENT_OUT)
+		{
+		  /* Nullify when entering the scope.  */
+		  gfc_add_modify (&init, se.expr,
+				  fold_convert (TREE_TYPE (se.expr),
+					        null_pointer_node));
+		}
+
+	      if ((sym->attr.dummy ||sym->attr.result)
+		    && sym->ts.type == BT_CHARACTER
+		    && sym->ts.deferred)
+		{
+		  /* Character length passed by reference.  */
+		  tmp = sym->ts.u.cl->passed_length;
+		  tmp = build_fold_indirect_ref_loc (input_location, tmp);
+		  tmp = fold_convert (gfc_charlen_type_node, tmp);
+
+		  if (!sym->attr.dummy || sym->attr.intent == INTENT_OUT)
+		    /* Zero the string length when entering the scope.  */
+		    gfc_add_modify (&init, sym->ts.u.cl->backend_decl,
+				build_int_cst (gfc_charlen_type_node, 0));
+		  else
+		    gfc_add_modify (&init, sym->ts.u.cl->backend_decl, tmp);
+
+		  /* Pass the final character length back.  */
+		  if (sym->attr.intent != INTENT_IN)
+		    tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+					   gfc_charlen_type_node, tmp,
+					   sym->ts.u.cl->backend_decl);
+		  else
+		    tmp = NULL_TREE;
+		}
 
 	      /* Deallocate when leaving the scope. Nullifying is not
 		 needed.  */
-	      if (!sym->attr.result)
+	      if (!sym->attr.result && !sym->attr.dummy)
 		tmp = gfc_deallocate_scalar_with_status (se.expr, NULL, true,
 							 NULL, sym->ts);
 
@@ -3355,6 +3442,33 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  gfc_add_modify (&init, se.expr, rhs);
 		}
 
+	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
+	    }
+	}
+      else if (sym->ts.type == BT_CHARACTER && sym->ts.deferred)
+	{
+	  tree tmp = NULL;
+	  stmtblock_t init;
+
+	  /* If we get to here, all that should be left are pointers.  */
+	  gcc_assert (sym->attr.pointer);
+
+	  if (sym->attr.dummy)
+	    {
+	      gfc_start_block (&init);
+
+	      /* Character length passed by reference.  */
+	      tmp = sym->ts.u.cl->passed_length;
+	      tmp = build_fold_indirect_ref_loc (input_location, tmp);
+	      tmp = fold_convert (gfc_charlen_type_node, tmp);
+	      gfc_add_modify (&init, sym->ts.u.cl->backend_decl, tmp);
+	      /* Pass the final character length back.  */
+	      if (sym->attr.intent != INTENT_IN)
+		tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+				       gfc_charlen_type_node, tmp,
+				       sym->ts.u.cl->backend_decl);
+	      else
+		tmp = NULL_TREE;
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);
 	    }
 	}
