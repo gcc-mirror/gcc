@@ -5025,6 +5025,7 @@ extern bool is_auto				(const_tree);
 extern tree process_template_parm		(tree, location_t, tree, 
 						 bool, bool, unsigned);
 extern tree end_template_parm_list		(tree);
+void fixup_template_parms (void);
 extern void end_template_decl			(void);
 extern tree maybe_update_decl_type		(tree, tree);
 extern bool check_default_tmpl_args             (tree, tree, int, int, int);
