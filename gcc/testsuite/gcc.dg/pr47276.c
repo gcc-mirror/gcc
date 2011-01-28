@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-alias "" } */
+/* { dg-require-visibility "" } */
 extern void syslog (int __pri, __const char *__fmt, ...)
      __attribute__ ((__format__ (__printf__, 2, 3)));
 extern void vsyslog (int __pri, __const char *__fmt, int __ap)
