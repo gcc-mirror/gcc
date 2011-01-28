@@ -1,3 +1,7 @@
+2011-01-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/freebsd.opt (posix, rdynamic): New Driver options.
+
 2011-01-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_static_dynamic): IRIX 6 ld supports
