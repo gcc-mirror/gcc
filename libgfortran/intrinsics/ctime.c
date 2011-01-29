@@ -42,11 +42,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 #ifndef HAVE_CTIME_R
+/* Make sure we don't see here a macro.  */
+#undef ctime_r
+
 static char *
 ctime_r (const time_t * timep, char * buf __attribute__((unused)))
 {
 #ifdef HAVE_CTIME
-  return ctime (timep);
+  char *tmp = ctime (timep);
+  if (tmp)
+    tmp = strcpy (buf, tmp);
+  return tmp;
 #else
   return NULL;
 #endif
