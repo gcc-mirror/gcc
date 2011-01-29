@@ -142,6 +142,9 @@ go_define (unsigned int lineno, const char *buffer)
 	    const char *start;
 	    char *n;
 
+	    if (saw_operand)
+	      goto unknown;
+
 	    start = p;
 	    while (ISALNUM (*p) || *p == '_')
 	      ++p;
