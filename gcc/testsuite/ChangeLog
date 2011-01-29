@@ -1,3 +1,13 @@
+2011-01-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47434
+	* gfortran.dg/read_infnan_1.f90: Update test.
+	* gfortran.dg/module_nan.f90: Update test.
+	* gfortran.dg/char4_iunit_1.f03: Update test.
+	* gfortran.dg/large_real_kind_1.f90: Update test.
+	* gfortran.dg/real_const_3.f90: Update test.
+	* gfortran.fortran-torture/execute/nan_inf_fmt.f90: Update test.
+
 2011-01-29  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47311
