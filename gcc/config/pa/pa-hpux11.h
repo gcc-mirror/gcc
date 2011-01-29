@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for HP PA-RISC
-   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005, 2007, 2008, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -121,10 +121,15 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:\
-     %{static|mt|pthread:%{fopenmp:%{static:-a archive_shared} -lrt\
-       %{static:-a archive}} -lpthread} -lc\
+     %{fopenmp:%{static:-a archive_shared} -lrt %{static:-a archive}}\
+     %{mt|pthread:-lpthread} -lc\
      %{static:%{!nolibdld:-a archive_shared -ldld -a archive -lc}}}\
    %{shared:%{mt|pthread:-lpthread}}"
+
+/* The libgcc_stub.a library needs to come last.  */
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define LINK_GCC_C_SEQUENCE_SPEC \
+  "%G %L %G %{!nostdlib:%{!nodefaultlibs:%{!shared:-lgcc_stub}}}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
