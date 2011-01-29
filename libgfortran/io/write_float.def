@@ -660,15 +660,26 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 {
   char * p, fin;
   int nb = 0;
+  sign_t sign;
+  int mark;
 
   if (f->format != FMT_B && f->format != FMT_O && f->format != FMT_Z)
     {
+      sign = calculate_sign (dtp, sign_bit);
+      mark = (sign == S_PLUS || sign == S_MINUS) ? 8 : 7;
+
       nb =  f->u.real.w;
   
       /* If the field width is zero, the processor must select a width 
 	 not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
      
-      if (nb == 0) nb = 4;
+      if (nb == 0)
+	{
+	  if (isnan_flag)
+	    nb = 3;
+	  else
+	    nb = (sign == S_PLUS || sign == S_MINUS) ? 4 : 3;
+	}
       p = write_block (dtp, nb);
       if (p == NULL)
 	return;
@@ -720,24 +731,28 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 	  if (unlikely (is_char4_unit (dtp)))
 	    {
 	      gfc_char4_t *p4 = (gfc_char4_t *) p;
-	      if (nb > 8)
+
+	      if (nb > mark)
 		/* We have room, so output 'Infinity' */
 		memcpy4 (p4 + nb - 8, "Infinity", 8);
 	      else
-		/* For the case of width equals 8, there is not enough room
+		/* For the case of width equals mark, there is not enough room
 		   for the sign and 'Infinity' so we go with 'Inf' */
 		memcpy4 (p4 + nb - 3, "Inf", 3);
 
-	      if (nb < 9 && nb > 3)
-	        /* Put the sign in front of Inf */
-		p4[nb - 4] = (gfc_char4_t) fin;
-	      else if (nb > 8)
-	        /* Put the sign in front of Infinity */
-		p4[nb - 9] = (gfc_char4_t) fin;
+	      if (sign == S_PLUS || sign == S_MINUS)
+		{
+		  if (nb < 9 && nb > 3)
+		    /* Put the sign in front of Inf */
+		    p4[nb - 4] = (gfc_char4_t) fin;
+		  else if (nb > 8)
+		    /* Put the sign in front of Infinity */
+		    p4[nb - 9] = (gfc_char4_t) fin;
+		}
 	      return;
 	    }
 
-	  if (nb > 8)
+	  if (nb > mark)
 	    /* We have room, so output 'Infinity' */
 	    memcpy(p + nb - 8, "Infinity", 8);
 	  else
@@ -745,10 +760,13 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 	       for the sign and 'Infinity' so we go with 'Inf' */
 	    memcpy(p + nb - 3, "Inf", 3);
 
-	  if (nb < 9 && nb > 3)
-	    p[nb - 4] = fin;  /* Put the sign in front of Inf */
-	  else if (nb > 8)
-	    p[nb - 9] = fin;  /* Put the sign in front of Infinity */
+	  if (sign == S_PLUS || sign == S_MINUS)
+	    {
+	      if (nb < 9 && nb > 3)
+		p[nb - 4] = fin;  /* Put the sign in front of Inf */
+	      else if (nb > 8)
+		p[nb - 9] = fin;  /* Put the sign in front of Infinity */
+	    }
 	}
       else
         {
