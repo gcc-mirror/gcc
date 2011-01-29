@@ -1,3 +1,9 @@
+2011-01-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR bootstrap/47147
+	* ginclude/stddef.h: Check for _X86_64_ANSI_H_ and _I386_ANSI_H_ as
+	used by NetBSD.
+
 2011-01-28  Ahmad Sharif <asharif@google.com>
 
 	* value-prof.c (check_counter): Corrected error message.
