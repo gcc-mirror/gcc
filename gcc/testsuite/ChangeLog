@@ -1,3 +1,20 @@
+2011-01-29  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* gfortran.dg/bessel_6.f90: XFAIL on spu-*-*.
+	* gfortran.dg/bessel_7.f90: Likewise.
+	* gfortran.dg/erf_2.F90: Likewise.  Always run with -O0.
+
+	* gfortran.dg/complex_intrinsics_5.f90: Increase "epsilon".
+	* gfortran.dg/sum_init_expr.f03: Likewise.
+
+	* gfortran.dg/realloc_on_assign_2.f03: Skip on spu-*-*.
+
+	* gfortran.dg/lto/20091016-1_0.f90: Replace -shared with
+	-r -nostdlib.
+
+	* gfortran.dg/vect/fast-math-vect-8.f90: Check for vectorized
+	loop only on "vect_intfloat_cvt" targets.
+
 2011-01-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47531
