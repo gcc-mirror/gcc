@@ -1,3 +1,7 @@
+2011-01-29  Kai Tietz  <kai.tietz@onevision.com>
+
+	* intrinsics/ctime.c (ctime_r): Improve implementation.
+
 2011-01-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47431
