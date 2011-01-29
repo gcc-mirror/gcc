@@ -3,13 +3,39 @@
 #include "runtime.h"
 #include "malloc.h"
 
+#ifndef MAP_ANON
+#ifdef MAP_ANONYMOUS
+#define MAP_ANON MAP_ANONYMOUS
+#else
+#define USE_DEV_ZERO
+#define MAP_ANON 0
+#endif
+#endif
+
+#ifdef USE_DEV_ZERO
+static int dev_zero = -1;
+#endif
+
 void*
 runtime_SysAlloc(uintptr n)
 {
 	void *p;
+	int fd = -1;
 
 	mstats.sys += n;
-	p = runtime_mmap(nil, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE, -1, 0);
+
+#ifdef USE_DEV_ZERO
+	if (dev_zero == -1) {
+		dev_zero = open("/dev/zero", O_RDONLY);
+		if (dev_zero < 0) {
+			printf("open /dev/zero: errno=%d\n", errno);
+			exit(2);
+		}
+	}
+	fd = dev_zero;
+#endif
+
+	p = runtime_mmap(nil, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE, fd, 0);
 	if (p == MAP_FAILED) {
 		if(errno == EACCES) {
 			printf("mmap: access denied\n");
