@@ -474,8 +474,12 @@ check_counter (gimple stmt, const char * name,
       else
 	{
 	  error_at (locus, "corrupted value profile: %s "
-		    "profiler overall count (%d) does not match BB count (%d)",
-		    name, (int)*all, (int)bb_count);
+		    "profile counter (%d out of %d) inconsistent with "
+		    "basic-block count (%d)",
+		    name,
+		    (int) *count,
+		    (int) *all,
+		    (int) bb_count);
 	  return true;
 	}
     }
