@@ -1,3 +1,11 @@
+2011-01-29  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/arm.c (arm_legitimize_reload_address): New.
+	* config/arm/arm.h (ARM_LEGITIMIZE_RELOAD_ADDRESS): Use
+	arm_legitimize_reload_address.
+	* config/arm/arm-protos.h (arm_legitimize_reload_address):
+	Declare.
+
 2011-01-28  Ian Lance Taylor  <iant@google.com>
 
 	* godump.c (go_define): Ignore macros whose definitions include
