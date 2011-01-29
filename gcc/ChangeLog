@@ -1,3 +1,7 @@
+2011-01-28  Ahmad Sharif <asharif@google.com>
+
+	* value-prof.c (check_counter): Corrected error message.
+
 2011-01-29  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/arm.c (arm_legitimize_reload_address): New.
