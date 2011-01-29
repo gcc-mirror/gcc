@@ -1,3 +1,8 @@
+2011-01-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47531
+	* gfortran.dg/shape_6.f90: New.
+
 2011-01-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/47434

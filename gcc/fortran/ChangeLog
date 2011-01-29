@@ -1,3 +1,14 @@
+2011-01-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47531
+	* check.c (gfc_check_shape): Support kind argument in SHAPE.
+	* intrinsic.c (add_functions): Ditto.
+	* resolve.c (gfc_resolve_shape): Ditto.
+	* simplify.c (gfc_simplify_shape): Ditto.
+	* intrinsic.h (gfc_check_shape, gfc_resolve_shape,
+	gfc_simplify_shape): Update prototypes.
+	* intrinisc.text (SHAPE): Document kind argument.
+
 2011-01-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47507

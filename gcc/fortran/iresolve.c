@@ -2185,10 +2185,15 @@ gfc_resolve_set_exponent (gfc_expr *f, gfc_expr *x,
 
 
 void
-gfc_resolve_shape (gfc_expr *f, gfc_expr *array)
+gfc_resolve_shape (gfc_expr *f, gfc_expr *array, gfc_expr *kind)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
+
   f->rank = 1;
   f->shape = gfc_get_shape (1);
   mpz_init_set_ui (f->shape[0], array->rank);

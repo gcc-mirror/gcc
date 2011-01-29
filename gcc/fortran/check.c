@@ -3255,7 +3255,7 @@ gfc_check_set_exponent (gfc_expr *x, gfc_expr *i)
 
 
 gfc_try
-gfc_check_shape (gfc_expr *source)
+gfc_check_shape (gfc_expr *source, gfc_expr *kind)
 {
   gfc_array_ref *ar;
 
@@ -3270,6 +3270,13 @@ gfc_check_shape (gfc_expr *source)
 		 "an assumed size array", &source->where);
       return FAILURE;
     }
+
+  if (kind_check (kind, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+  if (kind && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: '%s' intrinsic "
+			      "with KIND argument at %L",
+			      gfc_current_intrinsic, &kind->where) == FAILURE)
+    return FAILURE;
 
   return SUCCESS;
 }

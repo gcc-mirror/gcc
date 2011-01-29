@@ -2541,9 +2541,10 @@ add_functions (void)
 
   make_generic ("set_exponent", GFC_ISYM_SET_EXPONENT, GFC_STD_F95);
 
-  add_sym_1 ("shape", GFC_ISYM_SHAPE, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
+  add_sym_2 ("shape", GFC_ISYM_SHAPE, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_shape, gfc_simplify_shape, gfc_resolve_shape,
-	     src, BT_REAL, dr, REQUIRED);
+	     src, BT_REAL, dr, REQUIRED,
+	     kind, BT_INTEGER, di, OPTIONAL);
 
   make_generic ("shape", GFC_ISYM_SHAPE, GFC_STD_F95);
 
