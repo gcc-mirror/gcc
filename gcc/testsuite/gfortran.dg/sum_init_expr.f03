@@ -52,14 +52,14 @@ CONTAINS
   SUBROUTINE rlib (array, result)
     REAL, DIMENSION(:,:), INTENT(in) :: array
     REAL, INTENT(in) :: result
-    IF (ABS(SUM(array) - result) > 2e-6) CALL abort()
+    IF (ABS(SUM(array) - result) > 4e-6) CALL abort()
   END SUBROUTINE
 
   SUBROUTINE rlib_with_dim (array, dim, result)
     REAL, DIMENSION(:,:), INTENT(in) :: array
     INTEGER, INTENT(iN)              :: dim
     REAL, DIMENSION(:), INTENT(in)   :: result
-    IF (ANY (ABS(SUM (array, dim=dim) - result) > 2e-6)) CALL abort()
+    IF (ANY (ABS(SUM (array, dim=dim) - result) > 4e-6)) CALL abort()
   END SUBROUTINE
 END
 

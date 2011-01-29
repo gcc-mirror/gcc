@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-skip-if "Too big for local store" { spu-*-* } { "*" } { "" } }
 ! Tests the patch that implements F2003 automatic allocation and
 ! reallocation of allocatable arrays on assignment.  The tests
 ! below were generated in the final stages of the development of
