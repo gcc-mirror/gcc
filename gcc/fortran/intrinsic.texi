@@ -10836,26 +10836,29 @@ END PROGRAM
 Determines the shape of an array.
 
 @item @emph{Standard}:
-Fortran 95 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = SHAPE(SOURCE)}
+@code{RESULT = SHAPE(SOURCE [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{SOURCE} @tab Shall be an array or scalar of any type. 
 If @var{SOURCE} is a pointer it must be associated and allocatable 
 arrays must be allocated.
+@item @var{KIND}   @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
 @end multitable
 
 @item @emph{Return value}:
 An @code{INTEGER} array of rank one with as many elements as @var{SOURCE} 
 has dimensions. The elements of the resulting array correspond to the extend
 of @var{SOURCE} along the respective dimensions. If @var{SOURCE} is a scalar,
-the result is the rank one array of size zero.
+the result is the rank one array of size zero. If @var{KIND} is absent, the
+return value has the default integer kind otherwise the specified kind.
 
 @item @emph{Example}:
 @smallexample
