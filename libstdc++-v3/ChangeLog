@@ -1,3 +1,11 @@
+2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/codecvt.xml: Fix link to The Austin Common
+	Standards Revision Group.
+	* doc/xml/manual/locale.xml: Ditto.
+	* doc/xml/manual/messages.xml: Ditto.
+	* doc/xml/manual/using_exceptions.xml: Ditto.
+
 2011-01-19  Graham Reed  <greed@pobox.com>
 
 	PR libstdc++/47354

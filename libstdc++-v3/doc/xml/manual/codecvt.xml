@@ -595,7 +595,7 @@ codecvt usage.
 
   <biblioentry>
     <biblioid class="uri">
-      <ulink url="http://www.opengroup.org/austin">
+      <ulink url="http://www.opengroup.org/austin/">
 	<citetitle>
 	  System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
 	</citetitle>
