@@ -1,3 +1,9 @@
+2011-01-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/hpux11.opt: New.
+	* config.gcc (hppa*64*-*-hpux11*, hppa[12]*-*-hpux11*,
+	ia64*-*-hpux*): Use hpux11.opt.
+
 2011-01-30  Jonathan Yong <jon_y@users.sourceforge.net> 
 
 	* config.gcc (i[34567]86-*-pe | i[34567]86-*-cygwin*): Add t-dfprules
