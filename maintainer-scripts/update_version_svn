@@ -15,7 +15,6 @@ export SVNROOT
 /bin/mkdir /tmp/$$
 cd /tmp/$$
 
-# The path to cvs.
 SVN=${SVN:-/usr/bin/svn}
 
 # Compute the branches which we should update.
@@ -26,7 +25,7 @@ BRANCHES=`$SVN ls $SVNROOT/branches \
 # Always update the mainline.
 BRANCHES="${BRANCHES} ${ADD_BRANCHES}"
 
-# ARGS is passed to 'cvs co'
+# This is put into the datestamp files.
 CURR_DATE=`/bin/date +"%Y%m%d"`
 
 # version is all there is
@@ -38,9 +37,7 @@ FILES="$datestamp_FILES"
 RESULT=0
 for BRANCH in $BRANCHES; do
   echo "Working on \"$BRANCH\"."
-  # Check out the files on the branch.  HEAD is a special case; if
-  # you check out files with -r HEAD, CVS will not let you check 
-  # in changes.
+  # Check out the files on the branch.  HEAD is in a different namespace.
   if test "$BRANCH" = HEAD; then 
     for i in $FILES; do
       ${SVN} -q co -N ${SVNROOT}/trunk/`dirname $i` `basename $i`

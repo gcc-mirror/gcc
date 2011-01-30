@@ -1,3 +1,9 @@
+2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_version_svn (SVN): Remove obsolete comment.
+	(CURR_DATE): Fix description.
+	Fix description of checkout procedure.
+
 2010-12-18  Tobias Burnus  <burnus@net-b.de>
 
 	* update_web_docs_svn (MANUALS): Add libquadmath.
