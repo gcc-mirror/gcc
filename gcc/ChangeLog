@@ -1,5 +1,10 @@
 2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/install.texi (hppa-hp-hpux10): Remove references to HP
+	support sites.
+
+2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* doc/install.texi (Binaries): Remove outdated reference for
 	Motorola 68HC11/68HC12 downloads.
 
