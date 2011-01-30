@@ -10231,6 +10231,14 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       return FAILURE;
     }
 
+  if (sym->attr.proc == PROC_ST_FUNCTION
+      && (sym->attr.allocatable || sym->attr.pointer))
+    {
+      gfc_error ("Statement function '%s' at %L may not have pointer or "
+		 "allocatable attribute", sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
   /* 5.1.1.5 of the Standard: A function name declared with an asterisk
      char-len-param shall not be array-valued, pointer-valued, recursive
      or pure.  ....snip... A character value of * may only be used in the

@@ -1,6 +1,12 @@
 2011-01-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47042
+	* resolve.c (resolve_fl_procedure): Reject stmt functions
+	with pointer/allocatable attribute.
+
+2011-01-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47042
 	* interface.c (gfc_procedure_use): Add explicit interface check for
 	pointer/allocatable functions.
 
