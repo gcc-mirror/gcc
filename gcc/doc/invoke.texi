@@ -7690,7 +7690,7 @@ This option enables the extraction of object files with GIMPLE bytecode out of
 library archives. This improves the quality of optimization by exposing more
 code the the link time optimizer.  This information specify what symbols 
 can be accessed externally (by non-LTO object or during dynamic linking).
-Resulting code quality improvements on binaries (and shared libaries that do
+Resulting code quality improvements on binaries (and shared libraries that do
 use hidden visibility) is similar to @code{-fwhole-program}.  See
 @option{-flto} for a description on the effect of this flag and how to use it.
 
