@@ -54,7 +54,7 @@
   virtual functions, etc. These details are defined as the compiler
   Application Binary Interface, or ABI. The GNU C++ compiler uses an
   industry-standard C++ ABI starting with version 3. Details can be
-  found in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.codesourcery.com/cxx-abi/abi.html"> ABI
+  found in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.codesourcery.com/public/cxx-abi/abi.html">ABI
   specification</link>.
 </para>
 
@@ -754,9 +754,11 @@ number to increase, say from "libstdc++.so.3.0.4" to
 class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
 statements or parameters: instead of passing instances of this
-class in registers, the compiler will be forced to use memory. See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.codesourcery.com/cxx-abi/abi.html#calls"> this part</link>
+class in registers, the compiler will be forced to use memory. See the
+section on <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.codesourcery.com/public/cxx-abi/abi.html#calls">Function
+Calling Conventions and APIs</link>
  of the C++ ABI documentation for further details.
- </para></listitem>
+</para></listitem>
 
 </orderedlist>
 
