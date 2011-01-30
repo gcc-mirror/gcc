@@ -13649,9 +13649,9 @@ The C++ standard differs from the C standard in its treatment of
 volatile objects.  It fails to specify what constitutes a volatile
 access, except to say that C++ should behave in a similar manner to C
 with respect to volatiles, where possible.  However, the different
-lvalueness of expressions between C and C++ complicate the behaviour.
+lvalueness of expressions between C and C++ complicate the behavior.
 G++ behaves the same as GCC for volatile access, @xref{C
-Extensions,,Volatiles}, for a description of GCC's behaviour.
+Extensions,,Volatiles}, for a description of GCC's behavior.
 
 The C and C++ language specifications differ when an object is
 accessed in a void context:
@@ -13681,7 +13681,7 @@ possible to ignore the return value from functions returning volatile
 references.  Again, if you wish to force a read, cast the reference to
 an rvalue.
 
-G++ implements the same behaviour as GCC does when assigning to a
+G++ implements the same behavior as GCC does when assigning to a
 volatile object -- there is no reread of the assigned-to object, the
 assigned rvalue is reused.  Note that in C++ assignment expressions
 are lvalues, and if used as an lvalue, the volatile object will be

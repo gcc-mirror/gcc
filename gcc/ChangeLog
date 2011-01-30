@@ -1,3 +1,8 @@
+2011-01-30  Kazu Hirata  <kazu@codesourcery.com>
+
+	* doc/extend.texi: Follow spelling conventions.
+	* doc/invoke.texi: Fix a typo.
+
 2011-01-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/hpux11.opt: New.
