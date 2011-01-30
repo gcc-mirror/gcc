@@ -2686,6 +2686,30 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
   if (sym->attr.if_source == IFSRC_UNKNOWN)
     {
       gfc_actual_arglist *a;
+
+      if (sym->attr.pointer)
+	{
+	  gfc_error("The pointer object '%s' at %L must have an explicit "
+		    "function interface or be declared as array",
+		    sym->name, where);
+	  return;
+	}
+
+      if (sym->attr.allocatable && !sym->attr.external)
+	{
+	  gfc_error("The allocatable object '%s' at %L must have an explicit "
+		    "function interface or be declared as array",
+		    sym->name, where);
+	  return;
+	}
+
+      if (sym->attr.allocatable)
+	{
+	  gfc_error("Allocatable function '%s' at %L must have an explicit "
+		    "function interface", sym->name, where);
+	  return;
+	}
+
       for (a = *ap; a; a = a->next)
 	{
 	  /* Skip g77 keyword extensions like %VAL, %REF, %LOC.  */
