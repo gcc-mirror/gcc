@@ -1,5 +1,10 @@
 2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/install.texi (hppa-hp-hpux10): Remove references to HP
+	support sites.
+
+2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* doc/install.texi: Update copyright years.
 	
 2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
