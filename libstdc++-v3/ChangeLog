@@ -1,5 +1,10 @@
 2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/xml/manual/abi.xml: Adjust link to C++ ABI specification.
+	Improve description of one such reference.
+
+2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/xml/manual/codecvt.xml: Fix link to The Austin Common
 	Standards Revision Group.
 	* doc/xml/manual/locale.xml: Ditto.
