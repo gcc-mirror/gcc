@@ -39,7 +39,9 @@
 # define _(msgid)   (msgid)
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __EXCEPTIONS
   void
@@ -180,4 +182,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #endif //__EXCEPTIONS
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

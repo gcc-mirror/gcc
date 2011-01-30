@@ -34,7 +34,9 @@
 #include <cstring>
 #include <cstdio>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // NB: The other ctype<char> specializations are in src/locale.cc and
   // various /config/os/* files.
@@ -266,4 +268,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 #endif //  _GLIBCXX_USE_WCHAR_T
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

@@ -36,13 +36,16 @@
 #include <cstdio>
 #include <bits/gthr.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   typedef __gthread_mutex_t __c_lock;
 
   // for basic_file.h
   typedef FILE __c_file;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

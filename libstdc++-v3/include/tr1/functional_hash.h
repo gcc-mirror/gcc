@@ -32,10 +32,12 @@
 
 #pragma GCC system_header
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /// Class template hash.
   // Declaration of default hash functor std::tr1::hash.  The types for
   // which std::tr1::hash<T> is well-defined is in clause 6.3.3. of the PDTR.
@@ -186,6 +188,8 @@ namespace tr1
     _GLIBCXX_PURE size_t
     hash<const wstring&>::operator()(const wstring&) const;
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 

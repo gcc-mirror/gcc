@@ -49,7 +49,9 @@
 #include <ext/memory> // For uninitialized_copy_n
 #include <ext/numeric> // For power
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::size_t;
   using std::printf;
@@ -1698,4 +1700,5 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   { _Rope_rotate(__first, __middle, __last); }
 # endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

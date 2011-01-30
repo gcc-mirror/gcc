@@ -46,7 +46,7 @@
 #include <parallel/for_each_selectors.h>
 #include <parallel/partial_sum.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __parallel
 {
@@ -55,13 +55,13 @@ namespace __parallel
     inline _Tp
     accumulate(_IIter __begin, _IIter __end, _Tp __init, 
                __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::accumulate(__begin, __end, __init); }
+    { return _GLIBCXX_STD_A::accumulate(__begin, __end, __init); }
 
   template<typename _IIter, typename _Tp, typename _BinaryOperation>
     inline _Tp
     accumulate(_IIter __begin, _IIter __end, _Tp __init,
                _BinaryOperation __binary_op, __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::accumulate(__begin, __end, __init, __binary_op); }
+    { return _GLIBCXX_STD_A::accumulate(__begin, __end, __init, __binary_op); }
 
   // Sequential fallback for input iterator case.
   template<typename _IIter, typename _Tp, typename _IteratorTag>
@@ -169,7 +169,7 @@ namespace __parallel
     inner_product(_IIter1 __first1, _IIter1 __last1, 
                   _IIter2 __first2, _Tp __init,
                   __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::inner_product(
+    { return _GLIBCXX_STD_A::inner_product(
                                __first1, __last1, __first2, __init); }
 
   template<typename _IIter1, typename _IIter2, typename _Tp,
@@ -179,7 +179,7 @@ namespace __parallel
                   _IIter2 __first2, _Tp __init, _BinaryFunction1 __binary_op1, 
                   _BinaryFunction2 __binary_op2,
                   __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::inner_product(__first1, __last1, __first2, __init,
+    { return _GLIBCXX_STD_A::inner_product(__first1, __last1, __first2, __init,
                                            __binary_op1, __binary_op2); }
 
   // Parallel algorithm for random access iterators.
@@ -314,7 +314,7 @@ namespace __parallel
     inline _OutputIterator
     partial_sum(_IIter __begin, _IIter __end, _OutputIterator __result,
                 __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::partial_sum(__begin, __end, __result); }
+    { return _GLIBCXX_STD_A::partial_sum(__begin, __end, __result); }
 
   // Sequential fallback.
   template<typename _IIter, typename _OutputIterator,
@@ -322,7 +322,7 @@ namespace __parallel
     inline _OutputIterator
     partial_sum(_IIter __begin, _IIter __end, _OutputIterator __result,
                 _BinaryOperation __bin_op, __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::partial_sum(__begin, __end, __result, __bin_op); }
+    { return _GLIBCXX_STD_A::partial_sum(__begin, __end, __result, __bin_op); }
 
   // Sequential fallback for input iterator case.
   template<typename _IIter, typename _OutputIterator,
@@ -332,7 +332,7 @@ namespace __parallel
     __partial_sum_switch(_IIter __begin, _IIter __end,
 			 _OutputIterator __result, _BinaryOperation __bin_op,
 			 _IteratorTag1, _IteratorTag2)
-    { return _GLIBCXX_STD_P::partial_sum(__begin, __end, __result, __bin_op); }
+    { return _GLIBCXX_STD_A::partial_sum(__begin, __end, __result, __bin_op); }
 
   // Parallel algorithm for random access iterators.
   template<typename _IIter, typename _OutputIterator,
@@ -385,7 +385,7 @@ namespace __parallel
     inline _OutputIterator
     adjacent_difference(_IIter __begin, _IIter __end, _OutputIterator __result,
                         __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::adjacent_difference(__begin, __end, __result); }
+    { return _GLIBCXX_STD_A::adjacent_difference(__begin, __end, __result); }
 
   // Sequential fallback.
   template<typename _IIter, typename _OutputIterator,
@@ -394,7 +394,7 @@ namespace __parallel
     adjacent_difference(_IIter __begin, _IIter __end,
                         _OutputIterator __result, _BinaryOperation __bin_op,
                         __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::adjacent_difference(__begin, __end,
+    { return _GLIBCXX_STD_A::adjacent_difference(__begin, __end,
 						 __result, __bin_op); }
 
   // Sequential fallback for input iterator case.

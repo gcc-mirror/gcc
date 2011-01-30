@@ -56,7 +56,7 @@
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {

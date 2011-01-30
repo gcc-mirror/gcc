@@ -29,7 +29,9 @@
 
 #include <valarray>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Some explicit instantiations.
   template void
@@ -103,4 +105,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _M_index(__l.size() == 0 ? 0 : __valarray_product(__l))
   { __gslice_to_index(__o, __l, __s, _M_index); }  
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

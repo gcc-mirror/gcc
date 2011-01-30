@@ -1,7 +1,7 @@
 // <functional> -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+// 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,7 +58,9 @@
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_HAS_NESTED_TYPE(result_type)
 
@@ -835,6 +837,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
   /// The type of placeholder objects defined by libstdc++.
   template<int _Num> struct _Placeholder { };
 
+  _GLIBCXX_END_NAMESPACE_VERSION
+
   /** @namespace std::placeholders
    *  @brief ISO C++ 0x entities sub namespace for functional.
    *  @ingroup binders
@@ -845,6 +849,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
    */
   namespace placeholders 
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
     extern const _Placeholder<1> _1;
     extern const _Placeholder<2> _2;
     extern const _Placeholder<3> _3;
@@ -874,7 +879,10 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     extern const _Placeholder<27> _27;
     extern const _Placeholder<28> _28;
     extern const _Placeholder<29> _29;
+  _GLIBCXX_END_NAMESPACE_VERSION
   }
+
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  Partial specialization of is_placeholder that provides the placeholder
@@ -2242,7 +2250,8 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
     swap(function<_Res(_Args...)>& __x, function<_Res(_Args...)>& __y)
     { __x.swap(__y); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

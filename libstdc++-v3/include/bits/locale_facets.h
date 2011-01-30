@@ -49,7 +49,9 @@
 #include <ext/numeric_traits.h>
 #include <bits/streambuf_iterator.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // NB: Don't instantiate required wchar_t facets if no wchar_t support.
 #ifdef _GLIBCXX_USE_WCHAR_T
@@ -1503,12 +1505,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 // Include host and configuration specific ctype inlines.
 #include <bits/ctype_inline.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 22.2.2  The numeric category.
   class __num_base
@@ -1892,7 +1897,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       ~numpunct_byname() { }
     };
 
-_GLIBCXX_BEGIN_LDBL_NAMESPACE
+_GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   /**
    *  @brief  Primary class template num_get.
@@ -2512,7 +2517,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
   template <typename _CharT, typename _OutIter>
     locale::id num_put<_CharT, _OutIter>::id;
 
-_GLIBCXX_END_LDBL_NAMESPACE
+_GLIBCXX_END_NAMESPACE_LDBL
 
   // Subclause convenience interfaces, inlines.
   // NB: These are inline because, when used in a loop, some compilers
@@ -2597,7 +2602,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
     tolower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 # include <bits/locale_facets.tcc>
 

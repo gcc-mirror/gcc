@@ -53,13 +53,12 @@
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   extern "C" void abort(void) throw () _GLIBCXX_NORETURN;
   extern "C" int atexit(void (*)()) throw ();
   extern "C" void exit(int) throw () _GLIBCXX_NORETURN;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #else
 
@@ -95,7 +94,9 @@ _GLIBCXX_END_NAMESPACE
 #undef wcstombs
 #undef wctomb
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using ::div_t;
   using ::ldiv_t;
@@ -139,7 +140,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   inline ldiv_t
   div(long __i, long __j) { return ldiv(__i, __j); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #if _GLIBCXX_USE_C99
 
@@ -152,7 +154,9 @@ _GLIBCXX_END_NAMESPACE
 #undef strtof
 #undef strtold
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::lldiv_t;
@@ -192,10 +196,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   using ::strtof;
   using ::strtold;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace __gnu_cxx
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::__gnu_cxx::lldiv_t;
 #endif
@@ -211,8 +216,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::__gnu_cxx::strtoll;
   using ::__gnu_cxx::strtoull;
   using ::__gnu_cxx::strtold;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 #endif // _GLIBCXX_USE_C99
 

@@ -63,7 +63,9 @@
    We also force _GLIBCXX_USE_LONG_LONG here so that we don't have
    to bastardize configure to deal with this sillyness.  */
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_EXTERN_C
 
 #ifndef __LP64__
@@ -79,7 +81,8 @@ _GLIBCXX_BEGIN_EXTERN_C
 #endif
 
 _GLIBCXX_END_EXTERN_C
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #define _GLIBCXX_USE_LONG_LONG 1
 

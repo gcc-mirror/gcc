@@ -40,7 +40,9 @@
 
 #include <bits/c++config.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Alloc>
     class allocator;
@@ -80,6 +82,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
   /** @}  */
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif	// _STRINGFWD_H

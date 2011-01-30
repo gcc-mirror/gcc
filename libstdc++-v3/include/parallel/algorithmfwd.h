@@ -34,7 +34,7 @@
 #include <parallel/tags.h>
 #include <parallel/settings.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __parallel
 {

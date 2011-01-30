@@ -36,7 +36,9 @@ namespace
   }
 } // anonymous namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   _Atomic_word
   __attribute__ ((__unused__))
@@ -54,4 +56,5 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
   { __exchange_and_add(__mem, __val); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

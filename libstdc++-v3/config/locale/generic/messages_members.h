@@ -34,7 +34,9 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Non-virtual member functions.
   template<typename _CharT>
@@ -87,4 +89,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  }
      }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

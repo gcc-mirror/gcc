@@ -70,7 +70,9 @@ namespace
   const system_error_category system_category_instance;
 }
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   const error_category& 
   system_category() throw() { return system_category_instance; }
@@ -96,4 +98,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   error_code::default_error_condition() const
   { return category().default_error_condition(value()); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

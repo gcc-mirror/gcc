@@ -35,6 +35,11 @@
 #define __GLIBCXX__
 
 // Macros for various attributes.
+//   _GLIBCXX_PURE
+//   _GLIBCXX_CONST
+//   _GLIBCXX_NORETURN
+//   _GLIBCXX_NOTHROW
+//   _GLIBCXX_VISIBILITY
 #ifndef _GLIBCXX_PURE
 # define _GLIBCXX_PURE __attribute__ ((__pure__))
 #endif
@@ -55,22 +60,22 @@
 # endif
 #endif
 
-// Macros for visibility.
-// _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
-// _GLIBCXX_VISIBILITY_ATTR
+// Macros for visibility attributes.
+//   _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
+//   _GLIBCXX_VISIBILITY
 #define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
 
 #if _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
-# define _GLIBCXX_VISIBILITY_ATTR(V) __attribute__ ((__visibility__ (#V)))
+# define _GLIBCXX_VISIBILITY(V) __attribute__ ((__visibility__ (#V)))
 #else
 // If this is not supplied by the OS-specific or CPU-specific
 // headers included below, it will be defined to an empty default.
-# define _GLIBCXX_VISIBILITY_ATTR(V) _GLIBCXX_PSEUDO_VISIBILITY(V)
+# define _GLIBCXX_VISIBILITY(V) _GLIBCXX_PSEUDO_VISIBILITY(V)
 #endif
 
-// Macros for deprecated.
-// _GLIBCXX_DEPRECATED
-// _GLIBCXX_DEPRECATED_ATTR
+// Macros for deprecated attributes.
+//   _GLIBCXX_DEPRECATED
+//   _GLIBCXX_DEPRECATED_ATTR
 #ifndef _GLIBCXX_DEPRECATED
 # define _GLIBCXX_DEPRECATED 1
 #endif
@@ -83,22 +88,6 @@
 
 #if __cplusplus
 
-namespace std
-{
-  typedef __SIZE_TYPE__ 	size_t;
-  typedef __PTRDIFF_TYPE__	ptrdiff_t;
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  typedef decltype(nullptr)	nullptr_t;
-#endif
-}
-
-// Macros for C compatibility. In particular, define extern "C"
-// linkage only when using C++.
-# define _GLIBCXX_BEGIN_EXTERN_C extern "C" {
-# define _GLIBCXX_END_EXTERN_C }
-
-
 // Macro for constexpr, to support in mixed 03/0x mode.
 #ifndef _GLIBCXX_CONSTEXPR
 # ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -110,201 +99,255 @@ namespace std
 # endif
 #endif
 
-// Macros for activating various inline namespaces.
-//
-// _GLIBCXX_NAMESPACE_DEBUG
-// _GLIBCXX_NAMESPACE_PARALLEL
-// _GLIBCXX_NAMESPACE_PROFILE
-// _GLIBCXX_NAMESPACE_VERSION
+// Macro for extern template, ie controling template linkage via use
+// of extern keyword on template declaration. As documented in the g++
+// manual, it inhibits all implicit instantiations and is used
+// throughout the library to avoid multiple weak definitions for
+// required types that are already explicitly instantiated in the
+// library binary. This substantially reduces the binary size of
+// resulting executables.
+// Special case: _GLIBCXX_EXTERN_TEMPLATE == -1 disallows extern
+// templates only in basic_string, thus activating its debug-mode
+// checks even at -O0.
+#ifndef _GLIBCXX_EXTERN_TEMPLATE
+# define _GLIBCXX_EXTERN_TEMPLATE 1
+#endif
 
-// Guide to libstdc++ namespaces.
 /*
+  Outline of libstdc++ namespaces.
+
   namespace std
   {
     namespace __debug { }
     namespace __parallel { }
     namespace __profile { }
-    namespace __norm { } // __normative, __shadow, __replaced
     namespace __cxx1998 { }
 
-    namespace tr1 { }
+    namespace __detail { }
+
+    namespace rel_ops { }
+
+    namespace tr1
+    {
+      namespace placeholders { }
+      namespace regex_constants { }
+      namespace __detail { }
+    }
+
+    namespace decimal { }
+
+    namespace chrono { }
+    namespace placeholders { }
+    namespace regex_constants { }
+    namespace this_thread { }
   }
+
+  namespace abi { }
+
+  namespace __gnu_cxx
+  {
+    namespace __detail { }
+  }
+
+  For full details see:
+  http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html
 */
+namespace std
+{
+  typedef __SIZE_TYPE__ 	size_t;
+  typedef __PTRDIFF_TYPE__	ptrdiff_t;
 
-#ifdef _GLIBCXX_DEBUG
-# define _GLIBCXX_INLINE_DEBUG 1
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  typedef decltype(nullptr)	nullptr_t;
 #endif
+}
 
-#ifdef _GLIBCXX_PARALLEL
-# define _GLIBCXX_INLINE_PARALLEL 1
-#endif
 
-// Namespace association for profile.
-#ifdef _GLIBCXX_PROFILE
-# define _GLIBCXX_INLINE_PROFILE 1
-#endif
-
+// Defined if inline namespaces are used for versioning.
 #define _GLIBCXX_INLINE_VERSION
 
-// Defined if inline namespaces modes are active.
-#if _GLIBCXX_INLINE_DEBUG \
-  || _GLIBCXX_INLINE_PARALLEL \
-  || _GLIBCXX_INLINE_PROFILE \
-  || _GLIBCXX_INLINE_VERSION
-# define _GLIBCXX_USE_INLINE_NAMESPACES 1
-#endif
-
-// Macros for namespace scope. Either namespace std:: or the name
-// of some nested namespace within it.
-// _GLIBCXX_STD
-// _GLIBCXX_STD_D
-// _GLIBCXX_STD_P
-// _GLIBCXX_STD_PR
-//
-// Macros for enclosing namespaces and possibly nested namespaces.
-// _GLIBCXX_BEGIN_NAMESPACE
-// _GLIBCXX_END_NAMESPACE
-// _GLIBCXX_BEGIN_NESTED_NAMESPACE
-// _GLIBCXX_END_NESTED_NAMESPACE
-#ifndef _GLIBCXX_USE_INLINE_NAMESPACES
-# define _GLIBCXX_STD_D _GLIBCXX_STD
-# define _GLIBCXX_STD_P _GLIBCXX_STD
-# define _GLIBCXX_STD_PR _GLIBCXX_STD
-# define _GLIBCXX_STD std
-# define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) _GLIBCXX_BEGIN_NAMESPACE(X)
-# define _GLIBCXX_END_NESTED_NAMESPACE _GLIBCXX_END_NAMESPACE
-# define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) {
-# define _GLIBCXX_END_NAMESPACE }
-#else
-
-# if _GLIBCXX_INLINE_VERSION // && not anything else
-#  define _GLIBCXX_STD_D _GLIBCXX_STD
-#  define _GLIBCXX_STD_P _GLIBCXX_STD
-#  define _GLIBCXX_STD _6
-#  define _GLIBCXX_BEGIN_NAMESPACE(X) _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, _6)
-#  define _GLIBCXX_END_NAMESPACE _GLIBCXX_END_NESTED_NAMESPACE
-# endif
-
-//  debug
-# if _GLIBCXX_INLINE_DEBUG && !_GLIBCXX_INLINE_PARALLEL && !_GLIBCXX_INLINE_PROFILE
-#  define _GLIBCXX_STD_D __norm
-#  define _GLIBCXX_STD_P _GLIBCXX_STD
-#  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) {
-#  define _GLIBCXX_END_NAMESPACE }
-#  define _GLIBCXX_EXTERN_TEMPLATE -1
-# endif
-
-// parallel
-# if _GLIBCXX_INLINE_PARALLEL && !_GLIBCXX_INLINE_DEBUG && !_GLIBCXX_INLINE_PROFILE
-#  define _GLIBCXX_STD_D _GLIBCXX_STD
-#  define _GLIBCXX_STD_P __norm
-#  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) {
-#  define _GLIBCXX_END_NAMESPACE }
-# endif
-
-// debug + parallel
-# if _GLIBCXX_INLINE_PARALLEL && _GLIBCXX_INLINE_DEBUG  && !_GLIBCXX_INLINE_PROFILE
-#  define _GLIBCXX_STD_D __norm
-#  define _GLIBCXX_STD_P __norm
-#  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) {
-#  define _GLIBCXX_END_NAMESPACE }
-#  define _GLIBCXX_EXTERN_TEMPLATE -1
-# endif
-
-// profile
-# if _GLIBCXX_INLINE_PROFILE
-#  if _GLIBCXX_INLINE_PARALLEL || _GLIBCXX_INLINE_DEBUG
-#   error Cannot use -D_GLIBCXX_PROFILE with -D_GLIBCXX_DEBUG or \
-    -D_GLIBCXX_PARALLEL
-#  endif
-#  define _GLIBCXX_STD_D __norm
-#  define _GLIBCXX_STD_P _GLIBCXX_STD
-#  define _GLIBCXX_STD_PR __norm
-#  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY_ATTR(default) {
-#  define _GLIBCXX_END_NAMESPACE }
-# endif
-
-# if __NO_INLINE__ && !__GXX_WEAK__
-#  warning currently using inlined namespace mode which may fail \
-   without inlining due to lack of weak symbols
-# endif
-
-# define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y)  namespace X { namespace Y _GLIBCXX_VISIBILITY_ATTR(default) {
-# define _GLIBCXX_END_NESTED_NAMESPACE } }
-#endif
-
-// Inline namespaces for debug mode.
-#if _GLIBCXX_INLINE_DEBUG && !_GLIBCXX_INLINE_PROFILE
-namespace std
-{
-  namespace __norm { }
-  inline namespace __debug { }
-  inline namespace __cxx1998 { }
-}
-#endif
-
-// Inline namespaces for parallel mode.
-#if _GLIBCXX_INLINE_PARALLEL
-namespace std
-{
-  namespace __norm { }
-  inline namespace __parallel { }
-  inline namespace __cxx1998 { }
-}
-#endif
-
-// Inline namespaces for profile mode
-#if _GLIBCXX_INLINE_PROFILE
-namespace std
-{
-  namespace __norm { }
-  inline namespace __profile { }
-  inline namespace __cxx1998 { }
-}
-#endif
-
-// Inline namespaces for versioning mode.
+// Inline namespace for symbol versioning.
 #if _GLIBCXX_INLINE_VERSION
 namespace std
 {
   inline namespace _6 { }
+
+  namespace __detail { inline namespace _6 { } }
+
+
+  namespace rel_ops { inline namespace _6 { } }
+
+  namespace tr1
+  {
+    inline namespace _6 { }
+    namespace placeholders { inline namespace _6 { } }
+    namespace regex_constants { inline namespace _6 { } }
+    namespace __detail { inline namespace _6 { } }
+  }
+
+  namespace decimal { inline namespace _6 { } }
+
+  namespace chrono { inline namespace _6 { } }
+  namespace placeholders { inline namespace _6 { } }
+  namespace regex_constants { inline namespace _6 { } }
+  namespace this_thread { inline namespace _6 { } }
 }
 
 namespace __gnu_cxx
 {
   inline namespace _6 { }
+  namespace __detail { inline namespace _6 { } }
 }
-
-namespace std
-{
-  namespace tr1
-  {
-    inline namespace _6 { }
-  }
-}
+# define _GLIBCXX_BEGIN_NAMESPACE_VERSION namespace _6 {
+# define _GLIBCXX_END_NAMESPACE_VERSION }
+#else
+# define _GLIBCXX_BEGIN_NAMESPACE_VERSION
+# define _GLIBCXX_END_NAMESPACE_VERSION
 #endif
 
-// XXX GLIBCXX_ABI Deprecated
-// Define if compatibility should be provided for -mlong-double-64
+
+// Inline namespaces for special modes: debug, parallel, profile.
+#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL) \
+    || defined(_GLIBCXX_PROFILE)
+namespace std
+{
+  // Non-inline namespace for components replaced by alternates in active mode.
+  namespace __cxx1998
+  {
+#if _GLIBCXX_INLINE_VERSION
+ inline namespace _6 { }
+#endif
+  }
+
+  // Inline namespace for debug mode.
+# ifdef _GLIBCXX_DEBUG
+  inline namespace __debug { }
+# endif
+
+  // Inline namespaces for parallel mode.
+# ifdef _GLIBCXX_PARALLEL
+  inline namespace __parallel { }
+# endif
+
+  // Inline namespaces for profile mode
+# ifdef _GLIBCXX_PROFILE
+  inline namespace __profile { }
+# endif
+}
+
+// Check for invalid usage and unsupported mixed-mode use.
+# if defined(_GLIBCXX_DEBUG) && defined(_GLIBCXX_PARALLEL)
+#  error illegal use of multiple inlined namespaces
+# endif
+# if defined(_GLIBCXX_PROFILE) && defined(_GLIBCXX_DEBUG)
+#  error illegal use of multiple inlined namespaces
+# endif
+# if defined(_GLIBCXX_PROFILE) && defined(_GLIBCXX_PARALLEL)
+#  error illegal use of multiple inlined namespaces
+# endif
+
+// Check for invalid use due to lack for weak symbols.
+# if __NO_INLINE__ && !__GXX_WEAK__
+#  warning currently using inlined namespace mode which may fail \
+   without inlining due to lack of weak symbols
+# endif
+#endif
+
+// Macros for namespace scope. Either namespace std:: or the name
+// of some nested namespace within it corresponding to the active mode.
+// _GLIBCXX_STD_A
+// _GLIBCXX_STD_C
+//
+// Macros for opening/closing conditional namespaces.
+// _GLIBCXX_BEGIN_NAMESPACE_ALGO
+// _GLIBCXX_END_NAMESPACE_ALGO
+// _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+// _GLIBCXX_END_NAMESPACE_CONTAINER
+#if defined(_GLIBCXX_DEBUG) or defined(_GLIBCXX_PROFILE)
+# define _GLIBCXX_STD_C __cxx1998
+# define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER \
+	 namespace _GLIBCXX_STD_C { _GLIBCXX_BEGIN_NAMESPACE_VERSION
+# define _GLIBCXX_END_NAMESPACE_CONTAINER \
+	 } _GLIBCXX_END_NAMESPACE_VERSION
+# undef _GLIBCXX_EXTERN_TEMPLATE
+# define _GLIBCXX_EXTERN_TEMPLATE -1
+#endif
+
+#ifdef _GLIBCXX_PARALLEL
+# define _GLIBCXX_STD_A __cxx1998
+# define _GLIBCXX_BEGIN_NAMESPACE_ALGO \
+	 namespace _GLIBCXX_STD_A { _GLIBCXX_BEGIN_NAMESPACE_VERSION
+# define _GLIBCXX_END_NAMESPACE_ALGO \
+	 } _GLIBCXX_END_NAMESPACE_VERSION
+#endif
+
+#ifndef _GLIBCXX_STD_A
+# define _GLIBCXX_STD_A std
+#endif
+
+#ifndef _GLIBCXX_STD_C
+# define _GLIBCXX_STD_C std
+#endif
+
+#ifndef _GLIBCXX_BEGIN_NAMESPACE_ALGO
+# define _GLIBCXX_BEGIN_NAMESPACE_ALGO
+#endif
+
+#ifndef _GLIBCXX_END_NAMESPACE_ALGO
+# define _GLIBCXX_END_NAMESPACE_ALGO
+#endif
+
+#ifndef _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+# define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
+#endif
+
+#ifndef _GLIBCXX_END_NAMESPACE_CONTAINER
+# define _GLIBCXX_END_NAMESPACE_CONTAINER
+#endif
+
+// GLIBCXX_ABI Deprecated
+// Define if compatibility should be provided for -mlong-double-64.
 #undef _GLIBCXX_LONG_DOUBLE_COMPAT
 
-// Inline namespaces for long double 128 mode.
+// Inline namespace for long double 128 mode.
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined __LONG_DOUBLE_128__
 namespace std
 {
   inline namespace __gnu_cxx_ldbl128 { }
 }
-# define _GLIBCXX_LDBL_NAMESPACE __gnu_cxx_ldbl128::
-# define _GLIBCXX_BEGIN_LDBL_NAMESPACE namespace __gnu_cxx_ldbl128 {
-# define _GLIBCXX_END_LDBL_NAMESPACE }
+# define _GLIBCXX_NAMESPACE_LDBL __gnu_cxx_ldbl128::
+# define _GLIBCXX_BEGIN_NAMESPACE_LDBL namespace __gnu_cxx_ldbl128 {
+# define _GLIBCXX_END_NAMESPACE_LDBL }
 #else
-# define _GLIBCXX_LDBL_NAMESPACE
-# define _GLIBCXX_BEGIN_LDBL_NAMESPACE
-# define _GLIBCXX_END_LDBL_NAMESPACE
+# define _GLIBCXX_NAMESPACE_LDBL
+# define _GLIBCXX_BEGIN_NAMESPACE_LDBL
+# define _GLIBCXX_END_NAMESPACE_LDBL
+#endif
+
+// Assert.
+#if !defined(_GLIBCXX_DEBUG) && !defined(_GLIBCXX_PARALLEL)
+# define __glibcxx_assert(_Condition)
+#else
+namespace std
+{
+  // Avoid the use of assert, because we're trying to keep the <cassert>
+  // include out of the mix.
+  inline void
+  __replacement_assert(const char* __file, int __line,
+		       const char* __function, const char* __condition)
+  {
+    __builtin_printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
+		     __function, __condition);
+    __builtin_abort();
+  }
+}
+#define __glibcxx_assert(_Condition)				   	 \
+  do 									 \
+  {							      		 \
+    if (! (_Condition))                                                  \
+      std::__replacement_assert(__FILE__, __LINE__, __PRETTY_FUNCTION__, \
+				#_Condition);				 \
+  } while (false)
 #endif
 
 // Macros for race detectors.
@@ -328,7 +371,6 @@ namespace std
 // The annotations in this example tell the race detector that all memory
 // accesses occurred when the refcount was positive do not race with
 // memory accesses which occurred after the refcount became zero.
-
 #ifndef _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE
 # define  _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A)
 #endif
@@ -336,14 +378,15 @@ namespace std
 # define  _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A)
 #endif
 
+// Macros for C linkage: define extern "C" linkage only when using C++.
+# define _GLIBCXX_BEGIN_EXTERN_C extern "C" {
+# define _GLIBCXX_END_EXTERN_C }
+
 #else // !__cplusplus
 # define _GLIBCXX_BEGIN_EXTERN_C
 # define _GLIBCXX_END_EXTERN_C
-# undef _GLIBCXX_BEGIN_NAMESPACE
-# undef _GLIBCXX_END_NAMESPACE
-# define _GLIBCXX_BEGIN_NAMESPACE(X)
-# define _GLIBCXX_END_NAMESPACE
 #endif
+
 
 // First includes.
 
@@ -356,21 +399,7 @@ namespace std
 // If platform uses neither visibility nor psuedo-visibility,
 // specify empty default for namespace annotation macros.
 #ifndef _GLIBCXX_PSEUDO_VISIBILITY
-#define _GLIBCXX_PSEUDO_VISIBILITY(V)
-#endif
-
-// Allow use of the GNU syntax extension, "extern template." This
-// extension is fully documented in the g++ manual, but in a nutshell,
-// it inhibits all implicit instantiations and is used throughout the
-// library to avoid multiple weak definitions for required types that
-// are already explicitly instantiated in the library binary. This
-// substantially reduces the binary size of resulting executables.
-
-// Special case: _GLIBCXX_EXTERN_TEMPLATE == -1 disallows extern
-// templates only in basic_string, thus activating its debug-mode
-// checks even at -O0.
-#ifndef _GLIBCXX_EXTERN_TEMPLATE
-# define _GLIBCXX_EXTERN_TEMPLATE 1
+# define _GLIBCXX_PSEUDO_VISIBILITY(V)
 #endif
 
 // Certain function definitions that are meant to be overridable from
@@ -380,33 +409,6 @@ namespace std
 # define _GLIBCXX_WEAK_DEFINITION
 #endif
 
-// Assert.
-// Avoid the use of assert, because we're trying to keep the <cassert>
-// include out of the mix.
-#if !defined(_GLIBCXX_DEBUG) && !defined(_GLIBCXX_PARALLEL)
-#define __glibcxx_assert(_Condition)
-#else
-_GLIBCXX_BEGIN_NAMESPACE(std)
-  // Avoid the use of assert, because we're trying to keep the <cassert>
-  // include out of the mix.
-  inline void
-  __replacement_assert(const char* __file, int __line,
-		       const char* __function, const char* __condition)
-  {
-    __builtin_printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
-		     __function, __condition);
-    __builtin_abort();
-  }
-_GLIBCXX_END_NAMESPACE
-
-#define __glibcxx_assert(_Condition)				   	\
-  do 									\
-  {							      		\
-    if (! (_Condition))                                                 \
-      std::__replacement_assert(__FILE__, __LINE__, 			\
-				__PRETTY_FUNCTION__, #_Condition);	\
-  } while (false)
-#endif
 
 // The remainder of the prewritten config is automatic; all the
 // user hooks are listed above.
@@ -428,4 +430,4 @@ _GLIBCXX_END_NAMESPACE
 #undef min
 #undef max
 
-// End of prewritten config; the discovered settings follow.
+// End of prewritten config; the settings discovered at configure time follow.

@@ -35,7 +35,9 @@
 
 #pragma GCC system_header
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   //
   // gslice_array closure.
@@ -544,6 +546,7 @@ _DEFINE_EXPR_BINARY_FUNCTION(pow, _Pow)
 
 #undef _DEFINE_EXPR_BINARY_FUNCTION
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _CPP_VALARRAY_AFTER_H */

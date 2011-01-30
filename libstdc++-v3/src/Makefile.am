@@ -147,8 +147,9 @@ basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
 
 if ENABLE_PARALLEL
-parallel_sources = parallel_list.cc parallel_settings.cc \
-	           compatibility-parallel_list.cc
+parallel_sources = parallel_settings.cc \
+	           compatibility-parallel_list.cc \
+	           compatibility-parallel_list-2.cc 
 else
 parallel_sources =
 endif
@@ -169,7 +170,9 @@ sources = \
 	compatibility.cc \
 	compatibility-c++0x.cc \
 	compatibility-debug_list.cc \
+	compatibility-debug_list-2.cc \
 	compatibility-list.cc \
+	compatibility-list-2.cc \
 	complex_io.cc \
 	ctype.cc \
 	debug.cc \
@@ -185,7 +188,6 @@ sources = \
 	ios_locale.cc \
 	limits.cc \
 	list.cc \
-	debug_list.cc \
 	locale.cc \
 	locale_init.cc \
 	locale_facets.cc \
@@ -259,20 +261,20 @@ concept-inst.o: concept-inst.cc
 
 # Use special rules for parallel mode compilation.
 PARALLEL_FLAGS = -fopenmp -D_GLIBCXX_PARALLEL -I$(glibcxx_builddir)/../libgomp
-parallel_list.lo: parallel_list.cc
-	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
-parallel_list.o: parallel_list.cc
-	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
-
 parallel_settings.lo: parallel_settings.cc
 	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 parallel_settings.o: parallel_settings.cc
 	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
 
 compatibility-parallel_list.lo: compatibility-parallel_list.cc
-	$(LTCXXCOMPILE) $(PARALLEL_FLAGS) -c $<
+	$(LTCXXCOMPILE) -c $<
 compatibility-parallel_list.o: compatibility-parallel_list.cc
-	$(CXXCOMPILE) $(PARALLEL_FLAGS) -c $<
+	$(CXXCOMPILE) -c $<
+
+compatibility-parallel_list-2.lo: compatibility-parallel_list-2.cc
+	$(LTCXXCOMPILE) -c $<
+compatibility-parallel_list-2.o: compatibility-parallel_list-2.cc
+	$(CXXCOMPILE) -c $<
 
 # Use special rules for the C++0x sources so that the proper flags are passed.
 functexcept.lo: functexcept.cc

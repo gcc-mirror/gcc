@@ -49,10 +49,12 @@
 #ifndef _TR1_SHARED_PTR_H
 #define _TR1_SHARED_PTR_H 1
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
  /**
    *  @brief  Exception possibly thrown by @c shared_ptr.
    *  @ingroup exceptions
@@ -1169,6 +1171,8 @@ namespace tr1
 
       mutable weak_ptr<_Tp>  _M_weak_this;
     };
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 

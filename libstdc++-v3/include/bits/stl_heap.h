@@ -59,7 +59,9 @@
 #include <debug/debug.h>
 #include <bits/move.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @defgroup heap_algorithms Heap
@@ -573,6 +575,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return std::is_heap_until(__first, __last, __comp) == __last; }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _STL_HEAP_H */

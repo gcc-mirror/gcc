@@ -33,10 +33,12 @@
 
 #include <complex>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /**
    * @addtogroup complex_numbers
    * @{
@@ -401,6 +403,8 @@ namespace tr1
     { return std::pow(__x, __y); }
 
 // @} group complex_numbers
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 

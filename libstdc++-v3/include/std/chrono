@@ -42,8 +42,8 @@
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
   /**
    * @defgroup chrono Time
    * @ingroup utilities
@@ -57,13 +57,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    */
   namespace chrono
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
     template<typename _Rep, typename _Period = ratio<1>>
       struct duration;
 
     template<typename _Clock, typename _Dur = typename _Clock::duration>
       struct time_point;
+
+  _GLIBCXX_END_NAMESPACE_VERSION
   }
 
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 20.8.2.3 specialization of common_type (for duration)
   template<typename _Rep1, typename _Period1, typename _Rep2, typename _Period2>
     struct common_type<chrono::duration<_Rep1, _Period1>,
@@ -91,9 +96,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     public:
       typedef chrono::time_point<_Clock, __ct> 			type;
     };
+_GLIBCXX_END_NAMESPACE_VERSION
 
   namespace chrono
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
     // Primary template for duration_cast impl.
     template<typename _ToDur, typename _CF, typename _CR,
 	     bool _NumIsOne = false, bool _DenIsOne = false>
@@ -212,7 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     template<typename _Rep, typename _Period>
       struct duration
       {
-	typedef _Rep    					rep;
+	typedef _Rep						rep;
 	typedef _Period 					period;
 
 	static_assert(!__is_duration<_Rep>::value, "rep cannot be a duration");
@@ -649,7 +657,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #elif defined(_GLIBCXX_USE_GETTIMEOFDAY)
       typedef chrono::microseconds    				duration;
 #else
-      typedef chrono::seconds         				duration;
+      typedef chrono::seconds	      				duration;
 #endif
 
       typedef duration::rep    					rep;
@@ -687,8 +695,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     struct monotonic_clock
     {
       typedef chrono::nanoseconds 				duration;
-      typedef duration::rep       				rep;
-      typedef duration::period    				period;
+      typedef duration::rep	  				rep;
+      typedef duration::period	  				period;
       typedef chrono::time_point<monotonic_clock, duration> 	time_point;
 
       static constexpr bool is_monotonic = true;
@@ -701,10 +709,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
 
     typedef system_clock high_resolution_clock;
+
+  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace chrono
 
   // @} group chrono
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif //_GLIBCXX_USE_C99_STDINT_TR1
 

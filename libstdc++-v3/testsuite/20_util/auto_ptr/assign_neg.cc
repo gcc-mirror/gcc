@@ -1,7 +1,7 @@
 // { dg-do compile }
 
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free
-// Software Foundation
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2011
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,6 +47,6 @@ main()
   test01();
   return 0;
 }
-// { dg-error "::auto_ptr|no known conversion" "" { target *-*-* } 134 } 
-// { dg-error "note" "" { target *-*-* } 152 }
-// { dg-error "::auto_ptr|no known conversion" "" { target *-*-* } 262 } 
+// { dg-error "::auto_ptr|no known conversion" "" { target *-*-* } 136 } 
+// { dg-error "note" "" { target *-*-* } 154 }
+// { dg-error "::auto_ptr|no known conversion" "" { target *-*-* } 264 } 

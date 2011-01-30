@@ -61,7 +61,9 @@
 #include <bits/concept_check.h>
 #include <debug/debug.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  A standard container giving FILO behavior.
@@ -292,6 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     : public uses_allocator<_Seq, _Alloc>::type { };
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _STL_STACK_H */

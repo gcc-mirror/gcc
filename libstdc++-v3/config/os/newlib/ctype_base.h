@@ -30,7 +30,9 @@
 
 // Support for Solaris 2.5.1
   
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @brief  Base class for ctype.
   struct ctype_base
@@ -54,4 +56,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     static const mask alnum 	= _U | _L | _N;
   };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

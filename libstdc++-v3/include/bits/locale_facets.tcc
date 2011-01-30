@@ -34,7 +34,9 @@
 
 #pragma GCC system_header
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Routine to access a cache for the facet.  If the cache didn't
   // exist before, it gets constructed on the fly.
@@ -137,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   __verify_grouping(const char* __grouping, size_t __grouping_size,
 		    const string& __grouping_tmp) throw ();
 
-_GLIBCXX_BEGIN_LDBL_NAMESPACE
+_GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   template<typename _CharT, typename _InIter>
     _InIter
@@ -782,7 +784,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       __len = static_cast<int>(__w);
     }
 
-_GLIBCXX_END_LDBL_NAMESPACE
+_GLIBCXX_END_NAMESPACE_LDBL
 
   template<typename _CharT, typename _ValueT>
     int
@@ -826,7 +828,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
       return __bufend - __buf;
     }
 
-_GLIBCXX_BEGIN_LDBL_NAMESPACE
+_GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   template<typename _CharT, typename _OutIter>
     void
@@ -1177,7 +1179,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
       return __s;
     }
 
-_GLIBCXX_END_LDBL_NAMESPACE
+_GLIBCXX_END_NAMESPACE_LDBL
 
   // Construct correctly padded string, as per 22.2.2.2.2
   // Assumes
@@ -1278,8 +1280,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
 #if _GLIBCXX_EXTERN_TEMPLATE
   extern template class numpunct<char>;
   extern template class numpunct_byname<char>;
-  extern template class _GLIBCXX_LDBL_NAMESPACE num_get<char>;
-  extern template class _GLIBCXX_LDBL_NAMESPACE num_put<char>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL num_get<char>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL num_put<char>;
   extern template class ctype_byname<char>;
 
   extern template
@@ -1317,8 +1319,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
 #ifdef _GLIBCXX_USE_WCHAR_T
   extern template class numpunct<wchar_t>;
   extern template class numpunct_byname<wchar_t>;
-  extern template class _GLIBCXX_LDBL_NAMESPACE num_get<wchar_t>;
-  extern template class _GLIBCXX_LDBL_NAMESPACE num_put<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL num_get<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL num_put<wchar_t>;
   extern template class ctype_byname<wchar_t>;
 
   extern template
@@ -1355,6 +1357,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
 #endif
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

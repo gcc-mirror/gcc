@@ -51,7 +51,9 @@
 #include <ostream>
 #include <string>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Class strstreambuf, a streambuf class that manages an array of char.
   // Note that this class is not a template.
@@ -172,6 +174,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     strstreambuf _M_buf;
   };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

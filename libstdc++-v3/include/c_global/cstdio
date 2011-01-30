@@ -89,8 +89,8 @@
 #undef vprintf
 #undef vsprintf
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::FILE;
   using ::fpos_t;
 
@@ -135,8 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::vfprintf;
   using ::vprintf;
   using ::vsprintf;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #if _GLIBCXX_USE_C99
 
@@ -146,8 +145,8 @@ _GLIBCXX_END_NAMESPACE
 #undef vsnprintf
 #undef vsscanf
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
-
+namespace __gnu_cxx
+{
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
   extern "C" int
   (snprintf)(char * __restrict, std::size_t, const char * __restrict, ...)
@@ -170,18 +169,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   using ::vsnprintf;
   using ::vsscanf;
 #endif
+} // namespace __gnu_cxx
 
-_GLIBCXX_END_NAMESPACE
-
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::__gnu_cxx::snprintf;
   using ::__gnu_cxx::vfscanf;
   using ::__gnu_cxx::vscanf;
   using ::__gnu_cxx::vsnprintf;
   using ::__gnu_cxx::vsscanf;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 #endif // _GLIBCXX_USE_C99
 

@@ -38,9 +38,12 @@
 #include <iconv.h>		// For codecvt using iconv, iconv_t
 #include <nl_types.h> 		// For messages
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   typedef int*			__c_locale;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 

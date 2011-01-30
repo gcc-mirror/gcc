@@ -28,10 +28,11 @@
 
 #include <functional>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   namespace placeholders 
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
     extern const _Placeholder<1> _1{};
     extern const _Placeholder<2> _2{};
     extern const _Placeholder<3> _3{};
@@ -61,5 +62,6 @@ namespace std
     extern const _Placeholder<27> _27{};
     extern const _Placeholder<28> _28{};
     extern const _Placeholder<29> _29{};
+  _GLIBCXX_END_NAMESPACE_VERSION
   }
 }

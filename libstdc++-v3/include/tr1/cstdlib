@@ -37,7 +37,7 @@
 
 #if _GLIBCXX_USE_C99
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {

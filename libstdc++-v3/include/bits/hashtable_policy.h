@@ -31,10 +31,12 @@
 #ifndef _HASHTABLE_POLICY_H
 #define _HASHTABLE_POLICY_H 1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
 namespace __detail
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // Helper function: return distance(first, last) for forward
   // iterators, or 0 for input iterators.
   template<class _Iterator>
@@ -977,8 +979,9 @@ namespace __detail
 	}
       return true;
     }
-} // namespace __detail
 
-_GLIBCXX_END_NAMESPACE // namespace std
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace __detail
+} // namespace std
 
 #endif // _HASHTABLE_POLICY_H

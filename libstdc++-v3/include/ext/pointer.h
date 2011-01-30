@@ -43,7 +43,9 @@
 #include <ext/cast.h>
 #include <ext/type_traits.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** 
    * @brief A storage policy for use with _Pointer_adapter<> which yields a
@@ -562,6 +564,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
                const _Pointer_adapter<_StoreT>& __p)
     { return (__os << __p.get()); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // _POINTER_H

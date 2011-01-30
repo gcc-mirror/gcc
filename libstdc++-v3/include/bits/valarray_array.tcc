@@ -33,7 +33,9 @@
 #ifndef _VALARRAY_ARRAY_TCC
 #define _VALARRAY_ARRAY_TCC 1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     void
@@ -237,6 +239,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _VALARRAY_ARRAY_TCC */

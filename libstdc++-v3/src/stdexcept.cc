@@ -30,7 +30,9 @@
 #include <string>
 #include <stdexcept>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   logic_error::logic_error(const string& __arg) 
   : exception(), _M_msg(__arg) { }
@@ -71,5 +73,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   underflow_error::underflow_error(const string& __arg)
   : runtime_error(__arg) { }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 

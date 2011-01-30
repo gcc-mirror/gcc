@@ -57,7 +57,9 @@
   ((__n) / _GLIBCXX_BITSET_BITS_PER_WORD + \
    ((__n) % _GLIBCXX_BITSET_BITS_PER_WORD == 0 ? 0 : 1))
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  Base class, general case.  It is a class invariant that _Nw will be
@@ -1502,7 +1504,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     }
   //@}
 
-_GLIBCXX_END_NESTED_NAMESPACE
+_GLIBCXX_END_NAMESPACE_CONTAINER
+} // namespace std
 
 #undef _GLIBCXX_BITSET_WORDS
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
@@ -1511,16 +1514,18 @@ _GLIBCXX_END_NESTED_NAMESPACE
 
 #include <bits/functional_hash.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // DR 1182.
   /// std::hash specialization for bitset.
   template<size_t _Nb>
-    struct hash<_GLIBCXX_STD_D::bitset<_Nb>>
-    : public __hash_base<size_t, _GLIBCXX_STD_D::bitset<_Nb>>
+    struct hash<_GLIBCXX_STD_C::bitset<_Nb>>
+    : public __hash_base<size_t, _GLIBCXX_STD_C::bitset<_Nb>>
     {
       size_t
-      operator()(const _GLIBCXX_STD_D::bitset<_Nb>& __b) const
+      operator()(const _GLIBCXX_STD_C::bitset<_Nb>& __b) const
       {
 	const size_t __clength = (_Nb + __CHAR_BIT__ - 1) / __CHAR_BIT__;
 	return std::_Hash_impl::hash(__b._M_getdata(), __clength);
@@ -1528,15 +1533,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   template<>
-    struct hash<_GLIBCXX_STD_D::bitset<0>>
-    : public __hash_base<size_t, _GLIBCXX_STD_D::bitset<0>>
+    struct hash<_GLIBCXX_STD_C::bitset<0>>
+    : public __hash_base<size_t, _GLIBCXX_STD_C::bitset<0>>
     {
       size_t
-      operator()(const _GLIBCXX_STD_D::bitset<0>&) const
+      operator()(const _GLIBCXX_STD_C::bitset<0>&) const
       { return 0; }
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

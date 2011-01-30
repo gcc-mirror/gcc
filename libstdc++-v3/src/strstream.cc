@@ -48,7 +48,9 @@
 #include <string.h>
 #include <limits.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   strstreambuf::strstreambuf(streamsize initial_capacity)
   : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(true), 
@@ -411,4 +413,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   strstream::str() throw ()
   { return _M_buf.str(); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

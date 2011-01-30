@@ -39,7 +39,9 @@
 #include <bits/locale_facets.h>
 #include <bits/streambuf_iterator.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Facet>
     inline const _Facet&
@@ -465,7 +467,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _M_cache_locale(const locale& __loc);
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #include <bits/basic_ios.tcc>
 

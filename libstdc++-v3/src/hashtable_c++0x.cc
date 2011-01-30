@@ -28,8 +28,7 @@
 # error "hashtable_c++0x.cc must be compiled with -std=gnu++0x"
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
 #include "hashtable-aux.cc"
-
-_GLIBCXX_END_NAMESPACE // namespace std
+} // namespace // namespace std

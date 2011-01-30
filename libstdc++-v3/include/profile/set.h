@@ -31,7 +31,7 @@
 
 #include <utility>
 
-namespace std 
+namespace std _GLIBCXX_VISIBILITY(default) 
 {
 namespace __profile
 {
@@ -39,9 +39,9 @@ namespace __profile
   template<typename _Key, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<_Key> >
     class set
-    : public _GLIBCXX_STD_D::set<_Key,_Compare,_Allocator>
+    : public _GLIBCXX_STD_C::set<_Key,_Compare,_Allocator>
     {
-      typedef _GLIBCXX_STD_D::set<_Key, _Compare, _Allocator> _Base;
+      typedef _GLIBCXX_STD_C::set<_Key, _Compare, _Allocator> _Base;
 
     public:
       // types:

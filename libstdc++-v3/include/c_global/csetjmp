@@ -54,11 +54,10 @@
 #define setjmp(env) setjmp (env)
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::jmp_buf;
   using ::longjmp;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 #endif

@@ -45,7 +45,9 @@
 #include <bits/c++config.h>
 #include <bits/stl_iterator_base_types.h>    // for traits and tags
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define _IsUnused __attribute__ ((__unused__))
 
@@ -779,7 +781,8 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
     typename _BackInsertionSequence::value_type __t;
   };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #undef _IsUnused
 

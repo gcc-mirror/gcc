@@ -33,7 +33,9 @@
 
 #pragma GCC system_header
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 // 2 == __atomic2 == Always lock-free
 // Assumed:
@@ -747,6 +749,7 @@ namespace __atomic2
     };
 } // namespace __atomic2
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

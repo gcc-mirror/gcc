@@ -29,7 +29,9 @@
 
 // Default information, may not be appropriate for specific host.
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @brief  Base class for ctype.
   struct ctype_base
@@ -53,4 +55,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     static const mask alnum 	= (1 << 2) | (1 << 3);  // alpha|digit
   };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

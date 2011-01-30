@@ -37,7 +37,7 @@ test01()
   VERIFY(fld.empty() == true);
 
 #if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PROFILE)
-  using std::_GLIBCXX_STD_D::_Fwd_list_node;
+  using std::_GLIBCXX_STD_C::_Fwd_list_node;
 #else
   using std::_Fwd_list_node;
 #endif

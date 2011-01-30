@@ -32,7 +32,9 @@
 
 #pragma GCC system_header
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, bool _Intl>
     struct __use_cache<__moneypunct_cache<_CharT, _Intl> >
@@ -122,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     }
 
-_GLIBCXX_BEGIN_LDBL_NAMESPACE
+_GLIBCXX_BEGIN_NAMESPACE_LDBL
 
   template<typename _CharT, typename _InIter>
     template<bool _Intl>
@@ -608,7 +610,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     { return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
 	            : _M_insert<false>(__s, __io, __fill, __digits); }
 
-_GLIBCXX_END_LDBL_NAMESPACE
+_GLIBCXX_END_NAMESPACE_LDBL
 
   // NB: Not especially useful. Without an ios_base object or some
   // kind of locale reference, we are left clawing at the air where
@@ -1219,8 +1221,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
   extern template class moneypunct<char, true>;
   extern template class moneypunct_byname<char, false>;
   extern template class moneypunct_byname<char, true>;
-  extern template class _GLIBCXX_LDBL_NAMESPACE money_get<char>;
-  extern template class _GLIBCXX_LDBL_NAMESPACE money_put<char>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL money_get<char>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL money_put<char>;
   extern template class __timepunct<char>;
   extern template class time_put<char>;
   extern template class time_put_byname<char>;
@@ -1294,8 +1296,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
   extern template class moneypunct<wchar_t, true>;
   extern template class moneypunct_byname<wchar_t, false>;
   extern template class moneypunct_byname<wchar_t, true>;
-  extern template class _GLIBCXX_LDBL_NAMESPACE money_get<wchar_t>;
-  extern template class _GLIBCXX_LDBL_NAMESPACE money_put<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL money_get<wchar_t>;
+  extern template class _GLIBCXX_NAMESPACE_LDBL money_put<wchar_t>;
   extern template class __timepunct<wchar_t>;
   extern template class time_put<wchar_t>;
   extern template class time_put_byname<wchar_t>;
@@ -1366,6 +1368,7 @@ _GLIBCXX_END_LDBL_NAMESPACE
 #endif
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

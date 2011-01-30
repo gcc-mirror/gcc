@@ -57,7 +57,9 @@
 #ifndef _BACKWARD_BINDERS_H
 #define _BACKWARD_BINDERS_H 1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 20.3.6 binders
   /** @defgroup binders Binder Classes
@@ -164,6 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     } 
   /** @}  */
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _BACKWARD_BINDERS_H */

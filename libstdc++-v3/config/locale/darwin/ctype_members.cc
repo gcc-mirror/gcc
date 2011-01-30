@@ -35,7 +35,7 @@
 #include <cstring>
 #include <cstdio>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   // NB: The other ctype<char> specializations are in src/locale.cc and
   // various /config/os/* files.

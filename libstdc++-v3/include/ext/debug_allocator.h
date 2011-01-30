@@ -45,7 +45,9 @@
 
 #include <stdexcept>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::size_t;
 
@@ -119,6 +121,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       }
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

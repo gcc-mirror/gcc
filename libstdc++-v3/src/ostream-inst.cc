@@ -30,7 +30,9 @@
 #include <ostream>
 #include <iomanip>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // ostream
   template class basic_ostream<char>;
@@ -93,7 +95,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template wostream& wostream::_M_insert(const void*);
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 // XXX GLIBCXX_ABI Deprecated
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT

@@ -143,10 +143,12 @@
 
 #endif
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_C99_MATH_TR1
 
   // types
@@ -997,13 +999,16 @@ namespace tr1
     }
 
 #endif
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // DR 550. What should the return type of pow(float,int) be?
   // NB: C++0x and TR1 != C++03.
   inline double
@@ -1025,6 +1030,8 @@ namespace tr1
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
       return std::pow(__type(__x), __type(__y));
     }
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 
@@ -1044,10 +1051,12 @@ namespace tr1
 #include <tr1/poly_laguerre.tcc>
 #include <tr1/riemann_zeta.tcc>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /**
    * @defgroup tr1_math_spec_func Mathematical Special Functions
    * @ingroup numerics
@@ -1450,6 +1459,7 @@ namespace tr1
     }
 
   /* @} */ // tr1_math_spec_func
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 
