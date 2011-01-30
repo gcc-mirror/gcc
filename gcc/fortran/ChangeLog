@@ -1,3 +1,18 @@
+2011-01-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47523
+	* trans-expr.c (gfc_trans_assignment_1): If the rhs is an op
+	expr and is assigned to a deferred character length scalar,
+	make sure that the function is called before reallocation,
+	so that the length is available. Include procedure pointer
+	and procedure pointer component rhs as well.
+
+	PR fortran/45170
+	PR fortran/35810
+	PR fortran/47350
+	* gfortran.dg/allocatable_function_5.f90: New test not added by
+	mistake on 2011-01-28.
+
 2011-01-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47531

@@ -1,3 +1,8 @@
+2011-01-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47523
+	* gfortran.dg/realloc_on_assign_5.f03: New test.
+
 2011-01-29  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gfortran.dg/bessel_6.f90: XFAIL on spu-*-*.
@@ -66,9 +71,8 @@
 	PR fortran/47350
 	* gfortran.dg/realloc_on_assign_3.f03: New test.
 	* gfortran.dg/realloc_on_assign_4.f03: New test.
-	* gfortran.dg/realloc_on_assign_5.f90: New test.
 	* gfortran.dg/allocatable_function_5.f90: New test.
-	* gfortran.dg/allocate_deferred_char_scalar_1.f90: New test.
+	* gfortran.dg/allocate_deferred_char_scalar_1.f03: New test.
 	* gfortran.dg/deferred_type_param_2.f90: Remove two "not yet
 	implemented" dg-errors.
 

@@ -5977,6 +5977,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   stmtblock_t body;
   bool l_is_temp;
   bool scalar_to_array;
+  bool def_clen_func;
   tree string_length;
   int n;
 
@@ -6097,10 +6098,14 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   /* For a deferred character length function, the function call must
      happen before the (re)allocation of the lhs, otherwise the character
      length of the result is not known.  */
+  def_clen_func = (((expr2->expr_type == EXPR_FUNCTION)
+			   || (expr2->expr_type == EXPR_COMPCALL)
+			   || (expr2->expr_type == EXPR_PPC))
+		       && expr2->ts.deferred);
   if (gfc_option.flag_realloc_lhs
-	&& expr2->expr_type == EXPR_FUNCTION
 	&& expr2->ts.type == BT_CHARACTER
-	&& expr2->ts.deferred)
+	&& (def_clen_func || expr2->expr_type == EXPR_OP)
+	&& expr1->ts.deferred)
     gfc_add_block_to_block (&block, &rse.pre);
 
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
