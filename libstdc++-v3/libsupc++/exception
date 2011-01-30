@@ -120,7 +120,9 @@ namespace std
   // @} group exceptions
 } // namespace std
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief A replacement for the standard terminate_handler which
@@ -140,7 +142,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    */
   void __verbose_terminate_handler();
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 } // extern "C++"
 

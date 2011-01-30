@@ -58,8 +58,8 @@
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::int8_t;
   using ::int16_t;
   using ::int32_t;
@@ -95,8 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   using ::uintmax_t;
   using ::uintptr_t;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif // _GLIBCXX_USE_C99_STDINT_TR1
 

@@ -4,7 +4,7 @@
 
 // Unit tests for profile/impl/profile_algos.h.
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,7 +24,7 @@
 #include <vector>
 #include <profile/impl/profiler.h>
 
-using std::__norm::vector;
+using std::_GLIBCXX_STD_C::vector;
 
 enum Failure
 {

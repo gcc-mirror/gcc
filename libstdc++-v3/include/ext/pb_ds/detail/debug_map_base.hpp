@@ -75,7 +75,7 @@ namespace __gnu_pbds
       typedef typename std::allocator<Key> 		key_allocator;
       typedef typename key_allocator::size_type 	size_type;
       typedef Const_Key_Reference 			const_key_reference;
-      typedef std::__norm::list<Key> 		       	key_set;
+      typedef std::_GLIBCXX_STD_C::list<Key> 		key_set;
       typedef typename key_set::iterator 		key_set_iterator;
       typedef typename key_set::const_iterator 		const_key_set_iterator;
       typedef __gnu_cxx::throw_allocator_random<Key>	key_db_allocator;

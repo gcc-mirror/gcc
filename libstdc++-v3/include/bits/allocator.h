@@ -51,7 +51,9 @@
 #include <type_traits> // For _GLIBCXX_HAS_NESTED_TYPE
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @defgroup allocators Allocators
@@ -232,6 +234,7 @@ _GLIBCXX_HAS_NESTED_TYPE(allocator_type)
 
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

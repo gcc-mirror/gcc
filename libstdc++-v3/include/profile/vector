@@ -39,16 +39,16 @@
 #include <profile/base.h>
 #include <profile/iterator_tracker.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {
   template<typename _Tp,
 	   typename _Allocator = std::allocator<_Tp> >
     class vector
-    : public _GLIBCXX_STD_PR::vector<_Tp, _Allocator>
+    : public _GLIBCXX_STD_C::vector<_Tp, _Allocator>
     {
-      typedef _GLIBCXX_STD_PR::vector<_Tp, _Allocator> _Base;
+      typedef _GLIBCXX_STD_C::vector<_Tp, _Allocator> _Base;
 
     public:
       typedef typename _Base::reference             reference;
@@ -509,7 +509,7 @@ namespace __profile
     {
       size_t
       operator()(const __profile::vector<bool, _Alloc>& __b) const
-      { return std::hash<_GLIBCXX_STD_D::vector<bool, _Alloc>>()
+      { return std::hash<_GLIBCXX_STD_C::vector<bool, _Alloc>>()
 	  (__b._M_base()); }
     };
 #endif

@@ -1,6 +1,6 @@
 // decimal classes -*- C++ -*-
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2011 Free Software Foundation, Inc.
 
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,9 +22,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file bits/decimal.h
+/** @file decimal/decimal.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
+ *  Do not attempt to use it directly. @headername{decimal}
  */
 
 // ISO/IEC TR 24733
@@ -35,10 +35,12 @@
 
 #pragma GCC system_header
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace decimal
 {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // ISO/IEC TR 24733  3.2.[234].1  Construct/copy/destroy.
 
   inline decimal32::decimal32(decimal64 __r)	: __val(__r.__getval()) {}
@@ -459,7 +461,7 @@ namespace decimal
 #undef _DEFINE_DECIMAL_COMPARISON_LHS
 #undef _DEFINE_DECIMAL_COMPARISON_RHS
 #undef _DEFINE_DECIMAL_COMPARISONS
-
+  _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace decimal
 } // namespace std
 

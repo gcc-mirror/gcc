@@ -34,19 +34,19 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __debug
 {
   /// Class std::bitset with additional safety/checking/debug instrumentation.
   template<size_t _Nb>
     class bitset
-    : public _GLIBCXX_STD_D::bitset<_Nb>
+    : public _GLIBCXX_STD_C::bitset<_Nb>
 #ifndef __GXX_EXPERIMENTAL_CXX0X__
     , public __gnu_debug::_Safe_sequence_base
 #endif
     {
-      typedef _GLIBCXX_STD_D::bitset<_Nb> _Base;
+      typedef _GLIBCXX_STD_C::bitset<_Nb> _Base;
 
     public:
       // In C++0x we rely on normal reference type to preserve the property
@@ -410,7 +410,7 @@ namespace __debug
     {
       size_t
       operator()(const __debug::bitset<_Nb>& __b) const
-      { return std::hash<_GLIBCXX_STD_D::bitset<_Nb>>()(__b._M_base()); }
+      { return std::hash<_GLIBCXX_STD_C::bitset<_Nb>>()(__b._M_base()); }
     };
 #endif
 

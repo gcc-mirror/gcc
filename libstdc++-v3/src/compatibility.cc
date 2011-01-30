@@ -1,6 +1,6 @@
 // Compatibility symbols for previous versions -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -50,7 +50,9 @@
 #include <cmath>
 #include <ext/numeric_traits.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // std::istream ignore explicit specializations.
   template<>
@@ -196,7 +198,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 
 // NB: These symbols renames should go into the shared library only,
@@ -210,7 +213,9 @@ _ZNSt19istreambuf_iteratorIcSt11char_traitsIcEEppEv
 _ZNSt19istreambuf_iteratorIwSt11char_traitsIwEEppEv
  */
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template
     istreambuf_iterator<char>&
@@ -222,7 +227,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     istreambuf_iterator<wchar_t>::operator++();
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 
 /* gcc-4.0.0
@@ -254,7 +260,9 @@ _ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEv
 _ZNSt11char_traitsIcE2eqERKcS2_
 _ZNSt11char_traitsIwE2eqERKwS2_
  */
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // std::char_traits is explicitly specialized
   bool (* __p1)(const char&, const char&) = &char_traits<char>::eq;
@@ -348,7 +356,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     basic_ofstream<wchar_t>::is_open() const;
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 // The rename syntax for default exported names is
 //   asm (".symver name1,exportedname@GLIBCXX_3.4")
@@ -387,24 +396,24 @@ _ZN10__gnu_norm15_List_node_base6unhookEv;
 _ZN10__gnu_norm15_List_node_base7reverseEv;
 _ZN10__gnu_norm15_List_node_base8transferEPS0_S1_;
 */
-#include "list.cc"
-_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX7_M_hookEPS_, \
+#include "list.cc"  
+_GLIBCXX_ASM_SYMVER(_ZNSt8__detail17_List_node_baseXX7_M_hookEPS0_, \
 _ZN10__gnu_norm15_List_node_base4hookEPS0_, \
 GLIBCXX_3.4)
 
-_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX4swapERS_S0_, \
+_GLIBCXX_ASM_SYMVER(_ZNSt8__detail17_List_node_baseXX4swapERS0_S1_, \
 _ZN10__gnu_norm15_List_node_base4swapERS0_S1_, \
 GLIBCXX_3.4)
 
-_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX9_M_unhookEv, \
+_GLIBCXX_ASM_SYMVER(_ZNSt8__detail17_List_node_baseXX9_M_unhookEv, \
 _ZN10__gnu_norm15_List_node_base6unhookEv, \
 GLIBCXX_3.4)
 
-_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX10_M_reverseEv, \
+_GLIBCXX_ASM_SYMVER(_ZNSt8__detail17_List_node_baseXX10_M_reverseEv, \
 _ZN10__gnu_norm15_List_node_base7reverseEv, \
 GLIBCXX_3.4)
 
-_GLIBCXX_ASM_SYMVER(_ZNSt17_List_node_baseXX11_M_transferEPS_S0_, \
+_GLIBCXX_ASM_SYMVER(_ZNSt8__detail17_List_node_baseXX11_M_transferEPS0_S1_, \
 _ZN10__gnu_norm15_List_node_base8transferEPS0_S1_, \
 GLIBCXX_3.4)
 #undef _List_node_base

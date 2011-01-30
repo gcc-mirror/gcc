@@ -46,7 +46,9 @@
 #include <string>             // For std::string overloads.
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [27.8.1.1] template class basic_filebuf
   /**
@@ -913,7 +915,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #include <bits/fstream.tcc>
 

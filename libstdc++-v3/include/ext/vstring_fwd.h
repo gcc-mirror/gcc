@@ -37,7 +37,9 @@
 #include <bits/char_traits.h>
 #include <bits/allocator.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     class __sso_string_base;
@@ -82,6 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _VSTRING_FWD_H */

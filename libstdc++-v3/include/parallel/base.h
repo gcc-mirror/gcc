@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -45,7 +45,7 @@
  * @namespace std::__parallel
  * @brief GNU parallel code, replaces standard behavior with parallel behavior.
  */
-namespace std 
+namespace std _GLIBCXX_VISIBILITY(default) 
 { 
   namespace __parallel { } 
 }
@@ -68,7 +68,7 @@ namespace __gnu_sequential
 { 
   // Import whatever is the serial version.
 #ifdef _GLIBCXX_PARALLEL
-  using namespace std::__norm;
+  using namespace std::_GLIBCXX_STD_A;
 #else
   using namespace std;
 #endif   

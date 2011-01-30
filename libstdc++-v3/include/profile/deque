@@ -31,16 +31,16 @@
 
 #include <deque>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {
   /// Class std::deque wrapper with performance instrumentation.
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
     class deque
-    : public _GLIBCXX_STD_D::deque<_Tp, _Allocator>
+    : public _GLIBCXX_STD_C::deque<_Tp, _Allocator>
     {
-      typedef  _GLIBCXX_STD_D::deque<_Tp, _Allocator> _Base;
+      typedef  _GLIBCXX_STD_C::deque<_Tp, _Allocator> _Base;
 
     public:
       typedef typename _Base::reference             reference;

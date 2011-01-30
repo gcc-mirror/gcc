@@ -42,7 +42,9 @@
 #include <bits/localefwd.h>
 #include <bits/locale_classes.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // The following definitions of bitmask types are enums, not ints,
   // as permitted (but not required) in the standard, in order to provide
@@ -969,6 +971,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     return __base;
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _IOS_BASE_H */

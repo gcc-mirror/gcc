@@ -1,10 +1,105 @@
+2011-01-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/36104 part four
+	* include/bits/c++config (_GLIBCXX_STD): Remove.
+	(_GLIBCXX_STD_D, _GLIBCXX_PR): Now _GLIBCXX_STD_C.
+	(_GLIBCXX_P): Now _GLIBCXX_STD_A.
+	(_GLIBCXX_NAMESPACE_DEBUG, _GLIBCXX_NAMESPACE_PARALLEL,
+	 _GLIBCXX_NAMESPACE_PROFILE, _GLIBCXX_NAMESPACE_VERSION): Remove.
+	(_GLIBCXX_INLINE_DEBUG, _GLIBCXX_INLINE_PARALLEL,
+	 _GLIBCXX_INLINE_PROFILE): Remove.
+	(_GLIBCXX_BEGIN_NAMESPACE(X)): Remove.
+	(_GLIBCXX_END_NAMESPACE): Remove.
+	(_GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y)): Remove.
+	(_GLIBCXX_END_NESTED_NAMESPACE): Remove.
+	(_GLIBCXX_BEGIN_NAMESPACE_ALGO): Add.
+	(_GLIBCXX_END_NAMESPACE_ALGO): Add.
+	(_GLIBCXX_BEGIN_NAMESPACE_CONTAINER): Add.
+	(_GLIBCXX_END_NAMESPACE_CONTAINER): Add.
+	(_GLIBCXX_BEGIN_NAMESPACE_VERSION): Add.
+	(_GLIBCXX_END_NAMESPACE_VERSION): Add.
+	(_GLIBCXX_BEGIN_LDBL_NAMESPACE): To _GLIBCXX_BEGIN_NAMESPACE_LDBL.
+	(_GLIBCXX_END_LDBL_NAMESPACE): To _GLIBCXX_END_NAMESPACE_LDBL.
+	(_GLIBCXX_VISIBILITY_ATTR): Revert to _GLIBCXX_VISIBILITY.
+	* include/*: Use new macros for namespace scope.
+	* config/*: Same.
+	* src/*: Same.
+
+	* src/Makefile.am (sources): Remove debug_list.cc, add
+	compatibility-debug_list-2.cc.
+	(parallel_sources): Remove parallel_list.cc, add
+	compatibility-parallel_list-2.cc.
+	(compatibility-parallel_list-2.[o,lo]): New rule.
+	* src/Makefile.in: Regenerate.
+	* src/debug_list.cc: Remove.
+	* src/parallel_list.cc: Remove.
+	* src/compatibility-list-2.cc: New.
+	* src/compatibility-debug_list-2.cc: New.
+	* src/compatibility-parallel_list-2.cc: New.
+
+	* doc/doxygen/user.cfg.in: Adjust macros.
+
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Adjust line numbers, macros.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Same.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Same.
+	* testsuite/20_util/forward/c_neg.cc: Same.
+	* testsuite/20_util/forward/f_neg.cc: Same.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Same.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Same.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Same.
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Same.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Same.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Same.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc: Same.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Same.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Same.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Same.
+	* testsuite/23_containers/list/capacity/29134.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Same.
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/25_algorithms/sort/35588.cc: Same.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Same.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Same.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Same.
+	* testsuite/ext/profile/profiler_algos.cc: Same.
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: Same.
+	* testsuite/ext/type_traits/add_unsigned_integer_neg.cc: Same.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: Same.
+	* testsuite/ext/type_traits/remove_unsigned_integer_neg.cc: Same.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820_neg.cc: Same.
+
 2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/abi.xml: Adjust link to C++ ABI specification.
 	Improve description of one such reference.
 
 2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/manual/codecvt.xml: Fix link to The Austin Common
 	Standards Revision Group.
 	* doc/xml/manual/locale.xml: Ditto.
@@ -18,20 +113,20 @@
 
 2011-01-26  Johannes Singler  <singler@kit.edu>
 
-        * include/parallel/numeric (inner_product, partial_sum):
-        Qualify subsequent call with __gnu_parallel instead of
-        _GLIBCXX_STD_P to reenable parallel execution without ambiguity.
-        * include/parallel/algobase.h (equal): Likewise.
-        * include/parallel/algo.h (find_first_of, search_n, merge,
-        nth_element, partial_sort, max_element, min_element): Likewise.
-        * testsuite/25_algorithms/headers/algorithm/
-        parallel_algorithm_mixed1.cc (main): Add respective test cases.
-        * testsuite/25_algorithms/headers/algorithm/
-        parallel_algorithm_mixed2.cc (main): Likewise.
-        * testsuite/26_numerics/headers/numeric/
-        parallel_numeric_mixed1.cc (main): Likewise.
-        * testsuite/26_numerics/headers/numeric/
-        parallel_numeric_mixed2.cc (main): Likewise.
+	* include/parallel/numeric (inner_product, partial_sum):
+	Qualify subsequent call with __gnu_parallel instead of
+	_GLIBCXX_STD_P to reenable parallel execution without ambiguity.
+	* include/parallel/algobase.h (equal): Likewise.
+	* include/parallel/algo.h (find_first_of, search_n, merge,
+	nth_element, partial_sort, max_element, min_element): Likewise.
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_mixed1.cc (main): Add respective test cases.
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_mixed2.cc (main): Likewise.
+	* testsuite/26_numerics/headers/numeric/
+	parallel_numeric_mixed1.cc (main): Likewise.
+	* testsuite/26_numerics/headers/numeric/
+	parallel_numeric_mixed2.cc (main): Likewise.
 
 2011-01-24  Graham Reed  <greed@pobox.com>
 
@@ -41,23 +136,23 @@
 
 2011-01-24  Johannes Singler  <singler@kit.edu>
 
-        PR libstdc++/47433
-        * include/parallel/losertree.h
-        (_LoserTree<>::__delete_min_insert):
-        Do not qualify swap with std:: for value type,
-        but include a using directive instead.
-        (_LoserTreeUnguarded<>::__delete_min_insert): Likewise.
-        * include/parallel/balanced_quicksort.h (__qsb_divide):
-        Use std::iter_swap instead of std::swap.
-        (__qsb_local_sort_with_helping): Likewise.
-        * include/parallel/partition.h (__parallel_partition):
-        Likewise. (__parallel_nth_element): Likewise.
+	PR libstdc++/47433
+	* include/parallel/losertree.h
+	(_LoserTree<>::__delete_min_insert):
+	Do not qualify swap with std:: for value type,
+	but include a using directive instead.
+	(_LoserTreeUnguarded<>::__delete_min_insert): Likewise.
+	* include/parallel/balanced_quicksort.h (__qsb_divide):
+	Use std::iter_swap instead of std::swap.
+	(__qsb_local_sort_with_helping): Likewise.
+	* include/parallel/partition.h (__parallel_partition):
+	Likewise. (__parallel_nth_element): Likewise.
 
 2011-01-24  Johannes Singler  <singler@kit.edu>
 
-        PR libstdc++/47437
-        * include/parallel/multiway_merge.h (_UnguardedIterator):
-        Remove useless "mutable" from reference declaration.
+	PR libstdc++/47437
+	* include/parallel/multiway_merge.h (_UnguardedIterator):
+	Remove useless "mutable" from reference declaration.
 
 2011-01-21  Benjamin Kosnik  <bkoz@redhat.com>
 

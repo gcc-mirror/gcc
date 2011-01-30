@@ -50,8 +50,8 @@
 
 #ifdef _GLIBCXX_USE_C99_INTTYPES_TR1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   // types
   using ::imaxdiv_t;
 
@@ -76,8 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::wcstoimax;
   using ::wcstoumax;
 #endif
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif _GLIBCXX_USE_C99_INTTYPES_TR1
 

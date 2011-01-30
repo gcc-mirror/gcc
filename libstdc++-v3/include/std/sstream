@@ -39,7 +39,9 @@
 #include <istream>
 #include <ostream>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [27.7.1] template class basic_stringbuf
   /**
@@ -567,7 +569,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { _M_stringbuf.str(__s); }
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #include <bits/sstream.tcc>
 

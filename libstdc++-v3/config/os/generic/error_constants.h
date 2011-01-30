@@ -33,7 +33,9 @@
 #include <bits/c++config.h>
 #include <cerrno>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   enum class errc
     {
@@ -170,6 +172,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       wrong_protocol_type = 			EPROTOTYPE
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

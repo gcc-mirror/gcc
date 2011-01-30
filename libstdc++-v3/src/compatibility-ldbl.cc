@@ -33,7 +33,7 @@
 #error "compatibility-ldbl.cc must be compiled with -mlong-double-64"
 #endif
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 #define C char
   template class num_get<C, istreambuf_iterator<C> >;
@@ -70,7 +70,7 @@ namespace std
 // For std::tr1::hash<long double>::operator()
 #define _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   namespace tr1 
   {

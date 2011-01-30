@@ -1,6 +1,6 @@
 // Compatibility symbols for previous versions, parallel list -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,5 +21,8 @@
 // a copy of the GCC Runtime Library Exception along with this program;
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
+
+#define _GLIBCXX_BEGIN_NAMESPACE_COMPAT namespace __cxx1998 {
+#define _GLIBCXX_END_NAMESPACE_COMPAT }
 
 #include "compatibility-list.cc"

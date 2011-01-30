@@ -36,7 +36,9 @@
 
 // Written by Benjamin Kosnik <bkoz@redhat.com>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(size_t __refs) 
@@ -88,4 +90,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _S_destroy_c_locale(_M_c_locale_timepunct); 
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

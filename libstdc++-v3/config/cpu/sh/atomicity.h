@@ -27,7 +27,9 @@
 
 #include <ext/atomicity.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   typedef int _Atomic_word;
 
@@ -66,7 +68,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	: "r0");
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #else /* !__SH4A__ */
 
@@ -80,7 +83,9 @@ namespace
   __gnu_cxx::__mutex atomic_mutex;
 } // anonymous namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   _Atomic_word
   __attribute__ ((__unused__))
@@ -98,6 +103,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
   { __exchange_and_add(__mem, __val); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* !__SH4A__ */

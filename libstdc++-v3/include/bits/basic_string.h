@@ -42,7 +42,9 @@
 #include <debug/debug.h>
 #include <initializer_list>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @class basic_string basic_string.h <string>
@@ -2745,14 +2747,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    wchar_t __delim);
 #endif  
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #if (defined(__GXX_EXPERIMENTAL_CXX0X__) && defined(_GLIBCXX_USE_C99) \
      && !defined(_GLIBCXX_HAVE_BROKEN_VSWPRINTF))
 
 #include <ext/string_conversions.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 21.4 Numeric Conversions [string.conversions].
   inline int
@@ -2959,7 +2964,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* __GXX_EXPERIMENTAL_CXX0X__ && _GLIBCXX_USE_C99 ... */
 
@@ -2967,7 +2973,9 @@ _GLIBCXX_END_NAMESPACE
 
 #include <bits/functional_hash.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // DR 1182.
 
@@ -3020,7 +3028,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* __GXX_EXPERIMENTAL_CXX0X__ */
 

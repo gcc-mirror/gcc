@@ -42,9 +42,9 @@
 #include <profile/base.h>
 
 #define _GLIBCXX_BASE unordered_set<_Key, _Hash, _Pred, _Alloc>
-#define _GLIBCXX_STD_BASE _GLIBCXX_STD_PR::_GLIBCXX_BASE
+#define _GLIBCXX_STD_BASE _GLIBCXX_STD_C::_GLIBCXX_BASE
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {
@@ -291,7 +291,7 @@ namespace __profile
 
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
-#define _GLIBCXX_STD_BASE _GLIBCXX_STD_PR::_GLIBCXX_BASE
+#define _GLIBCXX_STD_BASE _GLIBCXX_STD_C::_GLIBCXX_BASE
 #define _GLIBCXX_BASE unordered_multiset<_Value, _Hash, _Pred, _Alloc>
 
   /** @brief Unordered_multiset wrapper with performance instrumentation.  */

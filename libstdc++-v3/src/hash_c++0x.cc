@@ -28,7 +28,7 @@
 
 #include <bits/functional_hash.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 #include "hash-long-double-aux.cc"
 }

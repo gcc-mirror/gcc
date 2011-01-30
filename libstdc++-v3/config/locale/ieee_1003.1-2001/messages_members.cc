@@ -30,7 +30,7 @@
 
 #include <locale>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   // Specializations
   template<>

@@ -43,7 +43,7 @@
 #include <parallel/find.h>
 #include <parallel/find_selectors.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __parallel
 {
@@ -54,14 +54,14 @@ namespace __parallel
     inline pair<_IIter1, _IIter2>
     mismatch(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2,
              __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::mismatch(__begin1, __end1, __begin2); }
+    { return _GLIBCXX_STD_A::mismatch(__begin1, __end1, __begin2); }
 
   // Sequential fallback
   template<typename _IIter1, typename _IIter2, typename _Predicate>
     inline pair<_IIter1, _IIter2>
     mismatch(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2,
              _Predicate __pred, __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::mismatch(__begin1, __end1, __begin2, __pred); }
+    { return _GLIBCXX_STD_A::mismatch(__begin1, __end1, __begin2, __pred); }
 
   // Sequential fallback for input iterator case
   template<typename _IIter1, typename _IIter2,
@@ -69,7 +69,7 @@ namespace __parallel
     inline pair<_IIter1, _IIter2>
     __mismatch_switch(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2,
                       _Predicate __pred, _IteratorTag1, _IteratorTag2)
-    { return _GLIBCXX_STD_P::mismatch(__begin1, __end1, __begin2, __pred); }
+    { return _GLIBCXX_STD_A::mismatch(__begin1, __end1, __begin2, __pred); }
 
   // Parallel mismatch for random access iterators
   template<typename _RAIter1, typename _RAIter2, typename _Predicate>
@@ -87,7 +87,7 @@ namespace __parallel
           return make_pair(__res , __begin2 + (__res - __begin1));
         }
       else
-        return _GLIBCXX_STD_P::mismatch(__begin1, __end1, __begin2, __pred);
+        return _GLIBCXX_STD_A::mismatch(__begin1, __end1, __begin2, __pred);
     }
 
   // Public interface
@@ -128,14 +128,14 @@ namespace __parallel
     inline bool
     equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2, 
           __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::equal(__begin1, __end1, __begin2); }
+    { return _GLIBCXX_STD_A::equal(__begin1, __end1, __begin2); }
 
   // Sequential fallback
   template<typename _IIter1, typename _IIter2, typename _Predicate>
     inline bool
     equal(_IIter1 __begin1, _IIter1 __end1, _IIter2 __begin2, 
           _Predicate __pred, __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::equal(__begin1, __end1, __begin2, __pred); }
+    { return _GLIBCXX_STD_A::equal(__begin1, __end1, __begin2, __pred); }
 
   // Public interface
   template<typename _IIter1, typename _IIter2>
@@ -162,7 +162,7 @@ namespace __parallel
     lexicographical_compare(_IIter1 __begin1, _IIter1 __end1, 
                             _IIter2 __begin2, _IIter2 __end2, 
                             __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::lexicographical_compare(__begin1, __end1,
+    { return _GLIBCXX_STD_A::lexicographical_compare(__begin1, __end1,
                                                      __begin2, __end2); }
 
   // Sequential fallback
@@ -171,7 +171,7 @@ namespace __parallel
     lexicographical_compare(_IIter1 __begin1, _IIter1 __end1, 
                             _IIter2 __begin2, _IIter2 __end2, 
                             _Predicate __pred, __gnu_parallel::sequential_tag)
-    { return _GLIBCXX_STD_P::lexicographical_compare(
+    { return _GLIBCXX_STD_A::lexicographical_compare(
                __begin1, __end1, __begin2, __end2, __pred); }
 
   // Sequential fallback for input iterator case
@@ -182,7 +182,7 @@ namespace __parallel
                                      _IIter2 __begin2, _IIter2 __end2, 
                                      _Predicate __pred,
                                      _IteratorTag1, _IteratorTag2)
-    { return _GLIBCXX_STD_P::lexicographical_compare(
+    { return _GLIBCXX_STD_A::lexicographical_compare(
                __begin1, __end1, __begin2, __end2, __pred); }
 
   // Parallel lexicographical_compare for random access iterators
@@ -232,7 +232,7 @@ namespace __parallel
             }
         }
       else
-        return _GLIBCXX_STD_P::lexicographical_compare(
+        return _GLIBCXX_STD_A::lexicographical_compare(
                  __begin1, __end1, __begin2, __end2, __pred);
     }
 

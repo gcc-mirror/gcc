@@ -63,7 +63,9 @@ namespace
 #endif
 }
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __SIZEOF_SIZE_T__ == 4
 
@@ -183,4 +185,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #endif /* __SIZEOF_SIZE_T__ */
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

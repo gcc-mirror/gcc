@@ -29,7 +29,9 @@
  */
 #include <regex>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace __regex
 {
@@ -169,4 +171,5 @@ _M_clone()
 
 } // namespace __regex
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

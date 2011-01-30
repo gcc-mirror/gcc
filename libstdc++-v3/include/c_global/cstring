@@ -70,7 +70,9 @@
 #undef strtok
 #undef strxfrm
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using ::memchr;
   using ::memcmp;
@@ -117,6 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   { return __builtin_strstr(__s1, __s2); }
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

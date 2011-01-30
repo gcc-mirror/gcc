@@ -34,7 +34,9 @@
 
 #include <bits/c++config.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Hash function implementation for the nontrivial specialization.
   // All of them are based on a primitive that hashes a pointer to a
@@ -51,6 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   size_t
   _Fnv_hash_bytes(const void* __ptr, size_t __len, size_t __seed);
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

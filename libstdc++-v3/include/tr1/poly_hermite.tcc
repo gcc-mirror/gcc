@@ -40,16 +40,16 @@
 #ifndef _GLIBCXX_TR1_POLY_HERMITE_TCC
 #define _GLIBCXX_TR1_POLY_HERMITE_TCC 1
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
-
   // [5.2] Special functions
 
   // Implementation-space details.
   namespace __detail
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /**
      *   @brief This routine returns the Hermite polynomial
@@ -117,6 +117,7 @@ namespace tr1
         return __poly_hermite_recursion(__n, __x);
     }
 
+  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace std::tr1::__detail
 }
 }

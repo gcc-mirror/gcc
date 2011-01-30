@@ -61,7 +61,9 @@
 
 #include <algorithm>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::ptrdiff_t;
   using std::min;
@@ -588,6 +590,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	return __b;
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _EXT_ALGORITHM */

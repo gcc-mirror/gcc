@@ -37,7 +37,7 @@
 #include <utility>
 #include <profile/base.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __profile
 {
@@ -45,9 +45,9 @@ namespace __profile
   template<typename _Key, typename _Tp, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<std::pair<const _Key, _Tp> > >
     class map
-    : public _GLIBCXX_STD_D::map<_Key, _Tp, _Compare, _Allocator>
+    : public _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Allocator>
     {
-      typedef _GLIBCXX_STD_D::map<_Key, _Tp, _Compare, _Allocator> _Base;
+      typedef _GLIBCXX_STD_C::map<_Key, _Tp, _Compare, _Allocator> _Base;
 
     public:
       // types:

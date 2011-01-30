@@ -33,7 +33,9 @@
 
 #include <vector>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [26.4] Random number generation
 
@@ -55,11 +57,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _RealType
     generate_canonical(_UniformRandomNumberGenerator& __g);
 
+_GLIBCXX_END_NAMESPACE_VERSION
+
   /*
    * Implementation-space details.
    */
   namespace __detail
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
     template<typename _UIntType, size_t __w,
 	     bool = __w < static_cast<size_t>
 			  (std::numeric_limits<_UIntType>::digits)>
@@ -116,7 +122,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       private:
 	_Engine& _M_g;
       };
+
+  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
+
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @addtogroup random_generators Random Number Generators
@@ -5376,6 +5386,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /* @} */ // group random_utilities
 
   /* @} */ // group random
-_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #endif

@@ -43,7 +43,7 @@
 #include <utility>
 #include <sstream>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
@@ -58,6 +58,8 @@ namespace tr1
  */
 namespace regex_constants
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /**
    * @name 5.1 Regular Expression Syntax Options
    */
@@ -395,8 +397,10 @@ namespace regex_constants
   static const error_type error_stack(_S_error_stack);
 
   //@}
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [7.8] Class regex_error
   /**
@@ -1992,10 +1996,10 @@ namespace regex_constants
       /**
        * @name 10.4 Formatting
        *
-       * These functions perform formatted substitution of the matched character
-       * sequences into their target.  The format specifiers and escape sequences
-       * accepted by these functions are determined by their @p flags parameter 
-       * as documented above.
+       * These functions perform formatted substitution of the matched
+       * character sequences into their target.  The format specifiers
+       * and escape sequences accepted by these functions are
+       * determined by their @p flags parameter as documented above.
        */
        //@{
 
@@ -2718,6 +2722,8 @@ namespace regex_constants
 #endif
   
   //@}
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 }
 

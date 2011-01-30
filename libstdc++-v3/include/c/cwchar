@@ -42,7 +42,7 @@
 // Need to do a bit of trickery here with mbstate_t as char_traits
 // assumes it is in wchar.h, regardless of wchar_t specializations.
 #ifndef _GLIBCXX_HAVE_MBSTATE_T
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   extern "C"
   {

@@ -38,7 +38,7 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __debug
 {
@@ -48,11 +48,11 @@ namespace __debug
 	   typename _Pred = std::equal_to<_Value>,
 	   typename _Alloc = std::allocator<_Value> >
     class unordered_set
-    : public _GLIBCXX_STD_D::unordered_set<_Value, _Hash, _Pred, _Alloc>,
+    : public _GLIBCXX_STD_C::unordered_set<_Value, _Hash, _Pred, _Alloc>,
       public __gnu_debug::_Safe_sequence<unordered_set<_Value, _Hash,
 						       _Pred, _Alloc> >
     {
-      typedef _GLIBCXX_STD_D::unordered_set<_Value, _Hash,
+      typedef _GLIBCXX_STD_C::unordered_set<_Value, _Hash,
 					    _Pred, _Alloc> _Base;
       typedef __gnu_debug::_Safe_sequence<unordered_set> _Safe_base;
       typedef typename _Base::const_iterator _Base_const_iterator;
@@ -325,11 +325,11 @@ namespace __debug
 	   typename _Pred = std::equal_to<_Value>,
 	   typename _Alloc = std::allocator<_Value> >
     class unordered_multiset
-    : public _GLIBCXX_STD_D::unordered_multiset<_Value, _Hash, _Pred, _Alloc>,
+    : public _GLIBCXX_STD_C::unordered_multiset<_Value, _Hash, _Pred, _Alloc>,
       public __gnu_debug::_Safe_sequence<unordered_multiset<_Value, _Hash,
 							    _Pred, _Alloc> >
     {
-      typedef _GLIBCXX_STD_D::unordered_multiset<_Value, _Hash,
+      typedef _GLIBCXX_STD_C::unordered_multiset<_Value, _Hash,
 						 _Pred, _Alloc> _Base;
       typedef __gnu_debug::_Safe_sequence<unordered_multiset> _Safe_base;
       typedef typename _Base::const_iterator _Base_const_iterator;

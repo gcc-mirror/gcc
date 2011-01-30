@@ -1,7 +1,7 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+// 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,39 +60,49 @@
 #include <bits/concept_check.h>
 #include <initializer_list>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
-
-  // Supporting structures are split into common and templated types; the
-  // latter publicly inherits from the former in an effort to reduce code
-  // duplication.  This results in some "needless" static_cast'ing later on,
-  // but it's all safe downcasting.
-
-  /// Common part of a node in the %list. 
-  struct _List_node_base
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+  namespace __detail
   {
-    _List_node_base* _M_next;
-    _List_node_base* _M_prev;
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-    static void
-    swap(_List_node_base& __x, _List_node_base& __y) throw ();
+    // Supporting structures are split into common and templated
+    // types; the latter publicly inherits from the former in an
+    // effort to reduce code duplication.  This results in some
+    // "needless" static_cast'ing later on, but it's all safe
+    // downcasting.
 
-    void
-    _M_transfer(_List_node_base * const __first,
-		_List_node_base * const __last) throw ();
+    /// Common part of a node in the %list. 
+    struct _List_node_base
+    {
+      _List_node_base* _M_next;
+      _List_node_base* _M_prev;
+      
+      static void
+      swap(_List_node_base& __x, _List_node_base& __y) throw ();
+      
+      void
+      _M_transfer(_List_node_base* const __first,
+		  _List_node_base* const __last) throw ();
+      
+      void
+      _M_reverse() throw ();
+      
+      void
+      _M_hook(_List_node_base* const __position) throw ();
+      
+      void
+      _M_unhook() throw ();
+    };
 
-    void
-    _M_reverse() throw ();
+  _GLIBCXX_END_NAMESPACE_VERSION
+  } // namespace detail
 
-    void
-    _M_hook(_List_node_base * const __position) throw ();
-
-    void
-    _M_unhook() throw ();
-  };
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// An actual node in the %list.
   template<typename _Tp>
-    struct _List_node : public _List_node_base
+    struct _List_node : public __detail::_List_node_base
     {
       ///< User's data.
       _Tp _M_data;
@@ -100,7 +110,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<typename... _Args>
         _List_node(_Args&&... __args)
-	: _List_node_base(), _M_data(std::forward<_Args>(__args)...) { }
+	: __detail::_List_node_base(), _M_data(std::forward<_Args>(__args)...) 
+        { }
 #endif
     };
 
@@ -125,7 +136,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       : _M_node() { }
 
       explicit
-      _List_iterator(_List_node_base* __x)
+      _List_iterator(__detail::_List_node_base* __x)
       : _M_node(__x) { }
 
       // Must downcast from _List_node_base to _List_node to get to _M_data.
@@ -176,7 +187,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return _M_node != __x._M_node; }
 
       // The only member points to the %list element.
-      _List_node_base* _M_node;
+      __detail::_List_node_base* _M_node;
     };
 
   /**
@@ -201,7 +212,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       : _M_node() { }
 
       explicit
-      _List_const_iterator(const _List_node_base* __x)
+      _List_const_iterator(const __detail::_List_node_base* __x)
       : _M_node(__x) { }
 
       _List_const_iterator(const iterator& __x)
@@ -256,7 +267,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return _M_node != __x._M_node; }
 
       // The only member points to the %list element.
-      const _List_node_base* _M_node;
+      const __detail::_List_node_base* _M_node;
     };
 
   template<typename _Val>
@@ -298,7 +309,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       struct _List_impl 
       : public _Node_alloc_type
       {
-	_List_node_base _M_node;
+	__detail::_List_node_base _M_node;
 
 	_List_impl()
 	: _Node_alloc_type(), _M_node()
@@ -351,7 +362,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       : _M_impl(__x._M_get_Node_allocator())
       {
 	_M_init();
-	_List_node_base::swap(this->_M_impl._M_node, __x._M_impl._M_node);	
+	__detail::_List_node_base::swap(this->_M_impl._M_node, 
+					__x._M_impl._M_node);	
       }
 #endif
 
@@ -1164,7 +1176,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       void
       swap(list& __x)
       {
-	_List_node_base::swap(this->_M_impl._M_node, __x._M_impl._M_node);
+	__detail::_List_node_base::swap(this->_M_impl._M_node, 
+					__x._M_impl._M_node);
 
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 431. Swapping containers with unequal allocators.
@@ -1611,6 +1624,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     swap(list<_Tp, _Alloc>& __x, list<_Tp, _Alloc>& __y)
     { __x.swap(__y); }
 
-_GLIBCXX_END_NESTED_NAMESPACE
+_GLIBCXX_END_NAMESPACE_CONTAINER
+} // namespace std
 
 #endif /* _STL_LIST_H */

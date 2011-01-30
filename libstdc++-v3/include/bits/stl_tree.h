@@ -65,7 +65,9 @@
 #include <bits/stl_function.h>
 #include <bits/cpp_type_traits.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Red-black tree class, designed for use in implementing STL
   // associative containers (set, multiset, map, and multimap). The
@@ -1585,6 +1587,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return true;
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

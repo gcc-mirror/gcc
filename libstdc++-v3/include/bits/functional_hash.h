@@ -34,7 +34,9 @@
 
 #include <bits/hash_bytes.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** @defgroup hashes Hashes
    *  @ingroup functors
@@ -183,6 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // @} group hashes
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // _FUNCTIONAL_HASH_H

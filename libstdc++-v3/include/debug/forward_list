@@ -35,17 +35,17 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __debug
 {
   /// Class std::forward_list with safety/checking/debug instrumentation.
   template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
     class forward_list
-    : public _GLIBCXX_STD_D::forward_list<_Tp, _Alloc>,
+    : public _GLIBCXX_STD_C::forward_list<_Tp, _Alloc>,
       public __gnu_debug::_Safe_sequence<forward_list<_Tp, _Alloc> >
     {
-      typedef _GLIBCXX_STD_D::forward_list<_Tp, _Alloc> _Base;
+      typedef _GLIBCXX_STD_C::forward_list<_Tp, _Alloc> _Base;
       typedef __gnu_debug::_Safe_sequence<forward_list> _Safe_base;
 
       typedef typename _Base::iterator       _Base_iterator;

@@ -40,7 +40,9 @@
 #include <ios>
 #include <ostream>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [27.6.1.1] Template class basic_istream
   /**
@@ -848,7 +850,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return (__is >> __x); }
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #include <bits/istream.tcc>
 

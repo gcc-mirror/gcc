@@ -68,7 +68,9 @@
 # include <type_traits>  // For _GLIBCXX_HAS_NESTED_TYPE
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @defgroup iterators Iterators
@@ -220,7 +222,8 @@ _GLIBCXX_HAS_NESTED_TYPE(iterator_category)
       { return __it.base(); }
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _STL_ITERATOR_BASE_TYPES_H */
 

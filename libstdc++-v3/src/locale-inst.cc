@@ -1,7 +1,7 @@
 // Locale support -*- C++ -*-
 
 // Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-// 2009 Free Software Foundation, Inc.
+// 2009, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,9 @@
 # define C_is_char
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // moneypunct, money_get, and money_put
   template class moneypunct<C, false>;
@@ -44,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template struct __moneypunct_cache<C, true>;
   template class moneypunct_byname<C, false>;
   template class moneypunct_byname<C, true>;
-_GLIBCXX_BEGIN_LDBL_NAMESPACE
+_GLIBCXX_BEGIN_NAMESPACE_LDBL
   template class money_get<C, istreambuf_iterator<C> >;
   template class money_put<C, ostreambuf_iterator<C> >;
   template
@@ -70,13 +72,13 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     money_put<C, ostreambuf_iterator<C> >::
     _M_insert<false>(ostreambuf_iterator<C>, ios_base&, C, 
 		     const string_type&) const;
-_GLIBCXX_END_LDBL_NAMESPACE
+_GLIBCXX_END_NAMESPACE_LDBL
 
   // numpunct, numpunct_byname, num_get, and num_put
   template class numpunct<C>;
   template struct __numpunct_cache<C>;
   template class numpunct_byname<C>;
-_GLIBCXX_BEGIN_LDBL_NAMESPACE
+_GLIBCXX_BEGIN_NAMESPACE_LDBL
   template class num_get<C, istreambuf_iterator<C> >;
   template class num_put<C, ostreambuf_iterator<C> >; 
   template
@@ -160,7 +162,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
     num_put<C, ostreambuf_iterator<C> >::
     _M_insert_float(ostreambuf_iterator<C>, ios_base&, C, char, 
 		    long double) const;
-_GLIBCXX_END_LDBL_NAMESPACE
+_GLIBCXX_END_NAMESPACE_LDBL
 
   // time_get and time_put
   template class __timepunct<C>;
@@ -317,7 +319,8 @@ _GLIBCXX_END_LDBL_NAMESPACE
 		  ios_base::fmtflags, bool);
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 // XXX GLIBCXX_ABI Deprecated
 #if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined C_is_char

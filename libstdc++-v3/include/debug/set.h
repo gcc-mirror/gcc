@@ -34,7 +34,7 @@
 #include <debug/safe_iterator.h>
 #include <utility>
 
-namespace std 
+namespace std _GLIBCXX_VISIBILITY(default) 
 {
 namespace __debug
 {
@@ -42,10 +42,10 @@ namespace __debug
   template<typename _Key, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<_Key> >
     class set
-    : public _GLIBCXX_STD_D::set<_Key,_Compare,_Allocator>,
+    : public _GLIBCXX_STD_C::set<_Key,_Compare,_Allocator>,
       public __gnu_debug::_Safe_sequence<set<_Key, _Compare, _Allocator> >
     {
-      typedef _GLIBCXX_STD_D::set<_Key, _Compare, _Allocator> _Base;
+      typedef _GLIBCXX_STD_C::set<_Key, _Compare, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<set> _Safe_base;
 
       typedef typename _Base::const_iterator _Base_const_iterator;

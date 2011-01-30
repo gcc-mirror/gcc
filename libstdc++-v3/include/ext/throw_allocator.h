@@ -64,7 +64,9 @@
 # include <tr1/random>
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief Thown by exception safety machinery.
@@ -721,13 +723,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       ~throw_allocator_random() throw() { }
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 
 # include <bits/functional_hash.h>
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   /// Explicit specialization of std::hash for __gnu_cxx::throw_value_limit.
   template<>

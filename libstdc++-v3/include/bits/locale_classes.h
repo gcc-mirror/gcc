@@ -42,7 +42,9 @@
 #include <string>
 #include <ext/atomicity.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 22.1.1 Class locale
   /**
@@ -815,7 +817,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       ~collate_byname() { }
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 # include <bits/locale_classes.tcc>
 

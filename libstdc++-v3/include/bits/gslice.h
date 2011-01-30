@@ -35,7 +35,9 @@
 
 #pragma GCC system_header
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @addtogroup numeric_arrays
@@ -177,6 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // @} group numeric_arrays
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _GSLICE_H */

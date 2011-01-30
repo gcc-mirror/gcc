@@ -1,6 +1,6 @@
 // std::rel_ops implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005, 2008, 2010
+// Copyright (C) 2001, 2002, 2004, 2005, 2008, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -65,10 +65,12 @@
 #ifndef _STL_RELOPS_H
 #define _STL_RELOPS_H 1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
   namespace rel_ops
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
     /** @namespace std::rel_ops
      *  @brief  The generated relational operators are sequestered here.
      */
@@ -125,8 +127,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator>=(const _Tp& __x, const _Tp& __y)
       { return !(__x < __y); }
 
+  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace rel_ops
 
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 #endif /* _STL_RELOPS_H */

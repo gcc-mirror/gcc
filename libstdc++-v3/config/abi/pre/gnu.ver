@@ -1199,6 +1199,12 @@ GLIBCXX_3.4.15 {
     # std::placeholders
     _ZNSt12placeholders*;
 
+    _ZNSt8__detail15_List_node_base7_M_hook*;
+    _ZNSt8__detail15_List_node_base9_M_unhookEv;
+    _ZNSt8__detail15_List_node_base10_M_reverseEv;
+    _ZNSt8__detail15_List_node_base11_M_transfer*;
+    _ZNSt8__detail15_List_node_base4swapERS0_S1_;
+
 } GLIBCXX_3.4.14;
 
 # Symbols in the support library (libsupc++) have their own tag.

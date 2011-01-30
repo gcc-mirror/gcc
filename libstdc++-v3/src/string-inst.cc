@@ -37,7 +37,9 @@
 # define C char
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   typedef basic_string<C> S;
 
@@ -72,12 +74,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     S::_S_construct(const C*, const C*, const allocator<C>&,
 		    forward_iterator_tag);
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::S;
   template bool operator==(const S::iterator&, const S::iterator&);
   template bool operator==(const S::const_iterator&, const S::const_iterator&);
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

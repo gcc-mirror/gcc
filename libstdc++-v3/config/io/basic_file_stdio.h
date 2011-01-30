@@ -41,7 +41,9 @@
 #include <bits/c++io.h>  // for __c_lock and __c_file
 #include <ios>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Generic declaration.
   template<typename _CharT>
@@ -103,6 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       showmanyc();
     };
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif	

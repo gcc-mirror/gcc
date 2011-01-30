@@ -41,7 +41,9 @@
 #include <cstdlib>
 #include <new>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   //
   // Helper functions on raw pointers
@@ -685,7 +687,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #undef _DEFINE_ARRAY_FUNCTION
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 # include <bits/valarray_array.tcc>
 

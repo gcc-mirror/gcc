@@ -32,7 +32,9 @@
 #include <ostream>
 #include <ext/stdio_sync_filebuf.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // string related to iostreams
   template 
@@ -62,15 +64,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     getline(basic_istream<wchar_t>&, wstring&);
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template class stdio_sync_filebuf<char>;
 #ifdef _GLIBCXX_USE_WCHAR_T
   template class stdio_sync_filebuf<wchar_t>;
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 

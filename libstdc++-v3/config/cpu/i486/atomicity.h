@@ -24,7 +24,9 @@
 
 #include <ext/atomicity.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   _Atomic_word 
   __attribute__ ((__unused__))
@@ -45,5 +47,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 			  : "=m" (*__mem) : "ir" (__val), "m" (*__mem));
   }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 

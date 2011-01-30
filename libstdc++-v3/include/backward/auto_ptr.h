@@ -33,7 +33,9 @@
 #include <bits/c++config.h>
 #include <debug/debug.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  A wrapper class to provide auto_ptr with reference semantics.
@@ -287,6 +289,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef void element_type;
     } _GLIBCXX_DEPRECATED_ATTR;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif /* _BACKWARD_AUTO_PTR_H */

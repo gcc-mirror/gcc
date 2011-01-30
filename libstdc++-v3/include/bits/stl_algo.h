@@ -70,7 +70,9 @@
 
 // See concept_check.h for the __glibcxx_*_requires macros.
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Swaps the median value of *__a, *__b and *__c to *__a
   template<typename _Iterator>
@@ -327,7 +329,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       _Integer __count, const _Tp& __val,
 	       std::forward_iterator_tag)
     {
-      __first = _GLIBCXX_STD_P::find(__first, __last, __val);
+      __first = _GLIBCXX_STD_A::find(__first, __last, __val);
       while (__first != __last)
 	{
 	  typename iterator_traits<_ForwardIterator>::difference_type
@@ -343,7 +345,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    return __first;
 	  if (__i == __last)
 	    return __last;
-	  __first = _GLIBCXX_STD_P::find(++__i, __last, __val);
+	  __first = _GLIBCXX_STD_A::find(++__i, __last, __val);
 	}
       return __last;
     }
@@ -506,7 +508,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  while (1)
 	    {
 	      _ForwardIterator1 __new_result
-		= _GLIBCXX_STD_P::search(__first1, __last1, __first2, __last2);
+		= _GLIBCXX_STD_A::search(__first1, __last1, __first2, __last2);
 	      if (__new_result == __last1)
 		return __result;
 	      else
@@ -535,7 +537,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  while (1)
 	    {
 	      _ForwardIterator1 __new_result
-		= _GLIBCXX_STD_P::search(__first1, __last1, __first2,
+		= _GLIBCXX_STD_A::search(__first1, __last1, __first2,
 					 __last2, __comp);
 	      if (__new_result == __last1)
 		return __result;
@@ -569,7 +571,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       _RevIterator1 __rlast1(__first1);
       _RevIterator2 __rlast2(__first2);
-      _RevIterator1 __rresult = _GLIBCXX_STD_P::search(_RevIterator1(__last1),
+      _RevIterator1 __rresult = _GLIBCXX_STD_A::search(_RevIterator1(__last1),
 						       __rlast1,
 						       _RevIterator2(__last2),
 						       __rlast2);
@@ -745,7 +747,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _InputIterator, typename _Predicate>
     inline bool
     none_of(_InputIterator __first, _InputIterator __last, _Predicate __pred)
-    { return __last == _GLIBCXX_STD_P::find_if(__first, __last, __pred); }
+    { return __last == _GLIBCXX_STD_A::find_if(__first, __last, __pred); }
 
   /**
    *  @brief  Checks that a predicate is false for at least an element
@@ -1093,7 +1095,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      __first = _GLIBCXX_STD_P::find(__first, __last, __value);
+      __first = _GLIBCXX_STD_A::find(__first, __last, __value);
       if(__first == __last)
         return __first;
       _ForwardIterator __result = __first;
@@ -1136,7 +1138,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      __first = _GLIBCXX_STD_P::find_if(__first, __last, __pred);
+      __first = _GLIBCXX_STD_A::find_if(__first, __last, __pred);
       if(__first == __last)
         return __first;
       _ForwardIterator __result = __first;
@@ -1176,7 +1178,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
 
       // Skip the beginning, if already unique.
-      __first = _GLIBCXX_STD_P::adjacent_find(__first, __last);
+      __first = _GLIBCXX_STD_A::adjacent_find(__first, __last);
       if (__first == __last)
 	return __last;
 
@@ -1218,7 +1220,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
 
       // Skip the beginning, if already unique.
-      __first = _GLIBCXX_STD_P::adjacent_find(__first, __last, __binary_pred);
+      __first = _GLIBCXX_STD_A::adjacent_find(__first, __last, __binary_pred);
       if (__first == __last)
 	return __last;
 
@@ -2274,7 +2276,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  if (__depth_limit == 0)
 	    {
-	      _GLIBCXX_STD_P::partial_sort(__first, __last, __last);
+	      _GLIBCXX_STD_A::partial_sort(__first, __last, __last);
 	      return;
 	    }
 	  --__depth_limit;
@@ -2296,7 +2298,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  if (__depth_limit == 0)
 	    {
-	      _GLIBCXX_STD_P::partial_sort(__first, __last, __last, __comp);
+	      _GLIBCXX_STD_A::partial_sort(__first, __last, __last, __comp);
 	      return;
 	    }
 	  --__depth_limit;
@@ -2830,7 +2832,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (__len1 <= __len2 && __len1 <= __buffer_size)
 	{
 	  _Pointer __buffer_end = _GLIBCXX_MOVE3(__first, __middle, __buffer);
-	  _GLIBCXX_STD_P::merge(_GLIBCXX_MAKE_MOVE_ITERATOR(__buffer),
+	  _GLIBCXX_STD_A::merge(_GLIBCXX_MAKE_MOVE_ITERATOR(__buffer),
 				_GLIBCXX_MAKE_MOVE_ITERATOR(__buffer_end),
 				_GLIBCXX_MAKE_MOVE_ITERATOR(__middle),
 				_GLIBCXX_MAKE_MOVE_ITERATOR(__last),
@@ -2893,7 +2895,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (__len1 <= __len2 && __len1 <= __buffer_size)
 	{
 	  _Pointer __buffer_end = _GLIBCXX_MOVE3(__first, __middle, __buffer);
-	  _GLIBCXX_STD_P::merge(_GLIBCXX_MAKE_MOVE_ITERATOR(__buffer),
+	  _GLIBCXX_STD_A::merge(_GLIBCXX_MAKE_MOVE_ITERATOR(__buffer),
 				_GLIBCXX_MAKE_MOVE_ITERATOR(__buffer_end),
 				_GLIBCXX_MAKE_MOVE_ITERATOR(__middle),
 				_GLIBCXX_MAKE_MOVE_ITERATOR(__last),
@@ -3155,7 +3157,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       while (__last - __first >= __two_step)
 	{
-	  __result = _GLIBCXX_STD_P::merge(
+	  __result = _GLIBCXX_STD_A::merge(
 			_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
 			_GLIBCXX_MAKE_MOVE_ITERATOR(__first + __step_size),
 			_GLIBCXX_MAKE_MOVE_ITERATOR(__first + __step_size),
@@ -3165,7 +3167,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       __step_size = std::min(_Distance(__last - __first), __step_size);
-      _GLIBCXX_STD_P::merge(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
+      _GLIBCXX_STD_A::merge(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
 			    _GLIBCXX_MAKE_MOVE_ITERATOR(__first +
 							__step_size),
 			    _GLIBCXX_MAKE_MOVE_ITERATOR(__first +
@@ -3186,7 +3188,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       while (__last - __first >= __two_step)
 	{
-	  __result = _GLIBCXX_STD_P::merge(
+	  __result = _GLIBCXX_STD_A::merge(
 			_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
 			_GLIBCXX_MAKE_MOVE_ITERATOR(__first + __step_size),
 			_GLIBCXX_MAKE_MOVE_ITERATOR(__first + __step_size),
@@ -3196,7 +3198,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
       __step_size = std::min(_Distance(__last - __first), __step_size);
 
-      _GLIBCXX_STD_P::merge(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
+      _GLIBCXX_STD_A::merge(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
 			    _GLIBCXX_MAKE_MOVE_ITERATOR(__first +
 							__step_size),
 			    _GLIBCXX_MAKE_MOVE_ITERATOR(__first +
@@ -4143,7 +4145,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       std::advance(__last2, std::distance(__first1, __last1));
       for (_ForwardIterator1 __scan = __first1; __scan != __last1; ++__scan)
 	{
-	  if (__scan != _GLIBCXX_STD_P::find(__first1, __scan, *__scan))
+	  if (__scan != _GLIBCXX_STD_A::find(__first1, __scan, *__scan))
 	    continue; // We've seen this one before.
 
 	  auto __matches = std::count(__first2, __last2, *__scan);
@@ -4190,7 +4192,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  using std::placeholders::_1;
 
-	  if (__scan != _GLIBCXX_STD_P::find_if(__first1, __scan,
+	  if (__scan != _GLIBCXX_STD_A::find_if(__first1, __scan,
 						std::bind(__pred, _1, *__scan)))
 	    continue; // We've seen this one before.
 	  
@@ -4246,9 +4248,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
+_GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   /**
    *  @brief Apply a function to every element of a sequence.
@@ -4557,7 +4559,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
       // Test for a pattern of length 1.
       _ForwardIterator2 __p1(__first2);
       if (++__p1 == __last2)
-	return _GLIBCXX_STD_P::find(__first1, __last1, *__first2);
+	return _GLIBCXX_STD_A::find(__first1, __last1, *__first2);
 
       // General case.
       _ForwardIterator2 __p;
@@ -4565,7 +4567,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 
       for (;;)
 	{
-	  __first1 = _GLIBCXX_STD_P::find(__first1, __last1, *__first2);
+	  __first1 = _GLIBCXX_STD_A::find(__first1, __last1, *__first2);
 	  if (__first1 == __last1)
 	    return __last1;
 
@@ -4695,7 +4697,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
       if (__count <= 0)
 	return __first;
       if (__count == 1)
-	return _GLIBCXX_STD_P::find(__first, __last, __val);
+	return _GLIBCXX_STD_A::find(__first, __last, __val);
       return std::__search_n(__first, __last, __count, __val,
 			     std::__iterator_category(__first));
     }
@@ -6166,6 +6168,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
       return __result;
     }
 
-_GLIBCXX_END_NESTED_NAMESPACE
+_GLIBCXX_END_NAMESPACE_ALGO
+} // namespace std
 
 #endif /* _STL_ALGO_H */

@@ -57,7 +57,9 @@
 #ifndef _STL_FUNCTION_H
 #define _STL_FUNCTION_H 1
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 20.3.1 base classes
   /** @defgroup functors Function Objects
@@ -722,7 +724,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /** @}  */
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #if !defined(__GXX_EXPERIMENTAL_CXX0X__) || _GLIBCXX_DEPRECATED
 # include <backward/binders.h>

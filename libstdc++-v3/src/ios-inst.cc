@@ -29,7 +29,9 @@
 
 #include <ios>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template class basic_ios<char>;
 
@@ -37,4 +39,5 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template class basic_ios<wchar_t>;
 #endif
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

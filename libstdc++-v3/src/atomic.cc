@@ -49,7 +49,9 @@ namespace
     };
 } // anonymous namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __atomic0
   {
@@ -116,7 +118,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   } // namespace __atomic0
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 
 // XXX GLIBCXX_ABI Deprecated

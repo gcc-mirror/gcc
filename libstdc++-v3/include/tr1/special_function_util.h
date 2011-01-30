@@ -37,13 +37,13 @@
 #ifndef _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H
 #define _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H 1
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {
-
   namespace __detail
   {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// A class to encapsulate type dependent floating point
     /// constants.  Not everything will be able to be expressed as
@@ -135,8 +135,8 @@ namespace tr1
 
 #endif
 
+  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
-
 }
 }
 

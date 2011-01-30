@@ -30,7 +30,7 @@
 
 #include <locale>
 
-namespace std 
+namespace std _GLIBCXX_VISIBILITY(default) 
 {
   void
   locale::facet::_S_create_c_locale(__c_locale&, const char*, __c_locale*)

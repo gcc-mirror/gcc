@@ -45,7 +45,9 @@
 #include <atomic>
 #include <bits/functexcept.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @defgroup futures Futures
@@ -1375,7 +1377,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        // && _GLIBCXX_ATOMIC_BUILTINS_4
 
   // @} group futures
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

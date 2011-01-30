@@ -37,7 +37,9 @@
 
 #include <utility>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Adds a const reference to a non-reference type.
   template<typename _Tp>
@@ -797,7 +799,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		const _Index_tuple<_Indexes...>&)
       { return _Tp(std::forward<_Args>(get<_Indexes>(__tuple))...); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

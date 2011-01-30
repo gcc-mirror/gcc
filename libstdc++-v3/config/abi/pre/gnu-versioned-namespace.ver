@@ -35,7 +35,8 @@ GLIBCXX_5.0 {
     _ZNSt2_69has_facetINS_*;
 
     # hash 
-    _ZNSt2_68__detail12__prime_listE;
+    _ZNSt8__detail2_612__prime_listE;
+    _ZNSt3tr18__detail2_612__prime_listE;
 
     # thread/mutex/condition_variable/future
     __once_proxy;
@@ -71,6 +72,13 @@ GLIBCXX_5.0 {
 
     _ZTv0_n*;
 
+    # std::__detail::_List_node_base
+    _ZNSt8__detail2_615_List_node_base7_M_hook*;
+    _ZNSt8__detail2_615_List_node_base9_M_unhookEv;
+    _ZNSt8__detail2_615_List_node_base10_M_reverseEv;
+    _ZNSt8__detail2_615_List_node_base11_M_transfer*;
+    _ZNSt8__detail2_615_List_node_base4swapER*;
+
     # std::__convert_to_v
     _ZNSt2_614__convert_to_v*;
 
@@ -102,19 +110,6 @@ GLIBCXX_5.0 {
     _ZN9__gnu_cxx2_618stdio_sync_filebufI[cw]NSt2_611char_traitsI[cw]EEE[5-9]*;
 
     # debug mode
-# xxx cxx1998?
-    _ZN10__gnu_norm15_List_node_base4hook*;
-    _ZN10__gnu_norm15_List_node_base4swap*;
-    _ZN10__gnu_norm15_List_node_base6unhookEv;
-    _ZN10__gnu_norm15_List_node_base7reverseEv;
-    _ZN10__gnu_norm15_List_node_base8transfer*;
-
-    _ZNSt6__norm15_List_node_base4hook*;
-    _ZNSt6__norm15_List_node_base4swap*;
-    _ZNSt6__norm15_List_node_base6unhookEv;
-    _ZNSt6__norm15_List_node_base7reverseEv;
-    _ZNSt6__norm15_List_node_base8transfer*;
-
     _ZN11__gnu_debug19_Safe_sequence_base12_M_get_mutexEv;
     _ZN11__gnu_debug19_Safe_sequence_base13_M_detach_allEv;
     _ZN11__gnu_debug19_Safe_sequence_base18_M_detach_singularEv;
@@ -135,6 +130,10 @@ GLIBCXX_5.0 {
     _ZNK11__gnu_debug16_Error_formatter15_M_print_string*;
     _ZNK11__gnu_debug16_Error_formatter8_M_error*;
     _ZNK11__gnu_debug16_Error_formatter17_M_get_max_lengthEv;
+
+    # parallel mode
+    _ZN14__gnu_parallel9_Settings3getEv;
+    _ZN14__gnu_parallel9_Settings3setERS0_;
 
   local:
     *;

@@ -1,6 +1,6 @@
-// Debugging mode support code for list -*- C++ -*-
+// Compatibility symbols for previous versions, parallel list -*- C++ -*-
 
-// Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#define _GLIBCXX_DEBUG
+#define _GLIBCXX_BEGIN_NAMESPACE_COMPAT namespace __cxx1998 {
+#define _GLIBCXX_END_NAMESPACE_COMPAT }
 
-#include "list.cc"
-
+#include "compatibility-list-2.cc"

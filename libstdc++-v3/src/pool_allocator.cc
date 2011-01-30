@@ -40,7 +40,9 @@ namespace
   }
 } // anonymous namespace
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Definitions for __pool_alloc_base.
   __pool_alloc_base::_Obj* volatile*
@@ -171,4 +173,5 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   template class __pool_alloc<char>;
   template class __pool_alloc<wchar_t>;
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace

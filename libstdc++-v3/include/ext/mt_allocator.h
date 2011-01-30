@@ -36,7 +36,9 @@
 #include <ext/atomicity.h>
 #include <bits/move.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::size_t;
   using std::ptrdiff_t;
@@ -746,6 +748,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #undef __thread_default
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif

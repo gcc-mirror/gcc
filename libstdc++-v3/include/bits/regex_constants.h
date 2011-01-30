@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,14 +30,16 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std _GLIBCXX_VISIBILITY(default)
+{
 /**
  * @namespace std::regex_constants
  * @brief ISO C++-0x entities sub namespace for regex.
  */
 namespace regex_constants
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /**
    * @name 5.1 Regular Expression Syntax Options
    */
@@ -293,7 +295,7 @@ namespace regex_constants
 
   //@}
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace regex_constants
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 

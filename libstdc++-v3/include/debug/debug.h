@@ -44,7 +44,7 @@
  * @namespace std::__debug
  * @brief GNU debug code, replaces standard behavior with debug behavior.
  */
-namespace std 
+namespace std
 { 
   namespace __debug { } 
 }

@@ -61,7 +61,9 @@
 
 #include <functional>
 
-_GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
+namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   using std::size_t;
   using std::unary_function;
@@ -418,7 +420,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     mem_fun1_ref(_Ret (_Tp::*__f)(_Arg) const)
     { return const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #endif
 

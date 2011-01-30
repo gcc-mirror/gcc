@@ -3,7 +3,7 @@
 // { dg-require-cstdint "" }
 // 2008-07-31 Chris Fairles <chris.fairles@gmail.com>
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,5 +31,5 @@ void test01()
   test_type d;
 }
 
-// { dg-error "rep cannot be a duration" "" { target *-*-* } 218 }
+// { dg-error "rep cannot be a duration" "" { target *-*-* } 226 }
 // { dg-error "instantiated from here" "" { target *-*-* } 31 }

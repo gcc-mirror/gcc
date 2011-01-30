@@ -1,7 +1,7 @@
 // Vector implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+// 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -57,7 +57,9 @@
 #ifndef _VECTOR_TCC
 #define _VECTOR_TCC 1
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Alloc>
     void
@@ -729,20 +731,23 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	}
     }
 
-_GLIBCXX_END_NESTED_NAMESPACE
+_GLIBCXX_END_NAMESPACE_CONTAINER
+} // namespace std
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Alloc>
     size_t
-    hash<_GLIBCXX_STD_D::vector<bool, _Alloc>>::
-    operator()(const _GLIBCXX_STD_D::vector<bool, _Alloc>& __b) const
+    hash<_GLIBCXX_STD_C::vector<bool, _Alloc>>::
+    operator()(const _GLIBCXX_STD_C::vector<bool, _Alloc>& __b) const
     {
       size_t __hash = 0;
-      using _GLIBCXX_STD_D::_S_word_bit;
-      using _GLIBCXX_STD_D::_Bit_type;
+      using _GLIBCXX_STD_C::_S_word_bit;
+      using _GLIBCXX_STD_C::_Bit_type;
 
       const size_t __words = __b.size() / _S_word_bit;
       if (__words)
@@ -768,7 +773,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __hash;
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

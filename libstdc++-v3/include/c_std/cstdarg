@@ -50,10 +50,9 @@
 #define va_end(ap) va_end (ap)
 #endif
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   using ::va_list;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace std
 
 #endif

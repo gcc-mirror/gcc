@@ -51,7 +51,7 @@
 #undef fesetenv
 #undef feupdateenv
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace tr1
 {

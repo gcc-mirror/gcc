@@ -52,8 +52,8 @@
 #undef fesetenv
 #undef feupdateenv
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
+namespace std
+{
   // types
   using ::fenv_t;
   using ::fexcept_t;
@@ -72,8 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   using ::feholdexcept;
   using ::fesetenv;
   using ::feupdateenv;
-
-_GLIBCXX_END_NAMESPACE
+} // namespace
 
 #endif // _GLIBCXX_USE_C99_FENV_TR1
 
