@@ -3381,22 +3381,7 @@ More specific information to @samp{hppa*-hp-hpux*} targets follows.
 @heading @anchor{hppa-hp-hpux10}hppa*-hp-hpux10
 
 For hpux10.20, we @emph{highly} recommend you pick up the latest sed patch
-@code{PHCO_19798} from HP@.  HP has two sites which provide patches free of
-charge:
-
-@itemize @bullet
-@item
-@html
-<a href="http://us.itrc.hp.com/service/home/home.do">US, Canada, Asia-Pacific, and
-Latin-America</a>
-@end html
-@ifnothtml
-@uref{http://us.itrc.hp.com/service/home/home.do,,} US, Canada, Asia-Pacific,
-and Latin-America.
-@end ifnothtml
-@item
-@uref{http://europe.itrc.hp.com/service/home/home.do,,} Europe.
-@end itemize
+@code{PHCO_19798} from HP@.
 
 The C++ ABI has changed incompatibly in GCC 4.0.  COMDAT subspaces are
 used for one-only code and data.  This resolves many of the previous
