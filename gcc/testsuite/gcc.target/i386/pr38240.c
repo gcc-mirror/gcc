@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-msse" } */
 
 typedef float V
   __attribute__ ((__vector_size__ (16), __may_alias__));
