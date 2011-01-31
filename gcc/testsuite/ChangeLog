@@ -1,5 +1,10 @@
 2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR target/45325
+	* gcc.target/i386/pr38240.c: Add dg-options "-msse".
+
+2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* g++.dg/abi/mangle40.C: Pass "" to dg-require-weak.
 
 2011-01-31  Eric Botcazou  <ebotcazou@adacore.com>
