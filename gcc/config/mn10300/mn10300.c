@@ -1996,6 +1996,8 @@ mn10300_regno_in_class_p (unsigned regno, int rclass, bool strict)
       if (!reg_renumber)
 	return false;
       regno = reg_renumber[regno];
+      if (regno == INVALID_REGNUM)
+	return false;
     }
   return TEST_HARD_REG_BIT (reg_class_contents[rclass], regno);
 }
