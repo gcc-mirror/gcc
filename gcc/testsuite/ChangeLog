@@ -1,3 +1,11 @@
+2011-01-31  Nathan Froyd  <froydnj@codesourcery.com>
+
+	Backport from mainline:
+	2010-12-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+        PR target/44606
+        * gcc.dg/pr44606.c: New test.
+
 2011-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/tree-ssa/pr42585.c: Disable on power, arm, sh, s390 and
