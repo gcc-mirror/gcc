@@ -28,10 +28,8 @@ BRANCHES="${BRANCHES} ${ADD_BRANCHES}"
 # This is put into the datestamp files.
 CURR_DATE=`/bin/date +"%Y%m%d"`
 
-# version is all there is
 datestamp_FILES="gcc/DATESTAMP"
 
-FILES="$datestamp_FILES"
 
 # Assume all will go well.
 RESULT=0
@@ -39,14 +37,14 @@ for BRANCH in $BRANCHES; do
   echo "Working on \"$BRANCH\"."
   # Check out the files on the branch.  HEAD is in a different namespace.
   if test "$BRANCH" = HEAD; then 
-    for i in $FILES; do
-      ${SVN} -q co -N ${SVNROOT}/trunk/`dirname $i` `basename $i`
-    done
-  else
-    for i in $FILES; do
-      ${SVN} -q co -N ${SVNROOT}/branches/${BRANCH}/`dirname $i` `basename $i`
-    done
+    SVNROOT2=${SVNROOT}/trunk
+  else    
+    SVNROOT2=${SVNROOT}/branches/${BRANCH}
   fi
+
+  for i in $datestamp_FILES; do
+    ${SVN} -q co -N ${SVNROOT2}/`dirname $i` `basename $i`
+  done
 
   # There are no files to commit yet.
   COMMIT_FILES=""
@@ -78,7 +76,7 @@ for BRANCH in $BRANCHES; do
   fi
   
   # Remove the files.
-  for i in $FILES; do
+  for i in $datestamp_FILES; do
    rm -rf /tmp/$$/`basename $i`
   done
 done
