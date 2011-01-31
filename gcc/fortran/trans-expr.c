@@ -3606,10 +3606,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
         x = f()
      where f is pointer valued, we have to dereference the result.  */
   if (!se->want_pointer && !byref
-      && (sym->attr.pointer || sym->attr.allocatable)
-      && !gfc_is_proc_ptr_comp (expr, NULL))
-    se->expr = build_fold_indirect_ref_loc (input_location,
-					se->expr);
+      && ((!comp && (sym->attr.pointer || sym->attr.allocatable))
+	  || (comp && (comp->attr.pointer || comp->attr.allocatable))))
+    se->expr = build_fold_indirect_ref_loc (input_location, se->expr);
 
   /* f2c calling conventions require a scalar default real function to
      return a double precision result.  Convert this back to default
