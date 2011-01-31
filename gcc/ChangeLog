@@ -1,5 +1,10 @@
 2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	avx_runtime.
+
+2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* configure.ac (gcc_cv_ld_eh_frame_hdr): Update minimal Sun ld
 	version number.
 	* configure: Regenerate.
