@@ -5877,14 +5877,12 @@ resolve_typebound_subroutine (gfc_code *code)
 
   /* Deal with typebound operators for CLASS objects.  */
   expr = code->expr1->value.compcall.base_object;
-  if (expr && expr->symtree->n.sym->ts.type == BT_CLASS
-	&& code->expr1->value.compcall.name)
+  if (expr && expr->ts.type == BT_CLASS && code->expr1->value.compcall.name)
     {
       /* Since the typebound operators are generic, we have to ensure
 	 that any delays in resolution are corrected and that the vtab
 	 is present.  */
-      ts = expr->symtree->n.sym->ts;
-      declared = ts.u.derived;
+      declared = expr->ts.u.derived;
       c = gfc_find_component (declared, "_vptr", true, true);
       if (c->ts.u.derived == NULL)
 	c->ts.u.derived = gfc_find_derived_vtab (declared);
@@ -5895,6 +5893,7 @@ resolve_typebound_subroutine (gfc_code *code)
       /* Use the generic name if it is there.  */
       name = name ? name : code->expr1->value.function.esym->name;
       code->expr1->symtree = expr->symtree;
+      code->expr1->ref = gfc_copy_ref (expr->ref);
       expr->symtree->n.sym->ts.u.derived = declared;
       gfc_add_vptr_component (code->expr1);
       gfc_add_component_ref (code->expr1, name);
