@@ -1768,8 +1768,8 @@ bit_value_binop_1 (enum tree_code code, tree type,
 		   tree r1type, double_int r1val, double_int r1mask,
 		   tree r2type, double_int r2val, double_int r2mask)
 {
-  bool uns = (TREE_CODE (r1type) == INTEGER_TYPE
-	      && TYPE_IS_SIZETYPE (r1type) ? 0 : TYPE_UNSIGNED (r1type));
+  bool uns = (TREE_CODE (type) == INTEGER_TYPE
+	      && TYPE_IS_SIZETYPE (type) ? 0 : TYPE_UNSIGNED (type));
   /* Assume we'll get a constant result.  Use an initial varying value,
      we fall back to varying in the end if necessary.  */
   *mask = double_int_minus_one;
@@ -1836,6 +1836,13 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	    }
 	  else if (shift < 0)
 	    {
+	      /* ???  We can have sizetype related inconsistencies in
+		 the IL.  */
+	      if ((TREE_CODE (r1type) == INTEGER_TYPE
+		   && (TYPE_IS_SIZETYPE (r1type)
+		       ? 0 : TYPE_UNSIGNED (r1type))) != uns)
+		break;
+
 	      shift = -shift;
 	      *mask = double_int_rshift (r1mask, shift,
 					 TYPE_PRECISION (type), !uns);
@@ -1944,6 +1951,14 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	int minmax, maxmin;
 	/* If the most significant bits are not known we know nothing.  */
 	if (double_int_negative_p (r1mask) || double_int_negative_p (r2mask))
+	  break;
+
+	/* For comparisons the signedness is in the comparison operands.  */
+	uns = (TREE_CODE (r1type) == INTEGER_TYPE
+	       && TYPE_IS_SIZETYPE (r1type) ? 0 : TYPE_UNSIGNED (r1type));
+	/* ???  We can have sizetype related inconsistencies in the IL.  */
+	if ((TREE_CODE (r2type) == INTEGER_TYPE
+	     && TYPE_IS_SIZETYPE (r2type) ? 0 : TYPE_UNSIGNED (r2type)) != uns)
 	  break;
 
 	/* If we know the most significant bits we know the values

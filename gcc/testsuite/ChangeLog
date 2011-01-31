@@ -1,3 +1,8 @@
+2011-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47538
+	* gcc.c-torture/execute/pr47538.c: New test.
+
 2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/45325

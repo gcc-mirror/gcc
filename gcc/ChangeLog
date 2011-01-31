@@ -1,3 +1,12 @@
+2011-01-31  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47538
+	* tree-ssa-ccp.c (bit_value_binop_1): For uns computation use
+	type instead of r1type, except for comparisons.  For right
+	shifts and comparisons punt if there are mismatches in
+	sizetype vs. non-sizetype types.
+
 2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords): Document
