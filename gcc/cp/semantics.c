@@ -5477,6 +5477,16 @@ build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
     t = TREE_OPERAND (t, 0);
   if (t == error_mark_node)
     return false;
+  if (TREE_CODE (t) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator i;
+      for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
+	{
+	  if (! build_data_member_initialization (tsi_stmt (i), vec))
+	    return false;
+	}
+      return true;
+    }
   if (TREE_CODE (t) == CLEANUP_STMT)
     {
       /* We can't see a CLEANUP_STMT in a constructor for a literal class,
@@ -5484,18 +5494,7 @@ build_data_member_initialization (tree t, VEC(constructor_elt,gc) **vec)
 	 ignore it; either all the initialization will be constant, in which
 	 case the cleanup can't run, or it can't be constexpr.
 	 Still recurse into CLEANUP_BODY.  */
-      t = CLEANUP_BODY (t);
-      if (TREE_CODE (t) == STATEMENT_LIST)
-	{
-	  tree_stmt_iterator i;
-	  for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
-	    {
-	      if (! build_data_member_initialization (tsi_stmt (i), vec))
-		return false;
-	    }
-	  return true;
-	}
-      return build_data_member_initialization (t, vec);
+      return build_data_member_initialization (CLEANUP_BODY (t), vec);
     }
   if (TREE_CODE (t) == CONVERT_EXPR)
     t = TREE_OPERAND (t, 0);

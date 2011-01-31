@@ -1,3 +1,9 @@
+2011-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/47416
+	* semantics.c (build_data_member_initialization): Handle
+	STATEMENT_LIST always instead of just for CLEANUP_BODY.
+
 2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++spec.c (lang_specific_driver) [HAVE_LD_STATIC_DYNAMIC] Use
