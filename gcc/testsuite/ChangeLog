@@ -1,3 +1,8 @@
+2011-01-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/44031
+	* gcc.c-torture/compile/20110131-1.c: New test.
+
 2011-01-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47042
