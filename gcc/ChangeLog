@@ -1,3 +1,8 @@
+2011-01-31  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (print_operand): Rearrange addends in
+	toc relative expressions as we do in print_operand_address.
+
 2011-01-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/extend.texi: Follow spelling conventions.
@@ -9,7 +14,7 @@
 	* config.gcc (hppa*64*-*-hpux11*, hppa[12]*-*-hpux11*,
 	ia64*-*-hpux*): Use hpux11.opt.
 
-2011-01-30  Jonathan Yong <jon_y@users.sourceforge.net> 
+2011-01-30  Jonathan Yong <jon_y@users.sourceforge.net>
 
 	* config.gcc (i[34567]86-*-pe | i[34567]86-*-cygwin*): Add t-dfprules
 	to tmake_file.
@@ -25,7 +30,7 @@
 	Motorola 68HC11/68HC12 downloads.
 
 2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/extend.texi (Thread-Local): Adjust reference to Ulrich
 	Drepper's paper.
 
@@ -218,8 +223,8 @@
 2011-01-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47190
-	 * cgraphunit.c (process_common_attributes): New function.
-        (process_function_and_variable_attributes): Use it.
+	* cgraphunit.c (process_common_attributes): New function.
+	(process_function_and_variable_attributes): Use it.
 
 2011-01-26  Richard Guenther  <rguenther@suse.de>
 
@@ -917,10 +922,10 @@
 
 	PR c++/47291
 	* dwarf2out.c (generic_type_p, schedule_generic_params_dies_gen)
-    	(gen_scheduled_generic_parms_dies): New functions.
-    	(gen_struct_or_union_type_die): Schedule template parameters DIEs
-    	generation for the end of CU compilation.
-    	(dwarf2out_finish): Generate template parameters DIEs here.
+	(gen_scheduled_generic_parms_dies): New functions.
+	(gen_struct_or_union_type_die): Schedule template parameters DIEs
+	generation for the end of CU compilation.
+	(dwarf2out_finish): Generate template parameters DIEs here.
 
 2011-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -1253,9 +1258,9 @@
 
 2011-01-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/arm/cortex-a9.md (cortex-a9-neon.md): Actually
-        include.
-        (cortex_a9_dp): Handle neon types correctly.
+	* config/arm/cortex-a9.md (cortex-a9-neon.md): Actually
+	include.
+	(cortex_a9_dp): Handle neon types correctly.
 
 2011-01-18  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1429,8 +1434,8 @@
 	(avx_maskstore<ssemodesuffix><avxmodesuffix>): Likewise.
 
 2011-01-17  Olivier Hainque  <hainque@adacore.com>
-            Michael Haubenwallner  <michael.haubenwallner@salomon.at>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/46655
 	* xcoffout.c (ASM_OUTPUT_LINE): Output line only if positive, and only
@@ -1706,7 +1711,7 @@
 	PR debug/PR46973
 	* dwarf2out.c (prune_unused_types_mark_generic_parms_dies): New
 	static function.
-    	(prune_unused_types_mark): Use it.
+	(prune_unused_types_mark): Use it.
 
 2011-01-13  Andrey Belevantsev  <abel@ispras.ru>
 
