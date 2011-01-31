@@ -1364,19 +1364,17 @@ LTGOCOMPILE = $(LIBTOOL) --tag GO --mode=compile $(GOC) $(INCLUDES) \
 GOLINK = $(LIBTOOL) --tag GO --mode-link $(GOC) \
 	$(OPT_LDFLAGS) $(SECTION_LDFLAGS) $(AM_GOCFLAGS) $(LTLDFLAGS) -o $@
 
-# Build a package.
-BUILDARCHIVE = \
+# Build a package.  This builds a .o and a .lo.
+BUILDPACKAGE = \
 	rm -f `echo $@ | sed -e 's|/lib|/|' -e 's/\.a/.gox/'`; \
 	test -d $(@D) || $(MKDIR_P) $(@D); \
 	rm -f $@; \
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g'`; \
-	if $(LTGOCOMPILE) -I . -c -fgo-prefix="libgo_$(@D)" -o $@.$(OBJEXT) $$files; then \
-	  $(AR) rc $@ $@.$(OBJEXT); \
-	else exit 1; fi
+	$(LTGOCOMPILE) -I . -c -fgo-prefix="libgo_$(@D)" -o $@ $$files
 
-# Build a .la file from a .a file.
-.a.la:
-	$(LINK) $<.lo
+# Build a .la file from a .lo file.
+.lo.la:
+	$(LINK) $<
 
 if LIBGO_IS_RTEMS
 use_dejagnu = yes
@@ -1427,995 +1425,1119 @@ CHECK_DEPS = libgo.la libgobegin.a \
 	$(toolexeclibruntime_DATA) \
 	$(toolexeclibtesting_DATA)
 
-asn1/libasn1.a: $(go_asn1_files) bytes.gox fmt.gox io.gox os.gox reflect.gox \
-		strconv.gox strings.gox time.gox
-	$(BUILDARCHIVE)
-asn1/libasn1.la: asn1/libasn1.a
+asn1/libasn1.$(OBJEXT): $(go_asn1_files) bytes.gox fmt.gox io.gox os.gox \
+		reflect.gox strconv.gox strings.gox time.gox
+	$(BUILDPACKAGE)
+asn1/libasn1.lo: asn1/libasn1.$(OBJEXT)
+asn1/libasn1.la: asn1/libasn1.lo
 asn1/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: asn1/check
 
-big/libbig.a: $(go_big_files) fmt.gox rand.gox strings.gox
-	$(BUILDARCHIVE)
-big/libbig.la: big/libbig.a
+big/libbig.$(OBJEXT): $(go_big_files) fmt.gox rand.gox strings.gox
+	$(BUILDPACKAGE)
+big/libbig.lo: big/libbig.$(OBJEXT)
+big/libbig.la: big/libbig.lo
 big/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: big/check
 
-bufio/libbufio.a: $(go_bufio_files) bytes.gox io.gox os.gox strconv.gox \
-		utf8.gox
-	$(BUILDARCHIVE)
-bufio/libbufio.la: bufio/libbufio.a
+bufio/libbufio.$(OBJEXT): $(go_bufio_files) bytes.gox io.gox os.gox \
+		strconv.gox utf8.gox
+	$(BUILDPACKAGE)
+bufio/libbufio.lo: bufio/libbufio.$(OBJEXT)
+bufio/libbufio.la: bufio/libbufio.lo
 bufio/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: bufio/check
 
-bytes/libbytes.a: $(go_bytes_files) $(go_bytes_c_files) io.gox os.gox \
+bytes/bytes.$(OBJEXT): $(go_bytes_files) $(go_bytes_c_files) io.gox os.gox \
 		unicode.gox utf8.gox
 	test -d bytes || $(MKDIR_P) bytes
 	$(LTGOCOMPILE) -I . -c -o bytes/bytes.$(OBJEXT) -fgo-prefix=libgo_bytes $(srcdir)/go/bytes/buffer.go $(srcdir)/go/bytes/bytes.go $(srcdir)/go/bytes/bytes_decl.go
+bytes/index.$(OBJEXT): go/bytes/indexbyte.c bytes/bytes.$(OBJEXT)
 	$(LTCOMPILE) -c -o bytes/index.$(OBJEXT) $(srcdir)/go/bytes/indexbyte.c
-	rm -f $@
-	$(AR) rc $@ bytes/bytes.$(OBJEXT) bytes/index.$(OBJEXT)
-bytes/libbytes.la: bytes/libbytes.a
+bytes/libbytes.la: bytes/bytes.$(OBJEXT) bytes/index.$(OBJEXT)
 	$(LINK) bytes/bytes.lo bytes/index.lo
 bytes/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: bytes/check
 
-cmath/libcmath.a: $(go_cmath_files) math.gox
-	$(BUILDARCHIVE)
-cmath/libcmath.la: cmath/libcmath.a
+cmath/libcmath.$(OBJEXT): $(go_cmath_files) math.gox
+	$(BUILDPACKAGE)
+cmath/libcmath.lo: cmath/libcmath.$(OBJEXT)
+cmath/libcmath.la: cmath/libcmath.lo
 cmath/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: cmath/check
 
-ebnf/libebnf.a: $(go_ebnf_files) container/vector.gox go/scanner.gox \
+ebnf/libebnf.$(OBJEXT): $(go_ebnf_files) container/vector.gox go/scanner.gox \
 		go/token.gox os.gox strconv.gox unicode.gox utf8.gox
-	$(BUILDARCHIVE)
-ebnf/libebnf.la: ebnf/libebnf.a
+	$(BUILDPACKAGE)
+ebnf/libebnf.lo: ebnf/libebnf.$(OBJEXT)
+ebnf/libebnf.la: ebnf/libebnf.lo
 ebnf/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: ebnf/check
 
-exec/libexec.a: $(go_exec_files) os.gox strings.gox
-	$(BUILDARCHIVE)
-exec/libexec.la: exec/libexec.a
+exec/libexec.$(OBJEXT): $(go_exec_files) os.gox strings.gox
+	$(BUILDPACKAGE)
+exec/libexec.lo: exec/libexec.$(OBJEXT)
+exec/libexec.la: exec/libexec.lo
 exec/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: exec/check
 
-expvar/libexpvar.a: $(go_expvar_files) bytes.gox fmt.gox http.gox json.gox \
-		log.gox os.gox runtime.gox strconv.gox sync.gox
-	$(BUILDARCHIVE)
-expvar/libexpvar.la: expvar/libexpvar.a
+expvar/libexpvar.$(OBJEXT): $(go_expvar_files) bytes.gox fmt.gox http.gox \
+		json.gox log.gox os.gox runtime.gox strconv.gox sync.gox
+	$(BUILDPACKAGE)
+expvar/libexpvar.lo: expvar/libexpvar.$(OBJEXT)
+expvar/libexpvar.la: expvar/libexpvar.lo
 expvar/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: expvar/check
 
-flag/libflag.a: $(go_flag_files) fmt.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-flag/libflag.la: flag/libflag.a
+flag/libflag.$(OBJEXT): $(go_flag_files) fmt.gox os.gox strconv.gox
+	$(BUILDPACKAGE)
+flag/libflag.lo: flag/libflag.$(OBJEXT)
+flag/libflag.la: flag/libflag.lo
 flag/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: flag/check
 
-fmt/libfmt.a: $(go_fmt_files) bytes.gox io.gox os.gox reflect.gox strconv.gox \
-		strings.gox unicode.gox utf8.gox
-	$(BUILDARCHIVE)
-fmt/libfmt.la: fmt/libfmt.a
+fmt/libfmt.$(OBJEXT): $(go_fmt_files) bytes.gox io.gox os.gox reflect.gox \
+		strconv.gox strings.gox unicode.gox utf8.gox
+	$(BUILDPACKAGE)
+fmt/libfmt.lo: fmt/libfmt.$(OBJEXT)
+fmt/libfmt.la: fmt/libfmt.lo
 fmt/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: fmt/check
 
-gob/libgob.a: $(go_gob_files) bytes.gox fmt.gox io.gox math.gox os.gox \
-		reflect.gox runtime.gox strings.gox sync.gox unicode.gox \
-		utf8.gox
-	$(BUILDARCHIVE)
-gob/libgob.la: gob/libgob.a
+gob/libgob.$(OBJEXT): $(go_gob_files) bytes.gox fmt.gox io.gox math.gox \
+		os.gox reflect.gox runtime.gox strings.gox sync.gox \
+		unicode.gox utf8.gox
+	$(BUILDPACKAGE)
+gob/libgob.lo: gob/libgob.$(OBJEXT)
+gob/libgob.la: gob/libgob.lo
 gob/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: gob/check
 
-hash/libhash.a: $(go_hash_files) io.gox
-	$(BUILDARCHIVE)
-hash/libhash.la: hash/libhash.a
+hash/libhash.$(OBJEXT): $(go_hash_files) io.gox
+	$(BUILDPACKAGE)
+hash/libhash.lo: hash/libhash.$(OBJEXT)
+hash/libhash.la: hash/libhash.lo
 hash/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: hash/check
 
-html/libhtml.a: $(go_html_files) bytes.gox io.gox os.gox strconv.gox \
+html/libhtml.$(OBJEXT): $(go_html_files) bytes.gox io.gox os.gox strconv.gox \
 		strings.gox utf8.gox
-	$(BUILDARCHIVE)
-html/libhtml.la: html/libhtml.a
+	$(BUILDPACKAGE)
+html/libhtml.lo: html/libhtml.$(OBJEXT)
+html/libhtml.la: html/libhtml.lo
 html/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: html/check
 
-http/libhttp.a: $(go_http_files) bufio.gox bytes.gox container/list.gox \
-		container/vector.gox crypto/rand.gox crypto/tls.gox \
-		encoding/base64.gox fmt.gox io.gox io/ioutil.gox log.gox \
-		mime.gox mime/multipart.gox net.gox os.gox path.gox sort.gox \
-		strconv.gox strings.gox sync.gox time.gox utf8.gox
-	$(BUILDARCHIVE)
-http/libhttp.la: http/libhttp.a
+http/libhttp.$(OBJEXT): $(go_http_files) bufio.gox bytes.gox \
+		container/list.gox container/vector.gox crypto/rand.gox \
+		crypto/tls.gox encoding/base64.gox fmt.gox io.gox \
+		io/ioutil.gox log.gox mime.gox mime/multipart.gox net.gox \
+		os.gox path.gox sort.gox strconv.gox strings.gox sync.gox \
+		time.gox utf8.gox
+	$(BUILDPACKAGE)
+http/libhttp.lo: http/libhttp.$(OBJEXT)
+http/libhttp.la: http/libhttp.lo
 http/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: http/check
 
-image/libimage.a: $(go_image_files) bufio.gox io.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-image/libimage.la: image/libimage.a
+image/libimage.$(OBJEXT): $(go_image_files) bufio.gox io.gox os.gox strconv.gox
+	$(BUILDPACKAGE)
+image/libimage.lo: image/libimage.$(OBJEXT)
+image/libimage.la: image/libimage.lo
 image/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: image/check
 
-io/libio.a: $(go_io_files) os.gox runtime.gox sync.gox
-	$(BUILDARCHIVE)
-io/libio.la: io/libio.a
+io/libio.$(OBJEXT): $(go_io_files) os.gox runtime.gox sync.gox
+	$(BUILDPACKAGE)
+io/libio.lo: io/libio.$(OBJEXT)
+io/libio.la: io/libio.lo
 io/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: io/check
 
-json/libjson.a: $(go_json_files) bytes.gox container/vector.gox fmt.gox \
-		io.gox math.gox os.gox reflect.gox runtime.gox strconv.gox \
-		strings.gox unicode.gox utf16.gox utf8.gox
-	$(BUILDARCHIVE)
-json/libjson.la: json/libjson.a
+json/libjson.$(OBJEXT): $(go_json_files) bytes.gox container/vector.gox \
+		fmt.gox io.gox math.gox os.gox reflect.gox runtime.gox \
+		strconv.gox strings.gox unicode.gox utf16.gox utf8.gox
+	$(BUILDPACKAGE)
+json/libjson.lo: json/libjson.$(OBJEXT)
+json/libjson.la: json/libjson.lo
 json/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: json/check
 
-log/liblog.a: $(go_log_files) bytes.gox fmt.gox io.gox runtime.gox os.gox \
-		sync.gox time.gox
-	$(BUILDARCHIVE)
-log/liblog.la: log/liblog.a
+log/liblog.$(OBJEXT): $(go_log_files) bytes.gox fmt.gox io.gox runtime.gox \
+		os.gox sync.gox time.gox
+	$(BUILDPACKAGE)
+log/liblog.lo: log/liblog.$(OBJEXT)
+log/liblog.la: log/liblog.lo
 log/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: log/check
 
-math/libmath.a: $(go_math_files)
-	$(BUILDARCHIVE)
-math/libmath.la: math/libmath.a
+math/libmath.$(OBJEXT): $(go_math_files)
+	$(BUILDPACKAGE)
+math/libmath.lo: math/libmath.$(OBJEXT)
+math/libmath.la: math/libmath.lo
 math/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: math/check
 
-mime/libmime.a: $(go_mime_files) bufio.gox bytes.gox os.gox strings.gox \
-		sync.gox unicode.gox
-	$(BUILDARCHIVE)
-mime/libmime.la: mime/libmime.a
+mime/libmime.$(OBJEXT): $(go_mime_files) bufio.gox bytes.gox os.gox \
+		strings.gox sync.gox unicode.gox
+	$(BUILDPACKAGE)
+mime/libmime.lo: mime/libmime.$(OBJEXT)
+mime/libmime.la: mime/libmime.lo
 mime/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: mime/check
 
-net/libnet.a: $(go_net_files) bytes.gox fmt.gox io.gox os.gox reflect.gox \
-		strconv.gox strings.gox sync.gox syscall.gox
-	$(BUILDARCHIVE)
-net/libnet.la: net/libnet.a
+net/libnet.$(OBJEXT): $(go_net_files) bytes.gox fmt.gox io.gox os.gox \
+		reflect.gox strconv.gox strings.gox sync.gox syscall.gox
+	$(BUILDPACKAGE)
+net/libnet.lo: net/libnet.$(OBJEXT)
+net/libnet.la: net/libnet.lo
 net/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: net/check
 
-netchan/libnetchan.a: $(go_netchan_files) gob.gox log.gox net.gox os.gox \
-		reflect.gox strconv.gox sync.gox time.gox
-	$(BUILDARCHIVE)
-netchan/libnetchan.la: netchan/libnetchan.a
+netchan/libnetchan.$(OBJEXT): $(go_netchan_files) gob.gox log.gox net.gox \
+		os.gox reflect.gox strconv.gox sync.gox time.gox
+	$(BUILDPACKAGE)
+netchan/libnetchan.lo: netchan/libnetchan.$(OBJEXT)
+netchan/libnetchan.la: netchan/libnetchan.lo
 netchan/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: netchan/check
 
-os/libos.a: $(go_os_files) sync.gox syscall.gox
-	$(BUILDARCHIVE)
-os/libos.la: os/libos.a
+os/libos.$(OBJEXT): $(go_os_files) sync.gox syscall.gox
+	$(BUILDPACKAGE)
+os/libos.lo: os/libos.$(OBJEXT)
+os/libos.la: os/libos.lo
 os/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: os/check
 
-patch/libpatch.a: $(go_patch_files) bytes.gox compress/zlib.gox \
+patch/libpatch.$(OBJEXT): $(go_patch_files) bytes.gox compress/zlib.gox \
 		crypto/sha1.gox encoding/git85.gox fmt.gox io.gox os.gox \
 		path.gox strings.gox
-	$(BUILDARCHIVE)
-patch/libpatch.la: patch/libpatch.a
+	$(BUILDPACKAGE)
+patch/libpatch.lo: patch/libpatch.$(OBJEXT)
+patch/libpatch.la: patch/libpatch.lo
 patch/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: patch/check
 
-path/libpath.a: $(go_path_files) io/ioutil.gox os.gox sort.gox strings.gox \
-		utf8.gox
-	$(BUILDARCHIVE)
-path/libpath.la: path/libpath.a
+path/libpath.$(OBJEXT): $(go_path_files) io/ioutil.gox os.gox sort.gox \
+		strings.gox utf8.gox
+	$(BUILDPACKAGE)
+path/libpath.lo: path/libpath.$(OBJEXT)
+path/libpath.la: path/libpath.lo
 path/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: path/check
 
-rand/librand.a: $(go_rand_files) math.gox sync.gox
-	$(BUILDARCHIVE)
-rand/librand.la: rand/librand.a
+rand/librand.$(OBJEXT): $(go_rand_files) math.gox sync.gox
+	$(BUILDPACKAGE)
+rand/librand.lo: rand/librand.$(OBJEXT)
+rand/librand.la: rand/librand.lo
 rand/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: rand/check
 
-reflect/libreflect.a: $(go_reflect_files) math.gox runtime.gox strconv.gox \
-		sync.gox
-	$(BUILDARCHIVE)
-reflect/libreflect.la: reflect/libreflect.a
+reflect/libreflect.$(OBJEXT): $(go_reflect_files) math.gox runtime.gox \
+		strconv.gox sync.gox
+	$(BUILDPACKAGE)
+reflect/libreflect.lo: reflect/libreflect.$(OBJEXT)
+reflect/libreflect.la: reflect/libreflect.lo
 reflect/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: reflect/check
 
-regexp/libregexp.a: $(go_regexp_files) bytes.gox io.gox os.gox strings.gox \
-		utf8.gox
-	$(BUILDARCHIVE)
-regexp/libregexp.la: regexp/libregexp.a
+regexp/libregexp.$(OBJEXT): $(go_regexp_files) bytes.gox io.gox os.gox \
+		strings.gox utf8.gox
+	$(BUILDPACKAGE)
+regexp/libregexp.lo: regexp/libregexp.$(OBJEXT)
+regexp/libregexp.la: regexp/libregexp.lo
 regexp/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: regexp/check
 
-rpc/librpc.a: $(go_rpc_files) bufio.gox fmt.gox gob.gox http.gox io.gox \
-		log.gox net.gox os.gox reflect.gox sort.gox strings.gox \
-		strconv.gox sync.gox template.gox unicode.gox utf8.gox
-	$(BUILDARCHIVE)
-rpc/librpc.la: rpc/librpc.a
+rpc/librpc.$(OBJEXT): $(go_rpc_files) bufio.gox fmt.gox gob.gox http.gox \
+		io.gox log.gox net.gox os.gox reflect.gox sort.gox \
+		strings.gox strconv.gox sync.gox template.gox unicode.gox \
+		utf8.gox
+	$(BUILDPACKAGE)
+rpc/librpc.lo: rpc/librpc.$(OBJEXT)
+rpc/librpc.la: rpc/librpc.lo
 rpc/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: rpc/check
 
-runtime/libruntime.a: $(go_runtime_files)
-	$(BUILDARCHIVE)
-runtime/libruntime.la: runtime/libruntime.a
+runtime/libruntime.$(OBJEXT): $(go_runtime_files)
+	$(BUILDPACKAGE)
+runtime/libruntime.lo: runtime/libruntime.$(OBJEXT)
+runtime/libruntime.la: runtime/libruntime.lo
 runtime/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: runtime/check
 
-scanner/libscanner.a: $(go_scanner_files) bytes.gox fmt.gox io.gox os.gox \
-		unicode.gox utf8.gox
-	$(BUILDARCHIVE)
-scanner/libscanner.la: scanner/libscanner.a
+scanner/libscanner.$(OBJEXT): $(go_scanner_files) bytes.gox fmt.gox io.gox \
+		os.gox unicode.gox utf8.gox
+	$(BUILDPACKAGE)
+scanner/libscanner.lo: scanner/libscanner.$(OBJEXT)
+scanner/libscanner.la: scanner/libscanner.lo
 scanner/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: scanner/check
 
-smtp/libsmtp.a: $(go_smtp_files) crypto/tls.gox encoding/base64.gox io.gox \
-		net.gox net/textproto.gox os.gox strings.gox
-	$(BUILDARCHIVE)
-smtp/libsmtp.la: smtp/libsmtp.a
+smtp/libsmtp.$(OBJEXT): $(go_smtp_files) crypto/tls.gox encoding/base64.gox \
+		io.gox net.gox net/textproto.gox os.gox strings.gox
+	$(BUILDPACKAGE)
+smtp/libsmtp.lo: smtp/libsmtp.$(OBJEXT)
+smtp/libsmtp.la: smtp/libsmtp.lo
 smtp/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: smtp/check
 
-sort/libsort.a: $(go_sort_files)
-	$(BUILDARCHIVE)
-sort/libsort.la: sort/libsort.a
+sort/libsort.$(OBJEXT): $(go_sort_files)
+	$(BUILDPACKAGE)
+sort/libsort.lo: sort/libsort.$(OBJEXT)
+sort/libsort.la: sort/libsort.lo
 sort/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: sort/check
 
-strconv/libstrconv.a: $(go_strconv_files) bytes.gox math.gox os.gox \
+strconv/libstrconv.$(OBJEXT): $(go_strconv_files) bytes.gox math.gox os.gox \
 		strings.gox unicode.gox utf8.gox
-	$(BUILDARCHIVE)
-strconv/libstrconv.la: strconv/libstrconv.a
+	$(BUILDPACKAGE)
+strconv/libstrconv.lo: strconv/libstrconv.$(OBJEXT)
+strconv/libstrconv.la: strconv/libstrconv.lo
 strconv/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: strconv/check
 
-strings/libstrings.a: $(go_strings_files) os.gox unicode.gox utf8.gox
-	$(BUILDARCHIVE)
-strings/libstrings.la: strings/libstrings.a
+strings/libstrings.$(OBJEXT): $(go_strings_files) os.gox unicode.gox utf8.gox
+	$(BUILDPACKAGE)
+strings/libstrings.lo: strings/libstrings.$(OBJEXT)
+strings/libstrings.la: strings/libstrings.lo
 strings/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: strings/check
 
-sync/libsync.a: $(go_sync_files) $(go_sync_c_files) runtime.gox
+sync/mutex.$(OBJEXT): $(go_sync_files) $(go_sync_c_files) runtime.gox
 	test -d sync || $(MKDIR_P) sync
 	$(LTGOCOMPILE) -I . -c -o sync/mutex.$(OBJEXT) -fgo-prefix=libgo_sync $(srcdir)/go/sync/mutex.go $(srcdir)/go/sync/once.go $(srcdir)/go/sync/rwmutex.go
+sync/cas.$(OBJEXT): $(srcdir)/go/sync/cas.c sync/mutex.$(OBJEXT)
 	$(LTCOMPILE) -c -o sync/cas.$(OBJEXT) $(srcdir)/go/sync/cas.c
-	rm -f $@
-	$(AR) rc $@ sync/mutex.$(OBJEXT) sync/cas.$(OBJEXT)
-sync/libsync.la: sync/libsync.a
+sync/libsync.la: sync/mutex.$(OBJEXT) sync/cas.$(OBJEXT)
 	$(LINK) sync/mutex.lo sync/cas.lo
 sync/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: sync/check
 
-syslog/libsyslog.a: $(go_syslog_files) fmt.gox log.gox net.gox os.gox
-	$(BUILDARCHIVE)
-syslog/libsyslog.la: syslog/libsyslog.a
+syslog/libsyslog.$(OBJEXT): $(go_syslog_files) fmt.gox log.gox net.gox os.gox
+	$(BUILDPACKAGE)
+syslog/libsyslog.lo: syslog/libsyslog.$(OBJEXT)
+syslog/libsyslog.la: syslog/libsyslog.lo
 syslog/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: syslog/check
 
-tabwriter/libtabwriter.a: $(go_tabwriter_files) bytes.gox io.gox os.gox \
-		utf8.gox
-	$(BUILDARCHIVE)
-tabwriter/libtabwriter.la: tabwriter/libtabwriter.a
+tabwriter/libtabwriter.$(OBJEXT): $(go_tabwriter_files) bytes.gox io.gox \
+		os.gox utf8.gox
+	$(BUILDPACKAGE)
+tabwriter/libtabwriter.lo: tabwriter/libtabwriter.$(OBJEXT)
+tabwriter/libtabwriter.la: tabwriter/libtabwriter.lo
 tabwriter/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: tabwriter/check
 
-template/libtemplate.a: $(go_template_files) bytes.gox fmt.gox io.gox os.gox \
-		reflect.gox runtime.gox strings.gox container/vector.gox
-	$(BUILDARCHIVE)
-template/libtemplate.la: template/libtemplate.a
+template/libtemplate.$(OBJEXT): $(go_template_files) bytes.gox fmt.gox io.gox \
+		os.gox reflect.gox runtime.gox strings.gox container/vector.gox
+	$(BUILDPACKAGE)
+template/libtemplate.lo: template/libtemplate.$(OBJEXT)
+template/libtemplate.la: template/libtemplate.lo
 template/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: template/check
 
-testing/libtesting.a: $(go_testing_files) flag.gox fmt.gox os.gox regexp.gox \
-		runtime.gox time.gox
-	$(BUILDARCHIVE)
-testing/libtesting.la: testing/libtesting.a
+testing/libtesting.$(OBJEXT): $(go_testing_files) flag.gox fmt.gox os.gox \
+		regexp.gox runtime.gox time.gox
+	$(BUILDPACKAGE)
+testing/libtesting.lo: testing/libtesting.$(OBJEXT)
+testing/libtesting.la: testing/libtesting.lo
 testing/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: testing/check
 
-time/libtime.a: $(go_time_files) bytes.gox container/heap.gox io/ioutil.gox \
-		os.gox strconv.gox sync.gox syscall.gox
-	$(BUILDARCHIVE)
-time/libtime.la: time/libtime.a
+time/libtime.$(OBJEXT): $(go_time_files) bytes.gox container/heap.gox \
+		io/ioutil.gox os.gox strconv.gox sync.gox syscall.gox
+	$(BUILDPACKAGE)
+time/libtime.lo: time/libtime.$(OBJEXT)
+time/libtime.la: time/libtime.lo
 time/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: time/check
 
-try/libtry.a: $(go_try_files) fmt.gox io.gox os.gox reflect.gox unicode.gox
-	$(BUILDARCHIVE)
-try/libtry.la: try/libtry.a
+try/libtry.$(OBJEXT): $(go_try_files) fmt.gox io.gox os.gox reflect.gox \
+		unicode.gox
+	$(BUILDPACKAGE)
+try/libtry.lo: try/libtry.$(OBJEXT)
+try/libtry.la: try/libtry.lo
 try/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: try/check
 
-unicode/libunicode.a: $(go_unicode_files)
-	$(BUILDARCHIVE)
-unicode/libunicode.la: unicode/libunicode.a
+unicode/libunicode.$(OBJEXT): $(go_unicode_files)
+	$(BUILDPACKAGE)
+unicode/libunicode.lo: unicode/libunicode.$(OBJEXT)
+unicode/libunicode.la: unicode/libunicode.lo
 unicode/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: unicode/check
 
-utf16/libutf16.a: $(go_utf16_files) unicode.gox
-	$(BUILDARCHIVE)
-utf16/libutf16.la: utf16/libutf16.a
+utf16/libutf16.$(OBJEXT): $(go_utf16_files) unicode.gox
+	$(BUILDPACKAGE)
+utf16/libutf16.lo: utf16/libutf16.$(OBJEXT)
+utf16/libutf16.la: utf16/libutf16.lo
 utf16/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: utf16/check
 
-utf8/libutf8.a: $(go_utf8_files) unicode.gox
-	$(BUILDARCHIVE)
-utf8/libutf8.la: utf8/libutf8.a
+utf8/libutf8.$(OBJEXT): $(go_utf8_files) unicode.gox
+	$(BUILDPACKAGE)
+utf8/libutf8.lo: utf8/libutf8.$(OBJEXT)
+utf8/libutf8.la: utf8/libutf8.lo
 utf8/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: utf8/check
 
-websocket/libwebsocket.a: $(go_websocket_files) bufio.gox bytes.gox \
+websocket/libwebsocket.$(OBJEXT): $(go_websocket_files) bufio.gox bytes.gox \
 		container/vector.gox crypto/md5.gox crypto/tls.gox \
 		encoding/binary.gox fmt.gox http.gox io.gox net.gox os.gox \
 		rand.gox strings.gox
-	$(BUILDARCHIVE)
-websocket/libwebsocket.la: websocket/libwebsocket.a
+	$(BUILDPACKAGE)
+websocket/libwebsocket.lo: websocket/libwebsocket.$(OBJEXT)
+websocket/libwebsocket.la: websocket/libwebsocket.lo
 websocket/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: websocket/check
 
-xml/libxml.a: $(go_xml_files) bufio.gox bytes.gox fmt.gox io.gox os.gox \
-		reflect.gox strconv.gox strings.gox unicode.gox utf8.gox
-	$(BUILDARCHIVE)
-xml/libxml.la: xml/libxml.a
+xml/libxml.$(OBJEXT): $(go_xml_files) bufio.gox bytes.gox fmt.gox io.gox \
+		os.gox reflect.gox strconv.gox strings.gox unicode.gox utf8.gox
+	$(BUILDPACKAGE)
+xml/libxml.lo: xml/libxml.$(OBJEXT)
+xml/libxml.la: xml/libxml.lo
 xml/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: xml/check
 
-archive/libtar.a: $(go_archive_tar_files) bytes.gox io.gox os.gox strconv.gox \
-		strings.gox
-	$(BUILDARCHIVE)
-archive/libtar.la: archive/libtar.a
+archive/libtar.$(OBJEXT): $(go_archive_tar_files) bytes.gox io.gox os.gox \
+		strconv.gox strings.gox
+	$(BUILDPACKAGE)
+archive/libtar.lo: archive/libtar.$(OBJEXT)
+archive/libtar.la: archive/libtar.lo
 archive/tar/check: $(CHECK_DEPS)
 	@$(MKDIR_P) archive/tar
 	$(CHECK)
 .PHONY: archive/tar/check
 
-archive/libzip.a: $(go_archive_zip_files) bufio.gox bytes.gox \
+archive/libzip.$(OBJEXT): $(go_archive_zip_files) bufio.gox bytes.gox \
 		compress/flate.gox hash.gox hash/crc32.gox \
 		encoding/binary.gox io.gox os.gox
-	$(BUILDARCHIVE)
-archive/libzip.la: archive/libzip.a
+	$(BUILDPACKAGE)
+archive/libzip.lo: archive/libzip.$(OBJEXT)
+archive/libzip.la: archive/libzip.lo
 archive/zip/check: $(CHECK_DEPS)
 	@$(MKDIR_P) archive/zip
 	$(CHECK)
 .PHONY: archive/zip/check
 
-compress/libflate.a: $(go_compress_flate_files) bufio.gox io.gox math.gox \
-		os.gox sort.gox strconv.gox
-	$(BUILDARCHIVE)
-compress/libflate.la: compress/libflate.a
+compress/libflate.$(OBJEXT): $(go_compress_flate_files) bufio.gox io.gox \
+		math.gox os.gox sort.gox strconv.gox
+	$(BUILDPACKAGE)
+compress/libflate.lo: compress/libflate.$(OBJEXT)
+compress/libflate.la: compress/libflate.lo
 compress/flate/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/flate
 	$(CHECK)
 .PHONY: compress/flate/check
 
-compress/libgzip.a: $(go_compress_gzip_files) bufio.gox compress/flate.gox \
-		hash.gox hash/crc32.gox io.gox os.gox
-	$(BUILDARCHIVE)
-compress/libgzip.la: compress/libgzip.a
+compress/libgzip.$(OBJEXT): $(go_compress_gzip_files) bufio.gox \
+		compress/flate.gox hash.gox hash/crc32.gox io.gox os.gox
+	$(BUILDPACKAGE)
+compress/libgzip.lo: compress/libgzip.$(OBJEXT)
+compress/libgzip.la: compress/libgzip.lo
 compress/gzip/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/gzip
 	$(CHECK)
 .PHONY: compress/gzip/check
 
-compress/libzlib.a: $(go_compress_zlib_files) bufio.gox compress/flate.gox \
-		hash.gox hash/adler32.gox io.gox os.gox
-	$(BUILDARCHIVE)
-compress/libzlib.la: compress/libzlib.a
+compress/libzlib.$(OBJEXT): $(go_compress_zlib_files) bufio.gox \
+		compress/flate.gox hash.gox hash/adler32.gox io.gox os.gox
+	$(BUILDPACKAGE)
+compress/libzlib.lo: compress/libzlib.$(OBJEXT)
+compress/libzlib.la: compress/libzlib.lo
 compress/zlib/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/zlib
 	$(CHECK)
 .PHONY: compress/zlib/check
 
-container/libheap.a: $(go_container_heap_files) sort.gox
-	$(BUILDARCHIVE)
-container/libheap.la: container/libheap.a
+container/libheap.$(OBJEXT): $(go_container_heap_files) sort.gox
+	$(BUILDPACKAGE)
+container/libheap.lo: container/libheap.$(OBJEXT)
+container/libheap.la: container/libheap.lo
 container/heap/check: $(CHECK_DEPS)
 	@$(MKDIR_P) container/heap
 	$(CHECK)
 .PHONY: container/heap/check
 
-container/liblist.a: $(go_container_list_files)
-	$(BUILDARCHIVE)
-container/liblist.la: container/liblist.a
+container/liblist.$(OBJEXT): $(go_container_list_files)
+	$(BUILDPACKAGE)
+container/liblist.lo: container/liblist.$(OBJEXT)
+container/liblist.la: container/liblist.lo
 container/list/check: $(CHECK_DEPS)
 	@$(MKDIR_P) container/list
 	$(CHECK)
 .PHONY: container/list/check
 
-container/libring.a: $(go_container_ring_files)
-	$(BUILDARCHIVE)
-container/libring.la: container/libring.a
+container/libring.$(OBJEXT): $(go_container_ring_files)
+	$(BUILDPACKAGE)
+container/libring.lo: container/libring.$(OBJEXT)
+container/libring.la: container/libring.lo
 container/ring/check: $(CHECK_DEPS)
 	@$(MKDIR_P) container/ring
 	$(CHECK)
 .PHONY: container/ring/check
 
-container/libvector.a: $(go_container_vector_files)
-	$(BUILDARCHIVE)
-container/libvector.la: container/libvector.a
+container/libvector.$(OBJEXT): $(go_container_vector_files)
+	$(BUILDPACKAGE)
+container/libvector.lo: container/libvector.$(OBJEXT)
+container/libvector.la: container/libvector.lo
 container/vector/check: $(CHECK_DEPS)
 	@$(MKDIR_P) container/vector
 	$(CHECK)
 .PHONY: container/vector/check
 
-crypto/libaes.a: $(go_crypto_aes_files) os.gox strconv.gox
-	$(BUILDARCHIVE)
-crypto/libaes.la: crypto/libaes.a
+crypto/libaes.$(OBJEXT): $(go_crypto_aes_files) os.gox strconv.gox
+	$(BUILDPACKAGE)
+crypto/libaes.lo: crypto/libaes.$(OBJEXT)
+crypto/libaes.la: crypto/libaes.lo
 crypto/aes/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/aes
 	$(CHECK)
 .PHONY: crypto/aes/check
 
-crypto/libblock.a: $(go_crypto_block_files) fmt.gox io.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-crypto/libblock.la: crypto/libblock.a
+crypto/libblock.$(OBJEXT): $(go_crypto_block_files) fmt.gox io.gox os.gox \
+		strconv.gox
+	$(BUILDPACKAGE)
+crypto/libblock.lo: crypto/libblock.$(OBJEXT)
+crypto/libblock.la: crypto/libblock.lo
 crypto/block/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/block
 	$(CHECK)
 .PHONY: crypto/block/check
 
-crypto/libblowfish.a: $(go_crypto_blowfish_files) os.gox strconv.gox
-	$(BUILDARCHIVE)
-crypto/libblowfish.la: crypto/libblowfish.a
+crypto/libblowfish.$(OBJEXT): $(go_crypto_blowfish_files) os.gox strconv.gox
+	$(BUILDPACKAGE)
+crypto/libblowfish.lo: crypto/libblowfish.$(OBJEXT)
+crypto/libblowfish.la: crypto/libblowfish.lo
 crypto/blowfish/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/blowfish
 	$(CHECK)
 .PHONY: crypto/blowfish/check
 
-crypto/libcast5.a: $(go_crypto_cast5_files) os.gox
-	$(BUILDARCHIVE)
-crypto/libcast5.la: crypto/libcast5.a
+crypto/libcast5.$(OBJEXT): $(go_crypto_cast5_files) os.gox
+	$(BUILDPACKAGE)
+crypto/libcast5.lo: crypto/libcast5.$(OBJEXT)
+crypto/libcast5.la: crypto/libcast5.lo
 crypt/cast5/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/cast5
 	$(CHECK)
 .PHONY: crypto/cast5/check
 
-crypto/libcipher.a: $(go_crypto_cipher_files) io.gox os.gox
-	$(BUILDARCHIVE)
-crypto/libcipher.la: crypto/libcipher.a
+crypto/libcipher.$(OBJEXT): $(go_crypto_cipher_files) io.gox os.gox
+	$(BUILDPACKAGE)
+crypto/libcipher.lo: crypto/libcipher.$(OBJEXT)
+crypto/libcipher.la: crypto/libcipher.lo
 crypto/cipher/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/cipher
 	$(CHECK)
 .PHONY: crypto/cipher/check
 
-crypto/libelliptic.a: $(go_crypto_elliptic_files) big.gox io.gox os.gox \
-		sync.gox
-	$(BUILDARCHIVE)
-crypto/libelliptic.la: crypto/libelliptic.a
+crypto/libelliptic.$(OBJEXT): $(go_crypto_elliptic_files) big.gox io.gox \
+		os.gox sync.gox
+	$(BUILDPACKAGE)
+crypto/libelliptic.lo: crypto/libelliptic.$(OBJEXT)
+crypto/libelliptic.la: crypto/libelliptic.lo
 crypto/elliptic/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/elliptic
 	$(CHECK)
 .PHONY: crypto/elliptic/check
 
-crypto/libhmac.a: $(go_crypto_hmac_files) crypto/md5.gox crypto/sha1.gox \
-		crypto/sha256.gox hash.gox os.gox
-	$(BUILDARCHIVE)
-crypto/libhmac.la: crypto/libhmac.a
+crypto/libhmac.$(OBJEXT): $(go_crypto_hmac_files) crypto/md5.gox \
+		crypto/sha1.gox crypto/sha256.gox hash.gox os.gox
+	$(BUILDPACKAGE)
+crypto/libhmac.lo: crypto/libhmac.$(OBJEXT)
+crypto/libhmac.la: crypto/libhmac.lo
 crypto/hmac/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/hmac
 	$(CHECK)
 .PHONY: crypto/hmac/check
 
-crypto/libmd4.a: $(go_crypto_md4_files) hash.gox os.gox
-	$(BUILDARCHIVE)
-crypto/libmd4.la: crypto/libmd4.a
+crypto/libmd4.$(OBJEXT): $(go_crypto_md4_files) hash.gox os.gox
+	$(BUILDPACKAGE)
+crypto/libmd4.lo: crypto/libmd4.$(OBJEXT)
+crypto/libmd4.la: crypto/libmd4.lo
 crypto/md4/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/md4
 	$(CHECK)
 .PHONY: crypto/md4/check
 
-crypto/libmd5.a: $(go_crypto_md5_files) hash.gox os.gox
-	$(BUILDARCHIVE)
-crypto/libmd5.la: crypto/libmd5.a
+crypto/libmd5.$(OBJEXT): $(go_crypto_md5_files) hash.gox os.gox
+	$(BUILDPACKAGE)
+crypto/libmd5.lo: crypto/libmd5.$(OBJEXT)
+crypto/libmd5.la: crypto/libmd5.lo
 crypto/md5/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/md5
 	$(CHECK)
 .PHONY: crypto/md5/check
 
-crypto/libocsp.a: $(go_crypto_ocsp_files) asn1.gox crypto/rsa.gox \
+crypto/libocsp.$(OBJEXT): $(go_crypto_ocsp_files) asn1.gox crypto/rsa.gox \
 		crypto/sha1.gox crypto/x509.gox os.gox time.gox
-	$(BUILDARCHIVE)
-crypto/libocsp.la: crypto/libocsp.a
+	$(BUILDPACKAGE)
+crypto/libocsp.lo: crypto/libocsp.$(OBJEXT)
+crypto/libocsp.la: crypto/libocsp.lo
 crypto/ocsp/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/ocsp
 	$(CHECK)
 .PHONY: crypto/ocsp/check
 
-crypto/librand.a: $(go_crypto_rand_files) crypto/aes.gox io.gox os.gox \
+crypto/librand.$(OBJEXT): $(go_crypto_rand_files) crypto/aes.gox io.gox os.gox \
 		sync.gox time.gox
-	$(BUILDARCHIVE)
-crypto/librand.la: crypto/librand.a
+	$(BUILDPACKAGE)
+crypto/librand.lo: crypto/librand.$(OBJEXT)
+crypto/librand.la: crypto/librand.lo
 crypto/rand/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rand
 	$(CHECK)
 .PHONY: crypto/rand/check
 
-crypto/librc4.a: $(go_crypto_rc4_files) os.gox strconv.gox
-	$(BUILDARCHIVE)
-crypto/librc4.la: crypto/librc4.a
+crypto/librc4.$(OBJEXT): $(go_crypto_rc4_files) os.gox strconv.gox
+	$(BUILDPACKAGE)
+crypto/librc4.lo: crypto/librc4.$(OBJEXT)
+crypto/librc4.la: crypto/librc4.lo
 crypto/rc4/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rc4
 	$(CHECK)
 .PHONY: crypto/rc4/check
 
-crypto/libripemd160.a: $(go_crypto_ripemd160_files) hash.gox os.gox
-	$(BUILDARCHIVE)
-crypto/libripemd160.la: crypto/libripemd160.a
+crypto/libripemd160.$(OBJEXT): $(go_crypto_ripemd160_files) hash.gox os.gox
+	$(BUILDPACKAGE)
+crypto/libripemd160.lo: crypto/libripemd160.$(OBJEXT)
+crypto/libripemd160.la: crypto/libripemd160.lo
 crypto/ripemd160/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/ripemd160
 	$(CHECK)
 .PHONY: crypto/ripemd160/check
 
-crypto/librsa.a: $(go_crypto_rsa_files) big.gox crypto/sha1.gox \
+crypto/librsa.$(OBJEXT): $(go_crypto_rsa_files) big.gox crypto/sha1.gox \
 		crypto/subtle.gox encoding/hex.gox hash.gox io.gox os.gox
-	$(BUILDARCHIVE)
-crypto/librsa.la: crypto/librsa.a
+	$(BUILDPACKAGE)
+crypto/librsa.lo: crypto/librsa.$(OBJEXT)
+crypto/librsa.la: crypto/librsa.lo
 crypto/rsa/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rsa
 	$(CHECK)
 .PHONY: crypto/rsa/check
 
-crypto/libsha1.a: $(go_crypto_sha1_files) hash.gox os.gox
-	$(BUILDARCHIVE)
-crypto/libsha1.la: crypto/libsha1.a
+crypto/libsha1.$(OBJEXT): $(go_crypto_sha1_files) hash.gox os.gox
+	$(BUILDPACKAGE)
+crypto/libsha1.lo: crypto/libsha1.$(OBJEXT)
+crypto/libsha1.la: crypto/libsha1.lo
 crypto/sha1/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha1
 	$(CHECK)
 .PHONY: crypto/sha1/check
 
-crypto/libsha256.a: $(go_crypto_sha256_files) hash.gox os.gox
-	$(BUILDARCHIVE)
-crypto/libsha256.la: crypto/libsha256.a
+crypto/libsha256.$(OBJEXT): $(go_crypto_sha256_files) hash.gox os.gox
+	$(BUILDPACKAGE)
+crypto/libsha256.lo: crypto/libsha256.$(OBJEXT)
+crypto/libsha256.la: crypto/libsha256.lo
 crypto/sha256/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha256
 	$(CHECK)
 .PHONY: crypto/sha256/check
 
-crypto/libsha512.a: $(go_crypto_sha512_files) hash.gox os.gox
-	$(BUILDARCHIVE)
-crypto/libsha512.la: crypto/libsha512.a
+crypto/libsha512.$(OBJEXT): $(go_crypto_sha512_files) hash.gox os.gox
+	$(BUILDPACKAGE)
+crypto/libsha512.lo: crypto/libsha512.$(OBJEXT)
+crypto/libsha512.la: crypto/libsha512.lo
 crypto/sha512/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha512
 	$(CHECK)
 .PHONY: crypto/sha512/check
 
-crypto/libsubtle.a: $(go_crypto_subtle_files)
-	$(BUILDARCHIVE)
-crypto/libsubtle.la: crypto/libsubtle.a
+crypto/libsubtle.$(OBJEXT): $(go_crypto_subtle_files)
+	$(BUILDPACKAGE)
+crypto/libsubtle.lo: crypto/libsubtle.$(OBJEXT)
+crypto/libsubtle.la: crypto/libsubtle.lo
 crypto/subtle/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/subtle
 	$(CHECK)
 .PHONY: crypto/subtle/check
 
-crypto/libtls.a: $(go_crypto_tls_files) big.gox bufio.gox bytes.gox \
+crypto/libtls.$(OBJEXT): $(go_crypto_tls_files) big.gox bufio.gox bytes.gox \
 		container/list.gox crypto/aes.gox crypto/cipher.gox \
 		crypto/elliptic.gox crypto/hmac.gox crypto/md5.gox \
 		crypto/rc4.gox crypto/rand.gox crypto/rsa.gox crypto/sha1.gox \
 		crypto/subtle.gox crypto/rsa.gox crypto/sha1.gox \
 		crypto/x509.gox encoding/pem.gox fmt.gox hash.gox io.gox \
 		io/ioutil.gox net.gox os.gox strings.gox sync.gox time.gox
-	$(BUILDARCHIVE)
-crypto/libtls.la: crypto/libtls.a
+	$(BUILDPACKAGE)
+crypto/libtls.lo: crypto/libtls.$(OBJEXT)
+crypto/libtls.la: crypto/libtls.lo
 crypto/tls/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/tls
 	$(CHECK)
 .PHONY: crypto/tls/check
 
-crypto/libtwofish.a: $(go_crypto_twofish_files) os.gox strconv.gox
-	$(BUILDARCHIVE)
-crypto/libtwofish.la: crypto/libtwofish.a
+crypto/libtwofish.$(OBJEXT): $(go_crypto_twofish_files) os.gox strconv.gox
+	$(BUILDPACKAGE)
+crypto/libtwofish.lo: crypto/libtwofish.$(OBJEXT)
+crypto/libtwofish.la: crypto/libtwofish.lo
 crypto/twofish/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/twofish
 	$(CHECK)
 .PHONY: crypto/twofish/check
 
-crypto/libx509.a: $(go_crypto_x509_files) asn1.gox big.gox \
+crypto/libx509.$(OBJEXT): $(go_crypto_x509_files) asn1.gox big.gox \
 		container/vector.gox crypto/rsa.gox crypto/sha1.gox hash.gox \
 		os.gox strings.gox time.gox
-	$(BUILDARCHIVE)
-crypto/libx509.la: crypto/libx509.a
+	$(BUILDPACKAGE)
+crypto/libx509.lo: crypto/libx509.$(OBJEXT)
+crypto/libx509.la: crypto/libx509.lo
 crypto/x509/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/x509
 	$(CHECK)
 .PHONY: crypto/x509/check
 
-crypto/libxtea.a: $(go_crypto_xtea_files) os.gox strconv.gox
-	$(BUILDARCHIVE)
-crypto/libxtea.la: crypto/libxtea.a
+crypto/libxtea.$(OBJEXT): $(go_crypto_xtea_files) os.gox strconv.gox
+	$(BUILDPACKAGE)
+crypto/libxtea.lo: crypto/libxtea.$(OBJEXT)
+crypto/libxtea.la: crypto/libxtea.lo
 crypto/xtea/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/xtea
 	$(CHECK)
 .PHONY: crypto/xtea/check
 
-crypto/openpgp/libarmor.a: $(go_crypto_openpgp_armor_files) bytes.gox \
+crypto/openpgp/libarmor.$(OBJEXT): $(go_crypto_openpgp_armor_files) bytes.gox \
 		crypto/openpgp/error.gox encoding/base64.gox \
 		encoding/line.gox io.gox os.gox
-	$(BUILDARCHIVE)
-crypto/openpgp/libarmor.la: crypto/openpgp/libarmor.a
+	$(BUILDPACKAGE)
+crypto/openpgp/libarmor.lo: crypto/openpgp/libarmor.$(OBJEXT)
+crypto/openpgp/libarmor.la: crypto/openpgp/libarmor.lo
 crypto/openpgp/armor/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/armor
 	$(CHECK)
 .PHONY: crypto/openpgp/armor/check
 
-crypto/openpgp/liberror.a: $(go_crypto_openpgp_error_files)
-	$(BUILDARCHIVE)
-crypto/openpgp/liberror.la: crypto/openpgp/liberror.a
+crypto/openpgp/liberror.$(OBJEXT): $(go_crypto_openpgp_error_files)
+	$(BUILDPACKAGE)
+crypto/openpgp/liberror.lo: crypto/openpgp/liberror.$(OBJEXT)
+crypto/openpgp/liberror.la: crypto/openpgp/liberror.lo
 crypto/openpgp/error/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/error
 	$(CHECK)
 .PHONY: crypto/openpgp/error/check
 
-crypto/openpgp/libs2k.a: $(go_crypto_openpgp_s2k_files) crypto/md5.gox \
+crypto/openpgp/libs2k.$(OBJEXT): $(go_crypto_openpgp_s2k_files) crypto/md5.gox \
 		crypto/openpgp/error.gox crypto/ripemd160.gox crypto/sha1.gox \
 		crypto/sha256.gox crypto/sha512.gox hash.gox io.gox os.gox
-	$(BUILDARCHIVE)
-crypto/openpgp/libs2k.la: crypto/openpgp/libs2k.a
+	$(BUILDPACKAGE)
+crypto/openpgp/libs2k.lo: crypto/openpgp/libs2k.$(OBJEXT)
+crypto/openpgp/libs2k.la: crypto/openpgp/libs2k.lo
 crypto/openpgp/s2k/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/s2k
 	$(CHECK)
 .PHONY: crypto/openpgp/s2k/check
 
-debug/libdwarf.a: $(go_debug_dwarf_files) encoding/binary.gox os.gox \
+debug/libdwarf.$(OBJEXT): $(go_debug_dwarf_files) encoding/binary.gox os.gox \
 		strconv.gox
-	$(BUILDARCHIVE)
-debug/libdwarf.la: debug/libdwarf.a
+	$(BUILDPACKAGE)
+debug/libdwarf.lo: debug/libdwarf.$(OBJEXT)
+debug/libdwarf.la: debug/libdwarf.lo
 debug/dwarf/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/dwarf
 	$(CHECK)
 .PHONY: debug/dwarf/check
 
-debug/libelf.a: $(go_debug_elf_files) bytes.gox debug/dwarf.gox \
+debug/libelf.$(OBJEXT): $(go_debug_elf_files) bytes.gox debug/dwarf.gox \
 		encoding/binary.gox fmt.gox io.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-debug/libelf.la: debug/libelf.a
+	$(BUILDPACKAGE)
+debug/libelf.lo: debug/libelf.$(OBJEXT)
+debug/libelf.la: debug/libelf.lo
 debug/elf/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/elf
 	$(CHECK)
 .PHONY: debug/elf/check
 
-debug/libgosym.a: $(go_debug_gosym_files) encoding/binary.gox fmt.gox os.gox \
-		strconv.gox strings.gox
-	$(BUILDARCHIVE)
-debug/libgosym.la: debug/libgosym.a
+debug/libgosym.$(OBJEXT): $(go_debug_gosym_files) encoding/binary.gox fmt.gox \
+		os.gox strconv.gox strings.gox
+	$(BUILDPACKAGE)
+debug/libgosym.lo: debug/libgosym.$(OBJEXT)
+debug/libgosym.la: debug/libgosym.lo
 debug/gosym/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/gosym
 	$(CHECK)
 .PHONY: debug/gosym/check
 
-debug/libmacho.a: $(go_debug_macho_files) bytes.gox debug/dwarf.gox \
+debug/libmacho.$(OBJEXT): $(go_debug_macho_files) bytes.gox debug/dwarf.gox \
 		encoding/binary.gox fmt.gox io.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-debug/libmacho.la: debug/libmacho.a
+	$(BUILDPACKAGE)
+debug/libmacho.lo: debug/libmacho.$(OBJEXT)
+debug/libmacho.la: debug/libmacho.lo
 debug/macho/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/macho
 	$(CHECK)
 .PHONY: debug/macho/check
 
-debug/libpe.a: $(go_debug_pe_files) debug/dwarf.gox encoding/binary.gox \
-		fmt.gox io.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-debug/libpe.la: debug/libpe.a
+debug/libpe.$(OBJEXT): $(go_debug_pe_files) debug/dwarf.gox \
+		encoding/binary.gox fmt.gox io.gox os.gox strconv.gox
+	$(BUILDPACKAGE)
+debug/libpe.lo: debug/libpe.$(OBJEXT)
+debug/libpe.la: debug/libpe.lo
 debug/pe/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/pe
 	$(CHECK)
 .PHONY: debug/pe/check
 
-debug/libproc.a: $(go_debug_proc_files) container/vector.gox fmt.gox \
+debug/libproc.$(OBJEXT): $(go_debug_proc_files) container/vector.gox fmt.gox \
 		io/ioutil.gox os.gox runtime.gox strconv.gox strings.gox \
 		sync.gox syscall.gox
-	$(BUILDARCHIVE)
-debug/libproc.la: debug/libproc.a
+	$(BUILDPACKAGE)
+debug/libproc.lo: debug/libproc.$(OBJEXT)
+debug/libproc.la: debug/libproc.lo
 debug/proc/check: $(CHECK_DEPS)
 	@$(MKDIR_P) debug/proc
 	$(CHECK)
 .PHONY: debug/proc/check
 
-encoding/libascii85.a: $(go_encoding_ascii85_files) io.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-encoding/libascii85.la: encoding/libascii85.a
+encoding/libascii85.$(OBJEXT): $(go_encoding_ascii85_files) io.gox os.gox \
+		strconv.gox
+	$(BUILDPACKAGE)
+encoding/libascii85.lo: encoding/libascii85.$(OBJEXT)
+encoding/libascii85.la: encoding/libascii85.lo
 encoding/ascii85/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/ascii85
 	$(CHECK)
 .PHONY: encoding/ascii85/check
 
-encoding/libbase32.a: $(go_encoding_base32_files) io.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-encoding/libbase32.la: encoding/libbase32.a
+encoding/libbase32.$(OBJEXT): $(go_encoding_base32_files) io.gox os.gox \
+		strconv.gox
+	$(BUILDPACKAGE)
+encoding/libbase32.lo: encoding/libbase32.$(OBJEXT)
+encoding/libbase32.la: encoding/libbase32.lo
 encoding/base32/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/base32
 	$(CHECK)
 .PHONY: encoding/base32/check
 
-encoding/libbase64.a: $(go_encoding_base64_files) io.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-encoding/libbase64.la: encoding/libbase64.a
+encoding/libbase64.$(OBJEXT): $(go_encoding_base64_files) io.gox os.gox \
+		strconv.gox
+	$(BUILDPACKAGE)
+encoding/libbase64.lo: encoding/libbase64.$(OBJEXT)
+encoding/libbase64.la: encoding/libbase64.lo
 encoding/base64/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/base64
 	$(CHECK)
 .PHONY: encoding/base64/check
 
-encoding/libbinary.a: $(go_encoding_binary_files) io.gox math.gox os.gox \
-		reflect.gox
-	$(BUILDARCHIVE)
-encoding/libbinary.la: encoding/libbinary.a
+encoding/libbinary.$(OBJEXT): $(go_encoding_binary_files) io.gox math.gox \
+		os.gox reflect.gox
+	$(BUILDPACKAGE)
+encoding/libbinary.lo: encoding/libbinary.$(OBJEXT)
+encoding/libbinary.la: encoding/libbinary.lo
 encoding/binary/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/binary
 	$(CHECK)
 .PHONY: encoding/binary/check
 
-encoding/libgit85.a: $(go_encoding_git85_files) bytes.gox io.gox os.gox \
-		strconv.gox
-	$(BUILDARCHIVE)
-encoding/libgit85.la: encoding/libgit85.a
+encoding/libgit85.$(OBJEXT): $(go_encoding_git85_files) bytes.gox io.gox \
+		os.gox strconv.gox
+	$(BUILDPACKAGE)
+encoding/libgit85.lo: encoding/libgit85.$(OBJEXT)
+encoding/libgit85.la: encoding/libgit85.lo
 encoding/git85/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/git85
 	$(CHECK)
 .PHONY: encoding/git85/check
 
-encoding/libhex.a: $(go_encoding_hex_files) os.gox strconv.gox
-	$(BUILDARCHIVE)
-encoding/libhex.la: encoding/libhex.a
+encoding/libhex.$(OBJEXT): $(go_encoding_hex_files) os.gox strconv.gox
+	$(BUILDPACKAGE)
+encoding/libhex.lo: encoding/libhex.$(OBJEXT)
+encoding/libhex.la: encoding/libhex.lo
 encoding/hex/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/hex
 	$(CHECK)
 .PHONY: encoding/hex/check
 
-encoding/libline.a: $(go_encoding_line_files) io.gox os.gox
-	$(BUILDARCHIVE)
-encoding/libline.la: encoding/libline.a
+encoding/libline.$(OBJEXT): $(go_encoding_line_files) io.gox os.gox
+	$(BUILDPACKAGE)
+encoding/libline.lo: encoding/libline.$(OBJEXT)
+encoding/libline.la: encoding/libline.lo
 encoding/line/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/line
 	$(CHECK)
 .PHONY: encoding/line/check
 
-encoding/libpem.a: $(go_encoding_pem_files) bytes.gox encoding/base64.gox
-	$(BUILDARCHIVE)
-encoding/libpem.la: encoding/libpem.a
+encoding/libpem.$(OBJEXT): $(go_encoding_pem_files) bytes.gox \
+		encoding/base64.gox
+	$(BUILDPACKAGE)
+encoding/libpem.lo: encoding/libpem.$(OBJEXT)
+encoding/libpem.la: encoding/libpem.lo
 encoding/pem/check: $(CHECK_DEPS)
 	@$(MKDIR_P) encoding/pem
 	$(CHECK)
 .PHONY: encoding/pem/check
 
-exp/libdatafmt.a: $(go_exp_datafmt_files) bytes.gox container/vector.gox \
-		fmt.gox go/scanner.gox go/token.gox io.gox os.gox reflect.gox \
-		runtime.gox strconv.gox strings.gox
-	$(BUILDARCHIVE)
-exp/libdatafmt.la: exp/libdatafmt.a
+exp/libdatafmt.$(OBJEXT): $(go_exp_datafmt_files) bytes.gox \
+		container/vector.gox fmt.gox go/scanner.gox go/token.gox \
+		io.gox os.gox reflect.gox runtime.gox strconv.gox strings.gox
+	$(BUILDPACKAGE)
+exp/libdatafmt.lo: exp/libdatafmt.$(OBJEXT)
+exp/libdatafmt.la: exp/libdatafmt.lo
 exp/datafmt/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/datafmt
 	$(CHECK)
 .PHONY: exp/datafmt/check
 
-exp/libdraw.a: $(go_exp_draw_files) image.gox os.gox
-	$(BUILDARCHIVE)
-exp/libdraw.la: exp/libdraw.a
+exp/libdraw.$(OBJEXT): $(go_exp_draw_files) image.gox os.gox
+	$(BUILDPACKAGE)
+exp/libdraw.lo: exp/libdraw.$(OBJEXT)
+exp/libdraw.la: exp/libdraw.lo
 exp/draw/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/draw
 	$(CHECK)
 .PHONY: exp/draw/check
 
-exp/libeval.a: $(go_exp_eval_files) big.gox go/ast.gox go/parser.gox \
+exp/libeval.$(OBJEXT): $(go_exp_eval_files) big.gox go/ast.gox go/parser.gox \
 		go/scanner.gox go/token.gox fmt.gox log.gox strconv.gox \
 		strings.gox os.gox reflect.gox runtime.gox sort.gox template.gox
-	$(BUILDARCHIVE)
-exp/libeval.la: exp/libeval.a
+	$(BUILDPACKAGE)
+exp/libeval.lo: exp/libeval.$(OBJEXT)
+exp/libeval.la: exp/libeval.lo
 exp/eval/check: $(CHECK_DEPS)
 	@$(MKDIR_P) exp/eval
 	$(CHECK)
 .PHONY: exp/eval/check
 
-go/libast.a: $(go_go_ast_files) fmt.gox go/token.gox io.gox os.gox \
+go/libast.$(OBJEXT): $(go_go_ast_files) fmt.gox go/token.gox io.gox os.gox \
 		reflect.gox unicode.gox utf8.gox
-	$(BUILDARCHIVE)
-go/libast.la: go/libast.a
+	$(BUILDPACKAGE)
+go/libast.lo: go/libast.$(OBJEXT)
+go/libast.la: go/libast.lo
 go/ast/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/ast
 	$(CHECK)
 .PHONY: go/ast/check
 
-go/libdoc.a: $(go_go_doc_files) go/ast.gox go/token.gox io.gox regexp.gox \
-		sort.gox strings.gox template.gox
-	$(BUILDARCHIVE)
-go/libdoc.la: go/libdoc.a
+go/libdoc.$(OBJEXT): $(go_go_doc_files) go/ast.gox go/token.gox io.gox \
+		regexp.gox sort.gox strings.gox template.gox
+	$(BUILDPACKAGE)
+go/libdoc.lo: go/libdoc.$(OBJEXT)
+go/libdoc.la: go/libdoc.lo
 go/doc/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/doc
 	$(CHECK)
 .PHONY: go/doc/check
 
-go/libparser.a: $(go_go_parser_files) bytes.gox fmt.gox go/ast.gox \
+go/libparser.$(OBJEXT): $(go_go_parser_files) bytes.gox fmt.gox go/ast.gox \
 		go/scanner.gox go/token.gox io.gox io/ioutil.gox os.gox \
 		path.gox strings.gox
-	$(BUILDARCHIVE)
-go/libparser.la: go/libparser.a
+	$(BUILDPACKAGE)
+go/libparser.lo: go/libparser.$(OBJEXT)
+go/libparser.la: go/libparser.lo
 go/parser/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/parser
 	$(CHECK)
 .PHONY: go/parser/check
 
-go/libprinter.a: $(go_go_printer_files) bytes.gox fmt.gox go/ast.gox \
+go/libprinter.$(OBJEXT): $(go_go_printer_files) bytes.gox fmt.gox go/ast.gox \
 		go/token.gox io.gox os.gox reflect.gox runtime.gox \
 		strings.gox tabwriter.gox
-	$(BUILDARCHIVE)
-go/libprinter.la: go/libprinter.a
+	$(BUILDPACKAGE)
+go/libprinter.lo: go/libprinter.$(OBJEXT)
+go/libprinter.la: go/libprinter.lo
 go/printer/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/printer
 	$(CHECK)
 .PHONY: go/printer/check
 
-go/libscanner.a: $(go_go_scanner_files) bytes.gox container/vector.gox fmt.gox \
-		go/token.gox io.gox os.gox path.gox sort.gox strconv.gox \
-		unicode.gox utf8.gox
-	$(BUILDARCHIVE)
-go/libscanner.la: go/libscanner.a
+go/libscanner.$(OBJEXT): $(go_go_scanner_files) bytes.gox \
+		container/vector.gox fmt.gox go/token.gox io.gox os.gox \
+		path.gox sort.gox strconv.gox unicode.gox utf8.gox
+	$(BUILDPACKAGE)
+go/libscanner.lo: go/libscanner.$(OBJEXT)
+go/libscanner.la: go/libscanner.lo
 go/scanner/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/scanner
 	$(CHECK)
 .PHONY: go/scanner/check
 
-go/libtoken.a: $(go_go_token_files) fmt.gox strconv.gox
-	$(BUILDARCHIVE)
-go/libtoken.la: go/libtoken.a
+go/libtoken.$(OBJEXT): $(go_go_token_files) fmt.gox strconv.gox
+	$(BUILDPACKAGE)
+go/libtoken.lo: go/libtoken.$(OBJEXT)
+go/libtoken.la: go/libtoken.lo
 go/token/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/token
 	$(CHECK)
 .PHONY: go/token/check
 
-go/libtypechecker.a: $(go_go_typechecker_files) fmt.gox go/ast.gox \
+go/libtypechecker.$(OBJEXT): $(go_go_typechecker_files) fmt.gox go/ast.gox \
 		go/token.gox go/scanner.gox os.gox
-	$(BUILDARCHIVE)
-go/libtypechecker.la: go/libtypechecker.a
+	$(BUILDPACKAGE)
+go/libtypechecker.lo: go/libtypechecker.$(OBJEXT)
+go/libtypechecker.la: go/libtypechecker.lo
 go/typechecker/check: $(CHECK_DEPS)
 	@$(MKDIR_P) go/typechecker
 	$(CHECK)
 .PHONY: go/typechecker/check
 
-hash/libadler32.a: $(go_hash_adler32_files) hash.gox os.gox
-	$(BUILDARCHIVE)
-hash/libadler32.la: hash/libadler32.a
+hash/libadler32.$(OBJEXT): $(go_hash_adler32_files) hash.gox os.gox
+	$(BUILDPACKAGE)
+hash/libadler32.lo: hash/libadler32.$(OBJEXT)
+hash/libadler32.la: hash/libadler32.lo
 hash/adler32/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/adler32
 	$(CHECK)
 .PHONY: hash/adler32/check
 
-hash/libcrc32.a: $(go_hash_crc32_files) hash.gox os.gox
-	$(BUILDARCHIVE)
-hash/libcrc32.la: hash/libcrc32.a
+hash/libcrc32.$(OBJEXT): $(go_hash_crc32_files) hash.gox os.gox
+	$(BUILDPACKAGE)
+hash/libcrc32.lo: hash/libcrc32.$(OBJEXT)
+hash/libcrc32.la: hash/libcrc32.lo
 hash/crc32/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/crc32
 	$(CHECK)
 .PHONY: hash/crc32/check
 
-hash/libcrc64.a: $(go_hash_crc64_files) hash.gox os.gox
-	$(BUILDARCHIVE)
-hash/libcrc64.la: hash/libcrc64.a
+hash/libcrc64.$(OBJEXT): $(go_hash_crc64_files) hash.gox os.gox
+	$(BUILDPACKAGE)
+hash/libcrc64.lo: hash/libcrc64.$(OBJEXT)
+hash/libcrc64.la: hash/libcrc64.lo
 hash/crc64/check: $(CHECK_DEPS)
 	@$(MKDIR_P) hash/crc64
 	$(CHECK)
 .PHONY: hash/crc64/check
 
-http/libpprof.a: $(go_http_pprof_files) bufio.gox fmt.gox http.gox os.gox \
-		runtime.gox runtime/pprof.gox strconv.gox strings.gox
-	$(BUILDARCHIVE)
-http/libpprof.la: http/libpprof.a
+http/libpprof.$(OBJEXT): $(go_http_pprof_files) bufio.gox fmt.gox http.gox \
+		os.gox runtime.gox runtime/pprof.gox strconv.gox strings.gox
+	$(BUILDPACKAGE)
+http/libpprof.lo: http/libpprof.$(OBJEXT)
+http/libpprof.la: http/libpprof.lo
 http/pprof/check: $(CHECK_DEPS)
 	@$(MKDIR_P) http/pprof
 	$(CHECK)
 .PHONY: http/pprof/check
 
-image/libjpeg.a: $(go_image_jpeg_files) bufio.gox image.gox io.gox os.gox
-	$(BUILDARCHIVE)
-image/libjpeg.la: image/libjpeg.a
+image/libjpeg.$(OBJEXT): $(go_image_jpeg_files) bufio.gox image.gox io.gox \
+		os.gox
+	$(BUILDPACKAGE)
+image/libjpeg.lo: image/libjpeg.$(OBJEXT)
+image/libjpeg.la: image/libjpeg.lo
 image/jpeg/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/jpeg
 	$(CHECK)
 .PHONY: image/jpeg/check
 
-image/libpng.a: $(go_image_png_files) bufio.gox compress/zlib.gox fmt.gox \
-		hash.gox hash/crc32.gox image.gox io.gox os.gox strconv.gox
-	$(BUILDARCHIVE)
-image/libpng.la: image/libpng.a
+image/libpng.$(OBJEXT): $(go_image_png_files) bufio.gox compress/zlib.gox \
+		fmt.gox hash.gox hash/crc32.gox image.gox io.gox os.gox \
+		strconv.gox
+	$(BUILDPACKAGE)
+image/libpng.lo: image/libpng.$(OBJEXT)
+image/libpng.la: image/libpng.lo
 image/png/check: $(CHECK_DEPS)
 	@$(MKDIR_P) image/png
 	$(CHECK)
 .PHONY: image/png/check
 
-index/libsuffixarray.a: $(go_index_suffixarray_files) bytes.gox regexp.gox \
-		sort.gox
-	$(BUILDARCHIVE)
-index/libsuffixarray.la: index/libsuffixarray.a
+index/libsuffixarray.$(OBJEXT): $(go_index_suffixarray_files) bytes.gox \
+		regexp.gox sort.gox
+	$(BUILDPACKAGE)
+index/libsuffixarray.lo: index/libsuffixarray.$(OBJEXT)
+index/libsuffixarray.la: index/libsuffixarray.lo
 index/suffixarray/check: $(CHECK_DEPS)
 	@$(MKDIR_P) index/suffixarray
 	$(CHECK)
 .PHONY: index/suffixarray/check
 
-io/libioutil.a: $(go_io_ioutil_files) bytes.gox io.gox os.gox sort.gox \
+io/libioutil.$(OBJEXT): $(go_io_ioutil_files) bytes.gox io.gox os.gox sort.gox \
 		strconv.gox
-	$(BUILDARCHIVE)
-io/libioutil.la: io/libioutil.a
+	$(BUILDPACKAGE)
+io/libioutil.lo: io/libioutil.$(OBJEXT)
+io/libioutil.la: io/libioutil.lo
 io/ioutil/check: $(CHECK_DEPS)
 	@$(MKDIR_P) io/ioutil
 	$(CHECK)
 .PHONY: io/ioutil/check
 
-mime/libmultipart.a: $(go_mime_multipart_files) bufio.gox bytes.gox io.gox \
-		mime.gox os.gox regexp.gox strings.gox
-	$(BUILDARCHIVE)
-mime/libmultipart.la: mime/libmultipart.a
+mime/libmultipart.$(OBJEXT): $(go_mime_multipart_files) bufio.gox bytes.gox \
+		io.gox mime.gox os.gox regexp.gox strings.gox
+	$(BUILDPACKAGE)
+mime/libmultipart.lo: mime/libmultipart.$(OBJEXT)
+mime/libmultipart.la: mime/libmultipart.lo
 mime/multipart/check: $(CHECK_DEPS)
 	@$(MKDIR_P) mime/multipart
 	$(CHECK)
 .PHONY: mime/multipart/check
 
-net/libdict.a: $(go_net_dict_files) container/vector.gox net/textproto.gox \
-		os.gox strconv.gox strings.gox
-	$(BUILDARCHIVE)
-net/libdict.la: net/libdict.a
+net/libdict.$(OBJEXT): $(go_net_dict_files) container/vector.gox \
+		net/textproto.gox os.gox strconv.gox strings.gox
+	$(BUILDPACKAGE)
+net/libdict.lo: net/libdict.$(OBJEXT)
+net/libdict.la: net/libdict.lo
 
-net/libtextproto.a: $(go_net_textproto_files) bufio.gox bytes.gox \
+net/libtextproto.$(OBJEXT): $(go_net_textproto_files) bufio.gox bytes.gox \
 		container/vector.gox fmt.gox io.gox io/ioutil.gox net.gox \
 		os.gox strconv.gox sync.gox
-	$(BUILDARCHIVE)
-net/libtextproto.la: net/libtextproto.a
+	$(BUILDPACKAGE)
+net/libtextproto.lo: net/libtextproto.$(OBJEXT)
+net/libtextproto.la: net/libtextproto.lo
 net/textproto/check: $(CHECK_DEPS)
 	@$(MKDIR_P) net/textproto
 	$(CHECK)
 .PHONY: net/textproto/check
 
-os/libinotify.a: $(go_os_inotify_files) fmt.gox os.gox strings.gox \
+os/libinotify.$(OBJEXT): $(go_os_inotify_files) fmt.gox os.gox strings.gox \
 		syscall.gox
-	$(BUILDARCHIVE)
-os/libinotify.la: os/libinotify.a
+	$(BUILDPACKAGE)
+os/libinotify.lo: os/libinotify.$(OBJEXT)
+os/libinotify.la: os/libinotify.lo
 os/inotify/check: $(CHECK_DEPS)
 	@$(MKDIR_P) os/inotify
 	$(CHECK)
 .PHONY: os/inotify/check
 
-os/libsignal.a: $(go_os_signal_files) runtime.gox strconv.gox
-	$(BUILDARCHIVE)
-os/libsignal.la: os/libsignal.a
+os/libsignal.$(OBJEXT): $(go_os_signal_files) runtime.gox strconv.gox
+	$(BUILDPACKAGE)
+os/libsignal.lo: os/libsignal.$(OBJEXT)
+os/libsignal.la: os/libsignal.lo
 os/signal/check: $(CHECK_DEPS)
 	@$(MKDIR_P) os/signal
 	$(CHECK)
@@ -2425,54 +2547,60 @@ unix.go: $(srcdir)/go/os/signal/mkunix.sh sysinfo.go
 	$(SHELL) $(srcdir)/go/os/signal/mkunix.sh sysinfo.go > $@.tmp
 	mv -f $@.tmp $@
 
-rpc/libjsonrpc.a: $(go_rpc_jsonrpc_files) fmt.gox io.gox json.gox net.gox \
-		os.gox rpc.gox sync.gox
-	$(BUILDARCHIVE)
-rpc/libjsonrpc.la: rpc/libjsonrpc.a
+rpc/libjsonrpc.$(OBJEXT): $(go_rpc_jsonrpc_files) fmt.gox io.gox json.gox \
+		net.gox os.gox rpc.gox sync.gox
+	$(BUILDPACKAGE)
+rpc/libjsonrpc.lo: rpc/libjsonrpc.$(OBJEXT)
+rpc/libjsonrpc.la: rpc/libjsonrpc.lo
 rpc/jsonrpc/check: $(CHECK_DEPS)
 	@$(MKDIR_P) rpc/jsonrpc
 	$(CHECK)
 .PHONY: rpc/jsonrpc/check
 
-runtime/libdebug.a: $(go_runtime_debug_files) bytes.gox fmt.gox io/ioutil.gox \
-		os.gox runtime.gox
-	$(BUILDARCHIVE)
-runtime/libdebug.la: runtime/libdebug.a
+runtime/libdebug.$(OBJEXT): $(go_runtime_debug_files) bytes.gox fmt.gox \
+		io/ioutil.gox os.gox runtime.gox
+	$(BUILDPACKAGE)
+runtime/libdebug.lo: runtime/libdebug.$(OBJEXT)
+runtime/libdebug.la: runtime/libdebug.lo
 runtime/debug/check: $(CHECK_DEPS)
 	@$(MKDIR_P) runtime/debug
 	$(CHECK)
 .PHONY: runtime/debug/check
 
-runtime/libpprof.a: $(go_runtime_pprof_files) bufio.gox fmt.gox io.gox os.gox \
-		runtime.gox
-	$(BUILDARCHIVE)
-runtime/libpprof.la: runtime/libpprof.a
+runtime/libpprof.$(OBJEXT): $(go_runtime_pprof_files) bufio.gox fmt.gox \
+		io.gox os.gox runtime.gox
+	$(BUILDPACKAGE)
+runtime/libpprof.lo: runtime/libpprof.$(OBJEXT)
+runtime/libpprof.la: runtime/libpprof.lo
 runtime/pprof/check: $(CHECK_DEPS)
 	@$(MKDIR_P) runtime/pprof
 	$(CHECK)
 .PHONY: runtime/pprof/check
 
-testing/libiotest.a: $(go_testing_iotest_files) io.gox log.gox os.gox
-	$(BUILDARCHIVE)
-testing/libiotest.la: testing/libiotest.a
+testing/libiotest.$(OBJEXT): $(go_testing_iotest_files) io.gox log.gox os.gox
+	$(BUILDPACKAGE)
+testing/libiotest.lo: testing/libiotest.$(OBJEXT)
+testing/libiotest.la: testing/libiotest.lo
 testing/iotest/check: $(CHECK_DEPS)
 	@$(MKDIR_P) testing/iotest
 	$(CHECK)
 .PHONY: testing/iotest/check
 
-testing/libquick.a: $(go_testing_quick_files) flag.gox fmt.gox math.gox \
-		os.gox rand.gox reflect.gox strings.gox
-	$(BUILDARCHIVE)
-testing/libquick.la: testing/libquick.a
+testing/libquick.$(OBJEXT): $(go_testing_quick_files) flag.gox fmt.gox \
+		math.gox os.gox rand.gox reflect.gox strings.gox
+	$(BUILDPACKAGE)
+testing/libquick.lo: testing/libquick.$(OBJEXT)
+testing/libquick.la: testing/libquick.lo
 testing/quick/check: $(CHECK_DEPS)
 	@$(MKDIR_P) testing/quick
 	$(CHECK)
 .PHONY: testing/quick/check
 
-testing/libscript.a: $(go_testing_script_files) fmt.gox os.gox rand.gox \
-		reflect.gox strings.gox
-	$(BUILDARCHIVE)
-testing/libscript.la: testing/libscript.a
+testing/libscript.$(OBJEXT): $(go_testing_script_files) fmt.gox os.gox \
+		rand.gox reflect.gox strings.gox
+	$(BUILDPACKAGE)
+testing/libscript.lo: testing/libscript.$(OBJEXT)
+testing/libscript.la: testing/libscript.lo
 testing/script/check: $(CHECK_DEPS)
 	@$(MKDIR_P) testing/script
 	$(CHECK)
@@ -2484,294 +2612,289 @@ s-sysinfo: $(srcdir)/mksysinfo.sh config.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-sysinfo.go sysinfo.go
 	$(STAMP) $@
 
-syscalls/libsyscall.a: $(go_syscall_files) $(go_syscall_c_files) sync.gox
+syscalls/syscall.$(OBJEXT): $(go_syscall_files) $(go_syscall_c_files) sync.gox
 	rm -f syscall.gox syscalls/libsyscall.a
 	test -d syscalls || $(MKDIR_P) syscalls
 	files=`echo $^ | sed -e 's/[^ ]*\.gox//g' -e's/[^ ]*\.c//g'`; \
 	$(LTGOCOMPILE) -I . -c -fgo-prefix="libgo_syscalls" -o syscalls/syscall.$(OBJEXT) $$files
+syscalls/errno.$(OBJEXT): $(srcdir)/syscalls/errno.c syscalls/syscall.$(OBJEXT)
 	$(LTCOMPILE) -c -o syscalls/errno.$(OBJEXT) $(srcdir)/syscalls/errno.c
-	$(AR) rc syscalls/libsyscall.a syscalls/syscall.$(OBJEXT) syscalls/errno.$(OBJEXT)
-syscalls/libsyscall.la: syscalls/libsyscall.a
+syscalls/libsyscall.la: syscalls/syscall.$(OBJEXT) syscalls/errno.$(OBJEXT)
 	$(LINK) syscalls/syscall.lo syscalls/errno.lo
 
 # How to build a .gox file from a .a file.
 BUILDGOX = \
-	set -e; \
-	rm -f $@.$(OBJEXT); \
-	$(CC) -r -nostdlib -o $@.$(OBJEXT) -Wl,--whole-archive $<; \
-	$(OBJCOPY) -j .go_export $@.$(OBJEXT) $@.tmp; \
-	mv -f $@.tmp $@; \
-	rm -f $@.$(OBJEXT)
+	$(OBJCOPY) -j .go_export $< $@.tmp && mv -f $@.tmp $@
 
-asn1.gox: asn1/libasn1.a
+asn1.gox: asn1/libasn1.$(OBJEXT)
 	$(BUILDGOX)
-big.gox: big/libbig.a
+big.gox: big/libbig.$(OBJEXT)
 	$(BUILDGOX)
-bufio.gox: bufio/libbufio.a
+bufio.gox: bufio/libbufio.$(OBJEXT)
 	$(BUILDGOX)
-bytes.gox: bytes/libbytes.a
+bytes.gox: bytes/bytes.$(OBJEXT)
 	$(BUILDGOX)
-cmath.gox: cmath/libcmath.a
+cmath.gox: cmath/libcmath.$(OBJEXT)
 	$(BUILDGOX)
-ebnf.gox: ebnf/libebnf.a
+ebnf.gox: ebnf/libebnf.$(OBJEXT)
 	$(BUILDGOX)
-exec.gox: exec/libexec.a
+exec.gox: exec/libexec.$(OBJEXT)
 	$(BUILDGOX)
-expvar.gox: expvar/libexpvar.a
+expvar.gox: expvar/libexpvar.$(OBJEXT)
 	$(BUILDGOX)
-flag.gox: flag/libflag.a
+flag.gox: flag/libflag.$(OBJEXT)
 	$(BUILDGOX)
-fmt.gox: fmt/libfmt.a
+fmt.gox: fmt/libfmt.$(OBJEXT)
 	$(BUILDGOX)
-gob.gox: gob/libgob.a
+gob.gox: gob/libgob.$(OBJEXT)
 	$(BUILDGOX)
-hash.gox: hash/libhash.a
+hash.gox: hash/libhash.$(OBJEXT)
 	$(BUILDGOX)
-html.gox: html/libhtml.a
+html.gox: html/libhtml.$(OBJEXT)
 	$(BUILDGOX)
-http.gox: http/libhttp.a
+http.gox: http/libhttp.$(OBJEXT)
 	$(BUILDGOX)
-image.gox: image/libimage.a
+image.gox: image/libimage.$(OBJEXT)
 	$(BUILDGOX)
-io.gox: io/libio.a
+io.gox: io/libio.$(OBJEXT)
 	$(BUILDGOX)
-json.gox: json/libjson.a
+json.gox: json/libjson.$(OBJEXT)
 	$(BUILDGOX)
-log.gox: log/liblog.a
+log.gox: log/liblog.$(OBJEXT)
 	$(BUILDGOX)
-math.gox: math/libmath.a
+math.gox: math/libmath.$(OBJEXT)
 	$(BUILDGOX)
-mime.gox: mime/libmime.a
+mime.gox: mime/libmime.$(OBJEXT)
 	$(BUILDGOX)
-net.gox: net/libnet.a
+net.gox: net/libnet.$(OBJEXT)
 	$(BUILDGOX)
-netchan.gox: netchan/libnetchan.a
+netchan.gox: netchan/libnetchan.$(OBJEXT)
 	$(BUILDGOX)
-os.gox: os/libos.a
+os.gox: os/libos.$(OBJEXT)
 	$(BUILDGOX)
-patch.gox: patch/libpatch.a
+patch.gox: patch/libpatch.$(OBJEXT)
 	$(BUILDGOX)
-path.gox: path/libpath.a
+path.gox: path/libpath.$(OBJEXT)
 	$(BUILDGOX)
-rand.gox: rand/librand.a
+rand.gox: rand/librand.$(OBJEXT)
 	$(BUILDGOX)
-reflect.gox: reflect/libreflect.a
+reflect.gox: reflect/libreflect.$(OBJEXT)
 	$(BUILDGOX)
-regexp.gox: regexp/libregexp.a
+regexp.gox: regexp/libregexp.$(OBJEXT)
 	$(BUILDGOX)
-rpc.gox: rpc/librpc.a
+rpc.gox: rpc/librpc.$(OBJEXT)
 	$(BUILDGOX)
-runtime.gox: runtime/libruntime.a
+runtime.gox: runtime/libruntime.$(OBJEXT)
 	$(BUILDGOX)
-scanner.gox: scanner/libscanner.a
+scanner.gox: scanner/libscanner.$(OBJEXT)
 	$(BUILDGOX)
-smtp.gox: smtp/libsmtp.a
+smtp.gox: smtp/libsmtp.$(OBJEXT)
 	$(BUILDGOX)
-sort.gox: sort/libsort.a
+sort.gox: sort/libsort.$(OBJEXT)
 	$(BUILDGOX)
-strconv.gox: strconv/libstrconv.a
+strconv.gox: strconv/libstrconv.$(OBJEXT)
 	$(BUILDGOX)
-strings.gox: strings/libstrings.a
+strings.gox: strings/libstrings.$(OBJEXT)
 	$(BUILDGOX)
-sync.gox: sync/libsync.a
+sync.gox: sync/mutex.$(OBJEXT)
 	$(BUILDGOX)
-syslog.gox: syslog/libsyslog.a
+syslog.gox: syslog/libsyslog.$(OBJEXT)
 	$(BUILDGOX)
-syscall.gox: syscalls/libsyscall.a
+syscall.gox: syscalls/syscall.$(OBJEXT)
 	$(BUILDGOX)
-tabwriter.gox: tabwriter/libtabwriter.a
+tabwriter.gox: tabwriter/libtabwriter.$(OBJEXT)
 	$(BUILDGOX)
-template.gox: template/libtemplate.a
+template.gox: template/libtemplate.$(OBJEXT)
 	$(BUILDGOX)
-testing.gox: testing/libtesting.a
+testing.gox: testing/libtesting.$(OBJEXT)
 	$(BUILDGOX)
-time.gox: time/libtime.a
+time.gox: time/libtime.$(OBJEXT)
 	$(BUILDGOX)
-try.gox: try/libtry.a
+try.gox: try/libtry.$(OBJEXT)
 	$(BUILDGOX)
-unicode.gox: unicode/libunicode.a
+unicode.gox: unicode/libunicode.$(OBJEXT)
 	$(BUILDGOX)
-utf16.gox: utf16/libutf16.a
+utf16.gox: utf16/libutf16.$(OBJEXT)
 	$(BUILDGOX)
-utf8.gox: utf8/libutf8.a
+utf8.gox: utf8/libutf8.$(OBJEXT)
 	$(BUILDGOX)
-websocket.gox: websocket/libwebsocket.a
+websocket.gox: websocket/libwebsocket.$(OBJEXT)
 	$(BUILDGOX)
-xml.gox: xml/libxml.a
+xml.gox: xml/libxml.$(OBJEXT)
 	$(BUILDGOX)
 
-archive/tar.gox: archive/libtar.a
+archive/tar.gox: archive/libtar.$(OBJEXT)
 	$(BUILDGOX)
-archive/zip.gox: archive/libzip.a
-	$(BUILDGOX)
-
-compress/flate.gox: compress/libflate.a
-	$(BUILDGOX)
-compress/gzip.gox: compress/libgzip.a
-	$(BUILDGOX)
-compress/zlib.gox: compress/libzlib.a
+archive/zip.gox: archive/libzip.$(OBJEXT)
 	$(BUILDGOX)
 
-container/heap.gox: container/libheap.a
+compress/flate.gox: compress/libflate.$(OBJEXT)
 	$(BUILDGOX)
-container/list.gox: container/liblist.a
+compress/gzip.gox: compress/libgzip.$(OBJEXT)
 	$(BUILDGOX)
-container/ring.gox: container/libring.a
-	$(BUILDGOX)
-container/vector.gox: container/libvector.a
+compress/zlib.gox: compress/libzlib.$(OBJEXT)
 	$(BUILDGOX)
 
-crypto/aes.gox: crypto/libaes.a
+container/heap.gox: container/libheap.$(OBJEXT)
 	$(BUILDGOX)
-crypto/block.gox: crypto/libblock.a
+container/list.gox: container/liblist.$(OBJEXT)
 	$(BUILDGOX)
-crypto/blowfish.gox: crypto/libblowfish.a
+container/ring.gox: container/libring.$(OBJEXT)
 	$(BUILDGOX)
-crypto/cast5.gox: crypto/libcast5.a
-	$(BUILDGOX)
-crypto/cipher.gox: crypto/libcipher.a
-	$(BUILDGOX)
-crypto/elliptic.gox: crypto/libelliptic.a
-	$(BUILDGOX)
-crypto/hmac.gox: crypto/libhmac.a
-	$(BUILDGOX)
-crypto/md4.gox: crypto/libmd4.a
-	$(BUILDGOX)
-crypto/md5.gox: crypto/libmd5.a
-	$(BUILDGOX)
-crypto/ocsp.gox: crypto/libocsp.a
-	$(BUILDGOX)
-crypto/rand.gox: crypto/librand.a
-	$(BUILDGOX)
-crypto/rc4.gox: crypto/librc4.a
-	$(BUILDGOX)
-crypto/ripemd160.gox: crypto/libripemd160.a
-	$(BUILDGOX)
-crypto/rsa.gox: crypto/librsa.a
-	$(BUILDGOX)
-crypto/sha1.gox: crypto/libsha1.a
-	$(BUILDGOX)
-crypto/sha256.gox: crypto/libsha256.a
-	$(BUILDGOX)
-crypto/sha512.gox: crypto/libsha512.a
-	$(BUILDGOX)
-crypto/subtle.gox: crypto/libsubtle.a
-	$(BUILDGOX)
-crypto/tls.gox: crypto/libtls.a
-	$(BUILDGOX)
-crypto/twofish.gox: crypto/libtwofish.a
-	$(BUILDGOX)
-crypto/x509.gox: crypto/libx509.a
-	$(BUILDGOX)
-crypto/xtea.gox: crypto/libxtea.a
+container/vector.gox: container/libvector.$(OBJEXT)
 	$(BUILDGOX)
 
-crypto/openpgp/armor.gox: crypto/openpgp/libarmor.a
+crypto/aes.gox: crypto/libaes.$(OBJEXT)
 	$(BUILDGOX)
-crypto/openpgp/error.gox: crypto/openpgp/liberror.a
+crypto/block.gox: crypto/libblock.$(OBJEXT)
 	$(BUILDGOX)
-crypto/openpgp/s2k.gox: crypto/openpgp/libs2k.a
+crypto/blowfish.gox: crypto/libblowfish.$(OBJEXT)
 	$(BUILDGOX)
-
-debug/dwarf.gox: debug/libdwarf.a
+crypto/cast5.gox: crypto/libcast5.$(OBJEXT)
 	$(BUILDGOX)
-debug/elf.gox: debug/libelf.a
+crypto/cipher.gox: crypto/libcipher.$(OBJEXT)
 	$(BUILDGOX)
-debug/gosym.gox: debug/libgosym.a
+crypto/elliptic.gox: crypto/libelliptic.$(OBJEXT)
 	$(BUILDGOX)
-debug/macho.gox: debug/libmacho.a
+crypto/hmac.gox: crypto/libhmac.$(OBJEXT)
 	$(BUILDGOX)
-debug/pe.gox: debug/libpe.a
+crypto/md4.gox: crypto/libmd4.$(OBJEXT)
 	$(BUILDGOX)
-debug/proc.gox: debug/libproc.a
+crypto/md5.gox: crypto/libmd5.$(OBJEXT)
 	$(BUILDGOX)
-
-encoding/ascii85.gox: encoding/libascii85.a
+crypto/ocsp.gox: crypto/libocsp.$(OBJEXT)
 	$(BUILDGOX)
-encoding/base32.gox: encoding/libbase32.a
+crypto/rand.gox: crypto/librand.$(OBJEXT)
 	$(BUILDGOX)
-encoding/base64.gox: encoding/libbase64.a
+crypto/rc4.gox: crypto/librc4.$(OBJEXT)
 	$(BUILDGOX)
-encoding/binary.gox: encoding/libbinary.a
+crypto/ripemd160.gox: crypto/libripemd160.$(OBJEXT)
 	$(BUILDGOX)
-encoding/git85.gox: encoding/libgit85.a
+crypto/rsa.gox: crypto/librsa.$(OBJEXT)
 	$(BUILDGOX)
-encoding/hex.gox: encoding/libhex.a
+crypto/sha1.gox: crypto/libsha1.$(OBJEXT)
 	$(BUILDGOX)
-encoding/line.gox: encoding/libline.a
+crypto/sha256.gox: crypto/libsha256.$(OBJEXT)
 	$(BUILDGOX)
-encoding/pem.gox: encoding/libpem.a
+crypto/sha512.gox: crypto/libsha512.$(OBJEXT)
 	$(BUILDGOX)
-
-exp/datafmt.gox: exp/libdatafmt.a
+crypto/subtle.gox: crypto/libsubtle.$(OBJEXT)
 	$(BUILDGOX)
-exp/draw.gox: exp/libdraw.a
+crypto/tls.gox: crypto/libtls.$(OBJEXT)
 	$(BUILDGOX)
-exp/eval.gox: exp/libeval.a
+crypto/twofish.gox: crypto/libtwofish.$(OBJEXT)
 	$(BUILDGOX)
-
-go/ast.gox: go/libast.a
+crypto/x509.gox: crypto/libx509.$(OBJEXT)
 	$(BUILDGOX)
-go/doc.gox: go/libdoc.a
-	$(BUILDGOX)
-go/parser.gox: go/libparser.a
-	$(BUILDGOX)
-go/printer.gox: go/libprinter.a
-	$(BUILDGOX)
-go/scanner.gox: go/libscanner.a
-	$(BUILDGOX)
-go/token.gox: go/libtoken.a
-	$(BUILDGOX)
-go/typechecker.gox: go/libtypechecker.a
+crypto/xtea.gox: crypto/libxtea.$(OBJEXT)
 	$(BUILDGOX)
 
-hash/adler32.gox: hash/libadler32.a
+crypto/openpgp/armor.gox: crypto/openpgp/libarmor.$(OBJEXT)
 	$(BUILDGOX)
-hash/crc32.gox: hash/libcrc32.a
+crypto/openpgp/error.gox: crypto/openpgp/liberror.$(OBJEXT)
 	$(BUILDGOX)
-hash/crc64.gox: hash/libcrc64.a
-	$(BUILDGOX)
-
-http/pprof.gox: http/libpprof.a
+crypto/openpgp/s2k.gox: crypto/openpgp/libs2k.$(OBJEXT)
 	$(BUILDGOX)
 
-image/jpeg.gox: image/libjpeg.a
+debug/dwarf.gox: debug/libdwarf.$(OBJEXT)
 	$(BUILDGOX)
-image/png.gox: image/libpng.a
+debug/elf.gox: debug/libelf.$(OBJEXT)
 	$(BUILDGOX)
-
-index/suffixarray.gox: index/libsuffixarray.a
+debug/gosym.gox: debug/libgosym.$(OBJEXT)
 	$(BUILDGOX)
-
-io/ioutil.gox: io/libioutil.a
+debug/macho.gox: debug/libmacho.$(OBJEXT)
 	$(BUILDGOX)
-
-mime/multipart.gox: mime/libmultipart.a
+debug/pe.gox: debug/libpe.$(OBJEXT)
 	$(BUILDGOX)
-
-net/dict.gox: net/libdict.a
-	$(BUILDGOX)
-net/textproto.gox: net/libtextproto.a
+debug/proc.gox: debug/libproc.$(OBJEXT)
 	$(BUILDGOX)
 
-os/inotify.gox: os/libinotify.a
+encoding/ascii85.gox: encoding/libascii85.$(OBJEXT)
 	$(BUILDGOX)
-os/signal.gox: os/libsignal.a
+encoding/base32.gox: encoding/libbase32.$(OBJEXT)
+	$(BUILDGOX)
+encoding/base64.gox: encoding/libbase64.$(OBJEXT)
+	$(BUILDGOX)
+encoding/binary.gox: encoding/libbinary.$(OBJEXT)
+	$(BUILDGOX)
+encoding/git85.gox: encoding/libgit85.$(OBJEXT)
+	$(BUILDGOX)
+encoding/hex.gox: encoding/libhex.$(OBJEXT)
+	$(BUILDGOX)
+encoding/line.gox: encoding/libline.$(OBJEXT)
+	$(BUILDGOX)
+encoding/pem.gox: encoding/libpem.$(OBJEXT)
 	$(BUILDGOX)
 
-rpc/jsonrpc.gox: rpc/libjsonrpc.a
+exp/datafmt.gox: exp/libdatafmt.$(OBJEXT)
+	$(BUILDGOX)
+exp/draw.gox: exp/libdraw.$(OBJEXT)
+	$(BUILDGOX)
+exp/eval.gox: exp/libeval.$(OBJEXT)
 	$(BUILDGOX)
 
-runtime/debug.gox: runtime/libdebug.a
+go/ast.gox: go/libast.$(OBJEXT)
 	$(BUILDGOX)
-runtime/pprof.gox: runtime/libpprof.a
+go/doc.gox: go/libdoc.$(OBJEXT)
+	$(BUILDGOX)
+go/parser.gox: go/libparser.$(OBJEXT)
+	$(BUILDGOX)
+go/printer.gox: go/libprinter.$(OBJEXT)
+	$(BUILDGOX)
+go/scanner.gox: go/libscanner.$(OBJEXT)
+	$(BUILDGOX)
+go/token.gox: go/libtoken.$(OBJEXT)
+	$(BUILDGOX)
+go/typechecker.gox: go/libtypechecker.$(OBJEXT)
 	$(BUILDGOX)
 
-testing/iotest.gox: testing/libiotest.a
+hash/adler32.gox: hash/libadler32.$(OBJEXT)
 	$(BUILDGOX)
-testing/quick.gox: testing/libquick.a
+hash/crc32.gox: hash/libcrc32.$(OBJEXT)
 	$(BUILDGOX)
-testing/script.gox: testing/libscript.a
+hash/crc64.gox: hash/libcrc64.$(OBJEXT)
+	$(BUILDGOX)
+
+http/pprof.gox: http/libpprof.$(OBJEXT)
+	$(BUILDGOX)
+
+image/jpeg.gox: image/libjpeg.$(OBJEXT)
+	$(BUILDGOX)
+image/png.gox: image/libpng.$(OBJEXT)
+	$(BUILDGOX)
+
+index/suffixarray.gox: index/libsuffixarray.$(OBJEXT)
+	$(BUILDGOX)
+
+io/ioutil.gox: io/libioutil.$(OBJEXT)
+	$(BUILDGOX)
+
+mime/multipart.gox: mime/libmultipart.$(OBJEXT)
+	$(BUILDGOX)
+
+net/dict.gox: net/libdict.$(OBJEXT)
+	$(BUILDGOX)
+net/textproto.gox: net/libtextproto.$(OBJEXT)
+	$(BUILDGOX)
+
+os/inotify.gox: os/libinotify.$(OBJEXT)
+	$(BUILDGOX)
+os/signal.gox: os/libsignal.$(OBJEXT)
+	$(BUILDGOX)
+
+rpc/jsonrpc.gox: rpc/libjsonrpc.$(OBJEXT)
+	$(BUILDGOX)
+
+runtime/debug.gox: runtime/libdebug.$(OBJEXT)
+	$(BUILDGOX)
+runtime/pprof.gox: runtime/libpprof.$(OBJEXT)
+	$(BUILDGOX)
+
+testing/iotest.gox: testing/libiotest.$(OBJEXT)
+	$(BUILDGOX)
+testing/quick.gox: testing/libquick.$(OBJEXT)
+	$(BUILDGOX)
+testing/script.gox: testing/libscript.$(OBJEXT)
 	$(BUILDGOX)
 
 if LIBGO_IS_LINUX
