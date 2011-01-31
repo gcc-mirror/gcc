@@ -1,3 +1,23 @@
+2011-01-31  Alexandre Oliva  <aoliva@redhat.com>
+
+	Reverted:
+	2011-01-25  Alexandre Oliva  <aoliva@redhat.com>
+	PR debug/45136
+	PR debug/45130
+	* haifa-sched.c (get_ebb_head_tail): Move notes across boundary
+	debug insns.
+	(no_real_insns_p, schedule_block, set_priorities): Drop special
+	treatment of boundary debug insns.
+	* sched-deps.c (sd_init_insn, sd_finish_insn): Don't mark debug
+	insns.
+	* sched-ebb.c (schedule_ebbs): Don't skip debug insns.
+	* sched-int.h (DEBUG_INSN_SCHED_P): Remove.
+	(BOUNDARY_DEBUG_INSN_P): Likewise.
+	(SCHEDULE_DEBUG_INSN_P): Likewise.
+	* sched-rgn.c (init_ready_list): Drop special treatment of
+	boundary debug insns.
+	* final.c (rest_of_clean-state): Clear notes' BB.
+
 2011-01-31  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (print_operand): Rearrange addends in

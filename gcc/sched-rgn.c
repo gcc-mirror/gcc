@@ -2138,7 +2138,7 @@ init_ready_list (void)
 	src_head = head;
 
 	for (insn = src_head; insn != src_next_tail; insn = NEXT_INSN (insn))
-	  if (INSN_P (insn))
+	  if (INSN_P (insn) && !BOUNDARY_DEBUG_INSN_P (insn))
 	    try_ready (insn);
       }
 }

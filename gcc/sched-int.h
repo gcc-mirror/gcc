@@ -887,6 +887,23 @@ extern VEC(haifa_deps_insn_data_def, heap) *h_d_i_d;
 #define IS_SPECULATION_BRANCHY_CHECK_P(INSN) \
   (RECOVERY_BLOCK (INSN) != NULL && RECOVERY_BLOCK (INSN) != EXIT_BLOCK_PTR)
 
+/* The unchanging bit tracks whether a debug insn is to be handled
+   like an insn (i.e., schedule it) or like a note (e.g., it is next
+   to a basic block boundary.  */
+#define DEBUG_INSN_SCHED_P(insn) \
+  (RTL_FLAG_CHECK1("DEBUG_INSN_SCHED_P", (insn), DEBUG_INSN)->unchanging)
+
+/* True if INSN is a debug insn that is next to a basic block
+   boundary, i.e., it is to be handled by the scheduler like a
+   note.  */
+#define BOUNDARY_DEBUG_INSN_P(insn) \
+  (DEBUG_INSN_P (insn) && !DEBUG_INSN_SCHED_P (insn))
+/* True if INSN is a debug insn that is not next to a basic block
+   boundary, i.e., it is to be handled by the scheduler like an
+   insn.  */
+#define SCHEDULE_DEBUG_INSN_P(insn) \
+  (DEBUG_INSN_P (insn) && DEBUG_INSN_SCHED_P (insn))
+
 /* Dep status (aka ds_t) of the link encapsulates information, that is needed
    for speculative scheduling.  Namely, it is 4 integers in the range
    [0, MAX_DEP_WEAK] and 3 bits.
