@@ -1588,7 +1588,10 @@ PowerPC target supports executing AltiVec instructions.
 
 @table @code
 @item avx
-Target supports compiling AVX instructions.
+Target supports compiling @code{avx} instructions.
+
+@item avx_runtime
+Target supports the execution of @code{avx} instructions.
 
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
