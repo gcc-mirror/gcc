@@ -999,6 +999,11 @@
 	* tree-ssa-copyrename.c (copy_rename_partition_coalesce):
 	Revert previous change, only avoid enumeral type changes.
 
+2011-01-19  Mike Stump  <mikestump@comcast.net>
+
+	* doc/tm.texi.in (BRANCH_COST): Englishify.
+	* doc/tm.texi (BRANCH_COST): Likewise.
+
 2011-01-19  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47291
