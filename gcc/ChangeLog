@@ -1,5 +1,11 @@
 2011-01-31  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR libgcj/44341
+	* doc/install.texi: Document host options discarded when cross
+	configuring target libraries.
+
+2011-01-31  Alexandre Oliva  <aoliva@redhat.com>
+
 	Reverted:
 	2011-01-25  Alexandre Oliva  <aoliva@redhat.com>
 	PR debug/45136

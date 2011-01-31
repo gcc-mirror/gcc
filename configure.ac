@@ -2845,6 +2845,7 @@ AC_SUBST_FILE(serialization_dependencies)
 # Also strip program-prefix, program-suffix, and program-transform-name,
 # so that we can pass down a consistent program-transform-name.
 baseargs=
+tbaseargs=
 keep_next=no
 skip_next=no
 eval "set -- $ac_configure_args"
@@ -2860,6 +2861,7 @@ do
 	ac_arg=`echo "$ac_arg" | sed "s/'/'\\\\\\\\''/g"` ;;
     esac
     baseargs="$baseargs '$ac_arg'"
+    tbaseargs="$tbaseargs '$ac_arg'"
     keep_next=no
     continue
   fi
@@ -2881,11 +2883,45 @@ do
       ;;
   esac
 
+  skip_targ=no
+  case $ac_arg in
+changequote(,)
+  --with-* | --without-*)
+    libopt=`echo "$ac_arg" | sed -e 's,^--[^-_]*[-_],,' -e 's,=.*$,,'`
+
+    case $libopt in
+    *[-_]include)
+      lib=`echo "$libopt" | sed 's,[-_]include$,,'`
+      ;;
+    *[-_]lib)
+      lib=`echo "$libopt" | sed 's,[-_]lib$,,'`
+      ;;
+    *)
+      lib=$libopt
+      ;;
+    esac
+changequote([,])
+
+    case $lib in
+    mpc | mpfr | gmp | ppl | cloog)
+      # If we're processing --with-$lib, --with-$lib-include or
+      # --with-$lib-lib, for one of the libs above, and target is
+      # different from host, don't pass the current argument to any
+      # target library's configure.
+      if test x$is_cross_compiler = xyes; then
+        skip_targ=yes
+      fi
+      ;;
+    esac
+    ;;
+  esac
+
   case "$ac_arg" in
     --cache-file=/dev/null | \
     -cache-file=/dev/null )
       # Handled here to avoid the test to skip args below.
       baseargs="$baseargs '$ac_arg'"
+      tbaseargs="$tbaseargs '$ac_arg'"
       # Assert: $separate_arg should always be no.
       keep_next=$separate_arg
       ;;
@@ -2916,6 +2952,9 @@ do
 	  ac_arg=`echo "$ac_arg" | sed "s/'/'\\\\\\\\''/g"` ;;
       esac
       baseargs="$baseargs '$ac_arg'"
+      if test X"$skip_targ" = Xno; then
+        tbaseargs="$tbaseargs '$ac_arg'"
+      fi
       keep_next=$separate_arg
       ;;
     *)
@@ -2942,10 +2981,13 @@ EOF_SED
 gcc_transform_name=`cat conftestsed.out`
 rm -f conftestsed.out
 baseargs="$baseargs --program-transform-name='${gcc_transform_name}'"
+tbaseargs="$tbaseargs --program-transform-name='${gcc_transform_name}'"
 if test "$silent" = yes; then
   baseargs="$baseargs --silent"
+  tbaseargs="$tbaseargs --silent"
 fi
 baseargs="$baseargs --disable-option-checking"
+tbaseargs="$tbaseargs --disable-option-checking"
 
 # Record and document user additions to sub configure arguments.
 AC_ARG_VAR([build_configargs],
@@ -2974,7 +3016,7 @@ esac
 # This seems to be due to autoconf 2.5x stupidity.
 host_configargs="$host_configargs --cache-file=./config.cache ${extra_host_args} ${baseargs}"
 
-target_configargs="$target_configargs ${baseargs}"
+target_configargs="$target_configargs ${tbaseargs}"
 
 # Passing a --with-cross-host argument lets the target libraries know
 # whether they are being built with a cross-compiler or being built
