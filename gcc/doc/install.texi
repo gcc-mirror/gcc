@@ -1584,6 +1584,9 @@ shared libraries can be found by the dynamic linker when building and
 using GCC, for example by setting the runtime shared library path
 variable (@env{LD_LIBRARY_PATH} on GNU/Linux and Solaris systems).
 
+These flags are applicable to the host platform only.  When building
+a cross compiler, they will not be used to configure target libraries.
+
 @item --with-ppl=@var{pathname}
 @itemx --with-ppl-include=@var{pathname}
 @itemx --with-ppl-lib=@var{pathname}
@@ -1603,6 +1606,9 @@ you can explicitly specify the directory where they are installed
 @option{--with-cloog-include=@/@var{clooginstalldir}/include}.  If these
 shorthand assumptions are not correct, you can use the explicit
 include and lib options directly.
+
+These flags are applicable to the host platform only.  When building
+a cross compiler, they will not be used to configure target libraries.
 
 @item --with-host-libstdcxx=@var{linker-args}
 If you are linking with a static copy of PPL, you can use this option
