@@ -1,3 +1,8 @@
+2011-01-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47519
+	* gfortran.dg/allocate_deferred_char_scalar_2.f03: New test.
+
 2011-01-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47463

@@ -1605,6 +1605,15 @@ show_code_node (int level, gfc_code *c)
 	  show_expr (c->expr2);
 	}
 
+      if (c->expr3)
+	{
+	  if (c->expr3->mold)
+	    fputs (" MOLD=", dumpfile);
+	  else
+	    fputs (" SOURCE=", dumpfile);
+	  show_expr (c->expr3);
+	}
+
       for (a = c->ext.alloc.list; a; a = a->next)
 	{
 	  fputc (' ', dumpfile);
