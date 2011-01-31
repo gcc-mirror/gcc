@@ -1076,7 +1076,7 @@ if test "x${use_glibj_zip}" = xfalse || \
 	AC_PROG_JAVAC_WORKS
   	CLASSPATH_JAVAC_MEM_CHECK
 else
-   AM_CONDITIONAL(GCJ_JAVAC, no)
+   AM_CONDITIONAL(GCJ_JAVAC, false)
 fi
 
 dnl -----------------------------------------------------------
