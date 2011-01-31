@@ -748,7 +748,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       overflow(int_type /* __c */ = traits_type::eof())
       { return traits_type::eof(); }
 
-#if _GLIBCXX_DEPRECATED
+#if _GLIBCXX_USE_DEPRECATED
     // Annex D.6
     public:
       /**

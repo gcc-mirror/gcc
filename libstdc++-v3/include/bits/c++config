@@ -74,16 +74,16 @@
 #endif
 
 // Macros for deprecated attributes.
+//   _GLIBCXX_USE_DEPRECATED
 //   _GLIBCXX_DEPRECATED
-//   _GLIBCXX_DEPRECATED_ATTR
-#ifndef _GLIBCXX_DEPRECATED
-# define _GLIBCXX_DEPRECATED 1
+#ifndef _GLIBCXX_USE_DEPRECATED
+# define _GLIBCXX_USE_DEPRECATED 1
 #endif
 
 #if defined(__DEPRECATED) && defined(__GXX_EXPERIMENTAL_CXX0X__)
-# define _GLIBCXX_DEPRECATED_ATTR __attribute__ ((__deprecated__))
+# define _GLIBCXX_DEPRECATED __attribute__ ((__deprecated__))
 #else
-# define _GLIBCXX_DEPRECATED_ATTR
+# define _GLIBCXX_DEPRECATED
 #endif
 
 #if __cplusplus

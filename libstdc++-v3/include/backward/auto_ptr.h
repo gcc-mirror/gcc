@@ -1,6 +1,6 @@
 // auto_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,7 +51,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       
       explicit
       auto_ptr_ref(_Tp1* __p): _M_ptr(__p) { }
-    } _GLIBCXX_DEPRECATED_ATTR;
+    } _GLIBCXX_DEPRECATED;
 
 
   /**
@@ -278,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp1>
         operator auto_ptr<_Tp1>() throw()
         { return auto_ptr<_Tp1>(this->release()); }
-    } _GLIBCXX_DEPRECATED_ATTR;
+    } _GLIBCXX_DEPRECATED;
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 541. shared_ptr template assignment and void
@@ -287,7 +287,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       typedef void element_type;
-    } _GLIBCXX_DEPRECATED_ATTR;
+    } _GLIBCXX_DEPRECATED;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
