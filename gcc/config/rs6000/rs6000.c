@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -16182,7 +16182,18 @@ print_operand (FILE *file, rtx x, int code)
 	    output_address (XEXP (x, 0));
 	}
       else
-	output_addr_const (file, x);
+	{
+	  if (toc_relative_expr_p (x))
+	    /* This hack along with a corresponding hack in
+	       rs6000_output_addr_const_extra arranges to output addends
+	       where the assembler expects to find them.  eg.
+	       (const (plus (unspec [symbol_ref ("x") tocrel]) 4))
+	       without this hack would be output as "x@toc+4".  We
+	       want "x+4@toc".  */
+	    output_addr_const (file, tocrel_base);
+	  else
+	    output_addr_const (file, x);
+	}
       return;
 
     case '&':
