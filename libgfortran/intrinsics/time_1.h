@@ -184,7 +184,7 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
 #ifdef CLOCK_MONOTONIC
 #define GF_CLOCK_MONOTONIC CLOCK_MONOTONIC
 #else
-#define GF_CLOCK_REALTIME GF_CLOCK_REALTIME
+#define GF_CLOCK_MONOTONIC GF_CLOCK_REALTIME
 #endif
 
 /* Arguments:
