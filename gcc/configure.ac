@@ -3982,8 +3982,8 @@ elif test x$gcc_cv_ld != x; then
   else
     case "$target" in
       *-*-solaris2*)
-        # Sun ld has various bugs in .eh_frame_hdr support before version 1.2249.
-        if test "$ld_vers_major" -gt 1 || test "$ld_vers_minor" -ge 2249; then
+        # Sun ld has various bugs in .eh_frame_hdr support before version 1.2251.
+        if test "$ld_vers_major" -gt 1 || test "$ld_vers_minor" -ge 2251; then
           gcc_cv_ld_eh_frame_hdr=yes
         fi
         ;;
