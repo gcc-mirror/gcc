@@ -1,7 +1,7 @@
 /* Implementation of the CPU_TIME intrinsic.
-   Copyright (C) 2003, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -25,49 +25,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include "time_1.h"
 
-/* The most accurate way to get the CPU time is getrusage ().
-   If we have times(), that's good enough, too.  */
-#if !defined (HAVE_GETRUSAGE) || !defined (HAVE_SYS_RESOURCE_H)
-/* For times(), we _must_ know the number of clock ticks per second.  */
-#  if defined (HAVE_TIMES) && (defined (HZ) || defined (_SC_CLK_TCK) || defined (CLK_TCK))
-#    ifdef HAVE_SYS_PARAM_H
-#      include <sys/param.h>
-#    endif
-#    if defined (HAVE_SYS_TIMES_H)
-#      include <sys/times.h>
-#    endif
-#    ifndef HZ
-#      if defined _SC_CLK_TCK
-#        define HZ  sysconf(_SC_CLK_TCK)
-#      else
-#        define HZ  CLK_TCK
-#      endif
-#    endif
-#  endif  /* HAVE_TIMES etc.  */
-#endif  /* !HAVE_GETRUSAGE || !HAVE_SYS_RESOURCE_H  */
 
 static inline void __cpu_time_1 (long *, long *) ATTRIBUTE_ALWAYS_INLINE;
 
 static inline void
 __cpu_time_1 (long *sec, long *usec)
 {
-#if defined(__MINGW32__) || defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
   long user_sec, user_usec, system_sec, system_usec;
-  __time_1 (&user_sec, &user_usec, &system_sec, &system_usec);
-  *sec = user_sec + system_sec;
-  *usec = user_usec + system_usec;
-#else /* ! HAVE_GETRUSAGE || ! HAVE_SYS_RESOURCE_H  */
-#ifdef HAVE_TIMES
-  struct tms buf;
-  times (&buf);
-  *sec = 0;
-  *usec = (buf.tms_utime + buf.tms_stime) * (1000000 / HZ);
-#else /* ! HAVE_TIMES */
-  /* We have nothing to go on.  Return -1.  */
-  *sec = -1;
-  *usec = 0;
-#endif  /* HAVE_TIMES */
-#endif  /* __MINGW32__ || HAVE_GETRUSAGE */
+  if (gf_cputime (&user_sec, &user_usec, &system_sec, &system_usec) == 0)
+    {
+      *sec = user_sec + system_sec;
+      *usec = user_usec + system_usec;
+    }
+  else
+    {
+      *sec = -1;
+      *usec = 0;
+    }
 }
 
 

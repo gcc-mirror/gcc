@@ -207,6 +207,9 @@
 /* Define to 1 if you have the `clock' function. */
 #undef HAVE_CLOCK
 
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
+
 /* libm includes clog */
 #undef HAVE_CLOG
 

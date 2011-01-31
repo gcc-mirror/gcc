@@ -1,5 +1,6 @@
 /* Implementation of the SYSTEM_CLOCK intrinsic.
-   Copyright (C) 2004, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2009, 2010, 2011 Free Software
+   Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 
@@ -26,15 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <limits.h>
 
-#if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
-#  include <sys/time.h>
-#elif defined(HAVE_TIME_H)
-#  include <time.h>
-#  define TCK 1
-#else
-#define TCK 0
-#endif
-
+#include "time_1.h"
 
 extern void system_clock_4 (GFC_INTEGER_4 *, GFC_INTEGER_4 *, GFC_INTEGER_4 *);
 export_proto(system_clock_4);
@@ -52,21 +45,21 @@ void
 system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	       GFC_INTEGER_4 *count_max)
 {
+#undef TCK
+#define TCK 1000
   GFC_INTEGER_4 cnt;
   GFC_INTEGER_4 mx;
 
-#if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
-#undef TCK
-#define TCK 1000
-  struct timeval tp1;
+  time_t secs;
+  long nanosecs;
 
-  if (sizeof (tp1.tv_sec) < sizeof (GFC_INTEGER_4))
-    internal_error (NULL, "tv_sec too small");
+  if (sizeof (secs) < sizeof (GFC_INTEGER_4))
+    internal_error (NULL, "secs too small");
 
-  if (gettimeofday(&tp1, NULL) == 0)
+  if (gf_gettime (GF_CLOCK_MONOTONIC, &secs, &nanosecs) == 0)
     {
-      GFC_UINTEGER_4 ucnt = (GFC_UINTEGER_4) tp1.tv_sec * TCK;
-      ucnt += (tp1.tv_usec + 500000 / TCK) / (1000000 / TCK);
+      GFC_UINTEGER_4 ucnt = (GFC_UINTEGER_4) secs * TCK;
+      ucnt += (nanosecs + 500000000 / TCK) / (1000000000 / TCK);
       if (ucnt > GFC_INTEGER_4_HUGE)
 	cnt = ucnt - GFC_INTEGER_4_HUGE - 1;
       else
@@ -83,22 +76,7 @@ system_clock_4(GFC_INTEGER_4 *count, GFC_INTEGER_4 *count_rate,
 	*count_max = 0;
       return;
     }
-#elif defined(HAVE_TIME_H)
-  GFC_UINTEGER_4 ucnt;
 
-  if (sizeof (time_t) < sizeof (GFC_INTEGER_4))
-    internal_error (NULL, "time_t too small");
-
-  ucnt = time (NULL);
-  if (ucnt > GFC_INTEGER_4_HUGE)
-    cnt = ucnt - GFC_INTEGER_4_HUGE - 1;
-  else
-    cnt = ucnt;
-  mx = GFC_INTEGER_4_HUGE;
-#else
-  cnt = - GFC_INTEGER_4_HUGE;
-  mx = 0;
-#endif
   if (count != NULL)
     *count = cnt;
   if (count_rate != NULL)
@@ -114,39 +92,26 @@ void
 system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
 		GFC_INTEGER_8 *count_max)
 {
+#undef TCK
+#define TCK 1000000000
   GFC_INTEGER_8 cnt;
   GFC_INTEGER_8 mx;
 
-#if defined(HAVE_SYS_TIME_H) && defined(HAVE_GETTIMEOFDAY)
-#undef TCK
-#define TCK 1000000
-  struct timeval tp1;
+  time_t secs;
+  long nanosecs;
 
-  if (sizeof (tp1.tv_sec) < sizeof (GFC_INTEGER_4))
-    internal_error (NULL, "tv_sec too small");
+  if (sizeof (secs) < sizeof (GFC_INTEGER_4))
+    internal_error (NULL, "secs too small");
 
-  if (gettimeofday(&tp1, NULL) == 0)
+  if (gf_gettime (GF_CLOCK_MONOTONIC, &secs, &nanosecs) == 0)
     {
-      if (sizeof (tp1.tv_sec) < sizeof (GFC_INTEGER_8))
-	{
-	  GFC_UINTEGER_4 ucnt = (GFC_UINTEGER_4) tp1.tv_sec * TCK;
-	  ucnt += (tp1.tv_usec + 500000 / TCK) / (1000000 / TCK);
-	  if (ucnt > GFC_INTEGER_4_HUGE)
-	    cnt = ucnt - GFC_INTEGER_4_HUGE - 1;
-	  else
-	    cnt = ucnt;
-	  mx = GFC_INTEGER_4_HUGE;
-	}
+      GFC_UINTEGER_8 ucnt = (GFC_UINTEGER_8) secs * TCK;
+      ucnt += (nanosecs + 500000000 / TCK) / (1000000000 / TCK);
+      if (ucnt > GFC_INTEGER_8_HUGE)
+	cnt = ucnt - GFC_INTEGER_8_HUGE - 1;
       else
-	{
-	  GFC_UINTEGER_8 ucnt = (GFC_UINTEGER_8) tp1.tv_sec * TCK;
-	  ucnt += (tp1.tv_usec + 500000 / TCK) / (1000000 / TCK);
-	  if (ucnt > GFC_INTEGER_8_HUGE)
-	    cnt = ucnt - GFC_INTEGER_8_HUGE - 1;
-	  else
-	    cnt = ucnt;
-	  mx = GFC_INTEGER_8_HUGE;
-	}
+	cnt = ucnt;
+      mx = GFC_INTEGER_8_HUGE;
     }
   else
     {
@@ -159,31 +124,7 @@ system_clock_8 (GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
 
       return;
     }
-#elif defined(HAVE_TIME_H)
-  if (sizeof (time_t) < sizeof (GFC_INTEGER_4))
-    internal_error (NULL, "time_t too small");
-  else if (sizeof (time_t) == sizeof (GFC_INTEGER_4))
-    {
-      GFC_UINTEGER_4 ucnt = time (NULL);
-      if (ucnt > GFC_INTEGER_4_HUGE)
-	cnt = ucnt - GFC_INTEGER_4_HUGE - 1;
-      else
-	cnt = ucnt;
-      mx = GFC_INTEGER_4_HUGE;
-    }
-  else
-    {
-      GFC_UINTEGER_8 ucnt = time (NULL);
-      if (ucnt > GFC_INTEGER_8_HUGE)
-	cnt = ucnt - GFC_INTEGER_8_HUGE - 1;
-      else
-	cnt = ucnt;
-      mx = GFC_INTEGER_8_HUGE;
-    }
-#else
-  cnt = - GFC_INTEGER_8_HUGE;
-  mx = 0;
-#endif
+
   if (count != NULL)
     *count = cnt;
   if (count_rate != NULL)
