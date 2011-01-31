@@ -1,3 +1,7 @@
+2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/abi/mangle40.C: Pass "" to dg-require-weak.
+
 2011-01-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/44031
