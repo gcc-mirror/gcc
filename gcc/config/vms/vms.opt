@@ -1,4 +1,4 @@
-; Copyright (C) 2009 Free Software Foundation, Inc.
+; Copyright (C) 2009, 2011 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -16,6 +16,9 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+map
+Driver RejectNegative
+
 mmalloc64
 Target Report Mask(MALLOC64)
 Malloc data into P2 space
@@ -23,3 +26,6 @@ Malloc data into P2 space
 mdebug-main=
 Target RejectNegative Joined Var(vms_debug_main)
 Set name of main routine for the debugger
+
+mvms-return-codes
+Driver RejectNegative

@@ -1,3 +1,7 @@
+2011-01-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/vms/vms.opt (map, mvms-return-codes): New Driver options.
+
 2011-01-31  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* common.opt (ftree-loop-linear): Use Alias to make it an alias of
