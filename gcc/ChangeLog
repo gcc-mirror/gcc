@@ -1,3 +1,13 @@
+2011-01-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* common.opt (ftree-loop-linear): Use Alias to make it an alias of
+	-floop-interchange.
+	* invoke.texi (-ftree-loop-linear): Make it clear that this flag
+	is an alias of -floop-interchange and that it requires the
+	Graphite infrastructure.
+	* tree-ssa-loop.c (gate_graphite_transforms): Do not set
+	flag_loop_interchange based on the value of flag_tree_loop_linear.
+
 2011-01-31  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Guenther  <rguenther@suse.de>
 

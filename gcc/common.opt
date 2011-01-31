@@ -1903,8 +1903,8 @@ Common Report Var(flag_tree_loop_im) Init(1) Optimization
 Enable loop invariant motion on trees
 
 ftree-loop-linear
-Common Report Var(flag_tree_loop_linear) Optimization
-Enable linear loop transforms on trees
+Common Alias(floop-interchange)
+Enable loop interchange transforms.  Same as -floop-interchange
 
 ftree-loop-ivcanon
 Common Report Var(flag_tree_loop_ivcanon) Init(1) Optimization
