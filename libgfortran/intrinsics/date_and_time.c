@@ -1,5 +1,5 @@
 /* Implementation of the DATE_AND_TIME intrinsic.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Steven Bosscher.
 
@@ -29,21 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>
 #include <stdlib.h>
 
-#undef HAVE_NO_DATE_TIME
-#if TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-#else
-#  if HAVE_SYS_TIME_H
-#    include <sys/time.h>
-#  else
-#    ifdef HAVE_TIME_H
-#      include <time.h>
-#    else
-#      define HAVE_NO_DATE_TIME
-#    endif  /* HAVE_TIME_H  */
-#  endif  /* HAVE_SYS_TIME_H  */
-#endif  /* TIME_WITH_SYS_TIME  */
+#include "time_1.h"
 
 #ifndef abs
 #define abs(x) ((x)>=0 ? (x) : -(x))
@@ -176,28 +162,12 @@ date_and_time (char *__date, char *__time, char *__zone,
   struct tm local_time;
   struct tm UTC_time;
 
-#if HAVE_GETTIMEOFDAY
-  {
-    struct timeval tp;
+  long nanosecs;
 
-    if (!gettimeofday (&tp, NULL))
-      {
-         lt = tp.tv_sec;
-         values[7] = tp.tv_usec / 1000;
-      }
-    else
-      {
-         lt = time (NULL);
-         values[7] = 0;
-      }
-  }
-#else
-  lt = time (NULL);
-  values[7] = 0;
-#endif /* HAVE_GETTIMEOFDAY */
-
-  if (lt != (time_t) -1)
+  if (!gf_gettime(GF_CLOCK_REALTIME, &lt, &nanosecs))
     {
+      values[7] = nanosecs / 1000000;
+
       localtime_r (&lt, &local_time);
       gmtime_r (&lt, &UTC_time);
 
