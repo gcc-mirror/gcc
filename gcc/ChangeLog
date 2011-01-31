@@ -1,5 +1,10 @@
 2011-01-31  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/alpha/osf5.opt: New.
+	* config.gcc (alpha*-dec-osf5.1*): Use alpha/osf5.opt.
+
+2011-01-31  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/vms/vms.opt (map, mvms-return-codes): New Driver options.
 
 2011-01-31  Sebastian Pop  <sebastian.pop@amd.com>
