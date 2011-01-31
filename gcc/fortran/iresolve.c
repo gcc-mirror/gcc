@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "intrinsic.h"
 #include "constructor.h"
+#include "arith.h"
 
 /* Given printf-like arguments, return a stable version of the result string. 
 
@@ -2044,11 +2045,31 @@ gfc_resolve_rename (gfc_expr *f, gfc_expr *p1 ATTRIBUTE_UNUSED,
 
 void
 gfc_resolve_repeat (gfc_expr *f, gfc_expr *string,
-		    gfc_expr *ncopies ATTRIBUTE_UNUSED)
+		    gfc_expr *ncopies)
 {
+  int len;
+  gfc_expr *tmp;
   f->ts.type = BT_CHARACTER;
   f->ts.kind = string->ts.kind;
   f->value.function.name = gfc_get_string ("__repeat_%d", string->ts.kind);
+
+  /* If possible, generate a character length.  */
+  if (f->ts.u.cl == NULL)
+    f->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
+
+  tmp = NULL;
+  if (string->expr_type == EXPR_CONSTANT)
+    {
+      len = string->value.character.length;
+      tmp = gfc_get_int_expr (gfc_default_integer_kind, NULL , len);
+    }
+  else if (string->ts.u.cl && string->ts.u.cl->length)
+    {
+      tmp = gfc_copy_expr (string->ts.u.cl->length);
+    }
+
+  if (tmp)
+    f->ts.u.cl->length = gfc_multiply (tmp, gfc_copy_expr (ncopies));
 }
 
 

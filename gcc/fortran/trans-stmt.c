@@ -4522,15 +4522,30 @@ gfc_trans_allocate (gfc_code * code)
 		      gfc_conv_expr (&se_sz, code->expr3);
 		      memsz = se_sz.string_length;
 		    }
-		  else
+		  else if (code->expr3->ts.u.cl
+			     && code->expr3->ts.u.cl->length)
+		    {
+		      gfc_conv_expr (&se_sz, code->expr3->ts.u.cl->length);
+		      gfc_add_block_to_block (&se.pre, &se_sz.pre);
+		      se_sz.expr = gfc_evaluate_now (se_sz.expr, &se.pre);
+		      gfc_add_block_to_block (&se.pre, &se_sz.post);
+		      memsz = se_sz.expr;
+		    }
+		  else if (code->ext.alloc.ts.u.cl
+			     && code->ext.alloc.ts.u.cl->length)
 		    {
 		      gfc_conv_expr (&se_sz, code->ext.alloc.ts.u.cl->length);
 		      memsz = se_sz.expr;
 		    }
-		  if (TREE_CODE (se.string_length) == VAR_DECL)
-                    gfc_add_modify (&block, se.string_length,
-				    fold_convert (TREE_TYPE (se.string_length),
-						  memsz));
+		  else
+		    {
+		      /* This is likely to be inefficient.  */
+		      gfc_conv_expr (&se_sz, code->expr3);
+		      gfc_add_block_to_block (&se.pre, &se_sz.pre);
+		      se_sz.expr = gfc_evaluate_now (se_sz.expr, &se.pre);
+		      gfc_add_block_to_block (&se.pre, &se_sz.post);
+		      memsz = se_sz.string_length;
+		    }
 		}
 	      else
 		/* Otherwise use the stored string length.  */
@@ -4539,7 +4554,7 @@ gfc_trans_allocate (gfc_code * code)
 
 	      /* Store the string length.  */
 	      if (tmp && TREE_CODE (tmp) == VAR_DECL)
-		gfc_add_modify (&block, tmp, fold_convert (TREE_TYPE (tmp),
+		gfc_add_modify (&se.pre, tmp, fold_convert (TREE_TYPE (tmp),
 				memsz));
 
 	      /* Convert to size in bytes, using the character KIND.  */
@@ -4556,18 +4571,8 @@ gfc_trans_allocate (gfc_code * code)
 
 	  if (expr->ts.type == BT_CHARACTER && memsz == NULL_TREE)
 	    {
-	      if (expr->ts.deferred)
-		{
-		  gfc_se se_sz;
-		  gfc_init_se (&se_sz, NULL);
-		  gfc_conv_expr (&se_sz, code->ext.alloc.ts.u.cl->length);
-		  memsz = se_sz.expr;
-                  gfc_add_modify (&block, se.string_length,
-				  fold_convert (TREE_TYPE (se.string_length),
-						memsz));
-		}
-	      else
-		memsz = se.string_length;
+	      memsz = se.string_length;
+
 	      /* Convert to size in bytes, using the character KIND.  */
 	      tmp = TREE_TYPE (gfc_typenode_for_spec (&code->ext.alloc.ts));
 	      tmp = TYPE_SIZE_UNIT (tmp);
@@ -4664,8 +4669,15 @@ gfc_trans_allocate (gfc_code * code)
 	      tmp = gfc_finish_block (&call.pre);
 	    }
 	  else
-	    tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
-					rhs, false, false);
+	    {
+	      /* Switch off automatic reallocation since we have just done
+		 the ALLOCATE.  */
+	      int realloc_lhs = gfc_option.flag_realloc_lhs;
+	      gfc_option.flag_realloc_lhs = 0;
+	      tmp = gfc_trans_assignment (gfc_expr_to_initialize (expr),
+					  rhs, false, false);
+	      gfc_option.flag_realloc_lhs = realloc_lhs;
+	    }
 	  gfc_free_expr (rhs);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
