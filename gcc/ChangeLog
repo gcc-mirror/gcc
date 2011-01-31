@@ -1,5 +1,11 @@
 2011-01-31  Nick Clifton  <nickc@redhat.com>
 
+	* config/rx/rx.c (rx_get_stack_layout): Only save call clobbered
+	registers inside interrupt handlers if the handler is not a leaf
+	function.
+
+2011-01-31  Nick Clifton  <nickc@redhat.com>
+
 	* config/mn10300/mn10300.c (mn10300_regno_in_class_p): Check for
 	reg_renumber returning an INVALID_REGNUM.
 
