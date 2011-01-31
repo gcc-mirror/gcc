@@ -1,3 +1,8 @@
+2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++spec.c (lang_specific_driver) [HAVE_LD_STATIC_DYNAMIC] Use
+	LD_STATIC_OPTION, LD_DYNAMIC_OPTION.
+
 2011-01-29  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47311

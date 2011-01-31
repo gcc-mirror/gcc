@@ -192,12 +192,12 @@ add_arg_libgfortran (bool force_static ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_LD_STATIC_DYNAMIC
   if (force_static)
-    append_option (OPT_Wl_, "-Bstatic", 1);
+    append_option (OPT_Wl_, LD_STATIC_OPTION, 1);
 #endif
   append_option (OPT_l, FORTRAN_LIBRARY, 1);
 #ifdef HAVE_LD_STATIC_DYNAMIC
   if (force_static)
-    append_option (OPT_Wl_, "-Bdynamic", 1);
+    append_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1);
 #endif
 }
 

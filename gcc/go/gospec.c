@@ -1,5 +1,5 @@
 /* gospec.c -- Specific flags and argument handling of the gcc Go front end.
-   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -301,7 +301,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #ifdef HAVE_LD_STATIC_DYNAMIC
       if (library > 1 && !static_link)
 	{
-	  generate_option (OPT_Wl_, "-Bstatic", 1, CL_DRIVER,
+	  generate_option (OPT_Wl_, LD_STATIC_OPTION, 1, CL_DRIVER,
 			   &new_decoded_options[j]);
 	  j++;
 	}
@@ -315,7 +315,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #ifdef HAVE_LD_STATIC_DYNAMIC
       if (library > 1 && !static_link)
 	{
-	  generate_option (OPT_Wl_, "-Bdynamic", 1, CL_DRIVER,
+	  generate_option (OPT_Wl_, LD_DYNAMIC_OPTION, 1, CL_DRIVER,
 			   &new_decoded_options[j]);
 	  j++;
 	}
