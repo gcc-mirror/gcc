@@ -24182,7 +24182,7 @@ $as_echo "no" >&6; }
 
 
 else
-    if no; then
+    if false; then
   GCJ_JAVAC_TRUE=
   GCJ_JAVAC_FALSE='#'
 else
