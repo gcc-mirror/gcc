@@ -1,5 +1,9 @@
 2011-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* intrinsics/time_1.h: Fix definition of GF_CLOCK_MONOTONIC macro.
+
+2011-01-31  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* configure.ac: Check for clock_gettime().
 	* configure: Regenerated.
 	* config.h.in: Regenerated.
