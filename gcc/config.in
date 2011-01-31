@@ -1142,10 +1142,6 @@
 #undef HAVE_LDFCN_H
 #endif
 
-/* Define if your linker supports plugin. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_LTO_PLUGIN
-#endif
 
 /* Define if your linker supports --as-needed and --no-as-needed options. */
 #ifndef USED_FOR_TARGET
@@ -1213,7 +1209,7 @@
 #endif
 
 
-/* Define if your linker supports -Bstatic/-Bdynamic option. */
+/* Define if your linker supports -Bstatic/-Bdynamic or equivalent options. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_STATIC_DYNAMIC
 #endif
@@ -1246,6 +1242,12 @@
 /* Define to 1 if the system has the type `long long int'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LONG_LONG_INT
+#endif
+
+
+/* Define if your linker supports plugin. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LTO_PLUGIN
 #endif
 
 
@@ -1541,6 +1543,18 @@
 /* Define as const if the declaration of iconv() needs const. */
 #ifndef USED_FOR_TARGET
 #undef ICONV_CONST
+#endif
+
+
+/* Define to the linker option to enable use of shared objects. */
+#ifndef USED_FOR_TARGET
+#undef LD_DYNAMIC_OPTION
+#endif
+
+
+/* Define to the linker option to disable use of shared objects. */
+#ifndef USED_FOR_TARGET
+#undef LD_STATIC_OPTION
 #endif
 
 

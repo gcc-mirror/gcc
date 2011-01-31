@@ -23051,6 +23051,8 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker -Bstatic/-Bdynamic option" >&5
 $as_echo_n "checking linker -Bstatic/-Bdynamic option... " >&6; }
 gcc_cv_ld_static_dynamic=no
+gcc_cv_ld_static_option='-Bstatic'
+gcc_cv_ld_dynamic_option='-Bdynamic'
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10 -o "$gcc_cv_gld_major_version" -gt 2; then
     gcc_cv_ld_static_dynamic=yes
@@ -23062,6 +23064,12 @@ elif test x$gcc_cv_ld != x; then
       gcc_cv_ld_static_dynamic=yes
   else
     case "$target" in
+      # Tru64 UNIX support -noso/-so_archive instead of -Bstatic/-Bdynamic.
+      alpha*-dec-osf*)
+        gcc_cv_ld_static_dynamic=yes
+	gcc_cv_ld_static_option="-noso"
+	gcc_cv_ld_dynamic_option="-so_archive"
+        ;;
       # IRIX 6 ld supports -Bstatic/-Bdynamic.
       mips-sgi-irix6*)
         gcc_cv_ld_static_dynamic=yes
@@ -23076,6 +23084,16 @@ fi
 if test x"$gcc_cv_ld_static_dynamic" = xyes; then
 
 $as_echo "#define HAVE_LD_STATIC_DYNAMIC 1" >>confdefs.h
+
+
+cat >>confdefs.h <<_ACEOF
+#define LD_STATIC_OPTION "$gcc_cv_ld_static_option"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define LD_DYNAMIC_OPTION "$gcc_cv_ld_dynamic_option"
+_ACEOF
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_static_dynamic" >&5
