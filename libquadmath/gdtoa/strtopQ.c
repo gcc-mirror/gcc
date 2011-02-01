@@ -92,10 +92,10 @@ strtoflt128(CONST char *s, char **sp)
 		break;
 
 	  case STRTOG_NaN:
-		L[0] = ld_QNAN0;
-		L[1] = ld_QNAN1;
-		L[2] = ld_QNAN2;
-		L[3] = ld_QNAN3;
+		L[_0] = ld_QNAN3;
+		L[_1] = ld_QNAN2;
+		L[_2] = ld_QNAN1;
+		L[_3] = ld_QNAN0;
 	  }
 	if (k & STRTOG_Neg)
 		L[_0] |= 0x80000000L;
