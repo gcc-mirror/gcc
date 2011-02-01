@@ -1,3 +1,8 @@
+2011-02-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47541
+	* g++.dg/torture/pr47541.C: New testcase.
+
 2011-01-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47455

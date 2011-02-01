@@ -5083,6 +5083,19 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    if (!VEC_empty (fieldoff_s, *fieldstack))
 	      pair = VEC_last (fieldoff_s, *fieldstack);
 
+	    /* If there isn't anything at offset zero, create sth.  */
+	    if (!pair
+		&& offset + foff != 0)
+	      {
+		pair = VEC_safe_push (fieldoff_s, heap, *fieldstack, NULL);
+		pair->offset = 0;
+		pair->size = offset + foff;
+		pair->has_unknown_size = false;
+		pair->must_have_pointers = false;
+		pair->may_have_pointers = false;
+		pair->only_restrict_pointers = false;
+	      }
+
 	    if (!DECL_SIZE (field)
 		|| !host_integerp (DECL_SIZE (field), 1))
 	      has_unknown_size = true;
