@@ -1,6 +1,6 @@
 // Backward-compat support -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004, 2005, 2009, 2010
+// Copyright (C) 2001, 2002, 2004, 2005, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -40,6 +40,11 @@
 // header is defined in section D.7.1 of the C++ standard, and it
 // MAY BE REMOVED in a future standard revision.  One should use the
 // header <sstream> instead.
+
+/** @file backward/strstream
+ *  This is an internal header file, included by other library headers.
+ *  Do not attempt to use it directly. @headername{sstream}
+ */
 
 #ifndef _BACKWARD_STRSTREAM
 #define _BACKWARD_STRSTREAM

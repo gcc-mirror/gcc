@@ -1,3 +1,17 @@
+2011-02-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/run_doxygen: Allow doxygen 1.7.0 again.
+	* doc/doxygen/user.cfg.in (PDF_HYPERLINKS): Re-enable.
+	(COMPACT_LATEX): Enable.
+
+	* include/profile/impl/profiler_container_size.h: Adjust doxygen markup.
+	* include/profile/impl/profiler_hash_func.h: Same.
+	* include/bits/hashtable.h: Same.
+	* include/backward/auto_ptr.h: Same.
+	* include/backward/strstream: Same.
+	* include/backward/backward_warning.h: Same.
+	* include/backward/binders.h: Same.
+
 2011-02-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/debug.xml: Use GDB instead of gdb.

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -28,7 +28,7 @@
 // reasons why the executable file might be covered by the GNU General
 // Public License.
 
-/** @file profile/impl/profiler_trace.h
+/** @file profile/impl/profiler_hash_func.h
  *  @brief Data structures to represent profiling traces.
  */
 
