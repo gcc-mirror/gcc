@@ -1,3 +1,9 @@
+2011-02-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47559
+	* tree-ssa-loop-im.c (can_sm_ref_p): Do not perform
+	store-motion on references that can throw.
+
 2011-02-01  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* tree-dump.c (dump_option_value_info): Add entry for TDF_CSELIB.

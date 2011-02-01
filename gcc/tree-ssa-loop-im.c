@@ -2318,6 +2318,10 @@ can_sm_ref_p (struct loop *loop, mem_ref_p ref)
       || !for_each_index (&ref->mem, may_move_till, loop))
     return false;
 
+  /* If it can throw fail, we do not properly update EH info.  */
+  if (tree_could_throw_p (ref->mem))
+    return false;
+
   /* If it can trap, it must be always executed in LOOP.
      Readonly memory locations may trap when storing to them, but
      tree_could_trap_p is a predicate for rvalues, so check that
