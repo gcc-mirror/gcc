@@ -1,3 +1,9 @@
+2011-02-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/alpha/elf.opt: New.
+	* config.gcc (alpha*-*-linux*, alpha*-*-gnu*, alpha*-*-freebsd*,
+	alpha*-*-netbsd*, alpha*-*-openbsd*): Use alpha/elf.opt.
+
 2011-02-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47559
