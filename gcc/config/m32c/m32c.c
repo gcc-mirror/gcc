@@ -636,8 +636,9 @@ m32c_regno_reg_class (int regno)
     case R3_REGNO:
       return R3_REGS;
     case A0_REGNO:
+      return A0_REGS;
     case A1_REGNO:
-      return A_REGS;
+      return A1_REGS;
     case SB_REGNO:
       return SB_REGS;
     case FB_REGNO:
