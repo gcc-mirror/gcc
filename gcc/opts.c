@@ -633,7 +633,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       if (opts->x_dump_dir_name)
 	opts->x_dump_base_name = concat (opts->x_dump_dir_name,
 					 opts->x_dump_base_name, NULL);
-      else if (opts->x_aux_base_name)
+      else if (opts->x_aux_base_name
+	       && strcmp (opts->x_aux_base_name, HOST_BIT_BUCKET) != 0)
 	{
 	  const char *aux_base;
 

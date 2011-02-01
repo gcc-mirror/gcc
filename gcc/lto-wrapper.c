@@ -392,6 +392,7 @@ run_gcc (unsigned argc, char *argv[])
   if (linker_output)
     {
       char *output_dir, *base, *name;
+      bool bit_bucket = strcmp (linker_output, HOST_BIT_BUCKET) == 0;
 
       output_dir = xstrdup (linker_output);
       base = output_dir;
@@ -406,8 +407,11 @@ run_gcc (unsigned argc, char *argv[])
 	  static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
 	  output_dir = current_dir;
 	}
-      *argv_ptr++ = "-dumpdir";
-      *argv_ptr++ = output_dir;
+      if (!bit_bucket)
+	{
+	  *argv_ptr++ = "-dumpdir";
+	  *argv_ptr++ = output_dir;
+	}
 
       *argv_ptr++ = "-dumpbase";
     }
