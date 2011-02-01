@@ -1,2 +1,2 @@
 # for multilib
-MULTILIB_OPTIONS = mmultiply-enabled mbarrel-shift-enabled
+MULTILIB_OPTIONS = mbarrel-shift-enabled mmultiply-enabled mdivide-enabled msign-extend-enabled
