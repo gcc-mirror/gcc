@@ -46,7 +46,7 @@
   communicate information about source constructs can be changed via
   <code>-gdwarf-2</code> or <code>-gstabs</code> flags: some debugging
   formats permit more expressive type and scope information to be
-  shown in gdb. Expressiveness can be enhanced by flags like
+  shown in GDB. Expressiveness can be enhanced by flags like
   <code>-g3</code>. The default debug information for a particular
   platform can be identified via the value set by the
   PREFERRED_DEBUGGING_TYPE macro in the gcc sources.
@@ -246,13 +246,13 @@
   </para>
 
 <para>
-  Many options are available for gdb itself: please see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sources.redhat.com/gdb/current/onlinedocs/gdb_13.html#SEC125">
-  "GDB features for C++" </link> in the gdb documentation. Also
+  Many options are available for GDB itself: please see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sources.redhat.com/gdb/current/onlinedocs/gdb/">
+  "GDB features for C++" </link> in the GDB documentation. Also
   recommended: the other parts of this manual.
 </para>
 
 <para>
-  These settings can either be switched on in at the gdb command line,
+  These settings can either be switched on in at the GDB command line,
   or put into a .gdbint file to establish default debugging
   characteristics, like so:
 </para>
