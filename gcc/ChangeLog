@@ -1,3 +1,11 @@
+2011-02-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47555
+	Revert
+	2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* params.def (PARAM_SCEV_MAX_EXPR_SIZE): Bump the value to 100.
+
 2011-02-01  Sebastien Bourdeauducq  <sebastien@milkymist.org>
 
 	PR gcc/46692
