@@ -1,5 +1,10 @@
 2011-02-01  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/47560
+	* config/os/hpux/os_defines.h: Remove use of macros on namespace.
+
+2011-02-01  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* scripts/run_doxygen: Allow doxygen 1.7.0 again.
 	* doc/doxygen/user.cfg.in (PDF_HYPERLINKS): Re-enable.
 	(COMPACT_LATEX): Enable.
