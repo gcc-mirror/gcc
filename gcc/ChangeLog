@@ -1,5 +1,9 @@
 2011-02-01  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/cygming.opt (posix): New Driver option.
+
+2011-02-01  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/arm/vxworks.opt: New.
 	* config.gcc (arm-wrs-vxworks): Use arm/vxworks.opt.
 
