@@ -1,3 +1,7 @@
+2011-02-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/interix.opt (posix): New Driver option.
+
 2011-02-01  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.h (PTRDIFF_TYPE): Remove extra definition.
