@@ -1,5 +1,5 @@
 /* Definitions for describing one tree-ssa optimization pass.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>
 
@@ -82,6 +82,7 @@ enum tree_dump_index
 #define TDF_NOUID	(1 << 20)	/* omit UIDs from dumps.  */
 #define TDF_ALIAS	(1 << 21)	/* display alias information  */
 #define TDF_ENUMERATE_LOCALS (1 << 22)	/* Enumerate locals by uid.  */
+#define TDF_CSELIB	(1 << 23)	/* Dump cselib details.  */
 
 
 /* In tree-dump.c */

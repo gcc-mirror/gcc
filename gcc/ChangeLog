@@ -1,3 +1,10 @@
+2011-02-01  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* tree-dump.c (dump_option_value_info): Add entry for TDF_CSELIB.
+	* tree-pass.h (TDF_CSELIB): New macro.
+	* cselib.c (new_cselib_val, expand_loc, cselib_expand_value_rtx_1,
+	cselib_lookup): Check for it rather than for TDF_DETAILS.
+
 2011-02-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/47547
