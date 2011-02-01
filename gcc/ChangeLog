@@ -1,3 +1,12 @@
+2011-02-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/47547
+	* lto-wrapper.c (run_gcc): Don't add -dumpdir if linker_output
+	is HOST_BIT_BUCKET.
+
+	* opts.c (finish_options): Don't add x_aux_base_name if it is
+	HOST_BIT_BUCKET.
+
 2011-02-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47555
