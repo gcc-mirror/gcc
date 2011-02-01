@@ -29,6 +29,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <unistd.h>
 #endif
 
+#include <errno.h>
+
 /* The time related intrinsics (DTIME, ETIME, CPU_TIME) to "compare
    different algorithms on the same computer or discover which parts
    are the most expensive", need a way to get the CPU time with the
