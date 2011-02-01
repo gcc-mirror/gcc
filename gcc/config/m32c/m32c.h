@@ -200,9 +200,6 @@ machine_function;
 #undef  SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
 
-#undef  PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-
 #undef  WCHAR_TYPE
 #define WCHAR_TYPE "long int"
 
