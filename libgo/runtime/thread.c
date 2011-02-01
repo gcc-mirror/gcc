@@ -77,7 +77,7 @@ runtime_destroylock(Lock *l)
 	sem_destroy(&l->sem);
 }
 
-#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+#ifndef HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4
 
 // For targets which don't have the required sync support.  Really
 // this should be provided by gcc itself.  FIXME.
