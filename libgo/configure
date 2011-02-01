@@ -14099,6 +14099,34 @@ fi
 done
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for __sync_bool_compare_and_swap_4" >&5
+$as_echo_n "checking for __sync_bool_compare_and_swap_4... " >&6; }
+if test "${libgo_cv_func___sync_bool_compare_and_swap_4+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+typedef unsigned int uint32  __attribute__ ((mode (SI)));
+uint32 i;
+int main() { return __sync_bool_compare_and_swap (&i, 0, 1); }
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgo_cv_func___sync_bool_compare_and_swap_4=yes
+else
+  libgo_cv_func___sync_bool_compare_and_swap_4=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_func___sync_bool_compare_and_swap_4" >&5
+$as_echo "$libgo_cv_func___sync_bool_compare_and_swap_4" >&6; }
+if test "$libgo_cv_func___sync_bool_compare_and_swap_4" = "yes"; then
+  $as_echo "#define HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4 1" >>confdefs.h
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler supports -minline-all-stringops" >&5
 $as_echo_n "checking whether compiler supports -minline-all-stringops... " >&6; }
 if test "${libgo_cv_c_stringops+set}" = set; then :
