@@ -1301,6 +1301,7 @@ i[3456x]86-*-netware*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h tm-dwarf2.h i386/netware.h"
  	tmake_file="${tmake_file} i386/t-netware"
 	extra_objs=netware.o
+	extra_options="${extra_options} i386/netware.opt"
 	case /${with_ld} in
 	*/nwld)
 		extra_objs="$extra_objs nwld.o"
