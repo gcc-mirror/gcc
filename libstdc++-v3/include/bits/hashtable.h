@@ -24,8 +24,7 @@
 
 /** @file bits/hashtable.h
  *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- *  @headername{unordered_map, unordered_set}
+ *  Do not attempt to use it directly. @headername{unordered_map, unordered_set}
  */
 
 #ifndef _HASHTABLE_H
