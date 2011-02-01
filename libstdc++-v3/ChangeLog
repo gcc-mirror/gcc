@@ -33,6 +33,13 @@
 	* include/backward/auto_ptr.h: Same.
 	* include/backward/binders.h: Same.
 
+2011-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+        * doc/html/ext/lwg-active.html: Update to Revision D73.
+        * doc/html/ext/lwg-closed.html: Likewise.
+        * doc/html/ext/lwg-defects.html: Likewise.
+        * doc/xml/manual/intro.xml: Update status of issues 408, 539, 865.
+
 2011-01-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/36104 part four
