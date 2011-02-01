@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include "runtime.h"
+#include "go-assert.h"
 
 void
 runtime_initlock(Lock *l)
@@ -75,3 +76,38 @@ runtime_destroylock(Lock *l)
 {
 	sem_destroy(&l->sem);
 }
+
+#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+
+// For targets which don't have the required sync support.  Really
+// this should be provided by gcc itself.  FIXME.
+
+static pthread_mutex_t sync_lock = PTHREAD_MUTEX_INITIALIZER;
+
+_Bool
+__sync_bool_compare_and_swap_4(uint32*, uint32, uint32)
+  __attribute__((visibility("hidden")));
+
+_Bool
+__sync_bool_compare_and_swap_4(uint32* ptr, uint32 old, uint32 new)
+{
+  int i;
+  _Bool ret;
+
+  i = pthread_mutex_lock(&sync_lock);
+  __go_assert(i == 0);
+
+  if(*ptr != old) {
+    ret = 0;
+  } else {
+    *ptr = new;
+    ret = 1;
+  }
+
+  i = pthread_mutex_unlock(&sync_lock);
+  __go_assert(i == 0);
+
+  return ret;
+}
+
+#endif
