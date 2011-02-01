@@ -1,5 +1,10 @@
 2011-02-01  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/netware.opt: New.
+	* config.gcc (i[3456x]86-*-netware*): Use i386/netware.opt.
+
+2011-02-01  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/interix.opt (posix): New Driver option.
 
 2011-02-01  DJ Delorie  <dj@redhat.com>
