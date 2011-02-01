@@ -774,6 +774,7 @@ arc-*-elf*)
 	;;
 arm-wrs-vxworks)
 	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
+	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
 	;;
 arm*-*-freebsd*)
