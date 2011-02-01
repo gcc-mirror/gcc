@@ -1,5 +1,7 @@
 2011-02-01  DJ Delorie  <dj@redhat.com>
 
+	* config/m32c/m32c.h (PTRDIFF_TYPE): Remove extra definition.
+
 	* config/m32c/m32c.c (m32c_regno_reg_class): Return smallest reg
 	class for A0/A1.
 
