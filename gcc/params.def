@@ -481,7 +481,7 @@ DEFPARAM(PARAM_IV_ALWAYS_PRUNE_CAND_SET_BOUND,
 DEFPARAM(PARAM_SCEV_MAX_EXPR_SIZE,
  	 "scev-max-expr-size",
 	 "Bound on size of expressions used in the scalar evolutions analyzer",
-	 100, 0, 0)
+	 20, 0, 0)
 
 DEFPARAM(PARAM_OMEGA_MAX_VARS,
  	 "omega-max-vars",
