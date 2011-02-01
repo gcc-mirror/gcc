@@ -1,3 +1,9 @@
+2011-02-01  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/47561
+	* toplev.c (process_options): Print the Graphite flags.  Add
+	flag_loop_flatten to the list of options requiring Graphite.
+
 2011-02-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/cygming.opt (posix): New Driver option.
