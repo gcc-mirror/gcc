@@ -1,3 +1,11 @@
+2011-01-31  Nathan Froyd  <froydnj@codesourcery.com>
+
+	Backport from mainline:
+	2010-12-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+        PR target/44606
+        * gcc.dg/pr44606.c: New test.
+
 2011-01-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gfortran.dg/cray_pointers_2.f90: Avoid cycling through

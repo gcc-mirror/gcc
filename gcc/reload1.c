@@ -6200,17 +6200,6 @@ choose_reload_regs (struct insn_chain *chain)
 	      && (rld[r].nregs == max_group_size
 		  || ! reg_classes_intersect_p (rld[r].rclass, group_class)))
 	    search_equiv = rld[r].in;
-	  /* If this is an output reload from a simple move insn, look
-	     if an equivalence for the input is available.  */
-	  else if (inheritance && rld[r].in == 0 && rld[r].out != 0)
-	    {
-	      rtx set = single_set (insn);
-
-	      if (set
-		  && rtx_equal_p (rld[r].out, SET_DEST (set))
-		  && CONSTANT_P (SET_SRC (set)))
-		search_equiv = SET_SRC (set);
-	    }
 
 	  if (search_equiv)
 	    {
