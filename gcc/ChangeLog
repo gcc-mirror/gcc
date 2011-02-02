@@ -1,3 +1,10 @@
+2011-02-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR rtl-optimization/47525
+	* df-scan.c: Update copyright years.
+	(df_get_call_refs): Do not mark global registers as DF_REF_REG_USE
+	and non-clobber DF_REF_REG_DEF for calls to const and pure functions.
+
 2011-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/i386/sysv4.h (TARGET_VERSION): Remove.
