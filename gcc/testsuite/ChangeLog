@@ -1,3 +1,14 @@
+2011-02-02  Sebastian Pop  <sebastian.pop@amd.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40979
+	PR bootstrap/47044
+	* gcc.dg/graphite/graphite.exp (DEFAULT_VECTCFLAGS): Add -ffast-math.
+	* gcc.dg/graphite/pr35356-2.c: Adjust pattern.
+	* gfortran.dg/graphite/graphite.exp: Run vect_files conditionally to
+	check_vect_support_and_set_flags.
+	* gfortran.dg/graphite/vect-pr40979.f90: New.
+
 2011-02-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47572

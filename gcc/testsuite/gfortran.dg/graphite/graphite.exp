@@ -51,7 +51,11 @@ gfortran-dg-runtest $scop_files        "-O2 -fgraphite -fdump-tree-graphite-all"
 gfortran-dg-runtest $id_files          "-O2 -fgraphite-identity -ffast-math"
 gfortran-dg-runtest $interchange_files "-O2 -floop-interchange -fno-loop-block -fno-loop-strip-mine -ffast-math -fdump-tree-graphite-all"
 gfortran-dg-runtest $block_files       "-O2 -floop-block -fno-loop-strip-mine -fno-loop-interchange -ffast-math -fdump-tree-graphite-all"
-gfortran-dg-runtest $vect_files        "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details"
+
+# Vectorizer tests, to be run or compiled, depending on target capabilities.
+if [check_vect_support_and_set_flags] {
+    gfortran-dg-runtest $vect_files "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details -ffast-math"
+}
 
 # Tests to be run.
 set dg-do-what-default run
