@@ -1,3 +1,9 @@
+2011-02-02  Jeff Law  <law@redhat.com>
+
+	PR middle-end/47543
+	* reload.c (find_reloads_address): Handle reg+d address where both
+	components are invalid by reloading the entire address.
+
 2011-02-02  Sebastian Pop  <sebastian.pop@amd.com>
 	    Richard Guenther  <rguenther@suse.de>
 
