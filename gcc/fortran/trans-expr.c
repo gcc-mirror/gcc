@@ -6300,6 +6300,11 @@ gfc_trans_class_init_assign (gfc_code *code)
 
   rhs = gfc_copy_expr (code->expr1);
   gfc_add_vptr_component (rhs);
+
+  /* Make sure that the component backend_decls have been built, which
+     will not have happened if the derived types concerned have not
+     been referenced.  */
+  gfc_get_derived_type (rhs->ts.u.derived);
   gfc_add_def_init_component (rhs);
 
   sz = gfc_copy_expr (code->expr1);
