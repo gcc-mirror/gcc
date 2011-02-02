@@ -6391,7 +6391,7 @@ $as_echo "$lt_cv_cc_needs_belf" >&6; }
     CFLAGS="$SAVE_CFLAGS"
   fi
   ;;
-sparc*-*solaris*)
+*-*solaris*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
@@ -6402,7 +6402,20 @@ sparc*-*solaris*)
     case `/usr/bin/file conftest.o` in
     *64-bit*)
       case $lt_cv_prog_gnu_ld in
-      yes*) LD="${LD-ld} -m elf64_sparc" ;;
+      yes*)
+        case $host in
+        i?86-*-solaris*)
+          LD="${LD-ld} -m elf_x86_64"
+          ;;
+        sparc*-*-solaris*)
+          LD="${LD-ld} -m elf64_sparc"
+          ;;
+        esac
+        # GNU ld 2.21 introduced _sol2 emulations.  Use them if available.
+        if ${LD-ld} -V | grep _sol2 >/dev/null 2>&1; then
+          LD="${LD-ld}_sol2"
+        fi
+        ;;
       *)
 	if ${LD-ld} -64 -r -o conftest2.o conftest.o >/dev/null 2>&1; then
 	  LD="${LD-ld} -64"
@@ -10890,7 +10903,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10893 "configure"
+#line 10906 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10996,7 +11009,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10999 "configure"
+#line 11012 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14123,7 +14136,8 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_func___sync_bool_compare_and_swap_4" >&5
 $as_echo "$libgo_cv_func___sync_bool_compare_and_swap_4" >&6; }
 if test "$libgo_cv_func___sync_bool_compare_and_swap_4" = "yes"; then
-  $as_echo "#define HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4 1" >>confdefs.h
+
+$as_echo "#define HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4 1" >>confdefs.h
 
 fi
 
