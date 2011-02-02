@@ -1,5 +1,5 @@
 /* Exported function prototypes from the Renesas RX backend.
-   Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -35,15 +35,17 @@ extern bool		rx_compare_redundant (rtx);
 extern void             rx_emit_stack_popm (rtx *, bool);
 extern void             rx_emit_stack_pushm (rtx *);
 extern void		rx_expand_epilogue (bool);
-extern bool		rx_expand_insv (rtx *);
 extern const char *	rx_gen_cond_branch_template (rtx, bool);
 extern char *		rx_gen_move_template (rtx *, bool);
 extern bool		rx_is_legitimate_constant (rtx);
 extern bool 		rx_is_mode_dependent_addr (rtx);
 extern bool		rx_is_restricted_memory_address (rtx, Mmode);
+extern bool		rx_match_ccmode (rtx, Mmode);
 extern void		rx_notice_update_cc (rtx body, rtx insn);
 extern void		rx_print_operand (FILE *, rtx, int);
 extern void		rx_print_operand_address (FILE *, rtx);
+extern Mmode		rx_select_cc_mode (enum rtx_code, rtx, rtx);
+extern void		rx_split_cbranch (Mmode, enum rtx_code, rtx, rtx, rtx);
 #endif
 
 #ifdef TREE_CODE
