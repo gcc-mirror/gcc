@@ -1460,15 +1460,14 @@ else
    if test "$GC" = boehm; then
       case "${host}" in
           mips-sgi-irix6*)
-	    # IRIX 6 lacks a N64 libdl.so, but only the N32 (default multilib)
-	    # libgcj.spec is used, so override here
-	    SYSTEMSPEC="$SYSTEMSPEC %{!mabi=64:-ldl}"
-	  ;;
+	    # While IRIX 6 has libdl for the O32 and N32 ABIs, the N64 one is
+	    # missing.  It's unnecessary anyway since dlopen lives in libc.
+	    ;;
 	  *-*-darwin*)
-	  ;;
+	    ;;
 	  *)
             AC_CHECK_LIB(dl, main, SYSTEMSPEC="$SYSTEMSPEC -ldl")
-	  ;;
+	    ;;
       esac
    fi
 fi
