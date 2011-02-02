@@ -715,9 +715,6 @@ sd_init_insn (rtx insn)
   INSN_FORW_DEPS (insn) = create_deps_list ();
   INSN_RESOLVED_FORW_DEPS (insn) = create_deps_list ();
 
-  if (DEBUG_INSN_P (insn))
-    DEBUG_INSN_SCHED_P (insn) = TRUE;
-
   /* ??? It would be nice to allocate dependency caches here.  */
 }
 
@@ -726,12 +723,6 @@ void
 sd_finish_insn (rtx insn)
 {
   /* ??? It would be nice to deallocate dependency caches here.  */
-
-  if (DEBUG_INSN_P (insn))
-    {
-      gcc_assert (DEBUG_INSN_SCHED_P (insn));
-      DEBUG_INSN_SCHED_P (insn) = FALSE;
-    }
 
   free_deps_list (INSN_HARD_BACK_DEPS (insn));
   INSN_HARD_BACK_DEPS (insn) = NULL;
