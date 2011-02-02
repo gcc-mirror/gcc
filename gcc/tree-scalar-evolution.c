@@ -1399,7 +1399,7 @@ follow_ssa_edge (struct loop *loop, gimple def, gimple halting_phi,
     return t_false;
 
   /* Give up if the path is longer than the MAX that we allow.  */
-  if (limit > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_SIZE))
+  if (limit > PARAM_VALUE (PARAM_SCEV_MAX_EXPR_COMPLEXITY))
     return t_dont_know;
 
   def_loop = loop_containing_stmt (def);

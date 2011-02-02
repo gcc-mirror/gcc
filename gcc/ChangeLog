@@ -1,3 +1,13 @@
+2011-02-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/47576
+	PR tree-optimization/47555
+	* doc/invoke.texi (scev-max-expr-complexity): Documented.
+	* params.def (PARAM_SCEV_MAX_EXPR_SIZE): Bump the value to 100.
+	(PARAM_SCEV_MAX_EXPR_COMPLEXITY): Declared.
+	* tree-scalar-evolution.c (follow_ssa_edge): Use
+	PARAM_SCEV_MAX_EXPR_COMPLEXITY.
+
 2011-02-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47566

@@ -8463,6 +8463,10 @@ optimization when a new iv is added to the set.
 Bound on size of expressions used in the scalar evolutions analyzer.
 Large expressions slow the analyzer.
 
+@item scev-max-expr-complexity
+Bound on the complexity of the expressions in the scalar evolutions analyzer.
+Complex expressions slow the analyzer.
+
 @item omega-max-vars
 The maximum number of variables in an Omega constraint system.
 The default value is 128.
