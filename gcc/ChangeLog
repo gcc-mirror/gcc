@@ -1,3 +1,7 @@
+2011-02-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/djgpp.opt (posix): New Driver option.
+
 2011-02-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config.gcc (*-*-freebsd[12], *-*-freebsd[12].*, *-*-freebsd*aout*):
