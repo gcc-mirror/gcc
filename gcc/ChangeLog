@@ -1,5 +1,14 @@
 2011-02-02  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/47106
+	PR debug/47402
+	* tree-inline.c (declare_return_variable): Add result decl to
+	local decls only once.
+	* gimple-low.c (record_vars_into): Mark newly-created variables
+	as referenced.
+
+2011-02-02  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/47498
 	PR debug/47501
 	PR debug/45136
