@@ -246,6 +246,8 @@ case ${target} in
  | pdp11-*-bsd				\
  | sparc-hal-solaris2*			\
  | thumb-*-*				\
+ | *-*-freebsd[12] | *-*-freebsd[12].*	\
+ | *-*-freebsd*aout*			\
  | *-*-linux*aout*			\
  | *-*-linux*coff*			\
  | *-*-linux*libc1*			\
@@ -479,15 +481,6 @@ case ${target} in
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
   esac
-  ;;
-*-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
-  # This is the place-holder for the generic a.out configuration
-  # of FreeBSD.  No actual configuration resides here since
-  # there was only ever a bare-bones ix86 configuration for
-  # a.out and it exists solely in the machine-specific section.
-  # This place-holder must exist to avoid dropping into
-  # the generic ELF configuration of FreeBSD (i.e. it must be
-  # ordered before that section).
   ;;
 *-*-freebsd*)
   # This is the generic ELF configuration of FreeBSD.  Later

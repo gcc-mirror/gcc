@@ -1,3 +1,8 @@
+2011-02-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config.gcc (*-*-freebsd[12], *-*-freebsd[12].*, *-*-freebsd*aout*):
+	Move to the unsupported targets list.
+
 2011-02-02  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR rtl-optimization/47525
