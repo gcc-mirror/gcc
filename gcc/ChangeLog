@@ -1,3 +1,10 @@
+2011-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sysv4.h (TARGET_VERSION): Remove.
+	(SUBTARGET_RETURN_IN_MEMORY): Remove.
+	(ASM_OUTPUT_ASCII): Remove.
+	* config/i386/sol2.h (SUBTARGET_RETURN_IN_MEMORY): Remove #undef.
+
 2011-02-02  Jeff Law  <law@redhat.com>
 
 	PR middle-end/47543
