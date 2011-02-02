@@ -21,6 +21,10 @@ if {$gccdir != ""} {
 set GOC_UNDER_TEST "$gccdir/gccgo -B$gccdir/"
 set TESTING_IN_BUILD_TREE 1
 
+if [info exists GOTEST_TMPDIR] {
+    set tmpdir $GOTEST_TMPDIR
+}
+
 proc go_maybe_build_wrapper { args } {
     libgo_maybe_build_wrapper $args
 }
