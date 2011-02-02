@@ -1,3 +1,9 @@
+2011-02-02  Janus Weil  <janus@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47082
+	* gfortran.dg/class_37.f03 : New test.
+
 2011-02-02  Sebastian Pop  <sebastian.pop@amd.com>
 	    Richard Guenther  <rguenther@suse.de>
 

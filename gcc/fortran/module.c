@@ -4219,9 +4219,23 @@ read_cleanup (pointer_info *p)
 
   if (p->type == P_SYMBOL && p->u.rsym.state == USED && !p->u.rsym.referenced)
     {
+      gfc_namespace *ns;
       /* Add hidden symbols to the symtree.  */
       q = get_integer (p->u.rsym.ns);
-      st = gfc_get_unique_symtree ((gfc_namespace *) q->u.pointer);
+      ns = (gfc_namespace *) q->u.pointer;
+
+      if (!p->u.rsym.sym->attr.vtype
+	    && !p->u.rsym.sym->attr.vtab)
+	st = gfc_get_unique_symtree (ns);
+      else
+	{
+	  /* There is no reason to use 'unique_symtrees' for vtabs or
+	     vtypes - their name is fine for a symtree and reduces the
+	     namespace pollution.  */
+	  st = gfc_find_symtree (ns->sym_root, p->u.rsym.sym->name);
+	  if (!st)
+	    st = gfc_new_symtree (&ns->sym_root, p->u.rsym.sym->name);
+	}
 
       st->n.sym = p->u.rsym.sym;
       st->n.sym->refs++;
