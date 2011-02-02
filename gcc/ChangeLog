@@ -1,5 +1,9 @@
 2011-02-01  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/openbsd.opt (assert=): New Driver option.
+
+2011-02-01  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/i386/nto.opt: New.
 	* config.gcc (i[34567]86-*-nto-qnx*): Use i386/nto.opt.
 
