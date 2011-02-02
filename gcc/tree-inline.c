@@ -2749,7 +2749,6 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 			 basic_block entry_bb)
 {
   tree callee = id->src_fn;
-  tree caller = id->dst_fn;
   tree result = DECL_RESULT (callee);
   tree callee_type = TREE_TYPE (result);
   tree caller_type;

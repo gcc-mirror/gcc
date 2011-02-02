@@ -2,14 +2,17 @@
 
 	PR debug/47106
 	PR debug/47402
+	* tree-inline.c (declare_return_variable): Remove unused caller
+	variable.
+
+	PR debug/47106
+	PR debug/47402
 	* tree-flow-inline.h (clear_is_used, is_used_p): New.
 	* cfgexpand.c (account_used_vars_for_block): Use them.
 	* tree-nrv.c (tree_nrv): Likewise.
 	* tree-ssa-live.c (remove_unused_scope_block_p): Likewise.
 	(dump_scope_block): Likewise.
 	(remove_unused_locals): Likewise.
-
-2011-02-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/47106
 	PR debug/47402
