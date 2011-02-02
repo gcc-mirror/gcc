@@ -2864,7 +2864,6 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
     }
 
   DECL_SEEN_IN_BIND_EXPR_P (var) = 1;
-  add_local_decl (DECL_STRUCT_FUNCTION (caller), var);
 
   /* Do not have the rest of GCC warn about this variable as it should
      not be visible to the user.  */
