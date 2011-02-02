@@ -1,3 +1,8 @@
+2011-02-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47572
+	* gfortran.dg/class_36.f03: New.
+
 2011-02-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47566
