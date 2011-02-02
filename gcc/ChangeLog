@@ -1,5 +1,10 @@
 2011-02-01  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/i386/nto.opt: New.
+	* config.gcc (i[34567]86-*-nto-qnx*): Use i386/nto.opt.
+
+2011-02-01  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/i386/netware.opt: New.
 	* config.gcc (i[3456x]86-*-netware*): Use i386/netware.opt.
 
