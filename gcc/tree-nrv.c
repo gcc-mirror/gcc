@@ -263,7 +263,7 @@ tree_nrv (void)
   DECL_HAS_VALUE_EXPR_P (found) = 1;
 
   /* FOUND is no longer used.  Ensure it gets removed.  */
-  var_ann (found)->used = 0;
+  clear_is_used (found);
   return 0;
 }
 

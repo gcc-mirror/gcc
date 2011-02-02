@@ -569,9 +569,26 @@ static inline void
 set_is_used (tree var)
 {
   var_ann_t ann = get_var_ann (var);
-  ann->used = 1;
+  ann->used = true;
 }
 
+/* Clear VAR's used flag.  */
+
+static inline void
+clear_is_used (tree var)
+{
+  var_ann_t ann = var_ann (var);
+  ann->used = false;
+}
+
+/* Return true if VAR is marked as used.  */
+
+static inline bool
+is_used_p (tree var)
+{
+  var_ann_t ann = var_ann (var);
+  return ann->used;
+}
 
 /* Return true if T (assumed to be a DECL) is a global variable.
    A variable is considered global if its storage is not automatic.  */

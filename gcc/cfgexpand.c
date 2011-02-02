@@ -1325,7 +1325,7 @@ account_used_vars_for_block (tree block, bool toplevel)
 
   /* Expand all variables at this level.  */
   for (t = BLOCK_VARS (block); t ; t = DECL_CHAIN (t))
-    if (var_ann (t) && var_ann (t)->used)
+    if (var_ann (t) && is_used_p (t))
       size += expand_one_var (t, toplevel, false);
 
   /* Expand all variables at containing levels.  */

@@ -468,7 +468,7 @@ remove_unused_scope_block_p (tree scope)
 	 Exception are the scope blocks not containing any instructions
 	 at all so user can't get into the scopes at first place.  */
       else if ((ann = var_ann (*t)) != NULL
-		&& ann->used)
+	       && is_used_p (*t))
 	unused = false;
       else if (TREE_CODE (*t) == LABEL_DECL && TREE_USED (*t))
 	/* For labels that are still used in the IL, the decision to
@@ -633,13 +633,11 @@ dump_scope_block (FILE *file, int indent, tree scope, int flags)
   for (var = BLOCK_VARS (scope); var; var = DECL_CHAIN (var))
     {
       bool used = false;
-      var_ann_t ann;
 
-      if ((ann = var_ann (var))
-	  && ann->used)
-	used = true;
+      if (var_ann (var))
+	used = is_used_p (var);
 
-      fprintf (file, "%*s",indent, "");
+      fprintf (file, "%*s", indent, "");
       print_generic_decl (file, var, flags);
       fprintf (file, "%s\n", used ? "" : " (unused)");
     }
@@ -708,7 +706,7 @@ remove_unused_locals (void)
 
   /* Assume all locals are unused.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
-    var_ann (t)->used = false;
+    clear_is_used (t);
 
   /* Walk the CFG marking all referenced symbols.  */
   FOR_EACH_BB (bb)
@@ -769,7 +767,7 @@ remove_unused_locals (void)
       var = VEC_index (tree, cfun->local_decls, srcidx);
       if (TREE_CODE (var) != FUNCTION_DECL
 	  && (!(ann = var_ann (var))
-	      || !ann->used))
+	      || !is_used_p (var)))
 	{
 	  if (is_global_var (var))
 	    {
@@ -801,7 +799,7 @@ remove_unused_locals (void)
 	if (TREE_CODE (var) == VAR_DECL
 	    && is_global_var (var)
 	    && (ann = var_ann (var)) != NULL
-	    && ann->used)
+	    && is_used_p (var))
 	  mark_all_vars_used (&DECL_INITIAL (var), global_unused_vars);
 
       num = VEC_length (tree, cfun->local_decls);
@@ -827,8 +825,8 @@ remove_unused_locals (void)
     if (!is_global_var (t)
 	&& TREE_CODE (t) != PARM_DECL
 	&& TREE_CODE (t) != RESULT_DECL
-	&& !(ann = var_ann (t))->used
-	&& !ann->is_heapvar)
+	&& !is_used_p (t)
+	&& !var_ann (t)->is_heapvar)
       remove_referenced_var (t);
   remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
   if (dump_file && (dump_flags & TDF_DETAILS))
