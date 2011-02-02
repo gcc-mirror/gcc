@@ -1,3 +1,8 @@
+2011-02-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47566
+	* gcc.dg/lto/20110201-1_0.c: New testcase.
+
 2011-02-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/47498

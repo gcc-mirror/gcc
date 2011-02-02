@@ -1,3 +1,8 @@
+2011-02-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47566
+	* builtins.c (builtin_save_expr): No SAVE_EXPR for SSA_NAMEs.
+
 2011-02-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/47106
