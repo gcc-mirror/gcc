@@ -1,3 +1,8 @@
+2011-02-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47572
+	* resolve.c (resolve_fl_variable): Handle polymorphic allocatables.
+
 2011-02-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47565

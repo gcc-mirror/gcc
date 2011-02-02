@@ -10063,7 +10063,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   /* Reject illegal initializers.  */
   if (!sym->mark && sym->value)
     {
-      if (sym->attr.allocatable)
+      if (sym->attr.allocatable || (sym->ts.type == BT_CLASS
+				    && CLASS_DATA (sym)->attr.allocatable))
 	gfc_error ("Allocatable '%s' at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
       else if (sym->attr.external)
