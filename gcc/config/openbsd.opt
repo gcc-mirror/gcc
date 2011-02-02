@@ -1,6 +1,6 @@
 ; OpenBSD options.
 
-; Copyright (C) 2010
+; Copyright (C) 2010, 2011
 ; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
@@ -23,6 +23,9 @@
 ; this file's format.
 
 ; Please try to keep this file in ASCII collating order.
+
+assert=
+Driver JoinedOrMissing
 
 posix
 Driver
