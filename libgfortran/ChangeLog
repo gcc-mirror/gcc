@@ -1,3 +1,12 @@
+2011-02-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47571
+	* configure: Regenerated.
+	* configure.ac: Don't add librt to LIBS.
+	* intrinsics/time_1.h (weak_gettime): Weakref trickery for
+	clock_gettime().
+	(gf_gettime): Use weak_gettime() instead of clock_gettime().
+
 2011-02-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsics/time_1.h: Include errno.h needed by fallbacks.

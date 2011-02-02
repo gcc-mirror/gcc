@@ -25262,7 +25262,8 @@ fi
 
 # At least for glibc, clock_gettime is in librt.  But don't pull that
 # in if it still doesn't give us the function we want.
-# This test is copied from libgomp.
+# This test is copied from libgomp, and modified to not link in -lrt
+# as libgfortran calls clock_gettime via a weak reference.
 if test $ac_cv_func_clock_gettime = no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lrt" >&5
 $as_echo_n "checking for clock_gettime in -lrt... " >&6; }
@@ -25304,7 +25305,6 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
 $as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
 if test "x$ac_cv_lib_rt_clock_gettime" = x""yes; then :
-  LIBS="-lrt $LIBS"
 
 $as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
 
