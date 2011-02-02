@@ -1,6 +1,6 @@
 /* Scanning of rtl for dataflow analysis.
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009, 2010 Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -3360,16 +3360,19 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
 		 NULL, bb, insn_info, DF_REF_REG_USE,
 		 DF_REF_CALL_STACK_USAGE | flags);
 
-  /* Calls may also reference any of the global registers,
-     so they are recorded as used.  */
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (global_regs[i])
-      {
-	df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-		       NULL, bb, insn_info, DF_REF_REG_USE, flags);
-	df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-		       NULL, bb, insn_info, DF_REF_REG_DEF, flags);
-      }
+  /* Calls to const functions cannot access any global registers and calls to
+     pure functions cannot set them.  All other calls may reference any of the
+     global registers, so they are recorded as used.  */
+  if (!RTL_CONST_CALL_P (insn_info->insn))
+    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      if (global_regs[i])
+	{
+	  df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
+			 NULL, bb, insn_info, DF_REF_REG_USE, flags);
+	  if (!RTL_PURE_CALL_P (insn_info->insn))
+	    df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
+			   NULL, bb, insn_info, DF_REF_REG_DEF, flags);
+	}
 
   is_sibling_call = SIBLING_CALL_P (insn_info->insn);
   EXECUTE_IF_SET_IN_BITMAP (regs_invalidated_by_call_regset, 0, ui, bi)
