@@ -5066,8 +5066,13 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 	   && REG_P (XEXP (ad, 0))
 	   && REGNO (XEXP (ad, 0)) < FIRST_PSEUDO_REGISTER
 	   && CONST_INT_P (XEXP (ad, 1))
-	   && regno_ok_for_base_p (REGNO (XEXP (ad, 0)), mode, PLUS,
-				   CONST_INT))
+	   && (regno_ok_for_base_p (REGNO (XEXP (ad, 0)), mode, PLUS,
+				    CONST_INT)
+	       /* Similarly, if we were to reload the base register and the
+		  mem+offset address is still invalid, then we want to reload
+		  the whole address, not just the base register.  */
+	       || ! maybe_memory_address_addr_space_p
+		     (mode, ad, as, &(XEXP (ad, 0)))))
 
     {
       /* Unshare the MEM rtx so we can safely alter it.  */
@@ -5079,7 +5084,9 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 	    loc = &XEXP (*loc, 0);
 	}
 
-      if (double_reg_address_ok)
+      if (double_reg_address_ok
+	  && regno_ok_for_base_p (REGNO (XEXP (ad, 0)), mode,
+				  PLUS, CONST_INT))
 	{
 	  /* Unshare the sum as well.  */
 	  *loc = ad = copy_rtx (ad);
