@@ -1287,14 +1287,27 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
     CFLAGS="$SAVE_CFLAGS"
   fi
   ;;
-sparc*-*solaris*)
+*-*solaris*)
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
   if AC_TRY_EVAL(ac_compile); then
     case `/usr/bin/file conftest.o` in
     *64-bit*)
       case $lt_cv_prog_gnu_ld in
-      yes*) LD="${LD-ld} -m elf64_sparc" ;;
+      yes*)
+        case $host in
+        i?86-*-solaris*)
+          LD="${LD-ld} -m elf_x86_64"
+          ;;
+        sparc*-*-solaris*)
+          LD="${LD-ld} -m elf64_sparc"
+          ;;
+        esac
+        # GNU ld 2.21 introduced _sol2 emulations.  Use them if available.
+        if ${LD-ld} -V | grep _sol2 >/dev/null 2>&1; then
+          LD="${LD-ld}_sol2"
+        fi
+        ;;
       *)
 	if ${LD-ld} -64 -r -o conftest2.o conftest.o >/dev/null 2>&1; then
 	  LD="${LD-ld} -64"
