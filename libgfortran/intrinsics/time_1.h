@@ -189,6 +189,22 @@ gf_cputime (long *user_sec, long *user_usec, long *system_sec, long *system_usec
 #define GF_CLOCK_MONOTONIC GF_CLOCK_REALTIME
 #endif
 
+/* Weakref trickery for clock_gettime().  On Glibc, clock_gettime()
+   requires us to link in librt, which also pulls in libpthread.  In
+   order to avoid this by default, only call clock_gettime() through a
+   weak reference.  */
+#ifdef HAVE_CLOCK_GETTIME
+#ifdef SUPPORTS_WEAK
+static int weak_gettime (clockid_t, struct timespec *) 
+  __attribute__((__weakref__("clock_gettime")));
+#else
+static inline int weak_gettime (clockid_t clk_id, struct timespec *res)
+{
+  return clock_gettime (clk_id, res);
+}
+#endif
+#endif
+
 /* Arguments:
    clock_id - INPUT, must be either GF_CLOCK_REALTIME or GF_CLOCK_MONOTONIC
    secs     - OUTPUT, seconds
@@ -208,14 +224,18 @@ gf_gettime (int clock_id __attribute__((unused)), time_t * secs,
             long * nanosecs)
 {
 #ifdef HAVE_CLOCK_GETTIME
-  struct timespec ts;
-  int err;
-  err = clock_gettime (clock_id, &ts);
-  *secs = ts.tv_sec;
-  if (nanosecs)
-    *nanosecs = ts.tv_nsec;
-  return err;
-#elif HAVE_GETTIMEOFDAY
+  if (weak_gettime)
+    {
+      struct timespec ts;
+      int err;
+      err = weak_gettime (clock_id, &ts);
+      *secs = ts.tv_sec;
+      if (nanosecs)
+	*nanosecs = ts.tv_nsec;
+      return err;
+    }
+#endif
+#ifdef HAVE_GETTIMEOFDAY
   struct timeval tv;
   int err;
   err = gettimeofday (&tv, NULL);
