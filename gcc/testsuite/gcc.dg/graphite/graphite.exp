@@ -58,7 +58,7 @@ dg-runtest $block_files       "" "-O2 -floop-block -fno-loop-strip-mine -fno-loo
 
 # Vectorizer tests, to be run or compiled, depending on target capabilities.
 global DEFAULT_VECTCFLAGS
-set DEFAULT_VECTCFLAGS "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details"
+set DEFAULT_VECTCFLAGS "-O2 -fgraphite-identity -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details -ffast-math"
 
 if [check_vect_support_and_set_flags] {
     dg-runtest $vect_files        "" $DEFAULT_VECTCFLAGS

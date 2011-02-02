@@ -1,4 +1,13 @@
 2011-02-02  Sebastian Pop  <sebastian.pop@amd.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40979
+	PR bootstrap/47044
+	* passes.c (init_optimization_passes): After LIM call copy_prop
+	and DCE to clean up.
+	* tree-ssa-loop.c (pass_graphite_transforms): Add TODO_dump_func.
+
+2011-02-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/47576
 	PR tree-optimization/47555
