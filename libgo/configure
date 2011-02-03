@@ -786,6 +786,7 @@ enable_libtool_lock
 enable_version_specific_runtime_libs
 with_libffi
 with_system_libunwind
+enable_sjlj_exceptions
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1425,6 +1426,8 @@ Optional Features:
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
+  --enable-sjlj-exceptions
+                          force use of builtin_setjmp for exceptions
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -10903,7 +10906,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10906 "configure"
+#line 10909 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11009,7 +11012,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11012 "configure"
+#line 11015 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14075,6 +14078,68 @@ $as_echo "#define HAVE_GETIPINFO 1" >>confdefs.h
 
   fi
 
+
+# Check whether --enable-sjlj-exceptions was given.
+if test "${enable_sjlj_exceptions+set}" = set; then :
+  enableval=$enable_sjlj_exceptions; case "$enableval" in
+   yes|no|auto) ;;
+   *) as_fn_error "unknown argument to --enable-sjlj-exceptions" "$LINENO" 5 ;;
+   esac
+else
+  enable_sjlj_exceptions=auto
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to use setjmp/longjmp exceptions" >&5
+$as_echo_n "checking whether to use setjmp/longjmp exceptions... " >&6; }
+if test "${libgo_cv_lib_sjlj_exceptions+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+void bar ();
+void clean (int *);
+void foo ()
+{
+  int i __attribute__ ((cleanup (clean)));
+  bar();
+}
+
+_ACEOF
+CFLAGS_hold=$CFLAGS
+CFLAGS="--save-temps -fexceptions"
+libgo_cv_lib_sjlj_exceptions=unknown
+if ac_fn_c_try_compile; then :
+  if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1; then
+    libgo_cv_lib_sjlj_exceptions=yes
+  elif grep _Unwind_Resume conftest.s >/dev/null 2>&1; then
+    libgo_cv_lib_sjlj_exceptions=no
+  fi
+fi
+CFLAGS=$CFLAGS_hold
+rm -f conftest*
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_lib_sjlj_exceptions" >&5
+$as_echo "$libgo_cv_lib_sjlj_exceptions" >&6; }
+
+if test "$enable_sjlj_exceptions" = "auto"; then
+  enable_sjlj_exceptions=$libgo_cv_lib_sjlj_exceptions
+fi
+
+case $enable_sjlj_exceptions in
+yes)
+
+$as_echo "#define LIBGO_SJLJ_EXCEPTIONS 1" >>confdefs.h
+
+  ;;
+no)
+  ;;
+*)
+  as_fn_error "unable to detect exception model" "$LINENO" 5
+  ;;
+esac
 
 for ac_header in sys/mman.h syscall.h sys/epoll.h sys/ptrace.h sys/user.h sys/utsname.h
 do :
