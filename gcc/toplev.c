@@ -1,7 +1,7 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1780,11 +1780,33 @@ lang_dependent_init (const char *name)
 void
 target_reinit (void)
 {
+  struct rtl_data saved_x_rtl;
+  rtx *saved_regno_reg_rtx;
+
+  /* Save *crtl and regno_reg_rtx around the reinitialization
+     to allow target_reinit being called even after prepare_function_start.  */
+  saved_regno_reg_rtx = regno_reg_rtx;
+  if (saved_regno_reg_rtx)
+    {  
+      saved_x_rtl = *crtl;
+      memset (crtl, '\0', sizeof (*crtl));
+      regno_reg_rtx = NULL;
+    }
+
   /* Reinitialize RTL backend.  */
   backend_init_target ();
 
   /* Reinitialize lang-dependent parts.  */
   lang_dependent_init_target ();
+
+  /* And restore it at the end, as free_after_compilation from
+     expand_dummy_function_end clears it.  */
+  if (saved_regno_reg_rtx)
+    {
+      *crtl = saved_x_rtl;
+      regno_reg_rtx = saved_regno_reg_rtx;
+      saved_regno_reg_rtx = NULL;
+    }
 }
 
 void
