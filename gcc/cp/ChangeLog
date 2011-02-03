@@ -1,3 +1,9 @@
+2011-02-03  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47398
+	* tree.c (cp_tree_equal)<TEMPLATE_PARM_INDEX>: Take the number of
+	template parameters in account.
+
 2011-02-03  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/46890

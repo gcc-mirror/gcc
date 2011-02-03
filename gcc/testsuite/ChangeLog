@@ -1,3 +1,9 @@
+2011-02-03  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47398
+	* g++.dg/template/typedef37.C: New test.
+	* g++.dg/template/param1.C: Adjust expected error message.
+
 2011-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/31490
