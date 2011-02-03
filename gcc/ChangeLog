@@ -1,3 +1,17 @@
+2011-02-03  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/xtensa/xtensa.h (PREFERRED_RELOAD_CLASS,
+	PREFERRED_OUTPUT_RELOAD_CLASS): Remove.
+	* config/xtensa/xtensa-protos.h (xtensa_preferred_reload_class,
+	secondary_reload_info, xtensa_secondary_reload): Remove.
+	* config/xtensa/xtensa.c (TARGET_PREFERRED_RELOAD_CLASS,
+	TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Define.
+	(xtensa_preferred_reload_class): Make static. Change return and
+	'rclass' argument type to reg_class_t. Remove 'isoutput' argument.
+	Use CONST_DOUBLE_P predicate.
+	(xtensa_preferred_output_reload_class): New function.
+	(xtensa_secondary_reload): Make static.
+
 2011-02-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/microblaze/microblaze.opt (Zxl-mode-bootstrap,

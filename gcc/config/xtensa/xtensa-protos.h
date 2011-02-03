@@ -1,5 +1,5 @@
 /* Prototypes of target machine for GNU compiler for Xtensa.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -63,11 +63,6 @@ extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
 extern void xtensa_output_literal (FILE *, rtx, enum machine_mode, int);
 extern rtx xtensa_return_addr (int, rtx);
-extern enum reg_class xtensa_preferred_reload_class (rtx, enum reg_class, int);
-struct secondary_reload_info;
-extern reg_class_t xtensa_secondary_reload (bool, rtx, reg_class_t,
-					    enum machine_mode,
-					    struct secondary_reload_info *);
 #endif /* RTX_CODE */
 
 extern void xtensa_setup_frame_addresses (void);
