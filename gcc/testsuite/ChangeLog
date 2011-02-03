@@ -1,3 +1,8 @@
+2011-02-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/29571
+	* g++.dg/init/pr29571.C: New.
+
 2011-02-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gfortran.dg/graphite/vect-pr40979.f90: Require vect_double
@@ -897,14 +902,14 @@
 
 	Fixed the Objective-C++ testsuite and updated all tests.
 	* lib/obj-c++.exp (obj-c++_init): Declare and set
-	gcc_warning_prefix and gcc_error_prefix.	
+	gcc_warning_prefix and gcc_error_prefix.
 	* obj-c++.dg/attributes/categ-attribute-2.mm: Fixed usage of
 	'dg-warning', 'dg-message' and 'dg-error'.
 	* obj-c++.dg/class-extension-3.mm: Likewise.
 	* obj-c++.dg/class-protocol-1.mm: Likewise.
 	* obj-c++.dg/encode-7.mm: Likewise.
 	* obj-c++.dg/exceptions-3.mm: Likewise.
-	* obj-c++.dg/exceptions-5.mm: Likewise.	
+	* obj-c++.dg/exceptions-5.mm: Likewise.
 	* obj-c++.dg/method-12.mm: Likewise.
 	* obj-c++.dg/method-13.mm: Likewise.
 	* obj-c++.dg/method-15.mm: Likewise.
@@ -919,13 +924,13 @@
 	* obj-c++.dg/method-conflict-4.mm: Likewise.  Also, removed FIXME
 	and uncommented second part of the testcase now that the testsuite
 	works correctly.
-	* obj-c++.dg/private-1.mm: Likewise.	
+	* obj-c++.dg/private-1.mm: Likewise.
 	* obj-c++.dg/proto-lossage-4.mm: Likewise.
 	* obj-c++.dg/syntax-error-7.mm: Likewise.
 	* obj-c++.dg/warn5.mm: Likewise.
 	* obj-c++.dg/property/at-property-14.mm: Likewise.
 	* obj-c++.dg/property/at-property-16.mm: Likewise, and removed
-	FIXME.	
+	FIXME.
 	* obj-c++.dg/property/at-property-18.mm: Likewise.
 	* obj-c++.dg/property/at-property-20.mm: Likewise, and removed
 	FIXME.
@@ -941,12 +946,12 @@
 	* obj-c++.dg/tls/diag-5.mm: Likewise.
 	* obj-c++.dg/ivar-invalid-type-1.mm: Removed FIXME and uncommented
 	dg-error, now matched correctly.
-	
+
 2011-01-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/at-property-29.m: New.
-	* obj-c++.dg/property/at-property-29.mm: New.	
-	
+	* obj-c++.dg/property/at-property-29.mm: New.
+
 2011-01-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* go.test/go-test.exp (go-set-goarch): New proc.
