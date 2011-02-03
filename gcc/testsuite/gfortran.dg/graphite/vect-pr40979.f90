@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-require-effective-target vect_int }
+! { dg-require-effective-target vect_double }
 
 module mqc_m
 integer, parameter, private :: longreal = selected_real_kind(15,90)
