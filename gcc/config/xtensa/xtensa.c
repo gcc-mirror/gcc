@@ -162,6 +162,12 @@ static void xtensa_asm_trampoline_template (FILE *);
 static void xtensa_trampoline_init (rtx, tree, rtx);
 static bool xtensa_output_addr_const_extra (FILE *, rtx);
 
+static reg_class_t xtensa_preferred_reload_class (rtx, reg_class_t);
+static reg_class_t xtensa_preferred_output_reload_class (rtx, reg_class_t);
+static reg_class_t xtensa_secondary_reload (bool, rtx, reg_class_t,
+					    enum machine_mode,
+					    struct secondary_reload_info *);
+
 static bool constantpool_address_p (const_rtx addr);
 
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
@@ -259,6 +265,11 @@ static const struct default_options xtensa_option_optimization_table[] =
 #define TARGET_FOLD_BUILTIN xtensa_fold_builtin
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN xtensa_expand_builtin
+
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS xtensa_preferred_reload_class
+#undef  TARGET_PREFERRED_OUTPUT_RELOAD_CLASS
+#define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS xtensa_preferred_output_reload_class
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD xtensa_secondary_reload
@@ -3153,11 +3164,12 @@ xtensa_expand_builtin (tree exp, rtx target,
   return NULL_RTX;
 }
 
+/* Worker function for TARGET_PREFERRED_RELOAD_CLASS.  */
 
-enum reg_class
-xtensa_preferred_reload_class (rtx x, enum reg_class rclass, int isoutput)
+static reg_class_t
+xtensa_preferred_reload_class (rtx x, reg_class_t rclass)
 {
-  if (!isoutput && CONSTANT_P (x) && GET_CODE (x) == CONST_DOUBLE)
+  if (CONSTANT_P (x) && CONST_DOUBLE_P (x))
     return NO_REGS;
 
   /* Don't use the stack pointer or hard frame pointer for reloads!
@@ -3172,8 +3184,27 @@ xtensa_preferred_reload_class (rtx x, enum reg_class rclass, int isoutput)
   return rclass;
 }
 
+/* Worker function for TARGET_PREFERRED_OUTPUT_RELOAD_CLASS.  */
 
-reg_class_t
+static reg_class_t
+xtensa_preferred_output_reload_class (rtx x ATTRIBUTE_UNUSED,
+				      reg_class_t rclass)
+{
+  /* Don't use the stack pointer or hard frame pointer for reloads!
+     The hard frame pointer would normally be OK except that it may
+     briefly hold an incoming argument in the prologue, and reload
+     won't know that it is live because the hard frame pointer is
+     treated specially.  */
+
+  if (rclass == AR_REGS || rclass == GR_REGS)
+    return RL_REGS;
+
+  return rclass;
+}
+
+/* Worker function for TARGET_SECONDARY_RELOAD.  */
+
+static reg_class_t
 xtensa_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 			 enum machine_mode mode, secondary_reload_info *sri)
 {
