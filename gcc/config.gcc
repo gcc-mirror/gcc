@@ -1037,7 +1037,7 @@ hppa[12]*-*-hpux10*)
 	esac
 	tm_file="${tm_file} pa/pa32-regs.h dbxelf.h pa/som.h \
 		 pa/pa-hpux.h pa/pa-hpux10.h"
-	extra_options="${extra_options} pa/pa-hpux.opt"
+	extra_options="${extra_options} pa/pa-hpux.opt pa/pa-hpux10.opt"
 	case ${target} in
 	*-*-hpux10.[1-9]*)
 		tm_file="${tm_file} pa/pa-hpux1010.h"

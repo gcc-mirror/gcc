@@ -1,5 +1,12 @@
 2011-02-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/pa/pa-hpux10.opt: New.
+	* config/hpux11.opt (pthread): New Driver option.
+	* config/pa/pa-hpux.opt (nolibdld, rdynamic): New Driver options.
+	* config.gcc (hppa[12]*-*-hpux10*): Use pa/pa-hpux10.opt.
+
+2011-02-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/ia64/vms.opt: New.
 	* config.gcc (ia64-hp-*vms*): Use ia64/vms.opt.
 
