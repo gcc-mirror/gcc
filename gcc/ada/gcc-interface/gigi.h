@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2011, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -861,10 +861,9 @@ extern tree build_allocator (tree type, tree init, tree result_type,
                              Entity_Id gnat_proc, Entity_Id gnat_pool,
                              Node_Id gnat_node, bool);
 
-/* Fill in a VMS descriptor for EXPR and return a constructor for it.
-   GNAT_FORMAL is how we find the descriptor record. GNAT_ACTUAL is how
-   we derive the source location on a C_E */
-extern tree fill_vms_descriptor (tree expr, Entity_Id gnat_formal,
+/* Fill in a VMS descriptor of GNU_TYPE for GNU_EXPR and return the result.
+   GNAT_ACTUAL is the actual parameter for which the descriptor is built.  */
+extern tree fill_vms_descriptor (tree gnu_type, tree gnu_expr,
                                  Node_Id gnat_actual);
 
 /* Indicate that we need to take the address of T and that it therefore

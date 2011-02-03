@@ -1,3 +1,17 @@
+2011-02-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (fill_vms_descriptor): Take GNU_TYPE instead of
+	GNAT_FORMAL.
+	* gcc-interface/utils2.c (fill_vms_descriptor): Move from here to...
+	* gcc-interface/utils.c (fill_vms_descriptor): ...here.  Take GNU_TYPE
+	instead of GNAT_FORMAL.  Protect the expression against multiple uses.
+	Do not generate the check directly, instead instantiate the template
+	check present in the descriptor.
+	(make_descriptor_field): Move around.
+	(build_vms_descriptor32): Build a template check in the POINTER field.
+	(build_vms_descriptor): Remove useless suffixes.
+	* gcc-interface/trans.c (call_to_gnu): Adjust fill_vms_descriptor call.
+
 2011-01-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/47467
