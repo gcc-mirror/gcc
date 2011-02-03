@@ -2176,6 +2176,9 @@ cp_tree_equal (tree t1, tree t2)
 				BASELINK_FUNCTIONS (t2)));
 
     case TEMPLATE_PARM_INDEX:
+      if (TEMPLATE_PARM_NUM_SIBLINGS (t1)
+	  != TEMPLATE_PARM_NUM_SIBLINGS (t2))
+	return false;
       return (TEMPLATE_PARM_IDX (t1) == TEMPLATE_PARM_IDX (t2)
 	      && TEMPLATE_PARM_LEVEL (t1) == TEMPLATE_PARM_LEVEL (t2)
 	      && (TEMPLATE_PARM_PARAMETER_PACK (t1)
