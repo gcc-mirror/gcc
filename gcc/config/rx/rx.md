@@ -797,7 +797,10 @@
    (set (reg CC_REG)
 	(compare (abs:SI (match_dup 1))
 		 (const_int 0)))]
-  "reload_completed && rx_match_ccmode (insn, CC_ZSOmode)"
+  ;; Note - although the ABS instruction does set the O bit in the processor
+  ;; status word, it does not do so in a way that is comparable with the CMP
+  ;; instruction.  Hence we use CC_ZSmode rather than CC_ZSOmode.
+  "reload_completed && rx_match_ccmode (insn, CC_ZSmode)"
   "@
   abs\t%0
   abs\t%1, %0"
