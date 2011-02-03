@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
    2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010
+   2010, 2011
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -2368,6 +2368,8 @@ enum rs6000_builtin_type_index
   RS6000_BTI_pixel_V8HI,         /* __vector __pixel */
   RS6000_BTI_long,	         /* long_integer_type_node */
   RS6000_BTI_unsigned_long,      /* long_unsigned_type_node */
+  RS6000_BTI_long_long,	         /* long_long_integer_type_node */
+  RS6000_BTI_unsigned_long_long, /* long_long_unsigned_type_node */
   RS6000_BTI_INTQI,	         /* intQI_type_node */
   RS6000_BTI_UINTQI,		 /* unsigned_intQI_type_node */
   RS6000_BTI_INTHI,	         /* intHI_type_node */
@@ -2411,6 +2413,8 @@ enum rs6000_builtin_type_index
 #define bool_V2DI_type_node	      (rs6000_builtin_types[RS6000_BTI_bool_V2DI])
 #define pixel_V8HI_type_node	      (rs6000_builtin_types[RS6000_BTI_pixel_V8HI])
 
+#define long_long_integer_type_internal_node  (rs6000_builtin_types[RS6000_BTI_long_long])
+#define long_long_unsigned_type_internal_node (rs6000_builtin_types[RS6000_BTI_unsigned_long_long])
 #define long_integer_type_internal_node  (rs6000_builtin_types[RS6000_BTI_long])
 #define long_unsigned_type_internal_node (rs6000_builtin_types[RS6000_BTI_unsigned_long])
 #define intQI_type_internal_node	 (rs6000_builtin_types[RS6000_BTI_INTQI])

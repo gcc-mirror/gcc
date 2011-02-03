@@ -1,3 +1,19 @@
+2011-02-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/47272
+	* gcc.target/powerpc/vsx-builtin-8.c: New file, test vec_vsx_ld
+	and vec_vsx_st.
+
+	* gcc.target/powerpc/avoid-indexed-addresses.c: Disable altivec
+	and vsx so a default --with-cpu=power7 doesn't give an error
+	when -mavoid-indexed-addresses is used.
+
+	* gcc.target/powerpc/ppc32-abi-dfp-1.c: Rewrite to use an asm
+	wrapper function to save the arguments and then jump to the real
+	function, rather than depending on the compiler not to move stuff
+	before an asm.
+	* gcc.target/powerpc/ppc64-abi-dfp-2.c: Ditto.
+
 2011-02-02  Janus Weil  <janus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 

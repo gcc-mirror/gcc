@@ -308,6 +308,19 @@
 }
   [(set_attr "type" "vecstore,vecload,vecsimple,*,*,*,vecsimple,*,vecstore,vecload")])
 
+;; Explicit  load/store expanders for the builtin functions
+(define_expand "vsx_load_<mode>"
+  [(set (match_operand:VSX_M 0 "vsx_register_operand" "")
+	(match_operand:VSX_M 1 "memory_operand" ""))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+  "")
+
+(define_expand "vsx_store_<mode>"
+  [(set (match_operand:VEC_M 0 "memory_operand" "")
+	(match_operand:VEC_M 1 "vsx_register_operand" ""))]
+  "VECTOR_MEM_VSX_P (<MODE>mode)"
+  "")
+
 
 ;; VSX scalar and vector floating point arithmetic instructions
 (define_insn "*vsx_add<mode>3"

@@ -12359,6 +12359,12 @@ vector bool long vec_cmplt (vector double, vector double);
 vector float vec_div (vector float, vector float);
 vector double vec_div (vector double, vector double);
 vector double vec_floor (vector double);
+vector double vec_ld (int, const vector double *);
+vector double vec_ld (int, const double *);
+vector double vec_ldl (int, const vector double *);
+vector double vec_ldl (int, const double *);
+vector unsigned char vec_lvsl (int, const volatile double *);
+vector unsigned char vec_lvsr (int, const volatile double *);
 vector double vec_madd (vector double, vector double, vector double);
 vector double vec_max (vector double, vector double);
 vector double vec_min (vector double, vector double);
@@ -12387,6 +12393,8 @@ vector double vec_sel (vector double, vector double, vector unsigned long);
 vector double vec_sub (vector double, vector double);
 vector float vec_sqrt (vector float);
 vector double vec_sqrt (vector double);
+void vec_st (vector double, int, vector double *);
+void vec_st (vector double, int, double *);
 vector double vec_trunc (vector double);
 vector double vec_xor (vector double, vector double);
 vector double vec_xor (vector double, vector bool long);
@@ -12415,7 +12423,65 @@ int vec_any_ngt (vector double, vector double);
 int vec_any_nle (vector double, vector double);
 int vec_any_nlt (vector double, vector double);
 int vec_any_numeric (vector double);
+
+vector double vec_vsx_ld (int, const vector double *);
+vector double vec_vsx_ld (int, const double *);
+vector float vec_vsx_ld (int, const vector float *);
+vector float vec_vsx_ld (int, const float *);
+vector bool int vec_vsx_ld (int, const vector bool int *);
+vector signed int vec_vsx_ld (int, const vector signed int *);
+vector signed int vec_vsx_ld (int, const int *);
+vector signed int vec_vsx_ld (int, const long *);
+vector unsigned int vec_vsx_ld (int, const vector unsigned int *);
+vector unsigned int vec_vsx_ld (int, const unsigned int *);
+vector unsigned int vec_vsx_ld (int, const unsigned long *);
+vector bool short vec_vsx_ld (int, const vector bool short *);
+vector pixel vec_vsx_ld (int, const vector pixel *);
+vector signed short vec_vsx_ld (int, const vector signed short *);
+vector signed short vec_vsx_ld (int, const short *);
+vector unsigned short vec_vsx_ld (int, const vector unsigned short *);
+vector unsigned short vec_vsx_ld (int, const unsigned short *);
+vector bool char vec_vsx_ld (int, const vector bool char *);
+vector signed char vec_vsx_ld (int, const vector signed char *);
+vector signed char vec_vsx_ld (int, const signed char *);
+vector unsigned char vec_vsx_ld (int, const vector unsigned char *);
+vector unsigned char vec_vsx_ld (int, const unsigned char *);
+
+void vec_vsx_st (vector double, int, vector double *);
+void vec_vsx_st (vector double, int, double *);
+void vec_vsx_st (vector float, int, vector float *);
+void vec_vsx_st (vector float, int, float *);
+void vec_vsx_st (vector signed int, int, vector signed int *);
+void vec_vsx_st (vector signed int, int, int *);
+void vec_vsx_st (vector unsigned int, int, vector unsigned int *);
+void vec_vsx_st (vector unsigned int, int, unsigned int *);
+void vec_vsx_st (vector bool int, int, vector bool int *);
+void vec_vsx_st (vector bool int, int, unsigned int *);
+void vec_vsx_st (vector bool int, int, int *);
+void vec_vsx_st (vector signed short, int, vector signed short *);
+void vec_vsx_st (vector signed short, int, short *);
+void vec_vsx_st (vector unsigned short, int, vector unsigned short *);
+void vec_vsx_st (vector unsigned short, int, unsigned short *);
+void vec_vsx_st (vector bool short, int, vector bool short *);
+void vec_vsx_st (vector bool short, int, unsigned short *);
+void vec_vsx_st (vector pixel, int, vector pixel *);
+void vec_vsx_st (vector pixel, int, unsigned short *);
+void vec_vsx_st (vector pixel, int, short *);
+void vec_vsx_st (vector bool short, int, short *);
+void vec_vsx_st (vector signed char, int, vector signed char *);
+void vec_vsx_st (vector signed char, int, signed char *);
+void vec_vsx_st (vector unsigned char, int, vector unsigned char *);
+void vec_vsx_st (vector unsigned char, int, unsigned char *);
+void vec_vsx_st (vector bool char, int, vector bool char *);
+void vec_vsx_st (vector bool char, int, unsigned char *);
+void vec_vsx_st (vector bool char, int, signed char *);
 @end smallexample
+
+Note that the @samp{vec_ld} and @samp{vec_st} builtins will always
+generate the Altivec @samp{LVX} and @samp{STVX} instructions even
+if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
+@samp{vec_vsx_st} builtins will always generate the VSX @samp{LXVD2X},
+@samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
 
 GCC provides a few other builtins on Powerpc to access certain instructions:
 @smallexample

@@ -1,3 +1,53 @@
+2011-02-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/47272
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Document using vector double with the load/store builtins, and
+	that the load/store builtins always use Altivec instructions.
+
+	* config/rs6000/vector.md (vector_altivec_load_<mode>): New insns
+	to use altivec memory instructions, even on VSX.
+	(vector_altivec_store_<mode>): Ditto.
+
+	* config/rs6000/rs6000-protos.h (rs6000_address_for_altivec): New
+	function.
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	V2DF, V2DI support to load/store overloaded builtins.
+
+	* config/rs6000/rs6000-builtin.def (ALTIVEC_BUILTIN_*): Add
+	altivec load/store builtins for V2DF/V2DI types.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	set avoid indexed addresses on power6 if -maltivec.
+	(altivec_expand_ld_builtin): Add V2DF, V2DI support, use
+	vector_altivec_load/vector_altivec_store builtins.
+	(altivec_expand_st_builtin): Ditto.
+	(altivec_expand_builtin): Add VSX memory builtins.
+	(rs6000_init_builtins): Add V2DI types to internal types.
+	(altivec_init_builtins): Add support for V2DF/V2DI altivec
+	load/store builtins.
+	(rs6000_address_for_altivec): Insure memory address is appropriate
+	for Altivec.
+
+	* config/rs6000/vsx.md (vsx_load_<mode>): New expanders for
+	vec_vsx_ld and vec_vsx_st.
+	(vsx_store_<mode>): Ditto.
+
+	* config/rs6000/rs6000.h (RS6000_BTI_long_long): New type
+	variables to hold long long types for VSX vector memory builtins.
+	(RS6000_BTI_unsigned_long_long): Ditto.
+	(long_long_integer_type_internal_node): Ditti.
+	(long_long_unsigned_type_internal_node): Ditti.
+
+	* config/rs6000/altivec.md (UNSPEC_LVX): New UNSPEC.
+	(altivec_lvx_<mode>): Make altivec_lvx use a mode iterator.
+	(altivec_stvx_<mode>): Make altivec_stvx use a mode iterator.
+
+	* config/rs6000/altivec.h (vec_vsx_ld): Define VSX memory builtin
+	short cuts.
+	(vec_vsx_st): Ditto.
+
 2011-02-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/pa/pa-hpux10.opt: New.
