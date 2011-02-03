@@ -1,3 +1,10 @@
+2011-02-03  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/46890
+	* c-common.h (keyword_is_decl_specifier): Declare.
+	* c-common.c (keyword_is_decl_specifier): Define.
+	(keyword_is_function_specifier): New function.
+
 2011-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/47473

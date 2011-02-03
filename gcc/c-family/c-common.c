@@ -9653,4 +9653,42 @@ keyword_is_storage_class_specifier (enum rid keyword)
     }
 }
 
+/* Return true if KEYWORD names a function-specifier [dcl.fct.spec].  */
+
+static bool
+keyword_is_function_specifier (enum rid keyword)
+{
+  switch (keyword)
+    {
+    case RID_INLINE:
+    case RID_VIRTUAL:
+    case RID_EXPLICIT:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* Return true if KEYWORD names a decl-specifier [dcl.spec] or a
+   declaration-specifier (C99 6.7).  */
+
+bool
+keyword_is_decl_specifier (enum rid keyword)
+{
+  if (keyword_is_storage_class_specifier (keyword)
+      || keyword_is_type_qualifier (keyword)
+      || keyword_is_function_specifier (keyword))
+    return true;
+
+  switch (keyword)
+    {
+    case RID_TYPEDEF:
+    case RID_FRIEND:
+    case RID_CONSTEXPR:
+      return true;
+    default:
+      return false;
+    }
+}
+
 #include "gt-c-family-c-common.h"
