@@ -1,6 +1,6 @@
 /* Functions for generic Darwin as target machine for GNU C compiler.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010
+   2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -160,6 +160,11 @@ output_objc_section_asm_op (const void *directive)
   output_section_asm_op (directive);
 }
 
+
+/* Private flag applied to disable section-anchors in a particular section.  */
+#define SECTION_NO_ANCHOR SECTION_MACH_DEP
+
+
 /* Implement TARGET_ASM_INIT_SECTIONS.  */
 
 void
@@ -177,10 +182,6 @@ darwin_init_sections (void)
   readonly_data_section = darwin_sections[const_section];
   exception_section = darwin_sections[darwin_exception_section];
   eh_frame_section = darwin_sections[darwin_eh_frame_section];
-
-  /* Make sure that there is no conflict between the 'no anchor' section
-     flag declared in darwin.h and the section flags declared in output.h.  */
-  gcc_assert (SECTION_NO_ANCHOR > SECTION_MACH_DEP);
 }
 
 int
