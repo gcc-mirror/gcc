@@ -1,6 +1,6 @@
 /* Like vsprintf but provides a pointer to malloc'd storage, which must
    be freed by the caller.
-   Copyright (C) 1994, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2003, 2011 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -44,7 +44,8 @@ int global_total_width;
 
 /*
 
-@deftypefn Extension int vasprintf (char **@var{resptr}, const char *@var{format}, va_list @var{args})
+@deftypefn Extension int vasprintf (char **@var{resptr}, @
+  const char *@var{format}, va_list @var{args})
 
 Like @code{vsprintf}, but instead of passing a pointer to a buffer,
 you pass a pointer to a pointer.  This function will compute the size

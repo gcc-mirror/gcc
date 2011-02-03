@@ -1,5 +1,6 @@
 @c -*- mode: texinfo -*-
-@deftypefn Extension {struct pex_obj *} pex_init (int @var{flags}, const char *@var{pname}, const char *@var{tempbase})
+@deftypefn Extension {struct pex_obj *} pex_init (int @var{flags}, @
+  const char *@var{pname}, const char *@var{tempbase})
 
 Prepare to execute one or more programs, with standard output of each
 program fed to standard input of the next.  This is a system
@@ -30,7 +31,9 @@ temporary files; it may be @code{NULL} to use a randomly chosen name.
 
 @end deftypefn
 
-@deftypefn Extension {const char *} pex_run (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{outname}, const char *@var{errname}, int *@var{err})
+@deftypefn Extension {const char *} pex_run (struct pex_obj *@var{obj}, @
+  int @var{flags}, const char *@var{executable}, char * const *@var{argv}, @
+  const char *@var{outname}, const char *@var{errname}, int *@var{err})
 
 Execute one program in a pipeline.  On success this returns
 @code{NULL}.  On failure it returns an error message, a statically
@@ -139,7 +142,10 @@ value, or to 0 if there is no relevant @code{errno}.
 
 @end deftypefn
 
-@deftypefn Extension {const char *} pex_run_in_environment (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{executable}, char * const *@var{argv}, char * const *@var{env}, int @var{env_size}, const char *@var{outname}, const char *@var{errname}, int *@var{err})
+@deftypefn Extension {const char *} pex_run_in_environment (struct pex_obj *@var{obj}, @
+  int @var{flags}, const char *@var{executable}, char * const *@var{argv}, @
+  char * const *@var{env}, int @var{env_size}, const char *@var{outname}, @
+  const char *@var{errname}, int *@var{err})
 
 Execute one program in a pipeline, permitting the environment for the
 program to be specified.  Behaviour and parameters not listed below are
@@ -152,7 +158,8 @@ form @code{VAR=VALUE}, with the exception of the last element that must be
 
 @end deftypefn
 
-@deftypefn Extension {FILE *} pex_input_file (struct pex_obj *@var{obj}, int @var{flags}, const char *@var{in_name})
+@deftypefn Extension {FILE *} pex_input_file (struct pex_obj *@var{obj}, @
+  int @var{flags}, const char *@var{in_name})
 
 Return a stream for a temporary file to pass to the first program in
 the pipeline as input.
@@ -169,7 +176,8 @@ binary mode; otherwise, open it in the default mode.  Including
 @code{PEX_BINARY_OUTPUT} in @var{flags} has no effect on Unix.
 @end deftypefn
 
-@deftypefn Extension {FILE *} pex_input_pipe (struct pex_obj *@var{obj}, int @var{binary})
+@deftypefn Extension {FILE *} pex_input_pipe (struct pex_obj *@var{obj}, @
+  int @var{binary})
 
 Return a stream @var{fp} for a pipe connected to the standard input of
 the first program in the pipeline; @var{fp} is opened for writing.
@@ -213,7 +221,8 @@ the output pipe is you, but you are blocked on the input pipe.
 
 @end deftypefn
 
-@deftypefn Extension {FILE *} pex_read_output (struct pex_obj *@var{obj}, int @var{binary})
+@deftypefn Extension {FILE *} pex_read_output (struct pex_obj *@var{obj}, @
+  int @var{binary})
 
 Returns a @code{FILE} pointer which may be used to read the standard
 output of the last program in the pipeline.  When this is used,
@@ -225,7 +234,8 @@ it will be closed by @code{pex_free}.
 
 @end deftypefn
 
-@deftypefn Extension {FILE *} pex_read_err (struct pex_obj *@var{obj}, int @var{binary})
+@deftypefn Extension {FILE *} pex_read_err (struct pex_obj *@var{obj}, @
+  int @var{binary})
 
 Returns a @code{FILE} pointer which may be used to read the standard
 error of the last program in the pipeline.  When this is used,
@@ -238,7 +248,8 @@ it will be closed by @code{pex_free}.
 @end deftypefn
 
 
-@deftypefn Extension int pex_get_status (struct pex_obj *@var{obj}, int @var{count}, int *@var{vector})
+@deftypefn Extension int pex_get_status (struct pex_obj *@var{obj}, @
+  int @var{count}, int *@var{vector})
 
 Returns the exit status of all programs run using @var{obj}.
 @var{count} is the number of results expected.  The results will be
@@ -247,7 +258,8 @@ to @code{pex_run}.  Returns 0 on error, 1 on success.
 
 @end deftypefn
 
-@deftypefn Extension int pex_get_times (struct pex_obj *@var{obj}, int @var{count}, struct pex_time *@var{vector})
+@deftypefn Extension int pex_get_times (struct pex_obj *@var{obj}, @
+  int @var{count}, struct pex_time *@var{vector})
 
 Returns the process execution times of all programs run using
 @var{obj}.  @var{count} is the number of results expected.  The
@@ -271,7 +283,10 @@ try to kill the subprocesses.
 
 @end deftypefn
 
-@deftypefn Extension {const char *} pex_one (int @var{flags}, const char *@var{executable}, char * const *@var{argv}, const char *@var{pname}, const char *@var{outname}, const char *@var{errname}, int *@var{status}, int *@var{err})
+@deftypefn Extension {const char *} pex_one (int @var{flags}, @
+  const char *@var{executable}, char * const *@var{argv}, @
+  const char *@var{pname}, const char *@var{outname}, const char *@var{errname}, @
+  int *@var{status}, int *@var{err})
 
 An interface to permit the easy execution of a
 single program.  The return value and most of the parameters are as
@@ -283,7 +298,10 @@ be set to the exit status of the program.
 
 @end deftypefn
 
-@deftypefn Extension int pexecute (const char *@var{program}, char * const *@var{argv}, const char *@var{this_pname}, const char *@var{temp_base}, char **@var{errmsg_fmt}, char **@var{errmsg_arg}, int @var{flags})
+@deftypefn Extension int pexecute (const char *@var{program}, @
+  char * const *@var{argv}, const char *@var{this_pname}, @
+  const char *@var{temp_base}, char **@var{errmsg_fmt}, @
+  char **@var{errmsg_arg}, int @var{flags})
 
 This is the old interface to execute one or more programs.  It is
 still supported for compatibility purposes, but is no longer

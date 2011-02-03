@@ -1,4 +1,5 @@
-/* Copyright (C) 1992, 1995, 1996, 1997, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 1992, 1995, 1996, 1997, 2002, 2011 Free Software Foundation,
+   Inc.
    This file based on setenv.c in the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -19,7 +20,8 @@
 
 /*
 
-@deftypefn Supplemental int setenv (const char *@var{name}, const char *@var{value}, int @var{overwrite})
+@deftypefn Supplemental int setenv (const char *@var{name}, @
+  const char *@var{value}, int @var{overwrite})
 @deftypefnx Supplemental void unsetenv (const char *@var{name})
 
 @code{setenv} adds @var{name} to the environment with value

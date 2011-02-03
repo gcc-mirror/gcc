@@ -1,5 +1,5 @@
 /* Implementation of strtod for systems with atof.
-   Copyright (C) 1991, 1995, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 2002, 2011 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -24,7 +24,8 @@ the executable file might be covered by the GNU General Public License. */
 
 /*
 
-@deftypefn Supplemental double strtod (const char *@var{string}, char **@var{endptr})
+@deftypefn Supplemental double strtod (const char *@var{string}, @
+  char **@var{endptr})
 
 This ISO C function converts the initial portion of @var{string} to a
 @code{double}.  If @var{endptr} is not @code{NULL}, a pointer to the
