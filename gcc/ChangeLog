@@ -1,3 +1,8 @@
+2011-02-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/ia64/vms.opt: New.
+	* config.gcc (ia64-hp-*vms*): Use ia64/vms.opt.
+
 2011-02-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/47580

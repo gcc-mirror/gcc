@@ -1609,7 +1609,7 @@ ia64-hp-*vms*)
 	fi
 	exeext=.exe
 	install_headers_dir=install-headers-cp
-	extra_options="${extra_options} vms/vms.opt"
+	extra_options="${extra_options} vms/vms.opt ia64/vms.opt"
 	;;
 iq2000*-*-elf*)
         tm_file="elfos.h newlib-stdint.h iq2000/iq2000.h"
