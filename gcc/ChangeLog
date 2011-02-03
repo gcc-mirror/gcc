@@ -1,3 +1,13 @@
+2011-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/47564
+	* toplev.c (target_reinit): Save and restore *crtl and regno_reg_rtx
+	around backend_init_target and lang_dependent_init_target calls.
+	* cgraphunit.c (cgraph_debug_gimple_stmt): New function.
+	(verify_cgraph_node): Don't call set_cfun here.  Use
+	cgraph_debug_gimple_stmt instead of debug_gimple_stmt.
+	Set error_found for incorrectly represented calls to thunks.
+
 2011-02-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/43092

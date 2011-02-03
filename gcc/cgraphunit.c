@@ -440,13 +440,22 @@ verify_edge_count_and_frequency (struct cgraph_edge *e)
   return error_found;
 }
 
+/* Switch to THIS_CFUN if needed and print STMT to stderr.  */
+static void
+cgraph_debug_gimple_stmt (struct function *this_cfun, gimple stmt)
+{
+  /* debug_gimple_stmt needs correct cfun */
+  if (cfun != this_cfun)
+    set_cfun (this_cfun);
+  debug_gimple_stmt (stmt);
+}
+
 /* Verify cgraph nodes of given cgraph node.  */
 DEBUG_FUNCTION void
 verify_cgraph_node (struct cgraph_node *node)
 {
   struct cgraph_edge *e;
   struct function *this_cfun = DECL_STRUCT_FUNCTION (node->decl);
-  struct function *saved_cfun = cfun;
   basic_block this_block;
   gimple_stmt_iterator gsi;
   bool error_found = false;
@@ -455,8 +464,6 @@ verify_cgraph_node (struct cgraph_node *node)
     return;
 
   timevar_push (TV_CGRAPH_VERIFY);
-  /* debug_generic_stmt needs correct cfun */
-  set_cfun (this_cfun);
   for (e = node->callees; e; e = e->next_callee)
     if (e->aux)
       {
@@ -499,7 +506,7 @@ verify_cgraph_node (struct cgraph_node *node)
 	  error ("An indirect edge from %s is not marked as indirect or has "
 		 "associated indirect_info, the corresponding statement is: ",
 		 identifier_to_locale (cgraph_node_name (e->caller)));
-	  debug_gimple_stmt (e->call_stmt);
+	  cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
 	  error_found = true;
 	}
     }
@@ -642,7 +649,7 @@ verify_cgraph_node (struct cgraph_node *node)
 			if (e->aux)
 			  {
 			    error ("shared call_stmt:");
-			    debug_gimple_stmt (stmt);
+			    cgraph_debug_gimple_stmt (this_cfun, stmt);
 			    error_found = true;
 			  }
 			if (!e->indirect_unknown_callee)
@@ -676,7 +683,8 @@ verify_cgraph_node (struct cgraph_node *node)
 			      {
 				error ("a call to thunk improperly represented "
 				       "in the call graph:");
-				debug_gimple_stmt (stmt);
+				cgraph_debug_gimple_stmt (this_cfun, stmt);
+				error_found = true;
 			      }
 			  }
 			else if (decl)
@@ -685,14 +693,14 @@ verify_cgraph_node (struct cgraph_node *node)
 				   "corresponding to a call_stmt with "
 				   "a known declaration:");
 			    error_found = true;
-			    debug_gimple_stmt (e->call_stmt);
+			    cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
 			  }
 			e->aux = (void *)1;
 		      }
 		    else if (decl)
 		      {
 			error ("missing callgraph edge for call stmt:");
-			debug_gimple_stmt (stmt);
+			cgraph_debug_gimple_stmt (this_cfun, stmt);
 			error_found = true;
 		      }
 		  }
@@ -710,7 +718,7 @@ verify_cgraph_node (struct cgraph_node *node)
 	      error ("edge %s->%s has no corresponding call_stmt",
 		     identifier_to_locale (cgraph_node_name (e->caller)),
 		     identifier_to_locale (cgraph_node_name (e->callee)));
-	      debug_gimple_stmt (e->call_stmt);
+	      cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
 	      error_found = true;
 	    }
 	  e->aux = 0;
@@ -721,7 +729,7 @@ verify_cgraph_node (struct cgraph_node *node)
 	    {
 	      error ("an indirect edge from %s has no corresponding call_stmt",
 		     identifier_to_locale (cgraph_node_name (e->caller)));
-	      debug_gimple_stmt (e->call_stmt);
+	      cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
 	      error_found = true;
 	    }
 	  e->aux = 0;
@@ -732,7 +740,6 @@ verify_cgraph_node (struct cgraph_node *node)
       dump_cgraph_node (stderr, node);
       internal_error ("verify_cgraph_node failed");
     }
-  set_cfun (saved_cfun);
   timevar_pop (TV_CGRAPH_VERIFY);
 }
 
