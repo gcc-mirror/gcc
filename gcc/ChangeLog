@@ -1,3 +1,9 @@
+2011-02-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR tree-optimization/45122
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Don't make
+	unsafe assumptions when there's more than one loop exit.
+
 2011-02-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/47272
