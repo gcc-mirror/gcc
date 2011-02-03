@@ -1,5 +1,9 @@
 2011-02-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/47312
+	* expr.c (expand_expr_real_2) <case FMA_EXPR>: If target doesn't expand
+	fma, expand FMA_EXPR as fma{,f,l} call.
+
 	PR lto/47274
 	* lto-streamer-out.c (write_symbol): When writing kind and visibility,
 	copy them into a unsigned char variable and pass address of it to
