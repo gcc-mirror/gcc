@@ -262,7 +262,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
     return 0;
 #endif
 
-  val = cselib_lookup (src, GET_MODE (SET_DEST (set)), 0);
+  val = cselib_lookup (src, GET_MODE (SET_DEST (set)), 0, VOIDmode);
   if (! val)
     return 0;
 
@@ -476,7 +476,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 	    continue;
 	}
 #endif /* LOAD_EXTEND_OP */
-      v = cselib_lookup (op, recog_data.operand_mode[i], 0);
+      v = cselib_lookup (op, recog_data.operand_mode[i], 0, VOIDmode);
       if (! v)
 	continue;
 

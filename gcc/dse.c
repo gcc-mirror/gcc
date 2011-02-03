@@ -806,82 +806,25 @@ free_store_info (insn_info_t insn_info)
   insn_info->store_rec = NULL;
 }
 
-
-struct insn_size {
-  int size;
-  rtx insn;
-};
-
-
-/* Add an insn to do the add inside a x if it is a
-   PRE/POST-INC/DEC/MODIFY.  D is an structure containing the insn and
-   the size of the mode of the MEM that this is inside of.  */
+/* Callback for for_each_inc_dec that emits an INSN that sets DEST to
+   SRC + SRCOFF before insn ARG.  */
 
 static int
-replace_inc_dec (rtx *r, void *d)
+emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
+			  rtx op ATTRIBUTE_UNUSED,
+			  rtx dest, rtx src, rtx srcoff, void *arg)
 {
-  rtx x = *r;
-  struct insn_size *data = (struct insn_size *)d;
-  switch (GET_CODE (x))
-    {
-    case PRE_INC:
-    case POST_INC:
-      {
-	rtx r1 = XEXP (x, 0);
-	rtx c = gen_int_mode (data->size, GET_MODE (r1));
-	emit_insn_before (gen_rtx_SET (VOIDmode, r1,
-				       gen_rtx_PLUS (GET_MODE (r1), r1, c)),
-			  data->insn);
-	return -1;
-      }
+  rtx insn = (rtx)arg;
 
-    case PRE_DEC:
-    case POST_DEC:
-      {
-	rtx r1 = XEXP (x, 0);
-	rtx c = gen_int_mode (-data->size, GET_MODE (r1));
-	emit_insn_before (gen_rtx_SET (VOIDmode, r1,
-				       gen_rtx_PLUS (GET_MODE (r1), r1, c)),
-			  data->insn);
-	return -1;
-      }
+  if (srcoff)
+    src = gen_rtx_PLUS (GET_MODE (src), src, srcoff);
 
-    case PRE_MODIFY:
-    case POST_MODIFY:
-      {
-	/* We can reuse the add because we are about to delete the
-	   insn that contained it.  */
-	rtx add = XEXP (x, 0);
-	rtx r1 = XEXP (add, 0);
-	emit_insn_before (gen_rtx_SET (VOIDmode, r1, add), data->insn);
-	return -1;
-      }
+  /* We can reuse all operands without copying, because we are about
+     to delete the insn that contained it.  */
 
-    default:
-      return 0;
-    }
-}
+  emit_insn_before (gen_rtx_SET (VOIDmode, dest, src), insn);
 
-
-/* If X is a MEM, check the address to see if it is PRE/POST-INC/DEC/MODIFY
-   and generate an add to replace that.  */
-
-static int
-replace_inc_dec_mem (rtx *r, void *d)
-{
-  rtx x = *r;
-  if (x != NULL_RTX && MEM_P (x))
-    {
-      struct insn_size data;
-
-      data.size = GET_MODE_SIZE (GET_MODE (x));
-      data.insn = (rtx) d;
-
-      for_each_rtx (&XEXP (x, 0), replace_inc_dec, &data);
-
-      return -1;
-    }
-  return 0;
+  return -1;
 }
 
 /* Before we delete INSN, make sure that the auto inc/dec, if it is
@@ -892,7 +835,7 @@ check_for_inc_dec (rtx insn)
 {
   rtx note = find_reg_note (insn, REG_INC, NULL_RTX);
   if (note)
-    for_each_rtx (&insn, replace_inc_dec_mem, insn);
+    for_each_inc_dec (&insn, emit_inc_dec_insn_before, insn);
 }
 
 
@@ -1107,7 +1050,7 @@ canon_address (rtx mem,
 
   *alias_set_out = 0;
 
-  cselib_lookup (mem_address, address_mode, 1);
+  cselib_lookup (mem_address, address_mode, 1, GET_MODE (mem));
 
   if (dump_file)
     {
@@ -1187,7 +1130,7 @@ canon_address (rtx mem,
 	}
     }
 
-  *base = cselib_lookup (address, address_mode, true);
+  *base = cselib_lookup (address, address_mode, true, GET_MODE (mem));
   *group_id = -1;
 
   if (*base == NULL)
