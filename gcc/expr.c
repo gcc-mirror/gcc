@@ -7695,6 +7695,18 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	optab opt = fma_optab;
 	gimple def0, def2;
 
+	/* If there is no insn for FMA, emit it as __builtin_fma{,f,l}
+	   call.  */
+	if (optab_handler (fma_optab, mode) == CODE_FOR_nothing)
+	  {
+	    tree fn = mathfn_built_in (TREE_TYPE (treeop0), BUILT_IN_FMA);
+	    tree call_expr;
+
+	    gcc_assert (fn != NULL_TREE);
+	    call_expr = build_call_expr (fn, 3, treeop0, treeop1, treeop2);
+	    return expand_builtin (call_expr, target, subtarget, mode, false);
+	  }
+
 	def0 = get_def_for_expr (treeop0, NEGATE_EXPR);
 	def2 = get_def_for_expr (treeop2, NEGATE_EXPR);
 
