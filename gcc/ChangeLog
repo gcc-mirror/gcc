@@ -1,5 +1,10 @@
 2011-02-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR lto/47274
+	* lto-streamer-out.c (write_symbol): When writing kind and visibility,
+	copy them into a unsigned char variable and pass address of it to
+	lto_output_data_stream.
+
 	PR target/47564
 	* toplev.c (target_reinit): Save and restore *crtl and regno_reg_rtx
 	around backend_init_target and lang_dependent_init_target calls.

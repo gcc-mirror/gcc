@@ -2410,6 +2410,7 @@ write_symbol (struct lto_streamer_cache_d *cache,
   int slot_num;
   uint64_t size;
   const char *comdat;
+  unsigned char c;
 
   /* None of the following kinds of symbols are needed in the
      symbol table.  */
@@ -2505,8 +2506,10 @@ write_symbol (struct lto_streamer_cache_d *cache,
 
   lto_output_data_stream (stream, name, strlen (name) + 1);
   lto_output_data_stream (stream, comdat, strlen (comdat) + 1);
-  lto_output_data_stream (stream, &kind, 1);
-  lto_output_data_stream (stream, &visibility, 1);
+  c = (unsigned char) kind;
+  lto_output_data_stream (stream, &c, 1);
+  c = (unsigned char) visibility;
+  lto_output_data_stream (stream, &c, 1);
   lto_output_data_stream (stream, &size, 8);
   lto_output_data_stream (stream, &slot_num, 4);
 }
