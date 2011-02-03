@@ -1,3 +1,12 @@
+2011-02-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR c++/47589
+	Backport from mainline
+	2010-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/45894
+	* tree.c (lvalue_kind): Don't crash if ref has NULL type.
+
 2010-12-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline

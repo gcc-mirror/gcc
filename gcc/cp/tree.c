@@ -72,7 +72,8 @@ lvalue_p_1 (tree ref)
 	  == REFERENCE_TYPE)
     return lvalue_p_1 (TREE_OPERAND (ref, 0));
 
-  if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
+  if (TREE_TYPE (ref)
+      && TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
     {
       /* unnamed rvalue references are rvalues */
       if (TYPE_REF_IS_RVALUE (TREE_TYPE (ref))
