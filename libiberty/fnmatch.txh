@@ -1,4 +1,5 @@
-@deftypefn Replacement int fnmatch (const char *@var{pattern}, const char *@var{string}, int @var{flags})
+@deftypefn Replacement int fnmatch (const char *@var{pattern}, @
+  const char *@var{string}, int @var{flags})
 
 Matches @var{string} against @var{pattern}, returning zero if it
 matches, @code{FNM_NOMATCH} if not.  @var{pattern} may contain the

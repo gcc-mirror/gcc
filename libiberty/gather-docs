@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # -*- perl -*-
 
-#   Copyright (C) 2001
+#   Copyright (C) 2001, 2009, 2011
 #   Free Software Foundation
 #
 # This file is part of the libiberty library.
@@ -73,8 +73,8 @@ for $in (@ARGV) {
 
 	    if (/^\@def[a-z]*[a-wyz] /) {
 		
-		($name) = m/[^\(]* ([^\( \t\r\n]+) *\(/;
-		$name =~ s/[ 	]*$//;
+		($name) = m/[^\(]* ([^\( \t\r\n\@]+) *(\(|\@?$)/;
+		$name =~ s/[	 ]*\@?$//;
 		$key = $name;
 		$key =~ tr/A-Z/a-z/;
 		$key =~ s/[^a-z0-9]+/ /g;

@@ -3,7 +3,8 @@
 
 /*
 
-@deftypefn Supplemental void* memset (void *@var{s}, int @var{c}, size_t @var{count})
+@deftypefn Supplemental void* memset (void *@var{s}, int @var{c}, @
+  size_t @var{count})
 
 Sets the first @var{count} bytes of @var{s} to the constant byte
 @var{c}, returning a pointer to @var{s}.

@@ -1,6 +1,7 @@
 /*
 
-@deftypefn Supplemental void* memchr (const void *@var{s}, int @var{c}, size_t @var{n})
+@deftypefn Supplemental void* memchr (const void *@var{s}, int @var{c}, @
+  size_t @var{n})
 
 This function searches memory starting at @code{*@var{s}} for the
 character @var{c}.  The search only ends with the first occurrence of

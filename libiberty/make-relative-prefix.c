@@ -21,7 +21,8 @@ Software Foundation, 51 Franklin Street - Fifth Floor, Boston, MA
 
 /*
 
-@deftypefn Extension {const char*} make_relative_prefix (const char *@var{progname}, const char *@var{bin_prefix}, const char *@var{prefix})
+@deftypefn Extension {const char*} make_relative_prefix (const char *@var{progname}, @
+  const char *@var{bin_prefix}, const char *@var{prefix})
 
 Given three paths @var{progname}, @var{bin_prefix}, @var{prefix},
 return the path that is in the same position relative to

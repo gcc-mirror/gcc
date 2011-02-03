@@ -1,5 +1,5 @@
 /* Concatenate variable number of strings.
-   Copyright (C) 1991, 1994, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 2001, 2011 Free Software Foundation, Inc.
    Written by Fred Fish @ Cygnus Support
 
 This file is part of the libiberty library.
@@ -21,7 +21,8 @@ Boston, MA 02110-1301, USA.  */
 
 /*
 
-@deftypefn Extension char* concat (const char *@var{s1}, const char *@var{s2}, @dots{}, @code{NULL})
+@deftypefn Extension char* concat (const char *@var{s1}, const char *@var{s2}, @
+  @dots{}, @code{NULL})
 
 Concatenate zero or more of strings and return the result in freshly
 @code{xmalloc}ed memory.  Returns @code{NULL} if insufficient memory is
@@ -170,7 +171,8 @@ concat (const char *first, ...)
 
 /*
 
-@deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @dots{}, @code{NULL})
+@deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @
+  @dots{}, @code{NULL})
 
 Same as @code{concat}, except that if @var{optr} is not @code{NULL} it
 is freed after the string is created.  This is intended to be useful

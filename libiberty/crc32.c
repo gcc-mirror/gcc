@@ -1,5 +1,5 @@
 /* crc32.c
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2011 Free Software Foundation, Inc.
 
    This file is part of the libiberty library.
 
@@ -138,7 +138,8 @@ static const unsigned int crc32_table[] =
 
 /*
 
-@deftypefn Extension unsigned int crc32 (const unsigned char *@var{buf}, int @var{len}, unsigned int @var{init})
+@deftypefn Extension {unsigned int} crc32 (const unsigned char *@var{buf}, @
+  int @var{len}, unsigned int @var{init})
 
 Compute the 32-bit CRC of @var{buf} which has length @var{len}.  The
 starting value is @var{init}; this may be used to compute the CRC of
