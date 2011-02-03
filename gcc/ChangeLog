@@ -1,5 +1,33 @@
 2011-02-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/31490
+	* output.h (SECTION_RELRO): Define.
+	(SECTION_MACH_DEP): Adjust.
+	(get_variable_section): New prototype.
+	* varpool.c (varpool_finalize_named_section_flags): New function.
+	(varpool_assemble_pending_decls): Call it.
+	* cgraph.h (varpool_finalize_named_section_flags): New prototype.
+	* cgraphunit.c (cgraph_output_in_order): Call
+	varpool_finalize_named_section_flags.
+	* varasm.c (get_section): Allow section flags conflicts between
+	relro and read-only sections if the section hasn't been declared yet.
+	Set SECTION_OVERRIDE after diagnosing section type conflict.
+	(get_variable_section): No longer static.
+	(default_section_type_flags): Use SECTION_WRITE | SECTION_RELRO for
+	readonly sections that need relocations.
+	(decl_readonly_section_1): New function.
+	(decl_readonly_section): Use it.
+
+	Revert:
+	2010-11-17  Dinar Temirbulatov <dtemirbulatov@gmail.com>
+		    Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/31490
+	* varasm.c (categorize_decl_for_section): Ignore reloc_rw_mask
+	if section attribute used.
+
+2011-02-03  Jakub Jelinek  <jakub@redhat.com>
+
 	* config/darwin.h (SECTION_NO_ANCHOR): Remove.
 	* config/darwin.c (SECTION_NO_ANCHOR): Define.
 	(darwin_init_sections): Remove assertion.
