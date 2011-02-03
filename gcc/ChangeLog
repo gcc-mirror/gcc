@@ -1,3 +1,9 @@
+2011-02-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/microblaze/microblaze.opt (Zxl-mode-bootstrap,
+	Zxl-mode-executable, Zxl-mode-novectors, Zxl-mode-xilkernel,
+	Zxl-mode-xmdstub, mxl-mode-xilkernel): New Driver options.
+
 2011-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/31490
