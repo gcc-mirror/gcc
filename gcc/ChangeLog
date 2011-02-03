@@ -1,5 +1,56 @@
 2011-02-03  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/43092
+	PR rtl-optimization/43494
+	* rtl.h (for_each_inc_dec_fn): New type.
+	(for_each_inc_dec): Declare.
+	* rtlanal.c (struct for_each_inc_dec_ops): New type.
+	(for_each_inc_dec_find_inc_dec): New fn.
+	(for_each_inc_dec_find_mem): New fn.
+	(for_each_inc_dec): New fn.
+	* dse.c (struct insn_size): Remove.
+	(replace_inc_dec, replace_inc_dec_mem): Remove.
+	(emit_inc_dec_insn_before): New fn.
+	(check_for_inc_dec): Use it, along with for_each_inc_dec.
+	(canon_address): Pass mem modes to cselib_lookup.
+	* cselib.h (cselib_lookup): Add memmode argument.  Adjust callers.
+	(cselib_lookup_from_insn): Likewise.
+	(cselib_subst_to_values): Likewise.
+	* cselib.c (find_slot_memmode): New var.
+	(cselib_find_slot): New fn.  Use it instead of
+	htab_find_slot_with_hash everywhere.
+	(entry_and_rtx_equal_p): Use find_slot_memmode.
+	(autoinc_split): New fn.
+	(rtx_equal_for_cselib_p): Rename and implement in terms of...
+	(rtx_equal_for_cselib_1): ... this.  Take memmode, pass it on.
+	Deal with autoinc.  Special-case recursion into MEMs.
+	(cselib_hash_rtx): Likewise.
+	(cselib_lookup_mem): Infer pmode from address mode.  Distinguish
+	address and MEM modes.
+	(cselib_subst_to_values): Add memmode, pass it on.
+	Deal with autoinc.
+	(cselib_lookup): Add memmode argument, pass it on.
+	(cselib_lookup_from_insn): Add memmode.
+	(cselib_invalidate_rtx): Discard obsolete push_operand handling.
+	(struct cselib_record_autoinc_data): New.
+	(cselib_record_autoinc_cb): New fn.
+	(cselib_record_sets): Use it, along with for_each_inc_dec.  Pass MEM
+	mode to cselib_lookup.  Reset autoinced REGs here instead of...
+	(cselib_process_insn): ... here.
+	* var-tracking.c (replace_expr_with_values, use_type): Pass MEM mode
+	to cselib_lookup.
+	(add_uses): Likewise, also to cselib_subst_to_values.
+	(add_stores): Likewise.
+	* sched-deps.c 	(add_insn_mem_dependence): Pass mode to
+	cselib_subst_to_values.
+	(sched_analyze_1, sched_analyze_2): Likewise.  Adjusted.
+	* gcse.c (do_local_cprop): Adjusted.
+	* postreload.c (reload_cse_simplify_set): Adjusted.
+	(reload_cse_simplify_operands): Adjusted.
+	* sel-sched-dump (debug_mem_addr_value): Pass mode.
+
+2011-02-03  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR tree-optimization/45122
 	* tree-ssa-loop-niter.c (number_of_iterations_exit): Don't make
 	unsafe assumptions when there's more than one loop exit.

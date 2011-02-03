@@ -2738,7 +2738,7 @@ do_local_cprop (rtx x, rtx insn)
           || (GET_CODE (PATTERN (insn)) != USE
 	      && asm_noperands (PATTERN (insn)) < 0)))
     {
-      cselib_val *val = cselib_lookup (x, GET_MODE (x), 0);
+      cselib_val *val = cselib_lookup (x, GET_MODE (x), 0, VOIDmode);
       struct elt_loc_list *l;
 
       if (!val)
