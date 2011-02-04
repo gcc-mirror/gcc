@@ -624,3 +624,7 @@
   return REG_P (op) && REG_POINTER (op);
 })
 
+;; True if this is the right-most vector element; for mux1 @brcst.
+(define_predicate "mux1_brcst_element"
+  (and (match_code "const_int")
+       (match_test "INTVAL (op) == (TARGET_BIG_ENDIAN ? 7 : 0)")))

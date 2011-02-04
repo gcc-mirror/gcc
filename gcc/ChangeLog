@@ -1,3 +1,64 @@
+2011-02-04  Richard Henderson  <rth@redhat.com>
+	    Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/46997
+	* config/ia64/predicates.md (mux1_brcst_element): New.
+	* config/ia64/ia64-protos.h (ia64_unpack_assemble): New.
+	* config/ia64/ia64.c (ia64_unpack_assemble): New.
+	(ia64_unpack_sign): New.
+	(ia64_expand_unpack): Rewrite using new routines.
+	(ia64_expand_widen_sum): Ditto.
+	(ia64_expand_dot_prod_v8qi): Ditto.
+	* config/ia64/vect.md (mulv8qi3): Rewrite to use new
+	routines, add endian check.
+	(pmpy2_even): Rename from pmpy2_r, add endian check.
+	(pmpy2_odd): Rename from pmpy2_l, add endian check.
+	(vec_widen_smult_lo_v4hi): Rewrite using new routines.
+	(vec_widen_smult_hi_v4hi): Ditto.
+	(vec_widen_umult_lo_v4hi): Ditto.
+	(vec_widen_umult_hi_v4hi): Ditto.
+	(mulv2si3): Change endian checks.
+	(sdot_prodv4hi): Rewrite with new calls.
+	(udot_prodv4hi): New.
+	(vec_pack_ssat_v4hi): Add endian check.
+	(vec_pack_usat_v4hi): Ditto.
+	(vec_pack_ssat_v2si): Ditto.
+	(max1_even): Rename from max1_r, add endian check.
+	(max1_odd): Rename from max1_l, add endian check.
+	(*mux1_rev): Format change.
+	(*mux1_mix): Ditto.
+	(*mux1_shuf): Ditto.
+	(*mux1_alt): Ditto.
+	(*mux1_brcst_v8qi): Use new predicate.
+	(vec_extract_evenv8qi): Remove endian check.
+	(vec_extract_oddv8qi): Ditto.
+	(vec_interleave_lowv4hi): Format change.
+	(vec_interleave_highv4hi): Ditto.
+	(mix2_even): Rename from mix2_r, add endian check.
+	(mix2_odd): Rename from mux2_l, add endian check.
+	(*mux2): Fix mask setting for TARGET_BIG_ENDIAN.
+	(vec_extract_evenodd_helper): Format change.
+	(vec_extract_evenv4hi): Remove endian check.
+	(vec_extract_oddv4hi): Remove endian check.
+	(vec_interleave_lowv2si): Format change.
+	(vec_interleave_highv2si): Format change.
+	(vec_initv2si): Remove endian check.
+	(vecinit_v2si): Add endian check.
+	(reduc_splus_v2sf): Add endian check.
+	(reduc_smax_v2sf): Ditto.
+	(reduc_smin_v2sf): Ditto.
+	(vec_initv2sf): Remove endian check.
+	(fpack): Add endian check.
+	(fswap): Add endian check.
+	(vec_interleave_highv2sf): Add endian check.
+	(vec_interleave_lowv2sf): Add endian check.
+	(fmix_lr): Add endian check.
+	(vec_setv2sf): Format change.
+	(*vec_extractv2sf_0_be): Use shift to extract operand.
+	(*vec_extractv2sf_1_be): New.
+	(vec_pack_trunc_v4hi): Add endian check.
+	(vec_pack_trunc_v2si): Format change.
+
 2011-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/23200
