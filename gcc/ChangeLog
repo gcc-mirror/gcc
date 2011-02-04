@@ -1,5 +1,10 @@
 2011-02-04  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/rs6000/xilinx.opt: New.
+	* config.gcc (powerpc-xilinx-eabi*): Use rs6000/xilinx.opt.
+
+2011-02-04  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/mips/mips.opt (EB, EL, noasmopt): New Driver options.
 
 2011-02-03  Anatoly Sokolov  <aesok@post.ru>
