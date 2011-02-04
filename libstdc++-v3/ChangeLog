@@ -1,3 +1,8 @@
+2011-02-04  Ralf Corsépius <ralf.corsepius@rtems.org.>
+
+	* crossconfig.m4 (GLIBCXX_CROSSCONFIG): Add *-rtems*.
+	* configure: Regenerate.
+
 2011-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/46914

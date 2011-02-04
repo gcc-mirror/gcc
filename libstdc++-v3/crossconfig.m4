@@ -198,6 +198,12 @@ case "${host}" in
     AC_DEFINE(HAVE_SINHF)
     AC_DEFINE(HAVE_SINHL)
     ;;
+  *-rtems*)
+    GLIBCXX_CHECK_COMPILER_FEATURES
+    GLIBCXX_CHECK_LINKER_FEATURES
+    GLIBCXX_CHECK_MATH_SUPPORT
+    GLIBCXX_CHECK_STDLIB_SUPPORT
+    ;;
   *-solaris*)
     case "$target" in
       *-solaris2.8 | *-solaris2.9 | *-solaris2.10)
