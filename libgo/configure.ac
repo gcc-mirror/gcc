@@ -396,6 +396,20 @@ if test "$libgo_cv_func___sync_bool_compare_and_swap_4" = "yes"; then
     [Define to 1 if the compiler provides the __sync_bool_compare_and_swap function for uint32])
 fi
 
+AC_CACHE_CHECK([for __sync_fetch_and_add_4],
+[libgo_cv_func___sync_fetch_and_add_4],
+[AC_LINK_IFELSE([
+typedef unsigned int uint32  __attribute__ ((mode (SI)));
+uint32 i;
+int main() { return __sync_fetch_and_add (&i, 1); }
+],
+[libgo_cv_func___sync_fetch_and_add_4=yes],
+[libgo_cv_func___sync_fetch_and_add_4=no])])
+if test "$libgo_cv_func___sync_fetch_and_add_4" = "yes"; then
+  AC_DEFINE(HAVE_SYNC_FETCH_AND_ADD_4, 1,
+    [Define to 1 if the compiler provides the __sync_fetch_and_add function for uint32])
+fi
+
 dnl For x86 we want to use the -minline-all-stringops option to avoid
 dnl forcing a stack split when calling memcpy and friends.
 AC_CACHE_CHECK([whether compiler supports -minline-all-stringops],
