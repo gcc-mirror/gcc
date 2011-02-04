@@ -1,3 +1,17 @@
+2011-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/23200
+	* tree-ssa-ter.c (is_replaceable_p): Add TER argument.  Don't
+	do bb, locus and block comparison and disallow loads if it is
+	not set.
+	(stmt_is_replaceable_p): New function.
+	(process_replaceable, find_replaceable_in_bb): Adjust is_replaceable_p
+	callers.
+	* expr.c (expand_expr_real_1) <case SSA_NAME>: If
+	get_gimple_for_ssa_name try for EXPAND_INITIALIZER harder to use
+	SSA_NAME_DEF_STMT.
+	* tree-flow.h (stmt_is_replaceable_p): New prototype.
+
 2011-02-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/xilinx.opt: New.

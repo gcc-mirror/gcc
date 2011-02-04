@@ -1,3 +1,8 @@
+2011-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR inline-asm/23200
+	* gcc.dg/pr23200.c: New test.
+
 2011-02-03  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR c++/47589
