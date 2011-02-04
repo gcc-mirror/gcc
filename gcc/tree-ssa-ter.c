@@ -1,5 +1,5 @@
 /* Routines for performing Temporary Expression Replacement (TER) in SSA trees.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
@@ -357,10 +357,17 @@ add_dependence (temp_expr_table_p tab, int version, tree var)
 }
 
 
-/* Return TRUE if expression STMT is suitable for replacement.  */
+/* Return TRUE if expression STMT is suitable for replacement.
+   TER is true if is_replaceable_p is called from within TER, false
+   when used from within stmt_is_replaceable_p, i.e. EXPAND_INITIALIZER
+   expansion.  The differences are that with !TER some tests are skipped
+   to make it more aggressive (doesn't require the same bb, or for -O0
+   same locus and same BLOCK), on the other side never considers memory
+   loads as replaceable, because those don't ever lead into constant
+   expressions.  */
 
 static inline bool
-is_replaceable_p (gimple stmt)
+is_replaceable_p (gimple stmt, bool ter)
 {
   use_operand_p use_p;
   tree def;
@@ -386,7 +393,7 @@ is_replaceable_p (gimple stmt)
     return false;
 
   /* If the use isn't in this block, it wont be replaced either.  */
-  if (gimple_bb (use_stmt) != gimple_bb (stmt))
+  if (ter && gimple_bb (use_stmt) != gimple_bb (stmt))
     return false;
 
   locus1 = gimple_location (stmt);
@@ -404,6 +411,7 @@ is_replaceable_p (gimple stmt)
     }
 
   if (!optimize
+      && ter
       && ((locus1 && locus1 != locus2) || (block1 && block1 != block2)))
     return false;
 
@@ -416,7 +424,7 @@ is_replaceable_p (gimple stmt)
     return false;
 
   /* Without alias info we can't move around loads.  */
-  if (!optimize
+  if ((!optimize || !ter)
       && gimple_assign_single_p (stmt)
       && !is_gimple_val (gimple_assign_rhs1 (stmt)))
     return false;
@@ -441,6 +449,16 @@ is_replaceable_p (gimple stmt)
     return false;
 
   return true;
+}
+
+
+/* Variant of is_replaceable_p test for use in EXPAND_INITIALIZER
+   expansion.  */
+
+bool
+stmt_is_replaceable_p (gimple stmt)
+{
+  return is_replaceable_p (stmt, false);
 }
 
 
@@ -477,7 +495,7 @@ process_replaceable (temp_expr_table_p tab, gimple stmt, int call_cnt)
   ssa_op_iter iter;
   bitmap def_vars, use_vars;
 
-  gcc_checking_assert (is_replaceable_p (stmt));
+  gcc_checking_assert (is_replaceable_p (stmt, true));
 
   def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
   version = SSA_NAME_VERSION (def);
@@ -589,7 +607,7 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
       if (is_gimple_debug (stmt))
 	continue;
 
-      stmt_replaceable = is_replaceable_p (stmt);
+      stmt_replaceable = is_replaceable_p (stmt, true);
 
       /* Determine if this stmt finishes an existing expression.  */
       FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
