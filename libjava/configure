@@ -674,6 +674,7 @@ GLIB_CFLAGS
 GTK_LIBS
 GTK_CFLAGS
 PKG_CONFIG
+LDLIBICONV
 LTLIBICONV
 LIBICONV
 USING_GCC_FALSE
@@ -13355,7 +13356,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13358 "configure"
+#line 13359 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13461,7 +13462,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13464 "configure"
+#line 13465 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19462,7 +19463,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 19465 "configure"
+#line 19466 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -21992,6 +21993,8 @@ $as_echo "#define HAVE_TZNAME 1" >>confdefs.h
 
   fi
 fi
+
+   LDLIBICONV=`echo " $LIBICONV " | sed "s/${acl_cv_wl--Wl,}/ /g; s/,/ /g"`
 
 
    for ac_func in gethostbyname_r

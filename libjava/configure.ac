@@ -1240,6 +1240,8 @@ else
    AM_ICONV
    AM_LC_MESSAGES
    AC_STRUCT_TIMEZONE
+   LDLIBICONV=`echo " $LIBICONV " | sed "s/${acl_cv_wl--Wl,}/ /g; s/,/ /g"`
+   AC_SUBST([LDLIBICONV])
 
    AC_CHECK_FUNCS(gethostbyname_r, [
      AC_DEFINE(HAVE_GETHOSTBYNAME_R, 1,
