@@ -1,3 +1,7 @@
+2011-02-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.opt (EB, EL, noasmopt): New Driver options.
+
 2011-02-03  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/xtensa/xtensa.h (PREFERRED_RELOAD_CLASS,
