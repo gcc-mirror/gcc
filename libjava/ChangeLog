@@ -1,3 +1,15 @@
+2011-02-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR java/21206
+	* configure.ac (LDLIBICONV): New substituted variable, with
+	instances of '-Wl,' removed from LIBICONV.
+	* configure: Regenerate.
+	* libgcj.spec.in: Use @LDLIBICONV@ not @LIBICONV@.
+	* Makefile.in: Regenerate.
+	* gcj/Makefile.in: Likewise.
+	* include/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2011-02-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Don't use libdl on mips-sgi-irix6*.
