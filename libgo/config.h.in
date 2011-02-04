@@ -43,6 +43,10 @@
    function for uint32 */
 #undef HAVE_SYNC_BOOL_COMPARE_AND_SWAP_4
 
+/* Define to 1 if the compiler provides the __sync_fetch_and_add function for
+   uint32 */
+#undef HAVE_SYNC_FETCH_AND_ADD_4
+
 /* Define to 1 if you have the <syscall.h> header file. */
 #undef HAVE_SYSCALL_H
 
