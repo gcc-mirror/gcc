@@ -1,3 +1,8 @@
+2011-02-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/iris6.opt: New.
+	* config.gcc (mips-sgi-irix6.5*): Use mips/iris6.opt.
+
 2011-02-04  Richard Henderson  <rth@redhat.com>
 	    Steve Ellcey  <sje@cup.hp.com>
 
