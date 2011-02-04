@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-options "-O2 -mavoid-indexed-addresses" } */
+/* { dg-options "-O2 -mavoid-indexed-addresses -mno-altivec -mno-vsx" } */
 
 /* { dg-final { scan-assembler-not "lbzx" } }
 
