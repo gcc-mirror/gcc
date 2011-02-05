@@ -1,3 +1,8 @@
+2011-02-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/42434
+	* intrinsic.texi (SYSTEM_CLOCK): Update documentation.
+
 2011-02-02  Janus Weil  <janus@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 

@@ -11812,14 +11812,29 @@ and should considered in new code for future portability.
 
 @table @asis
 @item @emph{Description}:
-Determines the @var{COUNT} of milliseconds of wall clock time since 
-the Epoch (00:00:00 UTC, January 1, 1970) modulo @var{COUNT_MAX}, 
-@var{COUNT_RATE} determines the number of clock ticks per second.
-@var{COUNT_RATE} and @var{COUNT_MAX} are constant and specific to 
-@command{gfortran}.
+Determines the @var{COUNT} of a processor clock since an unspecified
+time in the past modulo @var{COUNT_MAX}, @var{COUNT_RATE} determines
+the number of clock ticks per second.  If the platform supports a high
+resolution monotonic clock, that clock is used and can provide up to
+nanosecond resolution.  If a high resolution monotonic clock is not
+available, the implementation falls back to a potentially lower
+resolution realtime clock.
+
+@var{COUNT_RATE} and @var{COUNT_MAX} vary depending on the kind of the
+arguments.  For @var{kind=8} arguments, @var{COUNT} represents
+nanoseconds, and for @var{kind=4} arguments, @var{COUNT} represents
+milliseconds. Other than the kind dependency, @var{COUNT_RATE} and
+@var{COUNT_MAX} are constant, however the particular values are
+specific to @command{gfortran}.
 
 If there is no clock, @var{COUNT} is set to @code{-HUGE(COUNT)}, and
-@var{COUNT_RATE} and @var{COUNT_MAX} are set to zero 
+@var{COUNT_RATE} and @var{COUNT_MAX} are set to zero.
+
+When running on a platform using the GNU C library (glibc), or a
+derivative thereof, the high resolution monotonic clock is available
+only when linking with the @var{rt} library.  This can be done
+explicitly by adding the @code{-lrt} flag when linking the
+application, but is also done implicitly when using OpenMP.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -11832,11 +11847,11 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{COUNT}      @tab (Optional) shall be a scalar of type default 
+@item @var{COUNT}      @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with @code{INTENT(OUT)}.
-@item @var{COUNT_RATE} @tab (Optional) shall be a scalar of type default 
+@item @var{COUNT_RATE} @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with @code{INTENT(OUT)}.
-@item @var{COUNT_MAX}  @tab (Optional) shall be a scalar of type default 
+@item @var{COUNT_MAX}  @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with @code{INTENT(OUT)}.
 @end multitable
 
