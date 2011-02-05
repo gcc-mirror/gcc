@@ -14,10 +14,13 @@
    combine uninitialized uses into a single web.  */
 
 /* { dg-do compile } */
-/* { dg-options "-g -O1 -funroll-loops -fcompare-debug" } */
+/* { dg-options "-g -O1 -funroll-loops -fcompare-debug -fdump-rtl-web" } */
 
 void foo()
 {
   unsigned k;
   while (--k > 0);
 }
+
+/* { dg-final { scan-rtl-dump-not "Web oldreg" "web" } } */
+/* { dg-final { cleanup-rtl-dump "web" } } */
