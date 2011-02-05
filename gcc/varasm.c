@@ -6060,7 +6060,12 @@ default_section_type_flags (tree decl, const char *name, int reloc)
 	flags = SECTION_WRITE;
     }
   else
-    flags = SECTION_WRITE;
+    {
+      flags = SECTION_WRITE;
+      if (strcmp (name, ".data.rel.ro") == 0
+	  || strcmp (name, ".data.rel.ro.local") == 0)
+	flags |= SECTION_RELRO;
+    }
 
   if (decl && DECL_ONE_ONLY (decl))
     flags |= SECTION_LINKONCE;
