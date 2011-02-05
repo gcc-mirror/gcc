@@ -2608,7 +2608,7 @@ testing/script/check: $(CHECK_DEPS)
 
 sysinfo.go: s-sysinfo; @true
 s-sysinfo: $(srcdir)/mksysinfo.sh config.h
-	CC="$(CC)" $(SHELL) $(srcdir)/mksysinfo.sh
+	CC="$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS)" $(SHELL) $(srcdir)/mksysinfo.sh
 	$(SHELL) $(srcdir)/../move-if-change tmp-sysinfo.go sysinfo.go
 	$(STAMP) $@
 
