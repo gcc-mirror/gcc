@@ -111,14 +111,12 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   if (zero_flag)
     {
       e = 0;
-      if (compile_options.sign_zero == 1)
-	sign = calculate_sign (dtp, sign_bit);
-      else
+      if (compile_options.sign_zero != 1)
 	sign = calculate_sign (dtp, 0);
 
       /* Handle special cases.  */
       if (w == 0)
-	w = d + 2;
+	w = d + 1;
 
       /* For this one we choose to not output a decimal point.
 	 F95 10.5.1.2.1  */
@@ -138,7 +136,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  *out = '0';
 	  return SUCCESS;
 	}
-	      
     }
 
   /* Normalize the fractional component.  */
@@ -417,7 +414,10 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 
   /* Pick a field size if none was specified.  */
   if (w <= 0)
-    w = nbefore + nzero + nafter + (sign != S_NONE ? 2 : 1);
+    {
+      w = nbefore + nzero + nafter + (sign != S_NONE ? 2 : 1);
+      w = w == 1 ? 2 : w;
+    }
   
   /* Work out how much padding is needed.  */
   nblanks = w - (nbefore + nzero + nafter + edigits + 1);
@@ -436,7 +436,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
     return FAILURE;
 
   /* Check the value fits in the specified field width.  */
-  if (nblanks < 0 || edigits == -1)
+  if (nblanks < 0 || edigits == -1 || w == 1 || (w == 2 && sign != S_NONE))
     {
       if (unlikely (is_char4_unit (dtp)))
 	{

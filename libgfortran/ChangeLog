@@ -1,3 +1,10 @@
+2011-02-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47567
+	* io/write_float.def (output_float): Eliminate some redundant code.
+	Adjust width for case of F0.X for values of zero and all other values.
+	Expand cases where '*' is set to give cleaner results.
+
 2011-02-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47571
