@@ -156,9 +156,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
 
-  inline void
-  __throw_regex_error(regex_constants::error_type __ecode)
-  { throw regex_error(__ecode); }
+  void
+  __throw_regex_error(regex_constants::error_type __ecode);
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
