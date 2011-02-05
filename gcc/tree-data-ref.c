@@ -2681,14 +2681,6 @@ analyze_miv_subscript (tree chrec_a,
 		       tree *last_conflicts,
 		       struct loop *loop_nest)
 {
-  /* FIXME:  This is a MIV subscript, not yet handled.
-     Example: (A[{1, +, 1}_1] vs. A[{1, +, 1}_2]) that comes from
-     (A[i] vs. A[j]).
-
-     In the SIV test we had to solve a Diophantine equation with two
-     variables.  In the MIV case we have to solve a Diophantine
-     equation with 2*n variables (if the subscript uses n IVs).
-  */
   tree type, difference;
 
   dependence_stats.num_miv++;
@@ -2960,29 +2952,19 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 	  && TREE_CODE (access_fn_b) == POLYNOMIAL_CHREC)
 	{
 	  int dist, index;
-	  int index_a = index_in_loop_nest (CHREC_VARIABLE (access_fn_a),
-					    DDR_LOOP_NEST (ddr));
-	  int index_b = index_in_loop_nest (CHREC_VARIABLE (access_fn_b),
-					    DDR_LOOP_NEST (ddr));
+	  int var_a = CHREC_VARIABLE (access_fn_a);
+	  int var_b = CHREC_VARIABLE (access_fn_b);
 
-	  /* The dependence is carried by the outermost loop.  Example:
-	     | loop_1
-	     |   A[{4, +, 1}_1]
-	     |   loop_2
-	     |     A[{5, +, 1}_2]
-	     |   endloop_2
-	     | endloop_1
-	     In this case, the dependence is carried by loop_1.  */
-	  index = index_a < index_b ? index_a : index_b;
-	  *index_carry = MIN (index, *index_carry);
-
-	  if (chrec_contains_undetermined (SUB_DISTANCE (subscript)))
+	  if (var_a != var_b
+	      || chrec_contains_undetermined (SUB_DISTANCE (subscript)))
 	    {
 	      non_affine_dependence_relation (ddr);
 	      return false;
 	    }
 
 	  dist = int_cst_value (SUB_DISTANCE (subscript));
+	  index = index_in_loop_nest (var_a, DDR_LOOP_NEST (ddr));
+	  *index_carry = MIN (index, *index_carry);
 
 	  /* This is the subscript coupling test.  If we have already
 	     recorded a distance for this loop (a distance coming from

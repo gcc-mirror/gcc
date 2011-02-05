@@ -1,3 +1,8 @@
+2011-02-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46194
+	* gcc.dg/autopar/pr46194.c: New.
+
 2011-02-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/43695

@@ -1,3 +1,10 @@
+2011-02-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46194
+	* tree-data-ref.c (analyze_miv_subscript): Remove comment.
+	(build_classic_dist_vector_1): Do not represent classic distance
+	vectors when the access functions are variating in different loops.
+
 2011-02-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/iris6.opt: New.
