@@ -260,7 +260,11 @@ entry_register (struct web_entry *entry, df_ref ref, unsigned int *used)
      and there won't be any use for the other values when we get to
      this point.  */
   if (used[REGNO (reg)] != 1)
-    newreg = reg, used[REGNO (reg)] = 1;
+    {
+      newreg = reg;
+      if (!used[REGNO (reg)])
+	used[REGNO (reg)] = 1;
+    }
   else
     {
       newreg = gen_reg_rtx (GET_MODE (reg));
