@@ -162,11 +162,11 @@ date_and_time (char *__date, char *__time, char *__zone,
   struct tm local_time;
   struct tm UTC_time;
 
-  long nanosecs;
+  long usecs;
 
-  if (!gf_gettime(GF_CLOCK_REALTIME, &lt, &nanosecs))
+  if (!gf_gettime (&lt, &usecs))
     {
-      values[7] = nanosecs / 1000000;
+      values[7] = usecs / 1000;
 
       localtime_r (&lt, &local_time);
       gmtime_r (&lt, &UTC_time);
