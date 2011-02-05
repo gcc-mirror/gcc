@@ -31,6 +31,7 @@
 #include <system_error>
 #include <future>
 #include <functional>
+#include <regex>
 
 #ifdef _GLIBCXX_USE_NLS
 # include <libintl.h>
@@ -111,6 +112,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   __throw_bad_function_call()
   { throw bad_function_call(); }
+
+  void
+  __throw_regex_error(regex_constants::error_type __ecode)
+  { throw regex_error(__ecode); }
 #else
   void
   __throw_bad_exception(void)
@@ -180,6 +185,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __throw_bad_function_call()
   { std::abort(); }
 
+  void
+  __throw_regex_error(regex_constants::error_type __ecode)
+  { std::abort(); }
 #endif //__EXCEPTIONS
 
 _GLIBCXX_END_NAMESPACE_VERSION

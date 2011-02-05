@@ -1,3 +1,9 @@
+2011-02-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/regex_error.h (__throw_regex_error): Not inline.
+	* src/functexcept.cc: Add definition.
+	* config/abi/pre/gnu.ver: Export.
+
 2011-02-04  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* crossconfig.m4 (GLIBCXX_CROSSCONFIG): Add *-rtems*.
