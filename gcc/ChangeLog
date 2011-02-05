@@ -1,3 +1,10 @@
+2011-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/47610
+	* varasm.c (default_section_type_flags): If decl is NULL,
+	and name is .data.rel.ro or .data.rel.ro.local, set SECTION_RELRO
+	bit.
+
 2011-02-05  Jie Zhang  <jie@codesourcery.com>
 
 	PR debug/42631
