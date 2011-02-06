@@ -1,3 +1,13 @@
+2011-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47592
+	* trans-stmt.c (gfc_trans_allocate): For deferred character
+	length allocations with SOURCE, store to the values and string
+	length to avoid calculating twice.  Replace gfc_start_block
+	with gfc_init_block to avoid unnecessary contexts and to keep
+	declarations of temporaries where they should be. Tidy up the
+	code a bit.
+
 2011-02-05  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/42434
