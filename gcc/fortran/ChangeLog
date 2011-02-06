@@ -1,5 +1,10 @@
 2011-02-06  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* gfortran.texi (Compiler Characteristics): Add reference to
+	thread-safety section.
+
+2011-02-06  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* gfortran.texi (Thread-safety): New section.
 	* intrinsic.texi (EXECUTE_COMMAND_LINE): Mention thread-safety.
 	(GETENV): Likewise.

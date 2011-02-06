@@ -1083,6 +1083,7 @@ might in some way or another become visible to the programmer.
 @menu
 * KIND Type Parameters::
 * Internal representation of LOGICAL variables::
+* Thread-safety of the runtime library::
 @end menu
 
 
