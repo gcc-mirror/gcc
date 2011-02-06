@@ -1,3 +1,10 @@
+2011-02-06  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR lto/47225
+	* Makefile.def: Add dependency for install-gcc
+	on install-lto-plugin.
+	* Makfile.in: Regenerated
+
 2011-02-01  Sebastien Bourdeauducq  <sebastien@milkymist.org>
 
 	* MAINTAINERS (CPU Port Maintainers): Add myself.
