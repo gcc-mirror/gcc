@@ -1,5 +1,10 @@
 2011-02-06  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/sparc/freebsd.h (ASM_SPEC): Define.
+	* config/sparc/vxworks.h (ASM_SPEC): Define.
+
+2011-02-06  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/sparc/sol2-bi.h (CC1_SPEC): Remove %{sun4:} %{target:}.
 
 2011-02-06  Steven Bosscher  <steven@gcc.gnu.org>
