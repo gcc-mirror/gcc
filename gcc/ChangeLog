@@ -1,3 +1,11 @@
+2011-02-06  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* doc/invoke.texi: Remove reference to compiler internals from
+	user documentation.
+
+	* reg-notes.def: Remove REG_VALUE_PROFILE.
+	* combine.c (distribute_notes): Do not handle REG_VALUE_PROFILE.
+
 2011-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/47610
