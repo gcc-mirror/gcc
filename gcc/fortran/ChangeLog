@@ -1,3 +1,11 @@
+2011-02-06  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.texi (Thread-safety): New section.
+	* intrinsic.texi (EXECUTE_COMMAND_LINE): Mention thread-safety.
+	(GETENV): Likewise.
+	(GET_ENVIRONMENT_VARIABLE): Likewise.
+	(SYSTEM): Likewise.
+
 2011-02-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/47592
