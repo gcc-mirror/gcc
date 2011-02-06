@@ -1,3 +1,8 @@
+2011-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47592
+	* gfortran.dg/allocate_with_source_1 : New test.
+
 2011-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/47610
