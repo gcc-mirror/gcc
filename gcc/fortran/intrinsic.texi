@@ -4162,6 +4162,9 @@ the command, as returned by @code{system}.  @code{CMDSTAT} is set to zero
 if the command line was executed (whatever its exit status was).
 @code{CMDMSG} is assigned an error message if an error has occurred.
 
+Note that the @code{system()} call need not be thread-safe. It is the
+responsibility of the user to ensure that @code{system()} is not
+called concurrently.
 
 @item @emph{Standard}:
 Fortran 2008 and later
@@ -5452,10 +5455,14 @@ END PROGRAM
 @item @emph{Description}:
 Get the @var{VALUE} of the environmental variable @var{NAME}.
 
-This intrinsic routine is provided for backwards compatibility with 
-GNU Fortran 77.  In new code, programmers should consider the use of 
+This intrinsic routine is provided for backwards compatibility with
+GNU Fortran 77.  In new code, programmers should consider the use of
 the @ref{GET_ENVIRONMENT_VARIABLE} intrinsic defined by the Fortran
 2003 standard.
+
+Note that @code{GETENV} need not be thread-safe. It is the
+responsibility of the user to ensure that the environment is not being
+updated concurrently with a call to the @code{GETENV} intrinsic.
 
 @item @emph{Standard}:
 GNU extension
@@ -5500,6 +5507,11 @@ END PROGRAM
 @table @asis
 @item @emph{Description}:
 Get the @var{VALUE} of the environmental variable @var{NAME}.
+
+Note that @code{GET_ENVIRONMENT_VARIABLE} need not be thread-safe. It
+is the responsibility of the user to ensure that the environment is
+not being updated concurrently with a call to the
+@code{GET_ENVIRONMENT_VARIABLE} intrinsic.
 
 @item @emph{Standard}:
 Fortran 2003 and later
@@ -11778,6 +11790,10 @@ and environment-dependent.
 
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
+
+Note that the @code{system()} call need not be thread-safe. It is the
+responsibility of the user to ensure that @code{system()} is not
+called concurrently.
 
 @item @emph{Standard}:
 GNU extension
