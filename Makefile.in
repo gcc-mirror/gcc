@@ -60492,6 +60492,7 @@ html-stage4-gcc: maybe-all-build-libiberty
 html-stageprofile-gcc: maybe-all-build-libiberty
 html-stagefeedback-gcc: maybe-all-build-libiberty
 install-gcc: maybe-install-fixincludes
+install-gcc: maybe-install-lto-plugin
 install-strip-gcc: maybe-install-strip-fixincludes
 configure-libcpp: configure-libiberty
 

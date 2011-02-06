@@ -352,6 +352,7 @@ dependencies = { module=dvi-gcc; on=all-build-libiberty; };
 dependencies = { module=pdf-gcc; on=all-build-libiberty; };
 dependencies = { module=html-gcc; on=all-build-libiberty; };
 dependencies = { module=install-gcc ; on=install-fixincludes; };
+dependencies = { module=install-gcc ; on=install-lto-plugin; };
 dependencies = { module=install-strip-gcc ; on=install-strip-fixincludes; };
 
 dependencies = { module=configure-libcpp; on=configure-libiberty; hard=true; };
