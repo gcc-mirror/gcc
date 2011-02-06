@@ -229,14 +229,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef	CC1_SPEC
 #if DEFAULT_ARCH32_P
 #define CC1_SPEC "\
-%{sun4:} %{target:} \
 %{m64:%{m32:%emay not use both -m32 and -m64}} \
 %{m64:-mptr64 -mstack-bias -mno-v8plus \
   %{!mcpu*:-%{!mv8plus:mcpu=v9}}} \
 "
 #else
 #define CC1_SPEC "\
-%{sun4:} %{target:} \
 %{m32:%{m64:%emay not use both -m32 and -m64}} \
 %{m32:-mptr32 -mno-stack-bias \
   %{!mcpu*:%{!mv8plus:-mcpu=v9}}} \

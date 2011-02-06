@@ -1,3 +1,7 @@
+2011-02-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sparc/sol2-bi.h (CC1_SPEC): Remove %{sun4:} %{target:}.
+
 2011-02-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/invoke.texi: Remove reference to compiler internals from
