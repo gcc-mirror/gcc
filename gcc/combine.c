@@ -13148,10 +13148,6 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	  place = i3;
 	  break;
 
-	case REG_VALUE_PROFILE:
-	  /* Just get rid of this note, as it is unused later anyway.  */
-	  break;
-
 	case REG_NON_LOCAL_GOTO:
 	  if (JUMP_P (i3))
 	    place = i3;
