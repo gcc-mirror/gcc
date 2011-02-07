@@ -1,7 +1,7 @@
 // RB tree implementation -*- C++ -*-
 
 // Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-// 2009, 2010
+// 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -762,6 +762,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #else
       void
+      erase(iterator __position)
+      { _M_erase_aux(__position); }
+
+      void
       erase(const_iterator __position)
       { _M_erase_aux(__position); }
 #endif
@@ -778,6 +782,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __last._M_const_cast();
       }
 #else
+      void
+      erase(iterator __first, iterator __last)
+      { _M_erase_aux(__first, __last); }
+
       void
       erase(const_iterator __first, const_iterator __last)
       { _M_erase_aux(__first, __last); }
