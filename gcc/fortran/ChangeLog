@@ -1,3 +1,9 @@
+2011-02-07  Janne Blomqvist  <jb@gcc.gnu.org>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gfortran.texi (Thread-safety): texinfo styling fixes.
+	* intrinsic.texi: Likewise.
+
 2011-02-06  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* gfortran.texi (Compiler Characteristics): Add reference to
