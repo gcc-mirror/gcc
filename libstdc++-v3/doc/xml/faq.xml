@@ -745,7 +745,7 @@
     </para> 
     <para> 
     Before reporting a bug, please examine the
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/bugs.html">bugs database</link> with the
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/bugs/">bugs database</link> with the
     category set to <quote>g++</quote>. 
     </para> 
   </answer>
@@ -848,17 +848,9 @@
   </question>
   <answer xml:id="a-v2_headers">
       <para>
-	If you have found an extremely broken header file which is
-	causing problems for you, look carefully before submitting a
-	"high" priority bug report (which you probably
-	shouldn't do anyhow; see the last paragraph of the page
-	describing <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/bugs.html">the GCC
-	bug database</link>).
-      </para>
-      <para>
-	If the headers are in <filename>${prefix}/include/g++-3</filename>, or
-	if the installed library's name looks like
-	<filename>libstdc++-2.10.a</filename> or
+	If you are using headers in
+	<filename>${prefix}/include/g++-3</filename>, or if the installed
+	library's name looks like <filename>libstdc++-2.10.a</filename> or
 	<filename>libstdc++-libc6-2.10.so</filename>, then you are using the
 	old libstdc++-v2 library, which is nonstandard and
 	unmaintained.  Do not report problems with -v2 to the -v3

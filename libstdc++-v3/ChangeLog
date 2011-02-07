@@ -1,3 +1,8 @@
+2011-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Adjust link to bug database.
+	Remove old item on broken header files.
+
 2011-02-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/regex_error.h (__throw_regex_error): Not inline.
