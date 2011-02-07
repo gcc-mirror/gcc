@@ -5641,6 +5641,19 @@ spu_init_libfuncs (void)
   set_conv_libfunc (ufloat_optab, DFmode, SImode, "__float_unssidf");
   set_conv_libfunc (ufloat_optab, DFmode, DImode, "__float_unsdidf");
 
+  set_optab_libfunc (addv_optab, SImode, "__addvsi3");
+  set_optab_libfunc (subv_optab, SImode, "__subvsi3");
+  set_optab_libfunc (smulv_optab, SImode, "__mulvsi3");
+  set_optab_libfunc (sdivv_optab, SImode, "__divvsi3");
+  set_optab_libfunc (negv_optab, SImode, "__negvsi2");
+  set_optab_libfunc (absv_optab, SImode, "__absvsi2");
+  set_optab_libfunc (addv_optab, DImode, "__addvdi3");
+  set_optab_libfunc (subv_optab, DImode, "__subvdi3");
+  set_optab_libfunc (smulv_optab, DImode, "__mulvdi3");
+  set_optab_libfunc (sdivv_optab, DImode, "__divvdi3");
+  set_optab_libfunc (negv_optab, DImode, "__negvdi2");
+  set_optab_libfunc (absv_optab, DImode, "__absvdi2");
+
   set_optab_libfunc (smul_optab, TImode, "__multi3");
   set_optab_libfunc (sdiv_optab, TImode, "__divti3");
   set_optab_libfunc (smod_optab, TImode, "__modti3");

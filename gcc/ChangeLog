@@ -1,3 +1,8 @@
+2011-02-07  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (spu_init_libfuncs): Install SImode and
+	DImode trapping arithmetic libfuncs.
+
 2011-02-07  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47621
