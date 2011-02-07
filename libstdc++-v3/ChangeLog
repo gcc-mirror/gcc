@@ -1,3 +1,8 @@
+2011-02-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/47560 try two
+	* config/os/hpux/os_defines.h: Guard for C++.
+
 2011-02-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/faq.xml: Adjust link to bug database.
