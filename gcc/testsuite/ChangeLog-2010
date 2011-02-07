@@ -3,14 +3,13 @@
 	* gcc.c-torture/compile/pr46534.c: Skip if pdp11.
 	* gcc.c-torture/compile/920520-1.c: Ditto.
 	* gcc.c-torture/compile/pr35318.c: Ditto.
-	
+
 2010-12-31  Paul Koning  <ni1d@arrl.net>
 
 	* gcc.c-torture/execute/ieee/ieee.exp: Skip if pdp11.
 	* gcc.c-torture/compile/20000804-1.c: Skip if pdp11 -O0.
 	* gcc.c-torture/compile/20020312-1.c: Ditto.
-	* gcc.c-torture/compile/20040101-1.c: Skip if pdp11 -O1, -O2, or
-	-Os.
+	* gcc.c-torture/compile/20040101-1.c: Skip if pdp11 -O1, -O2, or -Os.
 
 2010-12-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
@@ -44,8 +43,8 @@
 	* obj-c++.dg/class-extension-3.mm: Updated.
 	* obj-c++.dg/method-8.mm: Updated.
 	* obj-c++.dg/method-conflict-1.mm: New.
-	* obj-c++.dg/method-conflict-2.mm: New.	
-	
+	* obj-c++.dg/method-conflict-2.mm: New.
+
 2010-12-30  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/46889
@@ -53,8 +52,8 @@
 
 2010-12-30  Nathan Froyd  <froydnj@codesourcery.com>
 
-        PR target/44606
-        * gcc.dg/pr44606.c: New test.
+	PR target/44606
+	* gcc.dg/pr44606.c: New test.
 
 2010-12-30  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -77,8 +76,8 @@
 	* objc.dg/attributes/class-attribute-3.m: New.
 	* objc.dg/attributes/proto-attribute-4.m: New.
 	* obj-c++.dg/attributes/class-attribute-3.mm: New.
-	* obj-c++.dg/attributes/proto-attribute-4.mm: New.	
-	
+	* obj-c++.dg/attributes/proto-attribute-4.mm: New.
+
 2010-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47060
@@ -128,7 +127,7 @@
 	* objc.dg/class-protocol-1.m: Updated.
 	* obj-c++.dg/attributes/proto-attribute-2.mm: Updated.
 	* obj-c++.dg/class-protocol-1.mm: Updated.
-	
+
 2010-12-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45827
@@ -169,7 +168,7 @@
 	* obj-c++.dg/gnu-api-2-objc.mm: Same.
 	* obj-c++.dg/gnu-api-2-object.mm: Same.
 	* obj-c++.dg/gnu-api-2-protocol.mm: Same.
-	
+
 2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/pr44509.m: New.
@@ -197,7 +196,7 @@
 	name as an existing class, and to test that the class pair is
 	created correctly.
 	* obj-c++.dg/gnu-api-2-objc.mm: Same change.
-	
+
 2010-12-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/special/special.exp: Added load-category-2 and

@@ -15,7 +15,7 @@
 	* src/powerpc/darwin.S: Provide Darwin64 implementation,
 	update comments.
 	* src/powerpc/ffi_darwin.c: Likewise.
-	
+
 2010-12-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (libffi_cv_as_ascii_pseudo_op): Use double
@@ -224,7 +224,7 @@
 2010-01-15  Oliver Kiddle  <okiddle@yahoo.co.uk>
 
 	* src/x86/ffitarget.h (ffi_abi): Check for __i386 and __amd64 for
-	Sun Studio compiler compatibility. 
+	Sun Studio compiler compatibility.
 
 2010-01-12  Conrad Irwin <conrad.irwin@gmail.com>
 
