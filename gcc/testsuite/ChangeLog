@@ -1,3 +1,17 @@
+2011-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_avx_hw_available): New procedure.
+	(check_effective_target_avx_runtime): New procedure.
+
+	* gcc.dg/compat/vector-1b_main.c: Use avx_runtime effective target.
+	Remove cpuid.h include and __get_cpuid test.
+	* gcc.dg/compat/vector-2b_main.c: Ditto.
+
+	* gcc.target/i386/avx-check.h (main): Also check bit_OSXSAVE.
+
 2011-02-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Backport from mainline:
