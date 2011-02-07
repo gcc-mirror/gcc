@@ -11,11 +11,13 @@ AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
 AM_CFLAGS = -Wall -Werror
 AM_LIBTOOLFLAGS = --tag=disable-static
 
+# This can go away when libiberty becomes a normal convenience library
+Wl=-Wl,
 libexecsub_LTLIBRARIES = liblto_plugin.la
 
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wl)../libiberty/pic/libiberty.a,)
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
 liblto_plugin_la_LDFLAGS = $(lt_host_flags) -bindir $(libexecsubdir) \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)

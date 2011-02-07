@@ -1,3 +1,10 @@
+2011-02-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR lto/47225
+	* Makefile.am (Wl): New helper for encoding -Wl,.
+	(liblto_plugin_la_LIBADD): Use -Wl for libiberty library.
+	* Makefile.in: Regenerated.
+
 2011-01-25  Ian Lance Taylor  <iant@google.com>
 
 	* lto-plugin.c (gold_version): New static variable.
