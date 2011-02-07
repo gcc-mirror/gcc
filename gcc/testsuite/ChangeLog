@@ -1,3 +1,8 @@
+2011-02-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47621
+	* gcc.dg/torture/pr47621.c: New testcase.
+
 2011-02-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/transpose_optimization_2.f90: Cleanup original dump.

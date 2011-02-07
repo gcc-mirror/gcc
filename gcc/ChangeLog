@@ -1,3 +1,11 @@
+2011-02-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47621
+	* tree-ssa.c (non_rewritable_lvalue_p): New function, split out from
+	two duplicates ...
+	(execute_update_addresses_taken): ... here.  Make it more
+	conservative in what we accept.
+
 2011-02-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sparc/freebsd.h (ASM_SPEC): Define.
