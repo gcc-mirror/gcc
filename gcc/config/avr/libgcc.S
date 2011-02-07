@@ -645,6 +645,7 @@ __epilogue_restores__:
 _exit:
 	.weak	exit
 exit:
+	.endfunc
 
 	/* Code from .fini8 ... .fini1 sections inserted by ld script.  */
 
@@ -652,7 +653,6 @@ exit:
 	cli
 __stop_program:
 	rjmp	__stop_program
-	.endfunc
 #endif /* defined (L_exit) */
 
 #ifdef L_cleanup
