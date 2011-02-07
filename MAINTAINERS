@@ -210,6 +210,7 @@ contrib/regression	Geoff Keating		geoffk@geoffk.org
 gcov			Jan Hubicka		jh@suse.cz
 gcov			Nathan Sidwell		nathan@codesourcery.com
 option handling		Neil Booth		neil@daikokuya.co.uk
+option handling		Joseph Myers		joseph@codesourcery.com
 middle-end		Jeff Law		law@redhat.com
 middle-end		Roger Sayle		roger@eyesopen.com
 middle-end		Ian Lance Taylor	ian@airs.com
