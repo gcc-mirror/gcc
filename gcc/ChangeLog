@@ -1,3 +1,14 @@
+2011-02-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.gcc (hppa[12]*-*-hpux11*): Don't set extra_parts.
+	* config/pa/stublib.c (pthread_default_stacksize_np, pthread_mutex_lock,
+	pthread_mutex_unlock): Remove.
+	* config/pa/t-pa-hpux11: Remove rules to build pthread stubs.
+	* config/pa/t-pa64: Likewise.
+	* config/pa/pa64-hpux.h (LIB_SPEC): In static links, link against
+	shared libc if not linking against libpthread.
+	* config/pa/pa-hpux11.h (LIB_SPEC): Likewise.
+
 2011-02-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/47558
