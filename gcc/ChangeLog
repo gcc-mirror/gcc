@@ -1,6 +1,6 @@
 2011-02-07  Mike Stump  <mikestump@comcast.net>
 
-	PR target/47558
+	PR target/42333
 	Add __ieee_divdc3 entry point.
 	* config/i386/darwin.h (DECLARE_LIBRARY_RENAMES): Retain ___divdc3
 	entry point.
