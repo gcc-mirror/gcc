@@ -1163,7 +1163,7 @@ depending on the kind.
 @section Thread-safety of the runtime library
 @cindex thread-safety, threads
 
-GNU Fortran can be used in programs with multiple threads, e.g. by
+GNU Fortran can be used in programs with multiple threads, e.g.@: by
 using OpenMP, by calling OS thread handling functions via the
 @code{ISO_C_BINDING} facility, or by GNU Fortran compiled library code
 being called from a multi-threaded program.
