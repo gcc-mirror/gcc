@@ -1,3 +1,11 @@
+2011-02-07  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/47558
+	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Put -lSystem first
+	on 10.6 and later to ensure that we always use the unwinder from
+	the system.  Only add -no_compact_unwind when tarteting darwin
+	10.6 or later.
+
 2011-02-07  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/46997
