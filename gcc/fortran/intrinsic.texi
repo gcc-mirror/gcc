@@ -2686,7 +2686,7 @@ end program test_cmplx
 
 @table @asis
 @item @emph{Description}:
-@code{COMMAND_ARGUMENT_COUNT()} returns the number of arguments passed on the
+@code{COMMAND_ARGUMENT_COUNT} returns the number of arguments passed on the
 command line when the containing program was invoked.
 
 @item @emph{Standard}:
@@ -2730,7 +2730,7 @@ end program test_command_argument_count
 
 @table @asis
 @item @emph{Description}:
-@code{COMPILER_OPTIONS()} returns a string with the options used for
+@code{COMPILER_OPTIONS} returns a string with the options used for
 compiling.
 
 @item @emph{Standard}:
@@ -2773,7 +2773,7 @@ the @code{COMPILER_OPTIONS} intrinsic.
 
 @table @asis
 @item @emph{Description}:
-@code{COMPILER_VERSION()} returns a string with the name and the
+@code{COMPILER_VERSION} returns a string with the name and the
 version of the compiler.
 
 @item @emph{Standard}:
@@ -3209,7 +3209,7 @@ end program test_cshift
 @table @asis
 @item @emph{Description}:
 @code{CTIME} converts a system time value, such as returned by
-@code{TIME8()}, to a string of the form @samp{Sat Aug 19 18:13:14 1995}.
+@code{TIME8}, to a string of the form @samp{Sat Aug 19 18:13:14 1995}.
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
@@ -4163,9 +4163,9 @@ the command, as returned by @code{system}.  @code{CMDSTAT} is set to zero
 if the command line was executed (whatever its exit status was).
 @code{CMDMSG} is assigned an error message if an error has occurred.
 
-Note that the @code{system} call need not be thread-safe. It is the
-responsibility of the user to ensure that @code{system} is not called
-concurrently.
+Note that the @code{system} function need not be thread-safe. It is
+the responsibility of the user to ensure that @code{system} is not
+called concurrently.
 
 @item @emph{Standard}:
 Fortran 2008 and later
@@ -4913,7 +4913,7 @@ end program test_fraction
 
 @table @asis
 @item @emph{Description}:
-Frees memory previously allocated by @code{MALLOC()}. The @code{FREE}
+Frees memory previously allocated by @code{MALLOC}. The @code{FREE}
 intrinsic is an extension intended to be used with Cray pointers, and is
 provided in GNU Fortran to allow user to compile legacy code. For
 new code using Fortran 95 pointers, the memory de-allocation intrinsic is
@@ -5718,7 +5718,7 @@ See @code{GETPID} for an example.
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{TIME} (as provided by the @code{TIME8()}
+Given a system time value @var{TIME} (as provided by the @code{TIME8}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the UTC time zone (Universal Coordinated Time, also known in some
 countries as GMT, Greenwich Mean Time), using @code{gmtime(3)}.
@@ -6109,7 +6109,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-@code{IARGC()} returns the number of arguments passed on the
+@code{IARGC} returns the number of arguments passed on the
 command line when the containing program was invoked.
 
 This intrinsic routine is provided for backwards compatibility with 
@@ -6424,8 +6424,8 @@ the larger argument.)
 
 @table @asis
 @item @emph{Description}:
-Returns the last system error number, as given by the C @code{errno()}
-function.
+Returns the last system error number, as given by the C @code{errno}
+variable.
 
 @item @emph{Standard}:
 GNU extension
@@ -8080,7 +8080,7 @@ To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{TIME} (as provided by the @code{TIME8()}
+Given a system time value @var{TIME} (as provided by the @code{TIME8}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the local time zone using @code{localtime(3)}.
 
@@ -8559,7 +8559,7 @@ on the UNIX function @code{clock(3)}.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{clock(3)}. On a system with a 32-bit
-@code{clock(3)}, @code{MCLOCK8()} will return a 32-bit value, even though
+@code{clock(3)}, @code{MCLOCK8} will return a 32-bit value, even though
 it is converted to a 64-bit @code{INTEGER(8)} value. That means
 overflows of the 32-bit value can still occur. Therefore, the values
 returned by this intrinsic might be or become negative or numerically
@@ -11792,9 +11792,9 @@ and environment-dependent.
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
-Note that the @code{system} call need not be thread-safe. It is the
-responsibility of the user to ensure that @code{system} is not called
-concurrently.
+Note that the @code{system} function need not be thread-safe. It is
+the responsibility of the user to ensure that @code{system} is not
+called concurrently.
 
 @item @emph{Standard}:
 GNU extension
@@ -12057,7 +12057,7 @@ END IF
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 UNIX function @code{time(3)}). This value is suitable for passing to
-@code{CTIME()}, @code{GMTIME()}, and @code{LTIME()}.
+@code{CTIME}, @code{GMTIME}, and @code{LTIME}.
 
 This intrinsic is not fully portable, such as to systems with 32-bit
 @code{INTEGER} types but supporting times wider than 32 bits. Therefore,
@@ -12098,11 +12098,11 @@ The return value is a scalar of type @code{INTEGER(4)}.
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 UNIX function @code{time(3)}). This value is suitable for passing to
-@code{CTIME()}, @code{GMTIME()}, and @code{LTIME()}.
+@code{CTIME}, @code{GMTIME}, and @code{LTIME}.
 
 @emph{Warning:} this intrinsic does not increase the range of the timing
 values over that returned by @code{time(3)}. On a system with a 32-bit
-@code{time(3)}, @code{TIME8()} will return a 32-bit value, even though
+@code{time(3)}, @code{TIME8} will return a 32-bit value, even though
 it is converted to a 64-bit @code{INTEGER(8)} value. That means
 overflows of the 32-bit value can still occur. Therefore, the values
 returned by this intrinsic might be or become negative or numerically
