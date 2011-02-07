@@ -1,3 +1,7 @@
+2011-02-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* update_web_docs_svn: Generate libquadmath-vers.texi.
+
 2011-01-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_version_svn (FILES): Merge with datestamp_FILES.
