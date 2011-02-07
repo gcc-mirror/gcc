@@ -1244,6 +1244,7 @@ vn_reference_lookup_1 (vn_reference_t vr, vn_reference_t *vnresult)
 
 static tree *last_vuse_ptr;
 static vn_lookup_kind vn_walk_kind;
+static vn_lookup_kind default_vn_walk_kind;
 
 /* Callback for walk_non_aliased_vuses.  Adjusts the vn_reference_t VR_
    with the current VUSE and performs the expression lookup.  */
@@ -2261,14 +2262,15 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
 
   last_vuse = gimple_vuse (stmt);
   last_vuse_ptr = &last_vuse;
-  result = vn_reference_lookup (op, gimple_vuse (stmt), VN_WALKREWRITE, NULL);
+  result = vn_reference_lookup (op, gimple_vuse (stmt),
+				default_vn_walk_kind, NULL);
   last_vuse_ptr = NULL;
 
   /* If we have a VCE, try looking up its operand as it might be stored in
      a different type.  */
   if (!result && TREE_CODE (op) == VIEW_CONVERT_EXPR)
     result = vn_reference_lookup (TREE_OPERAND (op, 0), gimple_vuse (stmt),
-    				  VN_WALKREWRITE, NULL);
+    				  default_vn_walk_kind, NULL);
 
   /* We handle type-punning through unions by value-numbering based
      on offset and size of the access.  Be prepared to handle a
@@ -3463,14 +3465,17 @@ set_hashtable_value_ids (void)
 }
 
 /* Do SCCVN.  Returns true if it finished, false if we bailed out
-   due to resource constraints.  */
+   due to resource constraints.  DEFAULT_VN_WALK_KIND_ specifies
+   how we use the alias oracle walking during the VN process.  */
 
 bool
-run_scc_vn (void)
+run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
 {
   size_t i;
   tree param;
   bool changed = true;
+
+  default_vn_walk_kind = default_vn_walk_kind_;
 
   init_scc_vn ();
   current_info = valid_info;
