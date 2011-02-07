@@ -56,33 +56,3 @@ _Jv_RegisterClasses (void *p)
 {
 }
 #endif
-
-#ifdef L_pthread_default_stacksize_np
-int pthread_default_stacksize_np (unsigned long __attribute__((unused)),
-				  unsigned long *);
-int
-pthread_default_stacksize_np (unsigned long new, unsigned long *old)
-{
-  if (old)
-    *old = 0;
-  return 0;
-}
-#endif
-
-#ifdef L_pthread_mutex_lock
-int pthread_mutex_lock (void * __attribute__((unused)));
-int
-pthread_mutex_lock (void *p)
-{
-  return 0;
-}
-#endif
-
-#ifdef L_pthread_mutex_unlock
-int pthread_mutex_unlock (void * __attribute__((unused)));
-int
-pthread_mutex_unlock (void *p)
-{
-  return 0;
-}
-#endif
