@@ -1,3 +1,8 @@
+2011-02-07  Gary Funck  <gary@intrepid.com>
+
+	* c-typeck.c: (convert_for_assignment)
+	  Fix typo. in error message.
+
 2011-01-23  Gary Funck  <gary@intrepid.com>
 
 	* c-typeck.c: (c_build_qualified_type)

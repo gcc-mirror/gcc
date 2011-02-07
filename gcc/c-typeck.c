@@ -5899,7 +5899,7 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 				     "a pointer-to-shared from an integer"),
 				  G_("assignment attempts to make pointer-to-shared "
 				     "from an integer"),
-				  G_("initialization attepts to make a pointer-to-shared "
+				  G_("initialization attempts to make a pointer-to-shared "
 				     "from an integer without a cast"),
 				  G_("return makes a pointer-to-shared from an "
 				     "integer"));
