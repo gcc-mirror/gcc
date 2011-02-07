@@ -1,3 +1,9 @@
+2011-02-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/47636
+	* config/rs6000/rs6000.md (rsqrt<mode>2): Use the correct macro
+	for the condition.
+
 2011-02-07  Mike Stump  <mikestump@comcast.net>
 
 	* config/darwin.opt (mmacosx-version-min): Update default OS
