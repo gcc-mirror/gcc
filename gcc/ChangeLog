@@ -1,3 +1,8 @@
+2011-02-07  Mike Stump  <mikestump@comcast.net>
+
+	* config/darwin.opt (mmacosx-version-min): Update default OS
+	version.
+
 2011-02-07  Denis Chertykov  <chertykov@gmail.com>
 
 	PR target/47534
