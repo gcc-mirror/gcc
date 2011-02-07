@@ -1,3 +1,11 @@
+2011-02-07  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/46997
+	* vect.md (vec_interleave_highv2sf): Change fmix for TARGET_BIG_ENDIAN.
+	(vec_interleave_lowv2sf): Ditto.
+	(vec_extract_evenv2sf): Add TARGET_BIG_ENDIAN check.
+	(vec_extract_oddv2sf): Ditto.
+
 2011-02-07  Mike Stump  <mikestump@comcast.net>
 
 	PR target/42333

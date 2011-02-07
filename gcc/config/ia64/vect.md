@@ -1490,7 +1490,7 @@
 {
   /* Recall that vector elements are numbered in memory order.  */
   if (TARGET_BIG_ENDIAN)
-    return "%,fmix.r %0 = %F1, %F2";
+    return "%,fmix.l %0 = %F1, %F2";
   else
     return "%,fmix.l %0 = %F2, %F1";
 }
@@ -1507,7 +1507,7 @@
 {
   /* Recall that vector elements are numbered in memory order.  */
   if (TARGET_BIG_ENDIAN)
-    return "%,fmix.l %0 = %F1, %F2";
+    return "%,fmix.r %0 = %F1, %F2";
   else
     return "%,fmix.r %0 = %F2, %F1";
 }
@@ -1534,10 +1534,14 @@
   [(match_operand:V2SF 0 "gr_register_operand" "")
    (match_operand:V2SF 1 "gr_register_operand" "")
    (match_operand:V2SF 2 "gr_register_operand" "")]
-  "!TARGET_BIG_ENDIAN"
+  ""
 {
-  emit_insn (gen_vec_interleave_lowv2sf (operands[0], operands[1],
-					 operands[2]));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_vec_interleave_highv2sf (operands[0], operands[1],
+					    operands[2]));
+  else
+    emit_insn (gen_vec_interleave_lowv2sf (operands[0], operands[1],
+					   operands[2]));
   DONE;
 })
 
@@ -1545,10 +1549,14 @@
   [(match_operand:V2SF 0 "gr_register_operand" "")
    (match_operand:V2SF 1 "gr_register_operand" "")
    (match_operand:V2SF 2 "gr_register_operand" "")]
-  "!TARGET_BIG_ENDIAN"
+  ""
 {
-  emit_insn (gen_vec_interleave_highv2sf (operands[0], operands[1],
-					  operands[2]));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_vec_interleave_lowv2sf (operands[0], operands[1],
+					   operands[2]));
+  else
+    emit_insn (gen_vec_interleave_highv2sf (operands[0], operands[1],
+					    operands[2]));
   DONE;
 })
 
