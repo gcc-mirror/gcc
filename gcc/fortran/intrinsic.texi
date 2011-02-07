@@ -4151,10 +4151,11 @@ end program test_etime
 asynchronously.
 
 The @code{COMMAND} argument is passed to the shell and executed, using
-the C library's @code{system()} call.  (The shell is @code{sh} on Unix
-systems, and @code{cmd.exe} on Windows.)  If @code{WAIT} is present and
-has the value false, the execution of the command is asynchronous if the
-system supports it; otherwise, the command is executed synchronously.
+the C library's @code{system} call.  (The shell is @code{sh} on Unix
+systems, and @code{cmd.exe} on Windows.)  If @code{WAIT} is present
+and has the value false, the execution of the command is asynchronous
+if the system supports it; otherwise, the command is executed
+synchronously.
 
 The three last arguments allow the user to get status information.  After
 synchronous execution, @code{EXITSTAT} contains the integer exit code of
@@ -4162,9 +4163,9 @@ the command, as returned by @code{system}.  @code{CMDSTAT} is set to zero
 if the command line was executed (whatever its exit status was).
 @code{CMDMSG} is assigned an error message if an error has occurred.
 
-Note that the @code{system()} call need not be thread-safe. It is the
-responsibility of the user to ensure that @code{system()} is not
-called concurrently.
+Note that the @code{system} call need not be thread-safe. It is the
+responsibility of the user to ensure that @code{system} is not called
+concurrently.
 
 @item @emph{Standard}:
 Fortran 2008 and later
@@ -4204,7 +4205,7 @@ end program test_exec
 
 @item @emph{Note}:
 
-Because this intrinsic is implemented in terms of the @code{system()}
+Because this intrinsic is implemented in terms of the @code{system}
 function call, its behavior with respect to signaling is processor
 dependent. In particular, on POSIX-compliant systems, the SIGINT and
 SIGQUIT signals will be ignored, and the SIGCHLD will be blocked. As
@@ -11791,9 +11792,9 @@ and environment-dependent.
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
-Note that the @code{system()} call need not be thread-safe. It is the
-responsibility of the user to ensure that @code{system()} is not
-called concurrently.
+Note that the @code{system} call need not be thread-safe. It is the
+responsibility of the user to ensure that @code{system} is not called
+concurrently.
 
 @item @emph{Standard}:
 GNU extension

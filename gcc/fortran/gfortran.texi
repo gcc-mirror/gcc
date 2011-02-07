@@ -1168,25 +1168,25 @@ using OpenMP, by calling OS thread handling functions via the
 @code{ISO_C_BINDING} facility, or by GNU Fortran compiled library code
 being called from a multi-threaded program.
 
-The GNU Fortran runtime library, (@var{libgfortran}), supports being
+The GNU Fortran runtime library, (@code{libgfortran}), supports being
 called concurrently from multiple threads with the following
 exceptions. 
 
-During library initialization, the C @code{getenv()} function is used,
-which need not be thread-safe.  Similarly, the @code{getenv()}
+During library initialization, the C @code{getenv} function is used,
+which need not be thread-safe.  Similarly, the @code{getenv}
 function is used to implement the @code{GET_ENVIRONMENT_VARIABLE} and
 @code{GETENV} intrinsics.  It is the responsibility of the user to
 ensure that the environment is not being updated concurrently when any
 of these actions are taking place.
 
 The @code{EXECUTE_COMMAND_LINE} and @code{SYSTEM} intrinsics are
-implemented with the @code{system()} function, which need not be
+implemented with the @code{system} function, which need not be
 thread-safe.  It is the responsibility of the user to ensure that
-@code{system()} is not called concurrently.
+@code{system} is not called concurrently.
 
-Finally, for platforms not supporting thread-safe @code{POSIX}
-functions, further functionality might not be thread-safe.  For
-details, please consult the documentation for your operating system.
+Finally, for platforms not supporting thread-safe POSIX functions,
+further functionality might not be thread-safe.  For details, please
+consult the documentation for your operating system.
 
 @c ---------------------------------------------------------------------
 @c Extensions
