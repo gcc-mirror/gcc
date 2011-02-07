@@ -4853,7 +4853,7 @@ execute_pre (bool do_fre)
   if (!do_fre)
     loop_optimizer_init (LOOPS_NORMAL);
 
-  if (!run_scc_vn ())
+  if (!run_scc_vn (do_fre ? VN_WALKREWRITE : VN_WALK))
     {
       if (!do_fre)
 	loop_optimizer_finalize ();

@@ -1,3 +1,12 @@
+2011-02-07  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47615
+	* tree-ssa-sccvn.h (run_scc_vn): Take a vn-walk mode argument.
+	* tree-ssa-sccvn.c (default_vn_walk_kind): New global.
+	(run_scc_vn): Initialize it.
+	(visit_reference_op_load): Use it.
+	* tree-ssa-pre.c (execute_pre): Use VN_WALK if in PRE.
+
 2011-02-07  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_init_libfuncs): Install SImode and
