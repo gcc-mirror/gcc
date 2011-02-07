@@ -19,8 +19,7 @@
 
 	PR middle-end/47610
 	* varasm.c (default_section_type_flags): If decl is NULL,
-	and name is .data.rel.ro or .data.rel.ro.local, set SECTION_RELRO
-	bit.
+	and name is .data.rel.ro or .data.rel.ro.local, set SECTION_RELRO bit.
 
 2011-02-05  Jie Zhang  <jie@codesourcery.com>
 
@@ -105,8 +104,7 @@
 
 	PR inline-asm/23200
 	* tree-ssa-ter.c (is_replaceable_p): Add TER argument.  Don't
-	do bb, locus and block comparison and disallow loads if it is
-	not set.
+	do bb, locus and block comparison and disallow loads if it is not set.
 	(stmt_is_replaceable_p): New function.
 	(process_replaceable, find_replaceable_in_bb): Adjust is_replaceable_p
 	callers.
@@ -182,8 +180,7 @@
 
 	* config/rx/predicates.md (rx_zs_comparison_operator): Remove
 	lt and ge.
-	* config/rx/rx.md (abssi2_flags): Use CC_ZSmode rather than
-	CC_ZSOmode.
+	* config/rx/rx.md (abssi2_flags): Use CC_ZSmode rather than CC_ZSOmode.
 	* config/rx/rx.c (rx_print_operand): Use "lt" and "ge" suffixes
 	instead of "n" and "pz".
 	(flags_from_code): LT and GE tests need CC_FLAG_O as well as
@@ -423,8 +420,7 @@
 	debug insns.
 	(no_real_insns_p, schedule_block, set_priorities): Drop special
 	treatment of boundary debug insns.
-	* sched-deps.c (sd_init_insn, sd_finish_insn): Don't mark debug
-	insns.
+	* sched-deps.c (sd_init_insn, sd_finish_insn): Don't mark debug insns.
 	* sched-ebb.c (schedule_ebbs): Adjust skipping of debug insns.
 	* sched-int.h (DEBUG_INSN_SCHED_P): Remove.
 	(BOUNDARY_DEBUG_INSN_P): Likewise.
@@ -604,8 +600,7 @@
 	debug insns.
 	(no_real_insns_p, schedule_block, set_priorities): Drop special
 	treatment of boundary debug insns.
-	* sched-deps.c (sd_init_insn, sd_finish_insn): Don't mark debug
-	insns.
+	* sched-deps.c (sd_init_insn, sd_finish_insn): Don't mark debug insns.
 	* sched-ebb.c (schedule_ebbs): Don't skip debug insns.
 	* sched-int.h (DEBUG_INSN_SCHED_P): Remove.
 	(BOUNDARY_DEBUG_INSN_P): Likewise.
@@ -656,7 +651,7 @@
 	* ginclude/stddef.h: Check for _X86_64_ANSI_H_ and _I386_ANSI_H_ as
 	used by NetBSD.
 
-2011-01-28  Ahmad Sharif <asharif@google.com>
+2011-01-28  Ahmad Sharif  <asharif@google.com>
 
 	* value-prof.c (check_counter): Corrected error message.
 
@@ -665,8 +660,7 @@
 	* config/arm/arm.c (arm_legitimize_reload_address): New.
 	* config/arm/arm.h (ARM_LEGITIMIZE_RELOAD_ADDRESS): Use
 	arm_legitimize_reload_address.
-	* config/arm/arm-protos.h (arm_legitimize_reload_address):
-	Declare.
+	* config/arm/arm-protos.h (arm_legitimize_reload_address): Declare.
 
 2011-01-28  Ian Lance Taylor  <iant@google.com>
 
@@ -824,13 +818,14 @@
 	that don't allow that.
 	* lto-cgraph.c (lto_output_node): Stream local.can_change_signature.
 	(lto_input_node): Likewise.
-	* ipa-inline.c (compute_inline_parameters): Compute local.can_change_signature.
+	* ipa-inline.c (compute_inline_parameters): Compute
+	local.can_change_signature.
 	* ipa-split.c (visit_bb): Never split away APPLY_ARGS.
-	* tree-sra.c (ipa_sra_preliminary_function_checks): Give up on functions
-	that can not change signature.
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Give up on
+	functions that can not change signature.
 	* i386.c (ix86_function_regparm, ix86_function_sseregparm,
-	init_cumulative_args): Do not use local calling conventions for functions
-	that can not change signature.
+	init_cumulative_args): Do not use local calling conventions
+	for functions that can not change signature.
 
 2011-01-22  Jan Hubicka  <jh@suse.cz>
 
@@ -911,8 +906,7 @@
 	debug insns.
 	(no_real_insns_p, schedule_block, set_priorities): Drop special
 	treatment of boundary debug insns.
-	* sched-deps.c (sd_init_insn, sd_finish_insn): Don't mark debug
-	insns.
+	* sched-deps.c (sd_init_insn, sd_finish_insn): Don't mark debug insns.
 	* sched-ebb.c (schedule_ebbs): Don't skip debug insns.
 	* sched-int.h (DEBUG_INSN_SCHED_P): Remove.
 	(BOUNDARY_DEBUG_INSN_P): Likewise.
@@ -1031,9 +1025,8 @@
 	(rx_promote_function_mode): Likewise.
 	(gen_safe_add): Place an outsized immediate value inside an UNSPEC
 	in order to make it legitimate.
-	* config/rx/rx.md (adddi3_internal): If the second operand is a
-	MEM make sure that the first operand is the same as the result
-	register.
+	* config/rx/rx.md (adddi3_internal): If the second operand is a MEM
+	make sure that the first operand is the same as the result register.
 	(addsi3_unspec): Delete.
 	(subdi3): Do not accept immediate operands.
 	(subdi3_internal): Likewise.
@@ -1091,8 +1084,7 @@
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (build_poly_scop): Move
-	rewrite_commutative_reductions_out_of_ssa before
-	find_scop_parameters.
+	rewrite_commutative_reductions_out_of_ssa before find_scop_parameters.
 
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -1121,13 +1113,15 @@
 
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
 
-	* graphite-dependences.c (build_lexicographical_constraint): Remove the
-	gdim parameter.
-	(build_lexicographical_constraint): Adjust call to ppl_powerset_is_empty.
+	* graphite-dependences.c (build_lexicographical_constraint): Remove
+	the gdim parameter.
+	(build_lexicographical_constraint): Adjust call to
+	ppl_powerset_is_empty.
 	(dependence_polyhedron): Same.
 	(graphite_legal_transform_dr): Same.
 	(graphite_carried_dependence_level_k): Same.
-	* graphite-ppl.c (ppl_powerset_is_empty): Remove the nb_params parameter.
+	* graphite-ppl.c (ppl_powerset_is_empty): Remove the nb_params
+	parameter.
 	* graphite-ppl.h (ppl_powerset_is_empty): Adjust declaration.
 
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
@@ -1365,8 +1359,7 @@
 	(mov<>): FAIL if a constant operand is not legitimate.
 	(addsi3_unpsec): New pattern.
 
-	* config/rx/rx.c (rx_print_operand_address): Handle UNPSEC
-	CONSTs.
+	* config/rx/rx.c (rx_print_operand_address): Handle UNSPEC CONSTs.
 	(ok_for_max_constant): New function.
 	(gen_safe_add): New function.
 	(rx_expand_prologue): Use gen_safe_add.
@@ -1879,16 +1872,14 @@
 
 2011-01-18  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-	* config/arm/cortex-a9.md (cortex-a9-neon.md): Actually
-	include.
+	* config/arm/cortex-a9.md (cortex-a9-neon.md): Actually include.
 	(cortex_a9_dp): Handle neon types correctly.
 
 2011-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/47299
 	* expr.c (expand_expr_real_2) <case WIDEN_MULT_EXPR>: Don't use
-	subtarget.  Use normal multiplication if both operands are
-	constants.
+	subtarget.  Use normal multiplication if both operands are constants.
 	* expmed.c (expand_widening_mult): Don't try to optimize constant
 	multiplication if op0 has VOIDmode.  Convert op1 constant to mode
 	before using it.
@@ -2135,8 +2126,7 @@
 
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
-	* config/rs6000/vxworks.h (CC1_SPEC): Don't handle -fvec or
-	-fvec-eabi.
+	* config/rs6000/vxworks.h (CC1_SPEC): Don't handle -fvec or -fvec-eabi.
 
 2011-01-14  Mike Stump  <mikestump@comcast.net>
 
@@ -2161,8 +2151,7 @@
 
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 
-	* config/microblaze/microblaze.h (ASM_SPEC): Remove
-	%{microblaze1}.
+	* config/microblaze/microblaze.h (ASM_SPEC): Remove %{microblaze1}.
 
 2011-01-14  Joseph Myers  <joseph@codesourcery.com>
 

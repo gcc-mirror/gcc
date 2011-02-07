@@ -84,9 +84,9 @@
 
 2010-12-30  Nathan Froyd  <froydnj@codesourcery.com>
 
-        PR target/44606
-        * reload1.c (choose_reload_regs): Don't look for equivalences for
-        output reloads of constant loads.
+	PR target/44606
+	* reload1.c (choose_reload_regs): Don't look for equivalences for
+	output reloads of constant loads.
 
 2010-12-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 

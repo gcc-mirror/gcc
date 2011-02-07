@@ -1,3 +1,7 @@
+2011-02-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gfortran.dg/transpose_optimization_2.f90: Cleanup original dump.
+
 2011-02-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/47592
@@ -453,9 +457,9 @@
 
 2011-01-25  Yao Qi  <yao@codesourcery.com>
 
-        PR target/45701
-        * gcc.target/arm/pr45701-1.c: New test.
-        * gcc.target/arm/pr45701-2.c: New test.
+	PR target/45701
+	* gcc.target/arm/pr45701-1.c: New test.
+	* gcc.target/arm/pr45701-2.c: New test.
 	* gcc.target/arm/pr45701-3.c: New test.
 
 2011-01-25  Sebastian Pop  <sebastian.pop@amd.com>
@@ -703,7 +707,7 @@
 2011-01-19  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47291
-    	* g++.dg/debug/dwarf2/template-params-10.C: New test.
+	* g++.dg/debug/dwarf2/template-params-10.C: New test.
 
 2011-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -807,7 +811,7 @@
 2011-01-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/47325
-	g++.dg/ext/pr47213.C: Require visibility.
+	* g++.dg/ext/pr47213.C: Require visibility.
 
 2011-01-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -854,9 +858,9 @@
 
 	PR objc/45989
 	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c
-	(switchfiles): XFAIL
-	objc.dg-struct-layout-encoding-1/t02[57-9]_main.m execution tests
-	on i?86-*-*, x86_64-*-*, and powerpc*-apple-darwin* && ilp32.
+	(switchfiles): XFAIL objc.dg-struct-layout-encoding-1/t02[57-9]_main.m
+	execution tests on i?86-*-*, x86_64-*-* and
+	powerpc*-apple-darwin* && ilp32.
 	XFAIL objc.dg-struct-layout-encoding-1/t03[01]_main.m execution
 	tests on i?86-*-* and x86_64-*-*.
 
@@ -906,8 +910,7 @@
 
 2011-01-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* gcc.dg/guality/pr36728-1.c: Disable arg1/2 checks for s390 and
-	s390x.
+	* gcc.dg/guality/pr36728-1.c: Disable arg1/2 checks for s390 and s390x.
 	* gcc.dg/guality/pr36728-2.c: Likewise.
 
 2011-01-13  Dodji Seketeli  <dodji@redhat.com>
@@ -945,8 +948,8 @@
 	Amend NeXT version to declare a TEST_SUITE_ADDITIONS carrying the
 	methods missing from the OBJC2 Object.
 	* objc-obj-c++-shared/Object1-implementation.h: Add copyright header.
-	Amend implementation to use a TEST_SUITE_ADDITIONS category for both GNU
-	and NeXT runtimes.
+	Amend implementation to use a TEST_SUITE_ADDITIONS category for both
+	GNU and NeXT runtimes.
 	* objc-obj-c++-shared/Object1.mm: Remove redundant header, update
 	comments.
 	* objc-obj-c++-shared/Object1.m: Likewise.
@@ -1155,7 +1158,7 @@
 
 	PR objc/47232
 	* objc.dg/attributes/invalid-attribute-1.m: New.
-	* obj-c++.dg/attributes/invalid-attribute-1.mm: New.	
+	* obj-c++.dg/attributes/invalid-attribute-1.mm: New.
 
 2011-01-09  Janus Weil  <janus@gcc.gnu.org>
 
@@ -1261,11 +1264,13 @@
 
 	Get builtins tests ready for linker plugin.
 	* gcc.c-torture/execute/builtins/memcpy-chk.c (s2,s3,l1): Mark volatile.
-	* gcc.c-torture/execute/builtins/memops-asm-lib.c (my_memcpy, my_bcopy, my_memset,
-	my_bzero): Mark used.
+	* gcc.c-torture/execute/builtins/memops-asm-lib.c (my_memcpy, my_bcopy,
+	my_memset, my_bzero): Mark used.
 	* gcc.c-torture/execute/builtins/memset-chk.c (l1, l3): Mark volatile.
-	* gcc.c-torture/execute/builtins/memmove-chk.c (s1,s2,s3,l1): Mark volatile.
-	* gcc.c-torture/execute/builtins/mempcpy-chk.c (s2,s3,l1): Mark volatile
+	* gcc.c-torture/execute/builtins/memmove-chk.c (s1,s2,s3,l1): Mark
+	volatile.
+	* gcc.c-torture/execute/builtins/mempcpy-chk.c (s2,s3,l1): Mark
+	volatile.
 
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
