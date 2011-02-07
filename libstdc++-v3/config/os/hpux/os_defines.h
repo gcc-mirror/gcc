@@ -58,10 +58,11 @@
    We also force _GLIBCXX_USE_LONG_LONG here so that we don't have
    to bastardize configure to deal with this sillyness.  */
 
+#ifdef __cplusplus
 namespace std
 {
-_GLIBCXX_BEGIN_EXTERN_C
-
+  extern "C" 
+  {
 #ifndef __LP64__
   __extension__ long long strtoll (const char *, char **, int)
     __asm  ("__strtoll");
@@ -73,9 +74,9 @@ _GLIBCXX_BEGIN_EXTERN_C
   __extension__ unsigned long long strtoull (const char *, char **, int)
     __asm  ("strtoul");
 #endif
-
-_GLIBCXX_END_EXTERN_C
+  }
 } // namespace std
+#endif // __cplusplus
 
 #define _GLIBCXX_USE_LONG_LONG 1
 
