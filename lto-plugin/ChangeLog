@@ -1,3 +1,14 @@
+2011-02-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	Revert:
+
+	2011-02-07  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR lto/47225
+	* Makefile.am (Wl): New helper for encoding -Wl,.
+	(liblto_plugin_la_LIBADD): Use -Wl for libiberty library.
+	* Makefile.in: Regenerated.
+
 2011-02-07  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR lto/47225
