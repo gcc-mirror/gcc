@@ -13,12 +13,17 @@ AM_LIBTOOLFLAGS = --tag=disable-static
 
 libexecsub_LTLIBRARIES = liblto_plugin.la
 
+# Can be removed when libiberty becomes a normal convenience library
+Wc=-Wc,
+
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,)
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
 liblto_plugin_la_LDFLAGS = $(lt_host_flags) -bindir $(libexecsubdir) \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
+liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
+	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
 
 all: copy_lto_plugin
 
