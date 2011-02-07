@@ -81,8 +81,6 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(libexecsubdir)"
 LTLIBRARIES = $(libexecsub_LTLIBRARIES)
-liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
-	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
 am_liblto_plugin_la_OBJECTS = lto-plugin.lo
 liblto_plugin_la_OBJECTS = $(am_liblto_plugin_la_OBJECTS)
 liblto_plugin_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -232,13 +230,19 @@ AM_CPPFLAGS = -I$(top_srcdir)/../include $(DEFS)
 AM_CFLAGS = -Wall -Werror
 AM_LIBTOOLFLAGS = --tag=disable-static
 libexecsub_LTLIBRARIES = liblto_plugin.la
+
+# Can be removed when libiberty becomes a normal convenience library
+Wc = -Wc,
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = \
-	$(if $(wildcard ../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
+	$(if $(wildcard ../libiberty/pic/libiberty.a),$(Wc)../libiberty/pic/libiberty.a,)
 
 # Note that we intentionally override the bindir supplied by ACX_LT_HOST_FLAGS
 liblto_plugin_la_LDFLAGS = $(lt_host_flags) -bindir $(libexecsubdir) \
 	$(if $(wildcard ../libiberty/pic/libiberty.a),,-Wc,../libiberty/libiberty.a)
+
+liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
+	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
