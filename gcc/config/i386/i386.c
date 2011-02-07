@@ -35040,6 +35040,11 @@ ix86_autovectorize_vector_sizes (void)
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE ix86_conditional_register_usage
 
+#if TARGET_MACHO
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS darwin_rename_builtins
+#endif
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-i386.h"
