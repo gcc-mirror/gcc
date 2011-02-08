@@ -3608,7 +3608,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
 	             "must not be ALLOCATABLE ");
 	  return FAILURE;
 	}
-      if (!attr.target)
+      if (!attr.target || attr.pointer)
 	{
 	  gfc_error ("Pointer initialization target at %C "
 		     "must have the TARGET attribute");
@@ -3618,6 +3618,18 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
 	{
 	  gfc_error ("Pointer initialization target at %C "
 		     "must have the SAVE attribute");
+	  return FAILURE;
+	}
+    }
+    
+  if (sym->attr.proc_pointer && rvalue->expr_type != EXPR_NULL)
+    {
+      /* F08:C1220. Additional checks for procedure pointer initialization.  */
+      symbol_attribute attr = gfc_expr_attr (rvalue);
+      if (attr.proc_pointer)
+	{
+	  gfc_error ("Procedure pointer initialization target at %L "
+		     "may not be a procedure pointer", &rvalue->where);
 	  return FAILURE;
 	}
     }

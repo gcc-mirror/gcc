@@ -1,3 +1,9 @@
+2011-02-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45290
+	* expr.c (gfc_check_assign_symbol): Reject pointers as pointer
+	initialization target.
+
 2011-02-07  Janne Blomqvist  <jb@gcc.gnu.org>
 	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
