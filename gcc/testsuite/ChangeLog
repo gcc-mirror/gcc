@@ -1,3 +1,8 @@
+2011-02-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47632
+	* g++.dg/opt/pr47632.C: New testcase.
+
 2011-02-07  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* g++.dg/abi/packed1.C: Expect warning on spu-*-* as well.
