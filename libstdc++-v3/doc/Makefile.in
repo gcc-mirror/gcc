@@ -343,7 +343,6 @@ xml_sources_manual = \
 
 xml_sources_extra = \
 	${xml_dir}/gnu/fdl-1.2.xml \
-	${xml_dir}/gnu/gpl-2.0.xml \
 	${xml_dir}/gnu/gpl-3.0.xml
 
 xml_sources = \

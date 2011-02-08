@@ -1,3 +1,9 @@
+2011-02-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/gnu/gpl-2.0.xml: Remove.
+	* doc/Makefile.am: Update.
+	* doc/Makefile.in: Regenerate.
+
 2011-02-06  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/debug.xml: Use GDB instead of gdb.
