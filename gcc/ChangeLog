@@ -1,3 +1,8 @@
+2011-02-08  Thomas Schwinge  <thomas@schwinge.name>
+
+	* config/gnu.h (CPP_SPEC, LIB_SPEC): Remove handling of -bsd option.
+	* config/i386/gnu.h (CPP_SPEC): Likewise.
+
 2011-02-08  Ian Lance Taylor  <iant@google.com>
 
 	* common.opt (fcx-limited-range): Add SetByCombined flag.
