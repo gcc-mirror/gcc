@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
 ; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
@@ -878,7 +878,7 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fcx-limited-range
-Common Report Var(flag_cx_limited_range) Optimization
+Common Report Var(flag_cx_limited_range) Optimization SetByCombined
 Omit range reduction step when performing complex division
 
 fcx-fortran-rules
@@ -1024,7 +1024,7 @@ ffast-math
 Common
 
 ffinite-math-only
-Common Report Var(flag_finite_math_only) Optimization
+Common Report Var(flag_finite_math_only) Optimization SetByCombined
 Assume no NaNs or infinities are generated
 
 ffixed-
@@ -1340,7 +1340,7 @@ Common Report Var(flag_lto_report) Init(0) Optimization
 Report various link-time optimization statistics
 
 fmath-errno
-Common Report Var(flag_errno_math) Init(1) Optimization
+Common Report Var(flag_errno_math) Init(1) Optimization SetByCombined
 Set errno after built-in math functions
 
 fmax-errors=
@@ -1577,7 +1577,7 @@ Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 frounding-math
-Common Report Var(flag_rounding_math) Optimization
+Common Report Var(flag_rounding_math) Optimization SetByCombined
 Disable optimizations that assume default FP rounding behavior
 
 fsched-interblock
@@ -1706,11 +1706,11 @@ Common Report Var(flag_show_column) Init(1)
 Show column numbers in diagnostics, when available.  Default on
 
 fsignaling-nans
-Common Report Var(flag_signaling_nans) Optimization
+Common Report Var(flag_signaling_nans) Optimization SetByCombined
 Disable optimizations observable by IEEE signaling NaNs
 
 fsigned-zeros
-Common Report Var(flag_signed_zeros) Init(1) Optimization
+Common Report Var(flag_signed_zeros) Init(1) Optimization SetByCombined
 Disable floating point optimizations that ignore the IEEE signedness of zero
 
 fsingle-precision-constant
@@ -1827,7 +1827,7 @@ Perform superblock formation via tail duplication
 ; (user-visible) trap.  This is the case, for example, in nonstop
 ; IEEE 754 arithmetic.
 ftrapping-math
-Common Report Var(flag_trapping_math) Init(1) Optimization
+Common Report Var(flag_trapping_math) Init(1) Optimization SetByCombined
 Assume floating-point operations can trap
 
 ftrapv
@@ -1978,12 +1978,12 @@ Common Report Var(flag_unsafe_loop_optimizations) Optimization
 Allow loop optimizations to assume that the loops behave in normal way
 
 fassociative-math
-Common Report Var(flag_associative_math)
+Common Report Var(flag_associative_math) SetByCombined
 Allow optimization for floating-point arithmetic which may change the
 result of the operation due to rounding.
 
 freciprocal-math
-Common Report Var(flag_reciprocal_math)
+Common Report Var(flag_reciprocal_math) SetByCombined
 Same as -fassociative-math for expressions which include division.
 
 ; Nonzero means that unsafe floating-point math optimizations are allowed
@@ -1991,7 +1991,7 @@ Same as -fassociative-math for expressions which include division.
 ; are allowed to assume that their arguments and results are "normal"
 ; (e.g., nonnegative for SQRT).
 funsafe-math-optimizations
-Common Report Var(flag_unsafe_math_optimizations) Optimization
+Common Report Var(flag_unsafe_math_optimizations) Optimization SetByCombined
 Allow math optimizations that may violate IEEE or ISO standards
 
 funswitch-loops

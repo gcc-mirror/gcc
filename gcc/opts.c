@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
@@ -1757,15 +1757,23 @@ set_Wstrict_aliasing (struct gcc_options *opts, int onoff)
 static void
 set_fast_math_flags (struct gcc_options *opts, int set)
 {
-  opts->x_flag_unsafe_math_optimizations = set;
-  set_unsafe_math_optimizations_flags (opts, set);
-  opts->x_flag_finite_math_only = set;
-  opts->x_flag_errno_math = !set;
+  if (!opts->frontend_set_flag_unsafe_math_optimizations)
+    {
+      opts->x_flag_unsafe_math_optimizations = set;
+      set_unsafe_math_optimizations_flags (opts, set);
+    }
+  if (!opts->frontend_set_flag_finite_math_only)
+    opts->x_flag_finite_math_only = set;
+  if (!opts->frontend_set_flag_errno_math)
+    opts->x_flag_errno_math = !set;
   if (set)
     {
-      opts->x_flag_signaling_nans = 0;
-      opts->x_flag_rounding_math = 0;
-      opts->x_flag_cx_limited_range = 1;
+      if (!opts->frontend_set_flag_signaling_nans)
+	opts->x_flag_signaling_nans = 0;
+      if (!opts->frontend_set_flag_rounding_math)
+	opts->x_flag_rounding_math = 0;
+      if (!opts->frontend_set_flag_cx_limited_range)
+	opts->x_flag_cx_limited_range = 1;
     }
 }
 
@@ -1774,10 +1782,14 @@ set_fast_math_flags (struct gcc_options *opts, int set)
 static void
 set_unsafe_math_optimizations_flags (struct gcc_options *opts, int set)
 {
-  opts->x_flag_trapping_math = !set;
-  opts->x_flag_signed_zeros = !set;
-  opts->x_flag_associative_math = set;
-  opts->x_flag_reciprocal_math = set;
+  if (!opts->frontend_set_flag_trapping_math)
+    opts->x_flag_trapping_math = !set;
+  if (!opts->frontend_set_flag_signed_zeros)
+    opts->x_flag_signed_zeros = !set;
+  if (!opts->frontend_set_flag_associative_math)
+    opts->x_flag_associative_math = set;
+  if (!opts->frontend_set_flag_reciprocal_math)
+    opts->x_flag_reciprocal_math = set;
 }
 
 /* Return true iff flags in OPTS are set as if -ffast-math.  */
