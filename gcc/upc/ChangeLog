@@ -1,3 +1,13 @@
+2011-02-08  Gary Funck  <gary@intrepid.com>
+
+	* upc/config-lang.in, upc/lang-specs.h, upc/Makefile.in,
+	  upc/Make-lang.in, upc/upc.1, upc/upc-act.c, upc/upc-act.h,
+	  upc/upc-cmd.c, upc/upc-crtstuff.c, upc/upc-gasp.c,
+	  upc/upc-gasp.h, upc/upc-gimplify.c, upc/upc-gimplify.h,
+	  upc/upc-lang.c, upc/upc-pts.h, upc/upc-pts-packed.c,
+	  upc/upc-pts-struct.c, upc/upc-tree.def, upc/upc-tree.h:
+	Update copyright notices.
+
 2011-01-09  Gary Funck  <gary@intrepid.com>
 
 	Fix behavior of upc_localsizef() when called in a dynamic

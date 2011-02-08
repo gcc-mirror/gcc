@@ -1,3 +1,13 @@
+2011-02-08  Gary Funck  <gary@intrepid.com>
+
+	* test00.upc, test01.upc, test02.upc, test03.upc, test04.upc,
+	  test05.upc, test06.upc, test07.upc, test08.upc, test09.upc,
+	  test10.upc, test11.upc, test12.upc, test13.upc, test14.upc,
+	  test15.upc, test16.upc, test17.upc, test18.upc, test19.upc,
+	  test20.upc, test21.upc, test22.upc, test23.upc, test24.upc,
+	  test25.upc, test26.upc, test27.upc, test28.upc, test29.upc:
+	Update copyright notices.
+
 2010-11-28  Gary Funck  <gary@intrepid.com>
 
 	Merge GCC/UPC 4.5.1.2 changes into gupc branch.
