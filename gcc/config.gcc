@@ -2704,11 +2704,12 @@ v850-*-*)
 	;;
 vax-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h vax/elf.h vax/linux.h"
+	extra_options="${extra_options} vax/elf.opt"
 	tmake_file="${tmake_file} vax/t-linux"
 	;;
 vax-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
-	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt vax/elf.opt"
 	;;
 vax-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h vax/netbsd.h"
