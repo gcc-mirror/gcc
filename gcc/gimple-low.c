@@ -148,11 +148,6 @@ lower_function_body (void)
 
       x = gimple_build_label (t.label);
       gsi_insert_after (&i, x, GSI_CONTINUE_LINKING);
-
-      /* Remove the line number from the representative return statement.
-	 It now fills in for many such returns.  Failure to remove this
-	 will result in incorrect results for coverage analysis.  */
-      gimple_set_location (t.stmt, UNKNOWN_LOCATION);
       gsi_insert_after (&i, t.stmt, GSI_CONTINUE_LINKING);
     }
 
@@ -746,7 +741,14 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
       tmp_rs = *VEC_index (return_statements_t, data->return_statements, i);
 
       if (gimple_return_retval (stmt) == gimple_return_retval (tmp_rs.stmt))
-	goto found;
+	{
+	  /* Remove the line number from the representative return statement.
+	     It now fills in for many such returns.  Failure to remove this
+	     will result in incorrect results for coverage analysis.  */
+	  gimple_set_location (tmp_rs.stmt, UNKNOWN_LOCATION);
+
+	  goto found;
+	}
     }
 
   /* Not found.  Create a new label and record the return statement.  */
