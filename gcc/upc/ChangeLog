@@ -1,3 +1,18 @@
+2011-11-08  Gary Funck  <gary@intrepid.com>
+
+	* upc-pts-struct.c: Fix bug: (pts + int) fails when int is negative
+	  for struct-pts representation
+
+	  Analysis indicated that for something like (+ ptr -80) this was
+	  being represented as (+ ptr (- 80)) and further, when the
+	  calculations were propagated into the individual operations on the
+	  components of the 'struct' pointer, it would end up with something
+	  like (+ ptr.vaddr (- 80)), and the type of (- 80) would end up as
+	  "long unsigned int" because of the addition to the pointer.  This
+	  caused the calculations involving the signed 'int' operand to be
+	  performed incorrectly.  This fix insures that the 'int' operand is
+	  signed.
+
 2011-02-08  Gary Funck  <gary@intrepid.com>
 
 	* upc/config-lang.in, upc/lang-specs.h, upc/Makefile.in,
@@ -62,21 +77,6 @@
 	(cl_option_handlers *) argument.
 	(upc_finish_file) Rename to upc_write_global_declarations.
 	(upc_write_global_declarations) New.
-
-2010-11-06  Gary Funck  <gary@intrepid.com>
-
-	* upc-pts-struct.c: Fix bug: (pts + int) fails when int is negative
-	  for struct-pts representation
-
-	  Analysis indicated that for something like (+ ptr -80) this was
-	  being represented as (+ ptr (- 80)) and further, when the
-	  calculations were propagated into the individual operations on the
-	  components of the 'struct' pointer, it would end up with something
-	  like (+ ptr.vaddr (- 80)), and the type of (- 80) would end up as
-	  "long unsigned int" because of the addition to the pointer.  This
-	  caused the calculations involving the signed 'int' operand to be
-	  performed incorrectly.  This fix insures that the 'int' operand is
-	  signed.
 
 2010-10-17  Gary Funck  <gary@intrepid.com>
 

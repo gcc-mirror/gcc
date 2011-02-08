@@ -272,15 +272,6 @@ upc_pts_build_sum (location_t loc, tree exp)
 	 with signed operations. */
       if (TYPE_UNSIGNED (TREE_TYPE (n_threads)))
         n_threads = convert (integer_type_node, n_threads);
-      /* tincr = old_thread * elem_per_block + old_phase + index; */
-      tincr = build_binary_op (loc, PLUS_EXPR,
-		build_binary_op (loc, PLUS_EXPR,
-		  build_binary_op (loc, MULT_EXPR,
-		                   old_thread, elem_per_block, 0),
-		  old_phase, 0),
-		index, 0); 
-      if (TYPE_UNSIGNED (TREE_TYPE (tincr)))
-	tincr = convert (integer_type_node, tincr);
       if (has_phase)
 	{
           tree nt_elems;
@@ -293,13 +284,12 @@ upc_pts_build_sum (location_t loc, tree exp)
 		                       elem_per_block, 0),
 		      old_phase, 0),
 		    index, 0); 
-	  if (!TYPE_UNSIGNED (TREE_TYPE (index)))
+	  if (TYPE_UNSIGNED (TREE_TYPE (tincr)))
 	    tincr = convert (integer_type_node, tincr);
           /* nt_elems = n_threads * elem_per_block; */
           nt_elems = build_binary_op (loc, MULT_EXPR, n_threads,
 	                              elem_per_block, 0);
-	  if (TYPE_UNSIGNED (TREE_TYPE (nt_elems))
-	      != TYPE_UNSIGNED (TREE_TYPE (tincr)))
+	  if (TYPE_UNSIGNED (TREE_TYPE (nt_elems)))
 	    nt_elems = convert (integer_type_node, nt_elems);
           /* floor_divmod (tincr, nt_elems, &t1, &t2);  */
 	  t1 = build_binary_op (loc, FLOOR_DIV_EXPR, tincr, nt_elems, 0);
@@ -330,7 +320,7 @@ upc_pts_build_sum (location_t loc, tree exp)
 		    build_binary_op (loc, MULT_EXPR, old_thread,
 		                     elem_per_block, 0),
 		    index, 0); 
-	  if (!TYPE_UNSIGNED (TREE_TYPE (index)))
+	  if (TYPE_UNSIGNED (TREE_TYPE (tincr)))
 	    tincr = convert (integer_type_node, tincr);
           /* floor_divmod (tincr, n_threads, &t1, &t2);  */
 	  t1 = build_binary_op (loc, FLOOR_DIV_EXPR, tincr, n_threads, 0);
