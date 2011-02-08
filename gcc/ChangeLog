@@ -1,5 +1,13 @@
 2011-02-08  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/47639
+	* tree-vect-generic.c (expand_vector_operations_1): Update
+	stmts here ...
+	(expand_vector_operations): ... not here.  Cleanup EH info
+	and the CFG if required.
+
+2011-02-08  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/47641
 	* tree-ssa.c (execute_update_addresses_taken): For asm outputs
 	require type compatibility.
