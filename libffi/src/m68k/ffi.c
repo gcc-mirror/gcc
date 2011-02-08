@@ -9,8 +9,12 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#ifdef __rtems__
+void rtems_cache_flush_multiple_data_lines( const void *, size_t );
+#else
 #include <sys/syscall.h>
 #include <asm/cachectl.h>
+#endif
 
 void ffi_call_SYSV (extended_cif *,
 		    unsigned, unsigned,
@@ -144,9 +148,11 @@ ffi_prep_cif_machdep (ffi_cif *cif)
       cif->flags = CIF_FLAGS_DOUBLE;
       break;
 
+#if (FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE)
     case FFI_TYPE_LONGDOUBLE:
       cif->flags = CIF_FLAGS_LDOUBLE;
       break;
+#endif
 
     case FFI_TYPE_POINTER:
       cif->flags = CIF_FLAGS_POINTER;
@@ -266,8 +272,12 @@ ffi_prep_closure_loc (ffi_closure* closure,
   else
     *(void **)(closure->tramp + 8) = ffi_closure_SYSV;
 
+#ifdef __rtems__
+  rtems_cache_flush_multiple_data_lines( codeloc, FFI_TRAMPOLINE_SIZE );
+#else
   syscall(SYS_cacheflush, codeloc, FLUSH_SCOPE_LINE,
 	  FLUSH_CACHE_BOTH, FFI_TRAMPOLINE_SIZE);
+#endif
 
   closure->cif  = cif;
   closure->user_data = user_data;
