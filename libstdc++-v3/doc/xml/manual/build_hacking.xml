@@ -1,4 +1,4 @@
-<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+<section xmlns="http://docbook.org/ns/docbook" version="5.0"
 	 xml:id="appendix.porting.build_hacking" xreflabel="Build Hacking">
 <?dbhtml filename="build_hacking.html"?>
 
@@ -22,10 +22,8 @@
   </keywordset>
 </info>
 
-
-
 <section xml:id="build_hacking.prereq"><info><title>Prerequisites</title></info>
-  
+
   <para>
     As noted <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/install/prerequisites.html">previously</link>,
     certain other tools are necessary for hacking on files that
@@ -41,18 +39,22 @@
 </section>
 
 <section xml:id="build_hacking.map"><info><title>Overview: What Comes from Where</title></info>
-  
 
-  <screen>
-  <inlinemediaobject>
+
+  <figure>
+    <title>Configure and Build File Dependencies</title>
+  <mediaobject>
     <imageobject>
-      <imagedata fileref="images/confdeps.png"/>
+      <imagedata align="center" format="PDF" fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/confdeps.pdf"/>
+    </imageobject>
+    <imageobject>
+      <imagedata align="center" format="PNG" fileref="/mnt/share/src/gcc.svn-trunk/libstdc++-v3/doc/xml/images/confdeps.png"/>
     </imageobject>
     <textobject>
-      <phrase>Dependency Graph Configure to Build Files</phrase>
+      <phrase>Dependency Graph for Configure and Build Files</phrase>
     </textobject>
-  </inlinemediaobject>
-  </screen>
+  </mediaobject>
+  </figure>
 
   <para>
     Regenerate all generated files by using the command sequence
@@ -68,7 +70,7 @@
 </section>
 
 <section xml:id="build_hacking.scripts"><info><title>Storing Information in non-AC files (like configure.host)</title></info>
-  
+
 
   <para>
     Until that glorious day when we can use AC_TRY_LINK with a
@@ -100,7 +102,7 @@
 </section>
 
 <section xml:id="build_hacking.conventions"><info><title>Coding and Commenting Conventions</title></info>
-  
+
 
   <para>
     Most comments should use {octothorpes, shibboleths, hash marks,
@@ -125,7 +127,7 @@
 </section>
 
 <section xml:id="build_hacking.acinclude"><info><title>The acinclude.m4 layout</title></info>
-  
+
   <para>
     The nice thing about acinclude.m4/aclocal.m4 is that macros aren't
     actually performed/called/expanded/whatever here, just loaded.  So
@@ -216,7 +218,7 @@
 </section>
 
 <section xml:id="build_hacking.enable"><info><title><constant>GLIBCXX_ENABLE</constant>, the <literal>--enable</literal> maker</title></info>
-  
+
 
   <para>
     All the GLIBCXX_ENABLE_FOO macros use a common helper,

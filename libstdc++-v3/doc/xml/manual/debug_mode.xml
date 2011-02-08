@@ -627,7 +627,7 @@ namespace std
 </programlisting>
 
 <para>In debug mode we include the release-mode container (which is now
-defined in the namespace <code>__norm</code>) and also the
+defined in the namespace <code>__cxx1998</code>) and also the
 debug-mode container. The debug-mode container is defined within the
 namespace <code>__debug</code>, which is associated with namespace
 <code>std</code> via the C++0x namespace association language feature.  This
@@ -639,7 +639,7 @@ to C++ code as follows:</para>
 <programlisting>
 namespace std
 {
-  namespace __norm
+  namespace __cxx1998
   {
     template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
       class list
@@ -652,12 +652,12 @@ namespace std
   {
     template&lt;typename _Tp, typename _Alloc = allocator&lt;_Tp&gt; &gt;
       class list
-      : public __norm::list&lt;_Tp, _Alloc&gt;,
+      : public __cxx1998::list&lt;_Tp, _Alloc&gt;,
 	public __gnu_debug::_Safe_sequence&lt;list&lt;_Tp, _Alloc&gt; &gt;
       {
 	// ...
       };
-  } // namespace __norm
+  } // namespace __cxx1998
 
   // namespace __debug __attribute__ ((strong));
   inline namespace __debug { }
