@@ -1,3 +1,7 @@
+2011-02-08  Tobias Burnus  <burnus@net-b.de>
+
+	* MAINTAINERS: Add myself as libquadmath maintainer.
+
 2011-02-08  Thomas Schwinge  <thomas@schwinge.name>
 
 	* MAINTAINERS: Update my email address.
