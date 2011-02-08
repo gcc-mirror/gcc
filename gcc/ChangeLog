@@ -1,3 +1,15 @@
+2011-02-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47632
+	* tree-ssa-forwprop.c (remove_prop_source_from_use): Remove
+	unused up_to_stmt parameter, return whether cfg-cleanup is
+	necessary, remove EH info properly.
+	(forward_propagate_into_gimple_cond): Adjust caller.
+	(forward_propagate_into_cond): Likewise.
+	(forward_propagate_comparison): Likewise.
+	(tree_ssa_forward_propagate_single_use_vars): Make
+	forward_propagate_comparison case similar to the two others.
+
 2011-02-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.opt (mliw): New command line option.
