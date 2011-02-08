@@ -1,3 +1,7 @@
+2011-02-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (x86-64 darwin): Handle multilibs.
+
 2011-02-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (fill_vms_descriptor): Take GNU_TYPE instead of
