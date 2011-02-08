@@ -1,3 +1,11 @@
+2011-02-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (arc-*, alpha*-*-gnu*, arm*-*-netbsd*, arm-*-pe*,
+	i[34567]86-*-interix3*, i[34567]86-*-netbsd*, i[34567]86-*-pe,
+	m68hc11-*-*, m6811-*-*, m68hc12-*-*, m6812-*-*,
+	m68k-*-uclinuxoldabi*, mcore-*-pe*, powerpc*-*-gnu*,
+	sh*-*-symbianelf*, vax-*-netbsd*): Mark obsolete.
+
 2011-02-08  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46834
