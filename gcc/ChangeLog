@@ -1,5 +1,10 @@
 2011-02-08  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/xtensa/elf.opt: New.
+	* config.gcc (xtensa*-*-elf*): Use xtensa/elf.opt.
+
+2011-02-08  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/vax/elf.opt: New.
 	* config.gcc (vax-*-linux*, vax-*-netbsdelf*): Use vax/elf.opt.
 
