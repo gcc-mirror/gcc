@@ -1,3 +1,36 @@
+2011-02-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.opt (mliw): New command line option.
+	* config/mn10300/mn10300.md (UNSPEC_LIW): New unspec.
+	(liw_bundling): New automaton.
+	(liw): New attribute.
+	(liw_op): New attribute.
+	(liw_op1, liw_op2, liw_both, liw_either): New reservations.
+	(movsi_internal): Add LIW attributes.
+	(andsi3): Likewise.
+	(iorsi3): Likewise.
+	(xorsi3): Likewise.
+	(addsi3): Separate register and immediate alternatives.
+	Add LIW attributes.
+	(subsi3): Likewise.
+	(cmpsi): Likewise.
+	(aslsi3): Likewise.
+	(lshrsi3): Likewise.
+	(ashrsi3): Likewise.
+	(liw): New pattern.
+	* config/mn10300/mn10300.c (liw_op_names): New
+	(mn10300_print_operand): Handle 'W' operand descriptor.
+	(extract_bundle): New function.
+	(check_liw_constraints): New function.
+	(liw_candidate): New function.
+	(mn10300_bundle_liw): New function.
+	(mn10300_reorg): New function.
+	(TARGET_MACHINE_DEPENDENT_REORG): Define.
+	(TARGET_DEFAULT_TARGET_FLAGS): Add MASK_ALLOW_LIW.
+	* config/mn10300/mn10300.h (TARGET_CPU_CPP_BUILTINS): Define
+	__LIW__ or __NO_LIW__.
+	* doc/invoke.texi: Describe the -mliw command line option.
+
 2011-02-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config.gcc (hppa[12]*-*-hpux11*): Don't set extra_parts.
