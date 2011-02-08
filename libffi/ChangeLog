@@ -1,5 +1,12 @@
 2011-02-07  Joel Sherrill <joel.sherrill@oarcorp.com>
 
+	* libffi/src/m68k/ffi.c: Add RTEMS support for cache flushing.
+	Handle case when CPU variant does not have long double support.
+	* libffi/src/m68k/sysv.S: Add support for mc68000, Coldfire,
+	and cores with soft floating point.
+
+2011-02-07  Joel Sherrill <joel.sherrill@oarcorp.com>
+
 	* configure.ac: Add mips*-*-rtems* support.
 	* configure: Regenerate.
 	* src/mips/ffitarget.h: Ensure needed constants are available
