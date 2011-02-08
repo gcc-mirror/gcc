@@ -1,3 +1,10 @@
+2011-02-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/gnu/fdl-1.2.xml: Remove.
+	* doc/xml/gnu/gpl-2.0.xml: Remove.
+	* doc/Makefile.am: Update.
+	* doc/Makefile.in: Regnerate.
+
 2011-02-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/47628
