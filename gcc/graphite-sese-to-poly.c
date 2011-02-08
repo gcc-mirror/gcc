@@ -2898,6 +2898,30 @@ initial_value_for_loop_phi (gimple phi)
   return NULL_TREE;
 }
 
+/* Returns true when DEF is used outside the reduction cycle of
+   LOOP_PHI.  */
+
+static bool
+used_outside_reduction (tree def, gimple loop_phi)
+{
+  use_operand_p use_p;
+  imm_use_iterator imm_iter;
+  loop_p loop = loop_containing_stmt (loop_phi);
+
+  /* In LOOP, DEF should be used only in LOOP_PHI.  */
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, def)
+    {
+      gimple stmt = USE_STMT (use_p);
+
+      if (stmt != loop_phi
+	  && !is_gimple_debug (stmt)
+	  && flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
+	return true;
+    }
+
+  return false;
+}
+
 /* Detect commutative and associative scalar reductions belonging to
    the SCOP starting at the loop closed phi node STMT.  Return the phi
    node of the reduction cycle, or NULL.  */
@@ -2908,8 +2932,8 @@ detect_commutative_reduction (scop_p scop, gimple stmt, VEC (gimple, heap) **in,
 {
   if (scalar_close_phi_node_p (stmt))
     {
-      tree arg = gimple_phi_arg_def (stmt, 0);
-      gimple def, loop_phi;
+      gimple def, loop_phi, phi, close_phi = stmt;
+      tree init, lhs, arg = gimple_phi_arg_def (close_phi, 0);
 
       if (TREE_CODE (arg) != SSA_NAME)
 	return NULL;
@@ -2917,26 +2941,24 @@ detect_commutative_reduction (scop_p scop, gimple stmt, VEC (gimple, heap) **in,
       /* Note that loop close phi nodes should have a single argument
 	 because we translated the representation into a canonical form
 	 before Graphite: see canonicalize_loop_closed_ssa_form.  */
-      gcc_assert (gimple_phi_num_args (stmt) == 1);
+      gcc_assert (gimple_phi_num_args (close_phi) == 1);
 
       def = SSA_NAME_DEF_STMT (arg);
-      if (!stmt_in_sese_p (def, SCOP_REGION (scop)))
+      if (!stmt_in_sese_p (def, SCOP_REGION (scop))
+	  || !(loop_phi = detect_commutative_reduction (scop, def, in, out)))
 	return NULL;
 
-      loop_phi = detect_commutative_reduction (scop, def, in, out);
+      lhs = gimple_phi_result (close_phi);
+      init = initial_value_for_loop_phi (loop_phi);
+      phi = follow_inital_value_to_phi (init, lhs);
 
-      if (loop_phi)
-	{
-	  tree lhs = gimple_phi_result (stmt);
-	  tree init = initial_value_for_loop_phi (loop_phi);
-	  gimple phi = follow_inital_value_to_phi (init, lhs);
-
-	  VEC_safe_push (gimple, heap, *in, loop_phi);
-	  VEC_safe_push (gimple, heap, *out, stmt);
-	  return phi;
-	}
-      else
+      if (phi && (used_outside_reduction (lhs, phi)
+		  || !has_single_use (gimple_phi_result (phi))))
 	return NULL;
+
+      VEC_safe_push (gimple, heap, *in, loop_phi);
+      VEC_safe_push (gimple, heap, *out, close_phi);
+      return phi;
     }
 
   if (gimple_code (stmt) == GIMPLE_ASSIGN)
@@ -3139,7 +3161,7 @@ rewrite_commutative_reductions_out_of_ssa_close_phi (scop_p scop,
   VEC (gimple, heap) *out = VEC_alloc (gimple, heap, 10);
 
   detect_commutative_reduction (scop, close_phi, &in, &out);
-  res = VEC_length (gimple, in) > 0;
+  res = VEC_length (gimple, in) > 1;
   if (res)
     translate_scalar_reduction_to_array (scop, in, out);
 

@@ -1,3 +1,14 @@
+2011-02-08  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/46834
+	PR tree-optimization/46994
+	PR tree-optimization/46995
+	* graphite-sese-to-poly.c (used_outside_reduction): New.
+	(detect_commutative_reduction): Call used_outside_reduction.
+	(rewrite_commutative_reductions_out_of_ssa_close_phi): Call
+	translate_scalar_reduction_to_array only when at least one
+	loop-phi/close-phi tuple has been detected.
+
 2011-02-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/47639
