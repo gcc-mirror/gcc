@@ -2633,25 +2633,13 @@ Gogo::build_type_descriptor_decl(const Type* type, Expression* initializer,
 
   DECL_INITIAL(decl) = constructor;
 
-  if (type_descriptor_location == TYPE_DESCRIPTOR_COMMON)
-    {
-      make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
-      resolve_unique_section(decl, 1, 0);
-    }
+  if (type_descriptor_location == TYPE_DESCRIPTOR_DEFINED)
+    TREE_PUBLIC(decl) = 1;
   else
     {
-#ifdef OBJECT_FORMAT_ELF
-      // Give the decl protected visibility.  This avoids out-of-range
-      // references with shared libraries with the x86_64 small model
-      // when the type descriptor gets a COPY reloc into the main
-      // executable.  There is no need to have unique pointers to type
-      // descriptors, as the runtime code compares reflection strings
-      // if necessary.
-      DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED;
-      DECL_VISIBILITY_SPECIFIED(decl) = 1;
-#endif
-
-      TREE_PUBLIC(decl) = 1;
+      gcc_assert(type_descriptor_location == TYPE_DESCRIPTOR_COMMON);
+      make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
+      resolve_unique_section(decl, 1, 0);
     }
 
   rest_of_decl_compilation(decl, 1, 0);
@@ -2764,17 +2752,7 @@ Gogo::interface_method_table_for_type(const Interface_type* interface,
   // definition of the table.  Otherwise it is a comdat table which
   // may be defined in multiple packages.
   if (has_hidden_methods)
-    {
-#ifdef OBJECT_FORMAT_ELF
-      // Give the decl protected visibility.  This avoids out-of-range
-      // references with shared libraries with the x86_64 small model
-      // when the table gets a COPY reloc into the main executable.
-      DECL_VISIBILITY(decl) = VISIBILITY_PROTECTED;
-      DECL_VISIBILITY_SPECIFIED(decl) = 1;
-#endif
-
-      TREE_PUBLIC(decl) = 1;
-    }
+    TREE_PUBLIC(decl) = 1;
   else
     {
       make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
