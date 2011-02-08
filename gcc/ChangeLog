@@ -1,3 +1,17 @@
+2011-02-08  Ian Lance Taylor  <iant@google.com>
+
+	* common.opt (fcx-limited-range): Add SetByCombined flag.
+	(ffinite-math-only, fmath-errno, frounding-math): Likewise.
+	(fsignaling-nans, fsigned-zeros, ftrapping-math): Likewise.
+	(fassociative-math, freciprocal-math): Likewise.
+	(funsafe-math-optimizations): Likewise.
+	* opth-gen.awk: Handle SetByCombined.
+	* optc-gen.awk: Likewise.
+	* opts.c (set_fast_math_flags): Don't override flag if set by
+	frontend.
+	(set_unsafe_math_optimizations_flags): Likewise.
+	* doc/options.texi (Option properties): Document SetByCombined.
+
 2011-02-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (arc-*, alpha*-*-gnu*, arm*-*-netbsd*, arm-*-pe*,
