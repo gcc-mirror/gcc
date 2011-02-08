@@ -18,11 +18,11 @@
 + (id) method1
 {
   return self;  /* { dg-warning "function declared .noreturn. has a .return. statement" } */
-}               /* { dg-warning ".noreturn. function does return" } */
+}               /* { dg-warning ".noreturn. function does return" "" { target *-*-* } 20 } */
 - (id) method2
 {
   return self;  /* { dg-warning "function declared .noreturn. has a .return. statement" } */
-}               /* { dg-warning ".noreturn. function does return" } */
+}               /* { dg-warning ".noreturn. function does return" "" { target *-*-* } 24 } */
 + (id) method3
 {
   abort ();

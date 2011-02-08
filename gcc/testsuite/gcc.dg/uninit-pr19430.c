@@ -18,8 +18,8 @@ foo (int i)
 
 
 int foo2( void ) {
-  int rc;  /* { dg-warning "'rc' is used uninitialized in this function" } */
-  return rc;
+  int rc;
+  return rc;  /* { dg-warning "'rc' is used uninitialized in this function" } */
   *&rc = 0;
 }
 
