@@ -1,3 +1,22 @@
+2011-02-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR middle-end/47646
+	* gcc.dg/pr39666-2.c (foo2): If the location of the statement
+	using the variable is known the warning is emitted there.
+	* gcc.dg/uninit-pr19430.c (foo): Likewise.
+	* g++.dg/warn/Wuninitialized-5.C (foo): Likewise.
+
+	* c-c++-common/pr20000.c (g): Both warnings occur at the return
+	statement.
+	(vg): Likewise.
+	* gcc.dg/noreturn-1.c (foo5): Likewise.
+	* objc.dg/attributes/method-noreturn-1.m (method1): Likewise.
+	(method2): Likewise.
+
+	* gfortran.dg/pr25923.f90 (baz): The warning will now be issued for
+	the return statement using the uninitialized variable.
+	* gfortran.dg/pr39666-2.f90 (f): Likewise.
+
 2011-02-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/47639

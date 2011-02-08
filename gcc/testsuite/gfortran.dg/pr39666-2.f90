@@ -2,7 +2,7 @@
 ! { dg-do compile }
 ! { dg-options "-O2 -Wuninitialized" }
 
-FUNCTION f(n)	! { dg-warning "may be used uninitialized" }
+FUNCTION f(n)
   INTEGER, INTENT(in) :: n
   REAL                :: f
 
@@ -11,4 +11,4 @@ FUNCTION f(n)	! { dg-warning "may be used uninitialized" }
     CASE (0);   f =  0.0
     CASE (2:);  f =  1.0
   END SELECT
-END FUNCTION
+END FUNCTION	! { dg-warning "may be used uninitialized" }
