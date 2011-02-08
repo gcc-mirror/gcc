@@ -1,5 +1,9 @@
 2011-02-08  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/cris/elf.opt (sim): New Driver option.
+
+2011-02-08  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/xtensa/elf.opt: New.
 	* config.gcc (xtensa*-*-elf*): Use xtensa/elf.opt.
 
