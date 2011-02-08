@@ -113,7 +113,7 @@ darwin port		Eric Christopher	echristo@apple.com
 darwin port		Stan Shebs		stanshebs@earthlink.net
 DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
-GNU/Hurd		Thomas Schwinge		tschwinge@gnu.org
+GNU/Hurd		Thomas Schwinge		thomas@schwinge.name
 hpux			John David Anglin	dave.anglin@nrc-cnrc.gc.ca
 hpux			Steve Ellcey		sje@cup.hp.com
 irix, osf, solaris	Rainer Orth		ro@CeBiTec.Uni-Bielefeld.DE
