@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -165,6 +165,16 @@ mn10300_file_start (void)
     fprintf (asm_out_file, "\t.am33\n");
 }
 
+/* Note: This list must match the liw_op attribute in mn10300.md.  */
+
+static const char *liw_op_names[] =
+{
+  "add", "cmp", "sub", "mov",
+  "and", "or", "xor",
+  "asr", "lsr", "asl",
+  "none", "max"
+};
+
 /* Print operand X using operand code CODE to assembly language output file
    FILE.  */
 
@@ -173,309 +183,319 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 {
   switch (code)
     {
-      case 'b':
-      case 'B':
-	{
-	  enum rtx_code cmp = GET_CODE (x);
-	  enum machine_mode mode = GET_MODE (XEXP (x, 0));
-	  const char *str;
-	  int have_flags;
+    case 'W':
+      {
+	unsigned int liw_op = UINTVAL (x);
 
-	  if (code == 'B')
-	    cmp = reverse_condition (cmp);
-	  have_flags = cc_flags_for_mode (mode);
-
-	  switch (cmp)
-	    {
-	    case NE:
-	      str = "ne";
-	      break;
-	    case EQ:
-	      str = "eq";
-	      break;
-	    case GE:
-	      /* bge is smaller than bnc.  */
-	      str = (have_flags & CC_FLAG_V ? "ge" : "nc");
-	      break;
-	    case LT:
-	      str = (have_flags & CC_FLAG_V ? "lt" : "ns");
-	      break;
-	    case GT:
-	      str = "gt";
-	      break;
-	    case LE:
-	      str = "le";
-	      break;
-	    case GEU:
-	      str = "cc";
-	      break;
-	    case GTU:
-	      str = "hi";
-	      break;
-	    case LEU:
-	      str = "ls";
-	      break;
-	    case LTU:
-	      str = "cs";
-	      break;
-	    case ORDERED:
-	      str = "lge";
-	      break;
-	    case UNORDERED:
-	      str = "uo";
-	      break;
-	    case LTGT:
-	      str = "lg";
-	      break;
-	    case UNEQ:
-	      str = "ue";
-	      break;
-	    case UNGE:
-	      str = "uge";
-	      break;
-	    case UNGT:
-	      str = "ug";
-	      break;
-	    case UNLE:
-	      str = "ule";
-	      break;
-	    case UNLT:
-	      str = "ul";
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-
-	  gcc_checking_assert ((cc_flags_for_code (cmp) & ~have_flags) == 0);
-	  fputs (str, file);
-	}
+	gcc_assert (TARGET_ALLOW_LIW);
+	gcc_assert (liw_op < LIW_OP_MAX);
+	fputs (liw_op_names[liw_op], file);
 	break;
+      }
 
-      case 'C':
-	/* This is used for the operand to a call instruction;
-	   if it's a REG, enclose it in parens, else output
-	   the operand normally.  */
-	if (REG_P (x))
+    case 'b':
+    case 'B':
+      {
+	enum rtx_code cmp = GET_CODE (x);
+	enum machine_mode mode = GET_MODE (XEXP (x, 0));
+	const char *str;
+	int have_flags;
+
+	if (code == 'B')
+	  cmp = reverse_condition (cmp);
+	have_flags = cc_flags_for_mode (mode);
+
+	switch (cmp)
 	  {
-	    fputc ('(', file);
-	    mn10300_print_operand (file, x, 0);
-	    fputc (')', file);
-	  }
-	else
-	  mn10300_print_operand (file, x, 0);
-	break;
-
-      case 'D':
-	switch (GET_CODE (x))
-	  {
-	  case MEM:
-	    fputc ('(', file);
-	    output_address (XEXP (x, 0));
-	    fputc (')', file);
+	  case NE:
+	    str = "ne";
 	    break;
-
-	  case REG:
-	    fprintf (file, "fd%d", REGNO (x) - 18);
+	  case EQ:
+	    str = "eq";
 	    break;
-
+	  case GE:
+	    /* bge is smaller than bnc.  */
+	    str = (have_flags & CC_FLAG_V ? "ge" : "nc");
+	    break;
+	  case LT:
+	    str = (have_flags & CC_FLAG_V ? "lt" : "ns");
+	    break;
+	  case GT:
+	    str = "gt";
+	    break;
+	  case LE:
+	    str = "le";
+	    break;
+	  case GEU:
+	    str = "cc";
+	    break;
+	  case GTU:
+	    str = "hi";
+	    break;
+	  case LEU:
+	    str = "ls";
+	    break;
+	  case LTU:
+	    str = "cs";
+	    break;
+	  case ORDERED:
+	    str = "lge";
+	    break;
+	  case UNORDERED:
+	    str = "uo";
+	    break;
+	  case LTGT:
+	    str = "lg";
+	    break;
+	  case UNEQ:
+	    str = "ue";
+	    break;
+	  case UNGE:
+	    str = "uge";
+	    break;
+	  case UNGT:
+	    str = "ug";
+	    break;
+	  case UNLE:
+	    str = "ule";
+	    break;
+	  case UNLT:
+	    str = "ul";
+	    break;
 	  default:
 	    gcc_unreachable ();
 	  }
-	break;
+
+	gcc_checking_assert ((cc_flags_for_code (cmp) & ~have_flags) == 0);
+	fputs (str, file);
+      }
+      break;
+
+    case 'C':
+      /* This is used for the operand to a call instruction;
+	 if it's a REG, enclose it in parens, else output
+	 the operand normally.  */
+      if (REG_P (x))
+	{
+	  fputc ('(', file);
+	  mn10300_print_operand (file, x, 0);
+	  fputc (')', file);
+	}
+      else
+	mn10300_print_operand (file, x, 0);
+      break;
+
+    case 'D':
+      switch (GET_CODE (x))
+	{
+	case MEM:
+	  fputc ('(', file);
+	  output_address (XEXP (x, 0));
+	  fputc (')', file);
+	  break;
+
+	case REG:
+	  fprintf (file, "fd%d", REGNO (x) - 18);
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+      break;
 
       /* These are the least significant word in a 64bit value.  */
-      case 'L':
-	switch (GET_CODE (x))
+    case 'L':
+      switch (GET_CODE (x))
+	{
+	case MEM:
+	  fputc ('(', file);
+	  output_address (XEXP (x, 0));
+	  fputc (')', file);
+	  break;
+
+	case REG:
+	  fprintf (file, "%s", reg_names[REGNO (x)]);
+	  break;
+
+	case SUBREG:
+	  fprintf (file, "%s", reg_names[subreg_regno (x)]);
+	  break;
+
+	case CONST_DOUBLE:
 	  {
-	  case MEM:
-	    fputc ('(', file);
-	    output_address (XEXP (x, 0));
-	    fputc (')', file);
-	    break;
+	    long val[2];
+	    REAL_VALUE_TYPE rv;
 
-	  case REG:
-	    fprintf (file, "%s", reg_names[REGNO (x)]);
-	    break;
-
-	  case SUBREG:
-	    fprintf (file, "%s", reg_names[subreg_regno (x)]);
-	    break;
-
-	  case CONST_DOUBLE:
+	    switch (GET_MODE (x))
 	      {
-		long val[2];
-		REAL_VALUE_TYPE rv;
-
-		switch (GET_MODE (x))
-		  {
-		    case DFmode:
-		      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-		      REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
-		      fprintf (file, "0x%lx", val[0]);
-		      break;;
-		    case SFmode:
-		      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-		      REAL_VALUE_TO_TARGET_SINGLE (rv, val[0]);
-		      fprintf (file, "0x%lx", val[0]);
-		      break;;
-		    case VOIDmode:
-		    case DImode:
-		      mn10300_print_operand_address (file,
-						     GEN_INT (CONST_DOUBLE_LOW (x)));
-		      break;
-		    default:
-		      break;
-		  }
+	      case DFmode:
+		REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+		REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
+		fprintf (file, "0x%lx", val[0]);
+		break;;
+	      case SFmode:
+		REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+		REAL_VALUE_TO_TARGET_SINGLE (rv, val[0]);
+		fprintf (file, "0x%lx", val[0]);
+		break;;
+	      case VOIDmode:
+	      case DImode:
+		mn10300_print_operand_address (file,
+					       GEN_INT (CONST_DOUBLE_LOW (x)));
+		break;
+	      default:
 		break;
 	      }
+	    break;
+	  }
 
-	  case CONST_INT:
-	    {
-	      rtx low, high;
-	      split_double (x, &low, &high);
-	      fprintf (file, "%ld", (long)INTVAL (low));
-	      break;
+	case CONST_INT:
+	  {
+	    rtx low, high;
+	    split_double (x, &low, &high);
+	    fprintf (file, "%ld", (long)INTVAL (low));
+	    break;
 	    }
 
-	  default:
-	    gcc_unreachable ();
-	  }
-	break;
+	default:
+	  gcc_unreachable ();
+	}
+      break;
 
       /* Similarly, but for the most significant word.  */
-      case 'H':
-	switch (GET_CODE (x))
+    case 'H':
+      switch (GET_CODE (x))
+	{
+	case MEM:
+	  fputc ('(', file);
+	  x = adjust_address (x, SImode, 4);
+	  output_address (XEXP (x, 0));
+	  fputc (')', file);
+	  break;
+
+	case REG:
+	  fprintf (file, "%s", reg_names[REGNO (x) + 1]);
+	  break;
+
+	case SUBREG:
+	  fprintf (file, "%s", reg_names[subreg_regno (x) + 1]);
+	  break;
+
+	case CONST_DOUBLE:
 	  {
-	  case MEM:
-	    fputc ('(', file);
-	    x = adjust_address (x, SImode, 4);
-	    output_address (XEXP (x, 0));
-	    fputc (')', file);
-	    break;
+	    long val[2];
+	    REAL_VALUE_TYPE rv;
 
-	  case REG:
-	    fprintf (file, "%s", reg_names[REGNO (x) + 1]);
-	    break;
-
-	  case SUBREG:
-	    fprintf (file, "%s", reg_names[subreg_regno (x) + 1]);
-	    break;
-
-	  case CONST_DOUBLE:
+	    switch (GET_MODE (x))
 	      {
-		long val[2];
-		REAL_VALUE_TYPE rv;
-
-		switch (GET_MODE (x))
-		  {
-		    case DFmode:
-		      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-		      REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
-		      fprintf (file, "0x%lx", val[1]);
-		      break;;
-		    case SFmode:
-		      gcc_unreachable ();
-		    case VOIDmode:
-		    case DImode:
-		      mn10300_print_operand_address (file,
-						     GEN_INT (CONST_DOUBLE_HIGH (x)));
-		      break;
-		    default:
-		      break;
-		  }
+	      case DFmode:
+		REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+		REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
+		fprintf (file, "0x%lx", val[1]);
+		break;;
+	      case SFmode:
+		gcc_unreachable ();
+	      case VOIDmode:
+	      case DImode:
+		mn10300_print_operand_address (file,
+					       GEN_INT (CONST_DOUBLE_HIGH (x)));
+		break;
+	      default:
 		break;
 	      }
-
-	  case CONST_INT:
-	    {
-	      rtx low, high;
-	      split_double (x, &low, &high);
-	      fprintf (file, "%ld", (long)INTVAL (high));
-	      break;
-	    }
-
-	  default:
-	    gcc_unreachable ();
+	    break;
 	  }
-	break;
 
-      case 'A':
-	fputc ('(', file);
-	if (REG_P (XEXP (x, 0)))
-	  output_address (gen_rtx_PLUS (SImode, XEXP (x, 0), const0_rtx));
-	else
-	  output_address (XEXP (x, 0));
-	fputc (')', file);
-	break;
+	case CONST_INT:
+	  {
+	    rtx low, high;
+	    split_double (x, &low, &high);
+	    fprintf (file, "%ld", (long)INTVAL (high));
+	    break;
+	  }
 
-      case 'N':
-	gcc_assert (INTVAL (x) >= -128 && INTVAL (x) <= 255);
-	fprintf (file, "%d", (int)((~INTVAL (x)) & 0xff));
-	break;
+	default:
+	  gcc_unreachable ();
+	}
+      break;
 
-      case 'U':
-	gcc_assert (INTVAL (x) >= -128 && INTVAL (x) <= 255);
-	fprintf (file, "%d", (int)(INTVAL (x) & 0xff));
-	break;
+    case 'A':
+      fputc ('(', file);
+      if (REG_P (XEXP (x, 0)))
+	output_address (gen_rtx_PLUS (SImode, XEXP (x, 0), const0_rtx));
+      else
+	output_address (XEXP (x, 0));
+      fputc (')', file);
+      break;
+
+    case 'N':
+      gcc_assert (INTVAL (x) >= -128 && INTVAL (x) <= 255);
+      fprintf (file, "%d", (int)((~INTVAL (x)) & 0xff));
+      break;
+
+    case 'U':
+      gcc_assert (INTVAL (x) >= -128 && INTVAL (x) <= 255);
+      fprintf (file, "%d", (int)(INTVAL (x) & 0xff));
+      break;
 
       /* For shift counts.  The hardware ignores the upper bits of
 	 any immediate, but the assembler will flag an out of range
 	 shift count as an error.  So we mask off the high bits
 	 of the immediate here.  */
-      case 'S':
-	if (CONST_INT_P (x))
-	  {
-	    fprintf (file, "%d", (int)(INTVAL (x) & 0x1f));
-	    break;
-	  }
-	/* FALL THROUGH */
+    case 'S':
+      if (CONST_INT_P (x))
+	{
+	  fprintf (file, "%d", (int)(INTVAL (x) & 0x1f));
+	  break;
+	}
+      /* FALL THROUGH */
 
-      default:
-	switch (GET_CODE (x))
-	  {
-	  case MEM:
-	    fputc ('(', file);
-	    output_address (XEXP (x, 0));
-	    fputc (')', file);
-	    break;
+    default:
+      switch (GET_CODE (x))
+	{
+	case MEM:
+	  fputc ('(', file);
+	  output_address (XEXP (x, 0));
+	  fputc (')', file);
+	  break;
 
-	  case PLUS:
-	    output_address (x);
-	    break;
+	case PLUS:
+	  output_address (x);
+	  break;
 
-	  case REG:
-	    fprintf (file, "%s", reg_names[REGNO (x)]);
-	    break;
+	case REG:
+	  fprintf (file, "%s", reg_names[REGNO (x)]);
+	  break;
 
-	  case SUBREG:
-	    fprintf (file, "%s", reg_names[subreg_regno (x)]);
-	    break;
+	case SUBREG:
+	  fprintf (file, "%s", reg_names[subreg_regno (x)]);
+	  break;
 
 	  /* This will only be single precision....  */
-	  case CONST_DOUBLE:
-	    {
-	      unsigned long val;
-	      REAL_VALUE_TYPE rv;
+	case CONST_DOUBLE:
+	  {
+	    unsigned long val;
+	    REAL_VALUE_TYPE rv;
 
-	      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
-	      REAL_VALUE_TO_TARGET_SINGLE (rv, val);
-	      fprintf (file, "0x%lx", val);
-	      break;
-	    }
-
-	  case CONST_INT:
-	  case SYMBOL_REF:
-	  case CONST:
-	  case LABEL_REF:
-	  case CODE_LABEL:
-	  case UNSPEC:
-	    mn10300_print_operand_address (file, x);
+	    REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+	    REAL_VALUE_TO_TARGET_SINGLE (rv, val);
+	    fprintf (file, "0x%lx", val);
 	    break;
-	  default:
-	    gcc_unreachable ();
 	  }
-	break;
-   }
+
+	case CONST_INT:
+	case SYMBOL_REF:
+	case CONST:
+	case LABEL_REF:
+	case CODE_LABEL:
+	case UNSPEC:
+	  mn10300_print_operand_address (file, x);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+    }
 }
 
 /* Output assembly language output for the address ADDR to FILE.  */
@@ -1694,7 +1714,7 @@ mn10300_output_add (rtx operands[3], bool need_flags)
   dest_class = REGNO_REG_CLASS (dest_regnum);
   src1_class = REGNO_REG_CLASS (src1_regnum);
 
-  if (GET_CODE (src2) == CONST_INT)
+  if (CONST_INT_P (src2))
     {
       gcc_assert (dest_regnum == src1_regnum);
 
@@ -2925,7 +2945,176 @@ mn10300_split_and_operand_count (rtx op)
     }
 }
 
+/* Extract operands and (if requested) the LIW op type from the insn.
+   Returns false if the insn can't be bundled.  */
+
+static bool
+extract_bundle (rtx insn, rtx * ops, enum attr_liw_op * plop)
+{
+  enum attr_liw_op lop;
+  rtx p, s;
+
+  p = single_set (insn);
+  s = SET_SRC (p);
+  lop = get_attr_liw_op (insn);
+  if (plop != NULL)
+    * plop = lop;
+
+  switch (lop)
+    {
+    case LIW_OP_MOV:
+      ops[0] = SET_DEST (p);
+      ops[1] = SET_SRC (p);
+      break;
+    case LIW_OP_CMP:
+      ops[0] = XEXP (SET_SRC (p), 0);
+      ops[1] = XEXP (SET_SRC (p), 1);
+      break;
+    case LIW_OP_NONE:
+      return false;
+    default:
+      ops[0] = SET_DEST (p);
+      ops[1] = XEXP (SET_SRC (p), 1);
+      break;
+    }
+
+  return REG_P (ops[0]) && REG_P (ops[1]);
+}
+
+/* Look for conflicts in the operands used in
+   the potential bundling of the two insns.  */
+
+static bool
+check_liw_constraints (rtx ops[4],
+		       enum attr_liw_op op1,
+		       enum attr_liw_op op2,
+		       bool swapped)
+{
+  /* Look for the two destination registers being the same.  This is OK if
+     the first op is a comparison op, since it will compare the value prior
+     to the completion of the second op.  */
+  if (REGNO (ops[0]) == REGNO (ops[2])
+      && ( (! swapped && op1 != LIW_OP_CMP)
+	  || (swapped && op2 != LIW_OP_CMP)))
+    return false;
+
+  /* Look for the source of the second op being the destination of the first op.
+     Nomrally this will prevent the bundling since GCC has generated sequential
+     operations and the LIW opcodes are executed in parallel.  But if the first
+     opcode is a MOV, we can copy its source to the second ops source.  */
+  if (swapped)
+    return REGNO (ops[1]) != REGNO (ops[2]);
+
+  if (REGNO (ops[3]) == REGNO (ops[0]))
+    {
+      if (op1 == LIW_OP_MOV)
+	{
+	  ops[3] = ops[1];
+	  return true;
+	}
+      return false;
+    }
+
+  return true;
+}
+
+/* Decide if the given insn is a candidate for LIW bundling.  For now we just
+   check that the insn has an LIW attribute.  Later on we check operand
+   constraints and such.  */
+
+static bool
+liw_candidate (rtx insn)
+{
+  return insn != NULL_RTX
+    && single_set (insn) != NULL_RTX
+    && get_attr_liw (insn) != LIW_BOTH;
+}
+
+/* Combine pairs of insns into LIW bundles.  */
+
+static void
+mn10300_bundle_liw (void)
+{
+  rtx r;
+
+  for (r = get_insns (); r != NULL_RTX; r = next_nonnote_nondebug_insn (r))
+    {
+      rtx insn1, insn2, ops[4];
+      enum attr_liw liw1, liw2;
+      enum attr_liw_op op1, op2;
+      bool swapped = false;
+
+      insn1 = r;
+      if (! liw_candidate (insn1))
+	continue;
+
+      insn2 = next_nonnote_nondebug_insn (insn1);
+      if (! liw_candidate (insn2))
+	continue;
+
+      liw1 = get_attr_liw (insn1);
+      if (liw1 == LIW_BOTH)
+	continue;
+      liw2 = get_attr_liw (insn2);
+      if (liw2 == LIW_BOTH)
+	continue;
+      if (liw2 == liw1 && liw1 != LIW_EITHER)
+	continue;
+
+      /* The scheduler always groups the insns correctly, but not
+	 always in sequence.  So, we can do a naive check and expect
+	 it to work.  */
+      if (liw1 == LIW_OP2 || liw2 == LIW_OP1)
+	{
+	  rtx r;
+	  enum attr_liw lt;
+
+	  r = insn1;
+	  insn1 = insn2;
+	  insn2 = r;
+	  lt = liw1;
+	  liw1 = liw2;
+	  liw2 = lt;
+	  swapped = true;
+	}
+
+      if (! extract_bundle (insn1, ops, & op1))
+	continue;
+      if (! extract_bundle (insn2, ops + 2, & op2))
+	continue;
+      if (! check_liw_constraints (ops, op1, op2, swapped))
+	continue;
+
+      delete_insn (insn2);
+
+      if (op1 == LIW_OP_CMP)
+	insn2 = gen_cmp_liw (ops[2], ops[3], ops[0], ops[1], GEN_INT (op2));
+      else if (op2 == LIW_OP_CMP)
+	insn2 = gen_liw_cmp (ops[0], ops[1], ops[2], ops[3], GEN_INT (op1));
+      else
+	insn2 = gen_liw (ops[0], ops[2], ops[1], ops[3],
+			 GEN_INT (op1), GEN_INT (op2));
+
+      insn2 = emit_insn_after (insn2, insn1);
+      delete_insn (insn1);
+      r = insn2;
+    }
+}
+
+static void
+mn10300_reorg (void)
+{
+  if (TARGET_AM33)
+    {
+      if (TARGET_ALLOW_LIW)
+	mn10300_bundle_liw ();
+    }
+}
+
 /* Initialize the GCC target structure.  */
+
+#undef  TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG mn10300_reorg
 
 #undef  TARGET_EXCEPT_UNWIND_INFO
 #define TARGET_EXCEPT_UNWIND_INFO sjlj_except_unwind_info
@@ -2954,7 +3143,7 @@ mn10300_split_and_operand_count (rtx op)
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA mn10300_asm_output_addr_const_extra
 
 #undef  TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS MASK_MULT_BUG | MASK_PTR_A0D0
+#define TARGET_DEFAULT_TARGET_FLAGS MASK_MULT_BUG | MASK_PTR_A0D0 | MASK_ALLOW_LIW
 #undef  TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION mn10300_handle_option
 #undef  TARGET_OPTION_OVERRIDE

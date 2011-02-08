@@ -50,6 +50,10 @@
         }					\
       else if (TARGET_AM33)			\
         builtin_define ("__AM33__=1");		\
+						\
+      builtin_define (TARGET_ALLOW_LIW ?	\
+		      "__LIW__" : "__NO_LIW__");\
+						\
     }						\
   while (0)
 
