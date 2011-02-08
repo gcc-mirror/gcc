@@ -1,6 +1,6 @@
 ; Options for the 64-bit flavor of AIX.
 ;
-; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010, 2011 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -30,3 +30,9 @@ Compile for 32-bit pointers
 mpe
 Target Report RejectNegative Var(internal_nothing_1) Save
 Support message passing with the Parallel Environment
+
+posix
+Driver
+
+pthread
+Driver
