@@ -1,3 +1,10 @@
+2011-02-07  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* configure.ac: Add mips*-*-rtems* support.
+	* configure: Regenerate.
+	* src/mips/ffitarget.h: Ensure needed constants are available
+	for targets which do not have sgidefs.h.
+
 2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/40125

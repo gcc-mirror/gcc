@@ -114,7 +114,7 @@ case "$host" in
 	TARGET=M68K; TARGETDIR=m68k
 	;;
 
-  mips-sgi-irix5.* | mips-sgi-irix6.*)
+  mips-sgi-irix5.* | mips-sgi-irix6.* | mips*-*-rtems*)
 	TARGET=MIPS; TARGETDIR=mips
 	;;
   mips*-*-linux*)
