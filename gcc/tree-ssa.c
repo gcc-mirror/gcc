@@ -1898,7 +1898,7 @@ non_rewritable_lvalue_p (tree lhs)
   /* A decl that is wrapped inside a MEM-REF that covers
      it full is also rewritable.
      ???  The following could be relaxed allowing component
-     references that do not change the access size.  */ ;
+     references that do not change the access size.  */
   if (TREE_CODE (lhs) == MEM_REF
       && TREE_CODE (TREE_OPERAND (lhs, 0)) == ADDR_EXPR
       && integer_zerop (TREE_OPERAND (lhs, 1)))
@@ -2039,11 +2039,16 @@ execute_update_addresses_taken (void)
 		{
 		  tree link = gimple_asm_output_op (stmt, i);
 		  tree lhs = TREE_VALUE (link);
-		  if (TREE_CODE (lhs) != SSA_NAME
-		      && non_rewritable_lvalue_p (lhs))
+		  if (TREE_CODE (lhs) != SSA_NAME)
 		    {
 		      decl = get_base_address (lhs);
-		      if (DECL_P (decl))
+		      if (DECL_P (decl)
+			  && (non_rewritable_lvalue_p (lhs)
+			      /* We cannot move required conversions from
+				 the lhs to the rhs in asm statements, so
+				 require we do not need any.  */
+			      || !useless_type_conversion_p
+			            (TREE_TYPE (lhs), TREE_TYPE (decl))))
 			bitmap_set_bit (not_reg_needs, DECL_UID (decl));
 		    }
 		}

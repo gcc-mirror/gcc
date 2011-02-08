@@ -1,3 +1,9 @@
+2011-02-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47641
+	* tree-ssa.c (execute_update_addresses_taken): For asm outputs
+	require type compatibility.
+
 2011-02-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gimple-low.c (lower_function_body): Don't remove the location of
