@@ -1,3 +1,7 @@
+2011-02-07  Mike Stump  <mikestump@comcast.net>
+
+	* Make-lang.in (obj-c++.tags): Don't include *.y.
+
 2010-12-29  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objcp-lang.c (objcp_tsubst_copy_and_build): Update call to
