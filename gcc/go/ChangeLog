@@ -1,3 +1,8 @@
+2011-02-08  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c (go_langhook_init_options_struct): Set
+	frontend_set_flag_errno_math.  Don't set x_flag_trapping_math.
+
 2011-01-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gospec.c (lang_specific_driver) [HAVE_LD_STATIC_DYNAMIC] Use

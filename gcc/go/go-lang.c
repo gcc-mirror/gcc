@@ -149,9 +149,7 @@ go_langhook_init_options_struct (struct gcc_options *opts)
 
   /* The builtin math functions should not set errno.  */
   opts->x_flag_errno_math = 0;
-
-  /* By default assume that floating point math does not trap.  */
-  opts->x_flag_trapping_math = 0;
+  opts->frontend_set_flag_errno_math = true;
 
   /* We turn on stack splitting if we can.  */
   if (targetm.supports_split_stack (false, opts))
