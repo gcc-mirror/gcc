@@ -1,3 +1,8 @@
+2011-02-08  Jeff Law <law@redhat.com>
+
+	PR tree-optimization/42893
+	* gcc.tree-ssa/pr42893.c: New test.
+
 2011-02-08  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/46834
