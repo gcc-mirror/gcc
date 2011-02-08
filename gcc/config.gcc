@@ -559,6 +559,7 @@ case ${target} in
   use_gcc_stdint=wrap
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
+  extra_options="$extra_options gnu-user.opt"
   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
   gas=yes
   gnu_ld=yes
@@ -673,6 +674,7 @@ case ${target} in
   use_gcc_stdint=wrap
   ;;
 *-*-uclinux*)
+  extra_options="$extra_options gnu-user.opt"
   use_gcc_stdint=wrap
   tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC SINGLE_LIBC"
   ;;

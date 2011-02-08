@@ -1,3 +1,10 @@
+2011-02-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/gnu-user.opt: New.
+	* config.gcc (*-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu |
+	*-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu,
+	*-*-uclinux*): Use gnu-user.opt.
+
 2011-02-08  Thomas Schwinge  <thomas@schwinge.name>
 
 	* config/gnu.h (CPP_SPEC, LIB_SPEC): Remove handling of -bsd option.
