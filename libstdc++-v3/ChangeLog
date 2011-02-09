@@ -13,6 +13,8 @@
 	* doc/xml/manual/build_hacking.xml: Use absolute paths for images.
 	* doc/xml/images/confdeps.pdf: Add.
 
+	* doc/html/*: Regenerate.
+
 2011-02-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/gnu/fdl-1.2.xml: Remove.
