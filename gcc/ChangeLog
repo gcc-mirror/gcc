@@ -1,5 +1,10 @@
 2011-02-08  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/m68k/uclinux.opt: New.
+	* config.gcc (m68k-*-uclinux*): Use m68k/uclinux.opt.
+
+2011-02-08  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/cris/elf.opt (sim): New Driver option.
 
 2011-02-08  Joseph Myers  <joseph@codesourcery.com>
