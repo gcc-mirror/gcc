@@ -1,3 +1,7 @@
+2011-02-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/mips/iris6.h (TARGET_C99_FUNCTIONS): Define.
+
 2011-02-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/45505

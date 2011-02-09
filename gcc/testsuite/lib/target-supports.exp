@@ -3512,6 +3512,9 @@ proc add_options_for_c99_runtime { flags } {
     if { [istarget *-*-solaris2*] } {
 	return "$flags -std=c99"
     }
+    if { [istarget mips-sgi-irix6.5*] } {
+	return "$flags -std=c99"
+    }
     if { [istarget powerpc-*-darwin*] } {
 	return "$flags -mmacosx-version-min=10.3"
     }
