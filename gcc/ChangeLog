@@ -1,3 +1,9 @@
+2011-02-08  DJ Delorie  <dj@redhat.com>
+
+	PR target/47548
+	* config/m32c/m32c.c (m32c_subreg): Don't try to validate interim
+	patterns.
+
 2011-02-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/m68k/uclinux.opt: New.
