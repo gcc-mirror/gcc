@@ -160,7 +160,10 @@ resolve_procedure_interface (gfc_symbol *sym)
 	resolve_intrinsic (ifc, &ifc->declared_at);
 
       if (ifc->result)
-	sym->ts = ifc->result->ts;
+	{
+	  sym->ts = ifc->result->ts;
+	  sym->result = sym;
+	}
       else   
 	sym->ts = ifc->ts;
       sym->ts.interface = ifc;

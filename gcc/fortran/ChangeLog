@@ -1,5 +1,11 @@
 2011-02-09  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/47352
+	* resolve.c (resolve_procedure_interface): If interface has a result
+	variable, copy the typespec and set result pointer to self.
+
+2011-02-09  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/47463
 	* resolve.c (resolve_typebound_subroutine): Remove erroneous line.
 
