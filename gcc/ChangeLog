@@ -1,3 +1,15 @@
+2011-02-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/45505
+	* tree-sra.c (struct access): New flags grp_scalar_read and
+	grp_scalar_write.  Changed description of assignment read and write
+	flags.
+	(dump_access): Dump new flags, reorder all of them.
+	(sort_and_splice_var_accesses): Set the new flag accordingly, use them
+	to detect multiple scalar reads.
+	(analyze_access_subtree): Use the new scalar read write flags instead
+	of the old flags.  Adjusted comments.
+
 2011-02-08  DJ Delorie  <dj@redhat.com>
 
 	PR target/47548
