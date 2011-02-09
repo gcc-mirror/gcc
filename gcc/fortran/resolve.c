@@ -5894,7 +5894,6 @@ resolve_typebound_subroutine (gfc_code *code)
       name = name ? name : code->expr1->value.function.esym->name;
       code->expr1->symtree = expr->symtree;
       code->expr1->ref = gfc_copy_ref (expr->ref);
-      expr->symtree->n.sym->ts.u.derived = declared;
       gfc_add_vptr_component (code->expr1);
       gfc_add_component_ref (code->expr1, name);
       code->expr1->value.function.esym = NULL;

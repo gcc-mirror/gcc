@@ -1,3 +1,8 @@
+2011-02-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47463
+	* gfortran.dg/typebound_assignment_2.f03: New.
+
 2011-02-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47664
