@@ -3618,7 +3618,7 @@ m32c_subreg (enum machine_mode outer,
 	  /* Volatile MEMs don't get simplified, but we need them to
 	     be.  We are little endian, so the subreg byte is the
 	     offset.  */
-	  r = adjust_address (x, outer, byte);
+	  r = adjust_address_nv (x, outer, byte);
 	}
       return r;
     }
