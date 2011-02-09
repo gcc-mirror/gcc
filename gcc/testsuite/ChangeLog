@@ -1,3 +1,13 @@
+2011-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/47646
+	* gnat.dg/uninit_func.adb: Adjust dg directive.
+
+2011-02-09  Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	PR middle-end/47646
+	* obj-c++.dg/attributes/method-noreturn-1.mm: Adjust dg directives.
+
 2011-02-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47637
