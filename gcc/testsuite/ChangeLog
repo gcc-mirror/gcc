@@ -1,3 +1,9 @@
+2011-02-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/builtins-config.h: Remove __sgi handling.
+	* lib/target-supports.exp (add_options_for_c99_runtime): Add
+	-std=c99 for mips-sgi-irix6.5*.
+
 2011-02-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/45505
