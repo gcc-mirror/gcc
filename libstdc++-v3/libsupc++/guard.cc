@@ -1,4 +1,5 @@
-// Copyright (C) 2002, 2004, 2006, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2004, 2006, 2008, 2009, 2010, 2011
+// Free Software Foundation, Inc.
 //  
 // This file is part of GCC.
 //
@@ -133,11 +134,6 @@ __set_and_release (__cxxabiv1::__guard *g)
 # define _GLIBCXX_GUARD_SET_AND_RELEASE(G) _GLIBCXX_GUARD_SET (G)
 
 #endif /* __GTHREADS */
-
-namespace __gnu_cxx
-{
-  recursive_init_error::~recursive_init_error() throw() { }
-}
 
 //
 // Here are C++ run-time routines for guarded initiailization of static
