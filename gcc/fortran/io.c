@@ -3091,7 +3091,8 @@ match_io_element (io_kind k, gfc_code **cpp)
   cp = gfc_get_code ();
   cp->op = EXEC_TRANSFER;
   cp->expr1 = expr;
-  cp->ext.dt = current_dt;
+  if (k != M_INQUIRE)
+    cp->ext.dt = current_dt;
 
   *cpp = cp;
   return MATCH_YES;
