@@ -3192,6 +3192,32 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
        else if (f->sym->value)
 	  gfc_init_default_dt (f->sym, &init, true);
       }
+    else if (f->sym && f->sym->attr.intent == INTENT_OUT
+	     && f->sym->ts.type == BT_CLASS
+	     && !CLASS_DATA (f->sym)->attr.class_pointer
+	     && CLASS_DATA (f->sym)->ts.u.derived->attr.alloc_comp)
+      {
+	tree decl = build_fold_indirect_ref_loc (input_location,
+						 f->sym->backend_decl);
+	tmp = CLASS_DATA (f->sym)->backend_decl;
+	tmp = fold_build3_loc (input_location, COMPONENT_REF,
+			       TREE_TYPE (tmp), decl, tmp, NULL_TREE);
+	tmp = build_fold_indirect_ref_loc (input_location, tmp);
+	tmp = gfc_deallocate_alloc_comp (CLASS_DATA (f->sym)->ts.u.derived,
+					 tmp,
+					 CLASS_DATA (f->sym)->as ?
+					 CLASS_DATA (f->sym)->as->rank : 0);
+
+	if (f->sym->attr.optional || f->sym->ns->proc_name->attr.entry_master)
+	  {
+	    present = gfc_conv_expr_present (f->sym);
+	    tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp),
+			      present, tmp,
+			      build_empty_stmt (input_location));
+	  }
+
+	gfc_add_expr_to_block (&init, tmp);
+      }
 
   gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
 }
