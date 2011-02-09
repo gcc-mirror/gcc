@@ -136,7 +136,7 @@ GLIBCXX_3.4 {
       std::r[^ae]*;
       std::range_error::r*;
 #     std::range_error::~r*;
-      std::re[^t]*;
+#     std::re[^t]*;
 #     std::rethrow_exception
       std::set_new_handler*;
       std::set_terminate*;
@@ -617,7 +617,9 @@ GLIBCXX_3.4 {
     _ZTVSt[0-9][0-9][g-k]*;
     _ZTVSt11logic_error;
     _ZTVSt12length_error;
-    _ZTVSt[0-9][0-9][m-r]*;
+    _ZTVSt[0-9][0-9][m-q]*;
+    _ZTVSt11range_error;
+    _ZTVSt13runtime_error;
     _ZTVSt[0-9][0-9][t-z]*;
     _ZTVSt[0-9][0-9]e[^r]*;
     _ZTVSt[0-9][0-9]s[^y]*;
@@ -645,7 +647,9 @@ GLIBCXX_3.4 {
     _ZTISt[0-9][0-9][g-k]*;
     _ZTISt11logic_error;
     _ZTISt12length_error;
-    _ZTISt[0-9][0-9][m-r]*;
+    _ZTISt[0-9][0-9][m-q]*;
+    _ZTISt11range_error;
+    _ZTISt13runtime_error;
     _ZTISt[0-9][0-9][t-z]*;
     _ZTISt[0-9][0-9]e[^r]*;
     _ZTISt[0-9][0-9]s[^y]*;
@@ -677,7 +681,9 @@ GLIBCXX_3.4 {
     _ZTSSt[0-9][0-9][g-k]*;
     _ZTSSt11logic_error;
     _ZTSSt12length_error;
-    _ZTSSt[0-9][0-9][m-r]*;
+    _ZTSSt[0-9][0-9][m-q]*;
+    _ZTSSt11range_error;
+    _ZTSSt13runtime_error;
     _ZTSSt[0-9][0-9][t-z]*;
     _ZTSSt[0-9][0-9]e[^r]*;
     _ZTSSt[0-9][0-9]s[^y]*;
