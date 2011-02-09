@@ -112,6 +112,10 @@ class Gogo
   void
   set_package_name(const std::string&, source_location);
 
+  // Return whether this is the "main" package.
+  bool
+  is_main_package() const;
+
   // If necessary, adjust the name to use for a hidden symbol.  We add
   // a prefix of the package name, so that hidden symbols in different
   // packages do not collide.
@@ -653,6 +657,8 @@ class Gogo
   std::set<Import_init> imported_init_fns_;
   // The unique prefix used for all global symbols.
   std::string unique_prefix_;
+  // Whether an explicit unique prefix was set by -fgo-prefix.
+  bool unique_prefix_specified_;
   // A list of interface types defined while parsing.
   std::vector<Interface_type*> interface_types_;
 };
