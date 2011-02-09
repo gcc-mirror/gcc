@@ -1,3 +1,8 @@
+2011-02-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47664
+	* gcc.dg/tree-ssa/inline-7.c: New testcase.
+
 2011-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/47646
