@@ -33,6 +33,7 @@ Gogo::Gogo(int int_type_size, int pointer_size)
     init_fn_name_(),
     imported_init_fns_(),
     unique_prefix_(),
+    unique_prefix_specified_(false),
     interface_types_()
 {
   const source_location loc = BUILTINS_LOCATION;
@@ -259,7 +260,7 @@ Gogo::set_package_name(const std::string& package_name,
   // package name (e.g., P.x), but we no longer do.
   // this->globals_->add_package(package_name, this->package_);
 
-  if (package_name == "main")
+  if (this->is_main_package())
     {
       // Declare "main" as a function which takes no parameters and
       // returns no value.
@@ -268,6 +269,15 @@ Gogo::set_package_name(const std::string& package_name,
 						      BUILTINS_LOCATION),
 			     BUILTINS_LOCATION);
     }
+}
+
+// Return whether this is the "main" package.  This is not true if
+// -fgo-prefix was used.
+
+bool
+Gogo::is_main_package() const
+{
+  return this->package_name() == "main" && !this->unique_prefix_specified_;
 }
 
 // Import a package.
@@ -2446,6 +2456,7 @@ Gogo::set_unique_prefix(const std::string& arg)
 {
   gcc_assert(this->unique_prefix_.empty());
   this->unique_prefix_ = arg;
+  this->unique_prefix_specified_ = true;
 }
 
 // Work out the package priority.  It is one more than the maximum
@@ -2477,7 +2488,7 @@ Gogo::do_exports()
   exp.export_globals(this->package_name(),
 		     this->unique_prefix(),
 		     this->package_priority(),
-		     (this->need_init_fn_ && this->package_name() != "main"
+		     (this->need_init_fn_ && !this->is_main_package()
 		      ? this->get_init_fn_name()
 		      : ""),
 		     this->imported_init_fns_,
