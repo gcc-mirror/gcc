@@ -1,3 +1,7 @@
+2011-02-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io.c (match_io_element): Do not set dt if not inquire.
+
 2011-02-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45290
