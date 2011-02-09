@@ -1,3 +1,19 @@
+2011-02-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/future (packaged_task::operator bool): Rename to...
+	(packaged_task::valid): ...this.
+	* testsuite/30_threads/packaged_task/cons/1.cc: Adjust.
+	* testsuite/30_threads/packaged_task/cons/2.cc: Adjust.
+	* testsuite/30_threads/packaged_task/cons/move.cc: Adjust.
+	* testsuite/30_threads/packaged_task/cons/move_assign.cc: Adjust.
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/invoke.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/reset.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/reset2.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/swap.cc: Adjust.
+	* testsuite/30_threads/packaged_task/members/boolconv.cc: Remove.
+	* testsuite/30_threads/packaged_task/members/valid.cc: Add.
+
 2011-02-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/xml/manual/io.xml: Fix typo.

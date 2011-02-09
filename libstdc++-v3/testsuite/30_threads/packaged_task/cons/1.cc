@@ -6,7 +6,7 @@
 // { dg-require-gthreads "" }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,15 +35,15 @@ void test01()
   using namespace __gnu_test;
 
   packaged_task<int ()> p1;
-  VERIFY( !static_cast<bool>(p1) );
+  VERIFY( !p1.valid() );
   packaged_task<int& ()> p2;
-  VERIFY( !static_cast<bool>(p2) );
+  VERIFY( !p2.valid() );
   packaged_task<void ()> p3;
-  VERIFY( !static_cast<bool>(p3) );
+  VERIFY( !p3.valid() );
   packaged_task<ClassType ()> p4;
-  VERIFY( !static_cast<bool>(p4) );
+  VERIFY( !p4.valid() );
   packaged_task<AbstractClass& (int)> p5;
-  VERIFY( !static_cast<bool>(p5) );
+  VERIFY( !p5.valid() );
 }
 
 int main()

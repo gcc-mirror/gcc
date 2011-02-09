@@ -1,6 +1,6 @@
 // <future> -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1250,7 +1250,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       swap(packaged_task& __other)
       { _M_state.swap(__other._M_state); }
 
-      explicit operator bool() const { return static_cast<bool>(_M_state); }
+      bool
+      valid() const
+      { return static_cast<bool>(_M_state); }
 
       // Result retrieval
       future<_Res>
