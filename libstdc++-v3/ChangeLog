@@ -1,5 +1,14 @@
 2011-02-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/43863
+	* libsupc++/guard.cc (recursive_init_error::~recursive_init_error):
+	Move to ...
+	* libsupc++/guard_error.cc: ... new file.
+	* libsupc++/Makefile.am: Update.
+	* libsupc++/Makefile.in: Regenerate.
+
+2011-02-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/future (packaged_task::operator bool): Rename to...
 	(packaged_task::valid): ...this.
 	* testsuite/30_threads/packaged_task/cons/1.cc: Adjust.
