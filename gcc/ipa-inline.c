@@ -1643,17 +1643,12 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	 during incremental inlining.  */
       && !node->local.disregard_inline_limits)
     {
-      bitmap visited = BITMAP_ALLOC (NULL);
       for (e = node->callees; e; e = e->next_callee)
 	{
 	  int allowed_growth = 0;
 	  if (!e->callee->local.inlinable
 	      || !e->inline_failed
 	      || e->callee->local.disregard_inline_limits)
-	    continue;
-	  /* We are inlining a function to all call-sites in node
-	     or to none.  So visit each candidate only once.  */
-	  if (!bitmap_set_bit (visited, e->callee->uid))
 	    continue;
 	  if (dump_file)
 	    fprintf (dump_file, "Considering inline candidate %s.\n",
@@ -1727,7 +1722,6 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	      inlined = true;
 	    }
 	}
-      BITMAP_FREE (visited);
     }
   return inlined;
 }

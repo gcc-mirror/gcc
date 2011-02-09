@@ -1,3 +1,9 @@
+2011-02-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47664
+	* ipa-inline.c (cgraph_decide_inlining_incrementally): Visit
+	all edges again.
+
 2011-02-09  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix61.h (PROCESSOR_DEFAULT): Change to
