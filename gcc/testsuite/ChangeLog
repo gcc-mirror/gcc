@@ -1,3 +1,23 @@
+2011-02-10  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc.dg/special/load-category-1.m: Remove unused header.
+	* objc.dg/special/load-category-1a.m: Likewise.
+	* objc.dg/special/load-category-2.m: Likewise.
+	* objc.dg/special/load-category-2a.m: Likewise.
+	* objc.dg/special/load-category-3.m: Likewise.
+	* objc.dg/special/load-category-3a.m: Likewise.
+	* objc.dg/attributes/proto-attribute-2.m: Likewise.
+	* objc.dg/attributes/proto-attribute-3.m: Likewise.
+	* objc.dg/attributes/class-attribute-1.m: Likewise.
+	* objc.dg/property/property.exp: Don't run for Darwin < 9.
+	* obj-c++.dg/property/property.exp: Likewise.
+	* objc.dg/attributes/method-sentinel-1.m: Update type header.
+	* obj-c++.dg/attributes/method-sentinel-1.mm: Likewise.
+	* obj-c++.dg/attributes/proto-attribute-2.mm: Skip for Darwin < 9.
+	* obj-c++.dg/attributes/class-attribute-1.mm: Likewise.
+	* obj-c++.dg/attributes/proto-attribute-3.mm: Likewise.
+	* obj-c++.dg/template-8.mm: Likewise.
+
 2011-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/47665

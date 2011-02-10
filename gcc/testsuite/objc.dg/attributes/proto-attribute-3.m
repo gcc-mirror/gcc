@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 #include <objc/objc.h>
-#include <objc/runtime.h>
 
 __attribute__ ((deprecated))
 @protocol DeprecatedProtocol1
