@@ -191,41 +191,44 @@
 
 <section xml:id="debug.races"><info><title>Data Race Hunting</title></info>
 <para>
-  All synchronization primitives used in the library internals should be
+  All synchronization primitives used in the library internals need to be
   understood by race detectors so that they do not produce false reports.
 </para>
 
 <para>
-  We use two annotations (macros) to explain low-level synchronization 
+  Two annotation macros are used to explain low-level synchronization 
   to race detectors:
   <code>_GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE()</code> and
   <code> _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER()</code>.
-  By default, these two macros are defined empty -- anyone who wants
-  to use a race detector will need to redefine these macros to call an
+  By default, these macros are defined empty -- anyone who wants
+  to use a race detector needs to redefine them to call an
   appropriate API.
-  Since these macros are empty by default, redefining them in the user code
-  will affect only the inline template code, e.g. <code>shared_ptr</code>.
-  In order to redefine the macros in <code>basic_string</code> one will
-  need to disable extern templates (by defining 
-  <code>_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or rebuild the 
+  Since these macros are empty by default when the library is built,
+  redefining them will only affect inline functions and template
+  instantiations which are compiled in user code. This allows annotation
+  of templates such as <code>shared_ptr</code>, but not code which is
+  only instantiated in the library.
+  In order to annotate <code>basic_string</code> reference counting it
+  is necessary to disable extern templates (by defining 
+  <code>_GLIBCXX_EXTERN_TEMPLATE=-1</code>) or to rebuild the 
   <code>.so</code> file.
-  The rest of the cases (currently, <code>ios_base::Init::~Init</code>,
-  <code>locale::_Impl</code> and <code>locale::facet</code>) will require
-  to rebuild the <code>.so</code> file.
+  Annotating the remaining atomic operations (at the time of writing these
+  are in <code>ios_base::Init::~Init</code>, <code>locale::_Impl</code> and
+  <code>locale::facet</code>) requires rebuilding the <code>.so</code> file.
 </para>
 
 <para>
-  The approach described above works at least with the following race 
+  The approach described above is known to work with the following race
   detection tools:
   <link xmlns:xlink="http://www.w3.org/1999/xlink" 
   xlink:href="http://valgrind.org/docs/manual/drd-manual.html">
-  DRD </link>,
+  DRD</link>,
   <link xmlns:xlink="http://www.w3.org/1999/xlink" 
   xlink:href="http://valgrind.org/docs/manual/hg-manual.html"> 
-  Helgrind </link>,
+  Helgrind</link>, and
   <link xmlns:xlink="http://www.w3.org/1999/xlink" 
   xlink:href="http://code.google.com/p/data-race-test"> 
-  ThreadSanitizer </link>.
+  ThreadSanitizer</link>.
 </para>
 
 <para>
@@ -235,7 +238,7 @@
   #define _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A) ANNOTATE_HAPPENS_BEFORE(A)
   #define _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A)  ANNOTATE_HAPPENS_AFTER(A)
 </programlisting>
-  Refer to the documentation of each particular tool for the details.
+  Refer to the documentation of each particular tool for details.
 </para>
 
 </section>
