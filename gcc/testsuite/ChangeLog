@@ -1,3 +1,10 @@
+2011-02-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/parity-1.c: Use -march=k8.
+	* gcc.target/i386/parity-2.c: Ditto.
+	* gcc.target/i386/vecinit-1.c: Ditto.
+	* gcc.target/i386/vecinit-2.c: Ditto.
+
 2011-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/46610
