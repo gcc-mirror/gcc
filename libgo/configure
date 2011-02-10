@@ -13302,12 +13302,12 @@ case ${host} in
 #error 64-bit
 #endif
 _ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
+if ac_fn_c_try_compile "$LINENO"; then :
   is_386=yes
 else
   is_x86_64=yes
 fi
-rm -f conftest.err conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$is_386" = "yes"; then
       GOARCH=386
     else
@@ -13326,12 +13326,12 @@ rm -f conftest.err conftest.$ac_ext
 #error 64-bit
 #endif
 _ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
+if ac_fn_c_try_compile "$LINENO"; then :
   is_mips=yes
 else
   is_mips64=yes
 fi
-rm -f conftest.err conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$is_mips" = "yes"; then
       GOARCH=mips
     else
@@ -13346,12 +13346,12 @@ rm -f conftest.err conftest.$ac_ext
 #error 64-bit
 #endif
 _ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
+if ac_fn_c_try_compile "$LINENO"; then :
   is_ppc=yes
 else
   is_ppc64=yes
 fi
-rm -f conftest.err conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$is_ppc" = "yes"; then
       GOARCH=ppc
     else
@@ -13366,12 +13366,12 @@ rm -f conftest.err conftest.$ac_ext
 #error 64-bit
 #endif
 _ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
+if ac_fn_c_try_compile "$LINENO"; then :
   is_sparc=yes
 else
   is_sparc64=yes
 fi
-rm -f conftest.err conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     if test "$is_sparc" = "yes"; then
       GOARCH=sparc
     else

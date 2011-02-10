@@ -152,7 +152,7 @@ case ${host} in
 changequote(,)dnl
   i[34567]86-*-* | x86_64-*-*)
 changequote([,])dnl
-    AC_PREPROC_IFELSE([
+    AC_COMPILE_IFELSE([
 #ifdef __x86_64__
 #error 64-bit
 #endif],
@@ -168,7 +168,7 @@ changequote([,])dnl
     GOARCH=m68k
     ;;
   mips*-*-*)
-    AC_PREPROC_IFELSE([
+    AC_COMPILE_IFELSE([
 #ifdef __mips64
 #error 64-bit
 #endif],
@@ -180,7 +180,7 @@ changequote([,])dnl
     fi
     ;;
   rs6000*-*-* | powerpc*-*-*)
-    AC_PREPROC_IFELSE([
+    AC_COMPILE_IFELSE([
 #ifdef _ARCH_PPC64
 #error 64-bit
 #endif],
@@ -192,7 +192,7 @@ changequote([,])dnl
     fi
     ;;
   sparc*-*-*)
-    AC_PREPROC_IFELSE([
+    AC_COMPILE_IFELSE([
 #if defined(__sparcv9) || defined(__arch64__)
 #error 64-bit
 #endif],
