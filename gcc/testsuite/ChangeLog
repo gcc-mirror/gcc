@@ -1,5 +1,8 @@
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/function1.C: Adjust for C++0x mode.
+	* g++.dg/cpp0x/regress/template-function1.C: Copy it.
+
 	* g++.dg/ext/label10.C: Adjust for C++0x mode.
 	* g++.dg/cpp0x/regress/ext-label10.C: Copy it.
 

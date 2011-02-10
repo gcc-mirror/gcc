@@ -1,5 +1,9 @@
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (cp_make_fname_decl): Set DECL_THIS_STATIC at toplevel.
+	* semantics.c (finish_fname): Only return the name if we're in
+	a function.
+
 	* decl.c (build_enumerator): Don't perform integral promotions on
 	non-integral constants.
 

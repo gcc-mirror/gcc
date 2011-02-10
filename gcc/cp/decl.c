@@ -3706,7 +3706,10 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
 		      LOOKUP_ONLYCONVERTING);
     }
   else
-    pushdecl_top_level_and_finish (decl, init);
+    {
+      DECL_THIS_STATIC (decl) = true;
+      pushdecl_top_level_and_finish (decl, init);
+    }
 
   return decl;
 }
