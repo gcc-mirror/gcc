@@ -1,5 +1,8 @@
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (build_enumerator): Don't perform integral promotions on
+	non-integral constants.
+
 	* cvt.c (convert_to_void): Handle null op1.
 
 	* class.c (type_has_constexpr_default_constructor): Make sure the

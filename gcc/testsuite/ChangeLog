@@ -1,5 +1,8 @@
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/ext/label10.C: Adjust for C++0x mode.
+	* g++.dg/cpp0x/regress/ext-label10.C: Copy it.
+
 	* g++.dg/cpp0x/regress/ext-cond1.C: Copy from ext/cond1.C.
 
 	* g++.dg/cpp0x/regress/abi-empty7.C: New.
