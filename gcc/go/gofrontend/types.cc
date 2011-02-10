@@ -8052,9 +8052,9 @@ Type::is_unexported_field_or_method(Gogo* gogo, const Type* type,
 				    const std::string& name,
 				    std::vector<const Named_type*>* seen)
 {
-  type = type->deref();
-
   const Named_type* nt = type->named_type();
+  if (nt == NULL)
+    nt = type->deref()->named_type();
   if (nt != NULL)
     {
       if (nt->is_unexported_local_method(gogo, name))
@@ -8071,6 +8071,8 @@ Type::is_unexported_field_or_method(Gogo* gogo, const Type* type,
 	    }
 	}
     }
+
+  type = type->deref();
 
   const Interface_type* it = type->interface_type();
   if (it != NULL && it->is_unexported_method(gogo, name))
@@ -8095,11 +8097,17 @@ Type::is_unexported_field_or_method(Gogo* gogo, const Type* type,
        ++pf)
     {
       if (pf->is_anonymous()
-	  && (!pf->type()->deref()->is_error_type()
-	      && !pf->type()->deref()->is_undefined()))
+	  && !pf->type()->deref()->is_error_type()
+	  && !pf->type()->deref()->is_undefined())
 	{
-	  Named_type* subtype = pf->type()->deref()->named_type();
-	  gcc_assert(subtype != NULL);
+	  Named_type* subtype = pf->type()->named_type();
+	  if (subtype == NULL)
+	    subtype = pf->type()->deref()->named_type();
+	  if (subtype == NULL)
+	    {
+	      // This is an error, but it will be diagnosed elsewhere.
+	      continue;
+	    }
 	  if (Type::is_unexported_field_or_method(gogo, subtype, name, seen))
 	    {
 	      if (nt != NULL)
