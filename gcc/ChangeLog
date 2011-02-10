@@ -1,3 +1,12 @@
+2011-02-10  Richard Henderson  <rth@redhat.com>
+
+	* config/rx/predicates.md (rx_zs_comparison_operator): Revert
+	change from 2011-02-03.
+	* config/rx/rx.c (flags_from_code): Likewise.
+	(rx_print_operand) ['B']: For LT/GE, use lt/ge if overflow flag
+	is valid, n/pz otherwise.
+	(rx_select_cc_mode): Return CCmode if Y is not zero.
+
 2011-02-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (bitpos_of_field): Use BITS_PER_UNIT,

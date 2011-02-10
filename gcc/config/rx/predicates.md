@@ -284,7 +284,7 @@
 )
 
 (define_predicate "rx_zs_comparison_operator"
-  (match_code "eq,ne")
+  (match_code "eq,ne,lt,ge")
 )
 
 ;; GT and LE omitted due to operand swap required.
