@@ -1,6 +1,6 @@
 // future -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,6 +47,9 @@ namespace
           break;
       case std::future_errc::promise_already_satisfied:
           __msg = "Promise already satisfied";
+          break;
+      case std::future_errc::no_state:
+          __msg = "No associated state";
           break;
       default:
           __msg = "Unknown error";
