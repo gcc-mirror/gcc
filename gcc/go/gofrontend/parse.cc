@@ -1848,7 +1848,13 @@ Parse::init_var(const Typed_identifier& tid, Type* type, Expression* init,
   *is_new = true;
   Variable* var = new Variable(type, init, this->gogo_->in_global_scope(),
 			       false, false, location);
-  return this->gogo_->add_variable(tid.name(), var);
+  Named_object* no = this->gogo_->add_variable(tid.name(), var);
+  if (!no->is_variable())
+    {
+      // The name is already defined, so we just gave an error.
+      return this->gogo_->add_sink();
+    }
+  return no;
 }
 
 // Create a dummy global variable to force an initializer to be run in
