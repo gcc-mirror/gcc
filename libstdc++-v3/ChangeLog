@@ -1,5 +1,11 @@
 2011-02-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/47662
+	* include/bits/c++config: Do not use alternative token.
+	* testsuite/17_intro/headers/c++1998/operator_names.cc: New.
+
+2011-02-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* src/future.cc (future_error_category::message): Handle no_state.
 
 2011-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
