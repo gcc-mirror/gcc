@@ -4565,6 +4565,8 @@ Array_type::do_make_expression_tree(Translate_context* context,
   tree element_size_tree = TYPE_SIZE_UNIT(element_type_tree);
 
   tree value = this->element_type_->get_init_tree(gogo, true);
+  if (value == error_mark_node)
+    return error_mark_node;
 
   // The first argument is the number of elements, the optional second
   // argument is the capacity.
@@ -4688,7 +4690,7 @@ Array_type::do_make_expression_tree(Translate_context* context,
   tree range = build2(RANGE_EXPR, sizetype, size_zero_node, max);
   tree space_init = build_constructor_single(array_type, range, value);
 
-  return build2(COMPOUND_EXPR, TREE_TYPE(space),
+  return build2(COMPOUND_EXPR, TREE_TYPE(constructor),
 		build2(MODIFY_EXPR, void_type_node,
 		       build_fold_indirect_ref(value_pointer),
 		       space_init),
