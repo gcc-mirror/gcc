@@ -590,10 +590,10 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
     }
   if (fd == -1)
     {
-      fd_name = xstrdup (file_data->file_name);
       fd = open (file_data->file_name, O_RDONLY|O_BINARY);
       if (fd == -1)
 	return NULL;
+      fd_name = xstrdup (file_data->file_name);
     }
 
 #if LTO_MMAP_IO
@@ -619,9 +619,17 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
       || read (fd, result, len) != (ssize_t) len)
     {
       free (result);
-      return NULL;
+      result = NULL;
     }
-
+#ifdef __MINGW32__
+  /* Native windows doesn't supports delayed unlink on opened file. So
+     we close file here again. This produces higher I/O load, but at least
+     it prevents to have dangling file handles preventing unlink.  */
+  free (fd_name);
+  fd_name = NULL;
+  close (fd);
+  fd = -1;
+#endif
   return result;
 #endif
 }    
@@ -2147,7 +2155,11 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
       file_data = lto_file_read (current_lto_file, resolution, &count);
       if (!file_data)
-	break;
+	{
+	  lto_obj_file_close (current_lto_file);
+	  current_lto_file = NULL;
+	  break;
+	}
 
       decl_data[last_file_ix++] = file_data;
 
