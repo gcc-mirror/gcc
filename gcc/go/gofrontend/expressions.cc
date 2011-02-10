@@ -6397,7 +6397,8 @@ Bound_method_expression::do_check_types(Gogo*)
 tree
 Bound_method_expression::do_get_tree(Translate_context*)
 {
-  gcc_unreachable();
+  error_at(this->location(), "reference to method other than calling it");
+  return error_mark_node;
 }
 
 // Make a method expression.
