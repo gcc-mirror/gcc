@@ -1,3 +1,9 @@
+2011-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/47665
+	* combine.c (make_compound_operation): Only change shifts into
+	multiplication for SCALAR_INT_MODE_P.
+
 2011-02-10  Jie Zhang  <jie@codesourcery.com>
 
 	PR testsuite/47622

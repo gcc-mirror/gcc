@@ -1,3 +1,8 @@
+2011-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/47665
+	* gcc.target/i386/pr47665.c: New test.
+
 2011-02-10  Jie Zhang  <jie@codesourcery.com>
 
 	PR testsuite/47622
