@@ -1,3 +1,9 @@
+2011-02-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/linux64.h (PROCESSOR_DEFAULT): Change to
+	PROCESSOR_POWER7.
+	(PROCESSOR_DEFAULT64): Likewise.
+
 2011-02-10  Richard Henderson  <rth@redhat.com>
 
 	* config/rx/predicates.md (rx_zs_comparison_operator): Revert
