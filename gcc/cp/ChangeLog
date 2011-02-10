@@ -1,5 +1,7 @@
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
+	* cvt.c (convert_to_void): Handle null op1.
+
 	* class.c (type_has_constexpr_default_constructor): Make sure the
 	caller stripped an enclosing array.
 	* init.c (perform_member_init): Strip arrays before calling it.

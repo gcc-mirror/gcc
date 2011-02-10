@@ -892,20 +892,24 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	/* The two parts of a cond expr might be separate lvalues.  */
 	tree op1 = TREE_OPERAND (expr,1);
 	tree op2 = TREE_OPERAND (expr,2);
-	bool side_effects = TREE_SIDE_EFFECTS (op1) || TREE_SIDE_EFFECTS (op2);
+	bool side_effects = ((op1 && TREE_SIDE_EFFECTS (op1))
+			     || TREE_SIDE_EFFECTS (op2));
 	tree new_op1, new_op2;
+	new_op1 = NULL_TREE;
 	if (implicit != ICV_CAST && !side_effects)
 	  {
-	    new_op1 = convert_to_void (op1, ICV_SECOND_OF_COND, complain);
+	    if (op1)
+	      new_op1 = convert_to_void (op1, ICV_SECOND_OF_COND, complain);
 	    new_op2 = convert_to_void (op2, ICV_THIRD_OF_COND, complain);
 	  }
 	else
 	  {
-	    new_op1 = convert_to_void (op1, ICV_CAST, complain);
+	    if (op1)
+	      new_op1 = convert_to_void (op1, ICV_CAST, complain);
 	    new_op2 = convert_to_void (op2, ICV_CAST, complain);
 	  }
 
-	expr = build3 (COND_EXPR, TREE_TYPE (new_op1),
+	expr = build3 (COND_EXPR, TREE_TYPE (new_op2),
 		       TREE_OPERAND (expr, 0), new_op1, new_op2);
 	break;
       }
