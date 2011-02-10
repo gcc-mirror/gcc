@@ -11869,7 +11869,8 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 	{
 	  value = cxx_constant_value (value);
 
-	  if (TREE_CODE (value) == INTEGER_CST)
+	  if (TREE_CODE (value) == INTEGER_CST
+	      && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value)))
 	    {
 	      value = perform_integral_promotions (value);
 	    }
