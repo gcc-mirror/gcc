@@ -7485,7 +7485,8 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	 an address.  */
       if (in_code == MEM && CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) < HOST_BITS_PER_WIDE_INT
-	  && INTVAL (XEXP (x, 1)) >= 0)
+	  && INTVAL (XEXP (x, 1)) >= 0
+	  && SCALAR_INT_MODE_P (mode))
 	{
 	  HOST_WIDE_INT count = INTVAL (XEXP (x, 1));
 	  HOST_WIDE_INT multval = (HOST_WIDE_INT) 1 << count;
