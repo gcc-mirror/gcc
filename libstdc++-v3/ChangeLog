@@ -1,3 +1,11 @@
+2011-02-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/47668
+	* include/debug/map.h (map): Remove unnecessary using-declaration.
+	* include/debug/multimap.h (multimap): Likewise.
+	* include/profile/map.h (map): Likewise.
+	* include/profile/multimap.h (multimap): Likewise.
+
 2011-02-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/43863
