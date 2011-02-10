@@ -1,5 +1,8 @@
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/tree-ssa/inline-3.C: Use a normal function
+	rather than misdeclare std::puts.
+
 	* g++.dg/ext/vla1.C: Adjust for C++0x mode.
 	* g++.dg/other/warning1.C: Likewise.
 	* g++.old-deja/g++.bugs/900119_01.C: Likewise.
