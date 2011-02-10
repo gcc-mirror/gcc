@@ -15,8 +15,7 @@
 
 2011-02-10  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-structalias.c (bitpos_of_field): Use BITS_PER_UNIT,
-	not 8.
+	* tree-ssa-structalias.c (bitpos_of_field): Use BITS_PER_UNIT, not 8.
 
 2011-02-10  Richard Guenther  <rguenther@suse.de>
 
@@ -117,8 +116,7 @@
 	(funsafe-math-optimizations): Likewise.
 	* opth-gen.awk: Handle SetByCombined.
 	* optc-gen.awk: Likewise.
-	* opts.c (set_fast_math_flags): Don't override flag if set by
-	frontend.
+	* opts.c (set_fast_math_flags): Don't override flag if set by frontend.
 	(set_unsafe_math_optimizations_flags): Likewise.
 	* doc/options.texi (Option properties): Document SetByCombined.
 
@@ -253,8 +251,7 @@
 
 2011-02-07  Mike Stump  <mikestump@comcast.net>
 
-	* config/darwin.opt (mmacosx-version-min): Update default OS
-	version.
+	* config/darwin.opt (mmacosx-version-min): Update default OS version.
 
 2011-02-07  Denis Chertykov  <chertykov@gmail.com>
 
