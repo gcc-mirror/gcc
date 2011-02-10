@@ -1,3 +1,11 @@
+2011-02-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/multimap/modifiers/erase/47628.cc: Do
+	not test in C++0x mode.
+	* testsuite/23_containers/map/modifiers/erase/47628.cc: Likewise.
+	* testsuite/20_util/headers/utility/synopsis.cc: Tweak to work
+	in C++0x mode too.
+
 2011-02-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/status_cxx200x.xml: Update.
