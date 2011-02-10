@@ -1,5 +1,10 @@
 2011-02-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/status_cxx200x.xml: Update.
+	* doc/html/*: Regenerate.
+
+2011-02-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/debug.xml: Improve data race docs.
 
 2011-02-09  Paolo Carlini  <paolo.carlini@oracle.com>
