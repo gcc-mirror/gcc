@@ -447,13 +447,14 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	  }
 	else
 	  {
+	    unsigned int flags = flags_from_mode (mode);
 	    switch (code)
 	      {
 	      case LT:
-		ret = "lt";
+		ret = (flags & CC_FLAG_O ? "lt" : "n");
 		break;
 	      case GE:
-		ret = "ge";
+		ret = (flags & CC_FLAG_O ? "ge" : "pz");
 		break;
 	      case GT:
 		ret = "gt";
@@ -482,8 +483,7 @@ rx_print_operand (FILE * file, rtx op, int letter)
 	      default:
 		gcc_unreachable ();
 	      }
-	    gcc_checking_assert ((flags_from_code (code)
-				  & ~flags_from_mode (mode)) == 0);
+	    gcc_checking_assert ((flags_from_code (code) & ~flags) == 0);
 	  }
 	fputs (ret, file);
 	break;
@@ -2625,7 +2625,7 @@ flags_from_code (enum rtx_code code)
     {
     case LT:
     case GE:
-      return CC_FLAG_S | CC_FLAG_O;
+      return CC_FLAG_S;
     case GT:
     case LE:
       return CC_FLAG_S | CC_FLAG_O | CC_FLAG_Z;
@@ -2666,10 +2666,13 @@ rx_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
 /* Return the minimal CC mode needed to implement (CMP_CODE X Y).  */
 
 enum machine_mode
-rx_select_cc_mode (enum rtx_code cmp_code, rtx x, rtx y ATTRIBUTE_UNUSED)
+rx_select_cc_mode (enum rtx_code cmp_code, rtx x, rtx y)
 {
   if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
     return CC_Fmode;
+
+  if (y != const0_rtx)
+    return CCmode;
 
   return mode_from_flags (flags_from_code (cmp_code));
 }
