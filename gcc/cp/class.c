@@ -4349,7 +4349,11 @@ type_has_constexpr_default_constructor (tree t)
   tree fns;
 
   if (!CLASS_TYPE_P (t))
-    return false;
+    {
+      /* The caller should have stripped an enclosing array.  */
+      gcc_assert (TREE_CODE (t) != ARRAY_TYPE);
+      return false;
+    }
   if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
     return synthesized_default_constructor_is_constexpr (t);
   fns = locate_ctor (t);
