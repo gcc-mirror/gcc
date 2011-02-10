@@ -3357,6 +3357,9 @@ Variable::type() const
 void
 Variable::determine_type()
 {
+  if (this->preinit_ != NULL)
+    this->preinit_->determine_types();
+
   // A variable in a type switch with a nil case will have the wrong
   // type here.  It will have an initializer which is a type guard.
   // We want to initialize it to the value without the type guard, and
