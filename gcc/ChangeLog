@@ -1,5 +1,10 @@
 2011-02-10  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (bitpos_of_field): Use BITS_PER_UNIT,
+	not 8.
+
+2011-02-10  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/47677
 	* tree-vrp.c (vrp_bitmap_equal_p): Fix comparison of empty bitmaps.
 

@@ -2941,12 +2941,11 @@ process_constraint (constraint_t t)
 static HOST_WIDE_INT
 bitpos_of_field (const tree fdecl)
 {
-
   if (!host_integerp (DECL_FIELD_OFFSET (fdecl), 0)
       || !host_integerp (DECL_FIELD_BIT_OFFSET (fdecl), 0))
     return -1;
 
-  return (TREE_INT_CST_LOW (DECL_FIELD_OFFSET (fdecl)) * 8
+  return (TREE_INT_CST_LOW (DECL_FIELD_OFFSET (fdecl)) * BITS_PER_UNIT
 	  + TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (fdecl)));
 }
 
