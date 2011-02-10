@@ -4,20 +4,18 @@
 
 #include <algorithm>
 
-namespace std {
-  extern "C" void puts(const char *s);
-}
+void foo(const char *s);
 
 void
 inline_me (char *x)
 {
-  std::puts(x);
+  foo(x);
 }
 
 static void
 inline_me_too (char *x)
 {
-  std::puts(x);
+  foo(x);
 }
 
 int main(int argc, char **argv)
