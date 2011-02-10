@@ -1,3 +1,11 @@
+2011-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/46610
+	* gcc.target/mips/save-restore-1.c: Skip on mips-sgi-irix6*.
+	* gcc.target/mips/save-restore-3.c: Likewise.
+	* gcc.target/mips/save-restore-4.c: Likewise.
+	* gcc.target/mips/save-restore-5.c: Likewise.
+
 2011-02-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
