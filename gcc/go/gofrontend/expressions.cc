@@ -5536,6 +5536,9 @@ Binary_expression::do_determine_type(const Type_context* context)
 	subcontext.type = tright;
       else
 	subcontext.type = tleft;
+
+      if (subcontext.type != NULL && !context->may_be_abstract)
+	subcontext.type = subcontext.type->make_non_abstract_type();
     }
 
   this->left_->determine_type(&subcontext);
