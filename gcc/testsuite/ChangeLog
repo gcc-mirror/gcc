@@ -1,3 +1,8 @@
+2011-02-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47677
+	* gcc.dg/torture/pr47677.c: New testcase.
+
 2011-02-10  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/special/load-category-1.m: Remove unused header.
