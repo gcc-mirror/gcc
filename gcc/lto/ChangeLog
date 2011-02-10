@@ -1,3 +1,12 @@
+2011-02-10  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR lto/47241
+	* lto.c (lto_read_section_data): Free
+	fd_name in failure case.
+	For mingw targets don't hash file-descriptor.
+	(read_cgraph_and_symbols): Close current_lto_file
+	in failure case.
+
 2011-01-11  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/45721
