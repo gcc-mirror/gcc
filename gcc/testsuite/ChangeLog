@@ -1,3 +1,15 @@
+2011-02-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/46610
+	* gcc.target/mips/save-restore-1.c: Skip on mips-sgi-irix6*.
+	* gcc.target/mips/save-restore-3.c: Likewise.
+	* gcc.target/mips/save-restore-4.c: Likewise.
+	* gcc.target/mips/save-restore-5.c: Likewise.
+
+	PR target/47683
+	* g++.dg/tree-prof/partition1.C: Skip on mips-sgi-irix*.
+	* g++.dg/tree-prof/partition2.C: Likewise.
+
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/tree-ssa/inline-3.C: Use a normal function
