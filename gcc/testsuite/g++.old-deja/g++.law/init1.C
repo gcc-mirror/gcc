@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-prune-output "non-static data member initializers" }
 // GROUPS passed initialization
 class foo {
 public:
