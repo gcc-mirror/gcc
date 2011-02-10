@@ -535,8 +535,10 @@ perform_member_init (tree member, tree init)
 		       "uninitialized member %qD with %<const%> type %qT",
 		       member, type);
 
+	  core_type = strip_array_types (type);
+
 	  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl)
-	      && !type_has_constexpr_default_constructor (type))
+	      && !type_has_constexpr_default_constructor (core_type))
 	    {
 	      if (!DECL_TEMPLATE_INSTANTIATION (current_function_decl))
 		error ("uninitialized member %qD in %<constexpr%> constructor",
@@ -544,7 +546,6 @@ perform_member_init (tree member, tree init)
 	      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
 	    }
 
-	  core_type = strip_array_types (type);
 	  if (CLASS_TYPE_P (core_type)
 	      && (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
 		  || CLASSTYPE_REF_FIELDS_NEED_INIT (core_type)))
