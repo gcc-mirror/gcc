@@ -1,0 +1,3 @@
+This directory contains tests that were passing in C++98 mode but failing
+in C++0x mode; it should be replaced by an improvement to the test harness
+to run all tests in both modes.

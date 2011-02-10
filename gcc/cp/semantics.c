@@ -7263,6 +7263,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
     {
     case FUNCTION_DECL:
     case BASELINK:
+    case TEMPLATE_DECL:
     case OVERLOAD:
     case TEMPLATE_ID_EXPR:
     case LABEL_DECL:

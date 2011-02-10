@@ -1,3 +1,10 @@
+2011-02-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/regress: New directory.
+	* g++.dg/cpp0x/constexpr-regress1.C: Move to regress/regress1.C.
+	* g++.dg/cpp0x/constexpr-regress2.C: Move to regress/regress2.C.
+	* g++.dg/cpp0x/regress/regress3.C: New.
+
 2011-02-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47677
