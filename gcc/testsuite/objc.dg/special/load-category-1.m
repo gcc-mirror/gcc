@@ -4,7 +4,6 @@
 
 #include <stdlib.h>
 #include <objc/objc.h>
-#include <objc/runtime.h>
 
 #include "load-category-1.h"
 

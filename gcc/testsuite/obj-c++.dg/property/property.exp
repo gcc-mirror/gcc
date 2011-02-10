@@ -33,9 +33,10 @@ set tests [lsort [glob -nocomplain $srcdir/$subdir/*.mm]]
 # Main loop.
 dg-runtest $tests "-fgnu-runtime" $DEFAULT_OBJCXXFLAGS
 
-# darwin targets can also run code with the NeXT runtime.
-if [istarget "*-*-darwin*" ] {
-dg-runtest $tests "-fnext-runtime" $DEFAULT_OBJCXXFLAGS
+# Darwin targets can also run code with the NeXT runtime.
+# but Properties are not supported by the runtime lib before Darwin 9.
+if [istarget "*-*-darwin\[9123\]*" ] {
+  dg-runtest $tests "-fnext-runtime" $DEFAULT_OBJCXXFLAGS
 }
 
 # All done.
