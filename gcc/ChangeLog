@@ -45,6 +45,8 @@
 
 2011-02-09  David Edelsohn  <dje.gcc@gmail.com>
 
+	PR target/46481
+	PR target/47032
 	* config/rs6000/aix61.h (PROCESSOR_DEFAULT): Change to
 	PROCESSOR_POWER7.
 	(PROCESSOR_DEFAULT64): Same.
