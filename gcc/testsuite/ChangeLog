@@ -1,5 +1,7 @@
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/regress/ext-cond1.C: Copy from ext/cond1.C.
+
 	* g++.dg/cpp0x/regress/abi-empty7.C: New.
 
 	* g++.dg/cpp0x/regress: New directory.
