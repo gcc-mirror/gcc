@@ -1,5 +1,6 @@
 // PR c++/38647
 // { dg-do compile }
+// { dg-options "-std=c++0x" }
 
 template<const char *, int> struct A {};
 const char func[] = "abc";
