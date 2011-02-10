@@ -33,13 +33,14 @@ struct Key
   bool operator<(const Key&) const;
 };
 
-typedef std::map<Key, int> Map;
-
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 // libstdc++/47628
 void f()
 {
+  typedef std::map<Key, int> Map;
   Map m;
   m.insert(Map::value_type());
   Map::iterator i = m.begin();
   m.erase(i);
 }
+#endif

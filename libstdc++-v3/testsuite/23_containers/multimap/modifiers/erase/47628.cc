@@ -33,13 +33,14 @@ struct Key
   bool operator<(const Key&) const;
 };
 
-typedef std::multimap<Key, int> MMap;
-
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 // libstdc++/47628
 void f()
 {
+  typedef std::multimap<Key, int> MMap;
   MMap mm;
   mm.insert(MMap::value_type());
   MMap::iterator i = mm.begin();
   mm.erase(i);
 }
+#endif
