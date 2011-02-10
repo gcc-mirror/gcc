@@ -13,6 +13,7 @@ struct S
 
 int main()
 {
+  // { dg-prune-output "not a member" }
   printf("%f\n%f\n", S::inf, S::nan);
   return 0;
 }

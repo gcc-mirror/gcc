@@ -1,5 +1,13 @@
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/ext/vla1.C: Adjust for C++0x mode.
+	* g++.dg/other/warning1.C: Likewise.
+	* g++.old-deja/g++.bugs/900119_01.C: Likewise.
+	* g++.old-deja/g++.gb/scope06.C: Likewise.
+	* g++.old-deja/g++.law/cvt11.C: Likewise.
+	* g++.old-deja/g++.law/init1.C: Likewise.
+	* g++.dg/abi/mangle26.C: Likewise.
+
 	* g++.dg/template/function1.C: Adjust for C++0x mode.
 	* g++.dg/cpp0x/regress/template-function1.C: Copy it.
 

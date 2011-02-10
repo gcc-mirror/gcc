@@ -6,6 +6,10 @@
 // Message-Id: <9211101908.AA13557@tera.com>
 // Subject: type cast of qualified const member breaks g++2.3.1
 
+// Ignore extra errors in C++0x mode.
+// { dg-prune-output "non-static data member initializers" }
+// { dg-prune-output "from this location" }
+// { dg-prune-output "uninitialized" }
 #include <stdio.h>
 
 class Thing{
