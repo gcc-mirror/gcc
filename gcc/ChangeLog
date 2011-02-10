@@ -1,3 +1,12 @@
+2011-02-10  Jie Zhang  <jie@codesourcery.com>
+
+	PR testsuite/47622
+	Revert
+	2011-02-05  Jie Zhang  <jie@codesourcery.com>
+	PR debug/42631
+	* web.c (entry_register): Don't clobber the number of the
+	first uninitialized reference in used[].
+
 2011-02-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47664
