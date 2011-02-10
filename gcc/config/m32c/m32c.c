@@ -454,6 +454,11 @@ m32c_option_override (void)
      This is always worse than an absolute call.  */
   if (TARGET_A16)
     flag_no_function_cse = 1;
+
+  /* This wants to put insns between compares and their jumps.  */
+  /* FIXME: The right solution is to properly trace the flags register
+     values, but that is too much work for stage 4.  */
+  flag_combine_stack_adjustments = 0;
 }
 
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE

@@ -1,3 +1,9 @@
+2011-02-10  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_option_override): Disable
+	-fcombine-stack-adjustments until flag value tracking and compare
+	optimization can be rewritten.
+
 2011-02-10  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/linux64.h (PROCESSOR_DEFAULT): Change to
