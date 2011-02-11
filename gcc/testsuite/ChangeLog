@@ -1,5 +1,12 @@
 2011-02-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR target/47629
+	* gcc.target/i386/pr47312.c: Use dg-require-effective-target
+	c99_runtime, dg-add-options c99_runtime.
+	(main): Use __asm__.
+
+2011-02-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	PR testsuite/47400
 	* lib/target-supports.exp (check_ascii_locale_available): New proc.
 	* lib/target-supports-dg.exp (dg-require-ascii-locale): New proc.
