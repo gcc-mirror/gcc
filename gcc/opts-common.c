@@ -960,12 +960,6 @@ read_cmdline_option (struct gcc_options *opts,
       return;
     }
 
-  if (decoded->errors & CL_ERR_WRONG_LANG)
-    {
-      handlers->wrong_lang_callback (decoded, lang_mask);
-      return;
-    }
-
   if (decoded->errors & CL_ERR_MISSING_ARG)
     {
       if (option->missing_argument_error)
@@ -1009,6 +1003,12 @@ read_cmdline_option (struct gcc_options *opts,
 	}
       p[-1] = 0;
       inform (loc, "valid arguments to %qs are: %s", option->opt_text, s);
+      return;
+    }
+
+  if (decoded->errors & CL_ERR_WRONG_LANG)
+    {
+      handlers->wrong_lang_callback (decoded, lang_mask);
       return;
     }
 
