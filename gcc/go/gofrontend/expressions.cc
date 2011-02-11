@@ -5412,6 +5412,9 @@ Binary_expression::do_discarding_value()
 Type*
 Binary_expression::do_type()
 {
+  if (this->classification() == EXPRESSION_ERROR)
+    return Type::make_error_type();
+
   switch (this->op_)
     {
     case OPERATOR_OROR:
@@ -5440,6 +5443,11 @@ Binary_expression::do_type()
 	  return left_type;
 	else if (right_type->is_error_type())
 	  return right_type;
+	else if (!Type::are_compatible_for_binop(left_type, right_type))
+	  {
+	    this->report_error(_("incompatible types in binary expression"));
+	    return Type::make_error_type();
+	  }
 	else if (!left_type->is_abstract() && left_type->named_type() != NULL)
 	  return left_type;
 	else if (!right_type->is_abstract() && right_type->named_type() != NULL)
@@ -5667,6 +5675,9 @@ Binary_expression::check_operator_type(Operator op, Type* type,
 void
 Binary_expression::do_check_types(Gogo*)
 {
+  if (this->classification() == EXPRESSION_ERROR)
+    return;
+
   Type* left_type = this->left_->type();
   Type* right_type = this->right_->type();
   if (left_type->is_error_type() || right_type->is_error_type())
