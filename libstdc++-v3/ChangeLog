@@ -1,3 +1,10 @@
+2011-02-11  Johannes Singler  <singler@kit.edu>
+
+	PR libstdc++/47433
+	* include/parallel/losertree.h
+	(_LoserTreeUnguarded<>::__delete_min_insert):
+	Add missing "using std::swap;", as for other variants.
+
 2011-02-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/Makefile.am (sources): Add regex.cc.
