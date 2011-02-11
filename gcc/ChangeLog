@@ -1,4 +1,9 @@
-2011-02-11  Pat Haugen <pthaugen@us.ibm.com>
+2011-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/47420
+	* ipa-split.c (visit_bb): Punt on any kind of GIMPLE_RESX.
+
+2011-02-11  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR rtl-optimization/47614
 	* rtl.h (check_for_inc_dec): Declare.

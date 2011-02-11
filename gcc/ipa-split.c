@@ -643,11 +643,10 @@ visit_bb (basic_block bb, basic_block return_bb,
 	 into different partitions.  This would require tracking of
 	 EH regions and checking in consider_split_point if they 
 	 are not used elsewhere.  */
-      if (gimple_code (stmt) == GIMPLE_RESX
-	  && stmt_can_throw_external (stmt))
+      if (gimple_code (stmt) == GIMPLE_RESX)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Cannot split: external resx.\n");
+	    fprintf (dump_file, "Cannot split: resx.\n");
 	  can_split = false;
 	}
       if (gimple_code (stmt) == GIMPLE_EH_DISPATCH)
