@@ -1,3 +1,9 @@
+2011-02-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47550
+	* resolve.c (resolve_formal_arglist): PURE with VALUE
+	and no INTENT: Add -std= diagnostics.
+
 2011-02-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47352

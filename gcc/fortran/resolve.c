@@ -341,17 +341,31 @@ resolve_formal_arglist (gfc_symbol *proc)
       if (gfc_pure (proc) && !sym->attr.pointer
 	  && sym->attr.flavor != FL_PROCEDURE)
 	{
-	  if (proc->attr.function && sym->attr.intent != INTENT_IN
-	      && !sym->attr.value)
-	    gfc_error ("Argument '%s' of pure function '%s' at %L must be "
-		       "INTENT(IN) or VALUE", sym->name, proc->name,
-		       &sym->declared_at);
+	  if (proc->attr.function && sym->attr.intent != INTENT_IN)
+	    {
+	      if (sym->attr.value)
+		gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s' "
+				"of pure function '%s' at %L with VALUE "
+				"attribute but without INTENT(IN)", sym->name,
+				proc->name, &sym->declared_at);
+	      else
+		gfc_error ("Argument '%s' of pure function '%s' at %L must be "
+			   "INTENT(IN) or VALUE", sym->name, proc->name,
+			   &sym->declared_at);
+	    }
 
-	  if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN
-	      && !sym->attr.value)
-	    gfc_error ("Argument '%s' of pure subroutine '%s' at %L must "
+	  if (proc->attr.subroutine && sym->attr.intent == INTENT_UNKNOWN)
+	    {
+	      if (sym->attr.value)
+		gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Argument '%s' "
+				"of pure subroutine '%s' at %L with VALUE "
+				"attribute but without INTENT", sym->name,
+				proc->name, &sym->declared_at);
+	      else
+		gfc_error ("Argument '%s' of pure subroutine '%s' at %L must "
 		       "have its INTENT specified or have the VALUE "
 		       "attribute", sym->name, proc->name, &sym->declared_at);
+	    }
 	}
 
       if (proc->attr.implicit_pure && !sym->attr.pointer
