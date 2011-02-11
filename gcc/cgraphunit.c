@@ -364,7 +364,7 @@ cgraph_finalize_function (tree decl, bool nested)
       || DECL_STATIC_CONSTRUCTOR (decl)
       || DECL_STATIC_DESTRUCTOR (decl)
       /* COMDAT virtual functions may be referenced by vtable from
-	 other compilatoin unit.  Still we want to devirtualize calls
+	 other compilation unit.  Still we want to devirtualize calls
 	 to those so we need to analyze them.
 	 FIXME: We should introduce may edges for this purpose and update
 	 their handling in unreachable function removal and inliner too.  */
@@ -431,7 +431,7 @@ verify_edge_count_and_frequency (struct cgraph_edge *e)
 	  != compute_call_stmt_bb_frequency (e->caller->decl,
 					     gimple_bb (e->call_stmt))))
     {
-      error ("caller edge frequency %i does not match BB freqency %i",
+      error ("caller edge frequency %i does not match BB frequency %i",
 	     e->frequency,
 	     compute_call_stmt_bb_frequency (e->caller->decl,
 					     gimple_bb (e->call_stmt)));
@@ -1550,7 +1550,7 @@ cgraph_expand_function (struct cgraph_node *node)
       	   alias && alias->next; alias = alias->next)
         ;
       /* Walk aliases in the order they were created; it is possible that
-         thunks reffers to the aliases made earlier.  */
+         thunks refers to the aliases made earlier.  */
       for (; alias; alias = next)
         {
 	  next = alias->previous;
@@ -2328,7 +2328,7 @@ cgraph_materialize_all_clones (void)
 	        {
 		  if (cgraph_dump_file)
 		    {
-		      fprintf (cgraph_dump_file, "clonning %s to %s\n",
+		      fprintf (cgraph_dump_file, "cloning %s to %s\n",
 			       cgraph_node_name (node->clone_of),
 			       cgraph_node_name (node));
 		      if (node->clone.tree_map)

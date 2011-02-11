@@ -423,7 +423,7 @@ worse_state (enum pure_const_state_e *state, bool *looping,
   *looping = MAX (*looping, looping2);
 }
 
-/* Recognize special cases of builtins that are by themself not pure or const
+/* Recognize special cases of builtins that are by themselves not pure or const
    but function using them is.  */
 static bool
 special_builtin_state (enum pure_const_state_e *state, bool *looping,
@@ -547,7 +547,7 @@ check_call (funct_state local, gimple call, bool ipa)
         fprintf (dump_file, "    Recursive call can loop.\n");
       local->looping = true;
     }
-  /* Either calle is unknown or we are doing local analysis.
+  /* Either callee is unknown or we are doing local analysis.
      Look to see if there are any bits available for the callee (such as by
      declaration or because it is builtin) and process solely on the basis of
      those bits. */
@@ -771,7 +771,7 @@ end:
       if (mark_dfs_back_edges ())
         {
 	  /* Preheaders are needed for SCEV to work.
-	     Simple lateches and recorded exits improve chances that loop will
+	     Simple latches and recorded exits improve chances that loop will
 	     proved to be finite in testcases such as in loop-15.c and loop-24.c  */
 	  loop_optimizer_init (LOOPS_NORMAL
 			       | LOOPS_HAVE_RECORDED_EXITS);
@@ -916,7 +916,7 @@ generate_summary (void)
 
      We process AVAIL_OVERWRITABLE functions.  We can not use the results
      by default, but the info can be used at LTO with -fwhole-program or
-     when function got clonned and the clone is AVAILABLE.  */
+     when function got cloned and the clone is AVAILABLE.  */
 
   for (node = cgraph_nodes; node; node = node->next)
     if (cgraph_function_body_availability (node) >= AVAIL_OVERWRITABLE)
@@ -1545,7 +1545,7 @@ skip_function_for_local_pure_const (struct cgraph_node *node)
   if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     {
       if (dump_file)
-        fprintf (dump_file, "Function is not available or overwrittable; not analyzing.\n");
+        fprintf (dump_file, "Function is not available or overwritable; not analyzing.\n");
       return true;
     }
   return false;

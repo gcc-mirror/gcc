@@ -86,7 +86,7 @@ struct ipa_reference_global_vars_info_d
   bitmap statics_written;
 };
 
-/* Information we save about every function after ipa-reference is completted.  */
+/* Information we save about every function after ipa-reference is completed.  */
 
 struct ipa_reference_optimization_summary_d
 {
@@ -658,7 +658,7 @@ propagate (void)
       read_all = false;
       write_all = false;
 
-      /* When function is overwrittable, we can not assume anything.  */
+      /* When function is overwritable, we can not assume anything.  */
       if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
         read_write_all_from_decl (node, &read_all, &write_all);
 
@@ -691,7 +691,7 @@ propagate (void)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Visiting %s/%i\n",
 		      cgraph_node_name (w), w->uid);
-	  /* When function is overwrittable, we can not assume anything.  */
+	  /* When function is overwritable, we can not assume anything.  */
 	  if (cgraph_function_body_availability (w) <= AVAIL_OVERWRITABLE)
 	    read_write_all_from_decl (w, &read_all, &write_all);
 

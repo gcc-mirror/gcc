@@ -197,7 +197,7 @@ ipa_dump_refering (FILE * file, struct ipa_ref_list *list)
   fprintf (file, "\n");
 }
 
-/* Clone all references from SRC to DEST_NODE or DEST_VARPOL_NODE.  */
+/* Clone all references from SRC to DEST_NODE or DEST_VARPOOL_NODE.  */
 
 void
 ipa_clone_references (struct cgraph_node *dest_node,
@@ -215,7 +215,7 @@ ipa_clone_references (struct cgraph_node *dest_node,
 			  ref->use, ref->stmt);
 }
 
-/* Clone all refering from SRC to DEST_NODE or DEST_VARPOL_NODE.  */
+/* Clone all refering from SRC to DEST_NODE or DEST_VARPOOL_NODE.  */
 
 void
 ipa_clone_refering (struct cgraph_node *dest_node,
