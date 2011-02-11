@@ -2,6 +2,7 @@
    locale).  Miscellaneous diagnostics.  */
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -fextended-identifiers -Wpacked" } */
+/* { dg-require-ascii-locale "" } */
 
 int a __attribute__((\u00c0)); /* { dg-warning "'\\\\U000000c0' attribute directive ignored" } */
 

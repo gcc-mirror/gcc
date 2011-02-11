@@ -1,3 +1,9 @@
+2011-02-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/47400
+	* doc/sourcebuild.texi (Require Support): Document
+	dg-require-ascii-locale.
+
 2011-02-11  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* doc/lto.texi (Write summary): Fix missing parentheses.
