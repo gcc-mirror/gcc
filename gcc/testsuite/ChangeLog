@@ -1,3 +1,7 @@
+2011-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/opt/inline17.C: New test.
+
 2011-02-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47550
