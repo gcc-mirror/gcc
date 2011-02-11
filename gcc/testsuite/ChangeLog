@@ -1,7 +1,7 @@
 2011-02-11  Jakub Jelinek  <jakub@redhat.com>
 
-	PR target/47665
-	* gcc.target/i386/pr47665.c: New test.
+	PR debug/47684
+	* gcc.dg/pr47684.c: New test.
 
 2011-02-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
