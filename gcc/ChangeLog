@@ -1,3 +1,11 @@
+2011-02-11  Pat Haugen <pthaugen@us.ibm.com>
+
+	PR rtl-optimization/47614
+	* rtl.h (check_for_inc_dec): Declare.
+	* dse.c (check_for_inc_dec): Externalize...
+	* postreload.c (reload_cse_simplify): ...use it before deleting stmt.
+	(reload_cse_simplify_operands): Don't simplify opnds with side effects.
+
 2011-02-11  Joseph Myers  <joseph@codesourcery.com>
 
 	PR driver/47678
