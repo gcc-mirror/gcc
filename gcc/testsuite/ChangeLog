@@ -1,3 +1,15 @@
+2011-02-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/47400
+	* lib/target-supports.exp (check_ascii_locale_available): New proc.
+	* lib/target-supports-dg.exp (dg-require-ascii-locale): New proc.
+	* gcc.dg/attr-alias-5.c: Use dg-require-ascii-locale.
+	* gcc.dg/ucnid-10.c: Likewise.
+	* gcc.dg/ucnid-13.c: Likewise.
+	* gcc.dg/ucnid-7.c: Likewise.
+	* gcc.dg/ucnid-8.c: Likewise.
+	* Adapt dg-warning line number.
+
 2011-02-11  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47172
