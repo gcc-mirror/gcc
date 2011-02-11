@@ -1691,7 +1691,7 @@ if test "x$with_ppl" = "xno"; then
   dnl Only execute fail-action, if CLooG has been requested.
   CLOOG_REQUESTED([graphite_requested=yes], [graphite_requested=no])
   if test "${graphite_requested}" = yes; then
-    AC_MSG_ERROR([Unable to find a usable PPL.  See config.log for details.])]
+    AC_MSG_ERROR([Unable to find a usable PPL.  See config.log for details.])
   fi
   with_cloog=no
 fi

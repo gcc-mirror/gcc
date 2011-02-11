@@ -1,3 +1,8 @@
+2011-02-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure.ac: Remove extra bracket.
+	* configure: Regenerate.
+
 2011-02-08  Tobias Burnus  <burnus@net-b.de>
 
 	* MAINTAINERS: Add myself as libquadmath maintainer.

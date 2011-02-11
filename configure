@@ -5832,7 +5832,7 @@ if test "x$with_ppl" = "xno"; then
 
 
   if test "${graphite_requested}" = yes; then
-    as_fn_error "Unable to find a usable PPL.  See config.log for details." "$LINENO" 5]
+    as_fn_error "Unable to find a usable PPL.  See config.log for details." "$LINENO" 5
   fi
   with_cloog=no
 fi
