@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
    with the value 3.
 
    The algorithm used is based on "Interprocedural Constant Propagation", by
-   Challahan David, Keith D Cooper, Ken Kennedy, Linda Torczon, Comp86, pg
+   David Callahan, Keith D Cooper, Ken Kennedy, Linda Torczon, Comp86, pg
    152-161
 
    The optimization is divided into three stages:
@@ -469,7 +469,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
   if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     {
       if (dump_file)
-        fprintf (dump_file, "Not considering %s for cloning; body is overwrittable.\n",
+        fprintf (dump_file, "Not considering %s for cloning; body is overwritable.\n",
  	         cgraph_node_name (node));
       return false;
     }
@@ -521,7 +521,7 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
 
   /* When profile is available and function is hot, propagate into it even if
      calls seems cold; constant propagation can improve function's speed
-     significandly.  */
+     significantly.  */
   if (max_count)
     {
       if (direct_call_sum > node->count * 90 / 100)
@@ -614,8 +614,8 @@ build_const_val (struct ipcp_lattice *lat, tree tree_type)
    FIXME: This code is wrong.  Since the callers can be also clones and
    the clones are not scaled yet, the sums gets unrealistically high.
    To properly compute the counts, we would need to do propagation across
-   callgraph (as external call to A might imply call to non-clonned B
-   if A's clone calls clonned B).  */
+   callgraph (as external call to A might imply call to non-cloned B
+   if A's clone calls cloned B).  */
 static void
 ipcp_compute_node_scale (struct cgraph_node *node)
 {
@@ -1127,7 +1127,7 @@ ipcp_estimate_growth (struct cgraph_node *node)
     else
       need_original = true;
 
-  /* If we will be able to fully replace orignal node, we never increase
+  /* If we will be able to fully replace original node, we never increase
      program size.  */
   if (!need_original)
     return 0;
@@ -1148,7 +1148,7 @@ ipcp_estimate_growth (struct cgraph_node *node)
       }
 
   /* We make just very simple estimate of savings for removal of operand from
-     call site.  Precise cost is dificult to get, as our size metric counts
+     call site.  Precise cost is difficult to get, as our size metric counts
      constants and moves as free.  Generally we are looking for cases that
      small function is called very many times.  */
   growth = node->local.inline_summary.self_size
@@ -1380,7 +1380,7 @@ ipcp_insert_stage (void)
 
       new_size += growth;
 
-      /* Look if original function becomes dead after clonning.  */
+      /* Look if original function becomes dead after cloning.  */
       for (cs = node->callers; cs != NULL; cs = cs->next_caller)
 	if (cs->caller == node || ipcp_need_redirect_p (cs))
 	  break;
@@ -1555,7 +1555,7 @@ static bool
 cgraph_gate_cp (void)
 {
   /* FIXME: We should remove the optimize check after we ensure we never run
-     IPA passes when not optimizng.  */
+     IPA passes when not optimizing.  */
   return flag_ipa_cp && optimize;
 }
 

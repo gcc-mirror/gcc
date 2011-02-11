@@ -164,28 +164,28 @@ static GTY(()) struct cgraph_asm_node *cgraph_asm_last_node;
    them, to support -fno-toplevel-reorder.  */
 int cgraph_order;
 
-/* List of hooks trigerred on cgraph_edge events.  */
+/* List of hooks triggered on cgraph_edge events.  */
 struct cgraph_edge_hook_list {
   cgraph_edge_hook hook;
   void *data;
   struct cgraph_edge_hook_list *next;
 };
 
-/* List of hooks trigerred on cgraph_node events.  */
+/* List of hooks triggered on cgraph_node events.  */
 struct cgraph_node_hook_list {
   cgraph_node_hook hook;
   void *data;
   struct cgraph_node_hook_list *next;
 };
 
-/* List of hooks trigerred on events involving two cgraph_edges.  */
+/* List of hooks triggered on events involving two cgraph_edges.  */
 struct cgraph_2edge_hook_list {
   cgraph_2edge_hook hook;
   void *data;
   struct cgraph_2edge_hook_list *next;
 };
 
-/* List of hooks trigerred on events involving two cgraph_nodes.  */
+/* List of hooks triggered on events involving two cgraph_nodes.  */
 struct cgraph_2node_hook_list {
   cgraph_2node_hook hook;
   void *data;
@@ -588,7 +588,7 @@ cgraph_same_body_alias (tree alias, tree decl)
 }
 
 /* Add thunk alias into callgraph.  The alias declaration is ALIAS and it
-   alises DECL with an adjustments made into the first parameter.
+   aliases DECL with an adjustments made into the first parameter.
    See comments in thunk_adjust for detail on the parameters.  */
 
 struct cgraph_node *
@@ -937,7 +937,7 @@ cgraph_create_edge_including_clones (struct cgraph_node *orig,
         /* It is possible that clones already contain the edge while
 	   master didn't.  Either we promoted indirect call into direct
 	   call in the clone or we are processing clones of unreachable
-	   master where edges has been rmeoved.  */
+	   master where edges has been removed.  */
 	if (edge)
 	  cgraph_set_call_stmt (edge, stmt);
 	else if (!cgraph_edge (node, stmt))
@@ -997,7 +997,7 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
      have not been loaded yet.  */
   if (call_stmt)
     {
-      /* This is a rather expensive check possibly trigerring
+      /* This is a rather expensive check possibly triggering
 	 construction of call stmt hashtable.  */
       gcc_checking_assert (!cgraph_edge (caller, call_stmt));
 
@@ -1252,7 +1252,7 @@ cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
   if (!new_call && !old_call)
     return;
   /* See if we turned indirect call into direct call or folded call to one builtin
-     into different bultin.  */
+     into different builtin.  */
   if (old_call != new_call)
     {
       struct cgraph_edge *e = cgraph_edge (node, old_stmt);
@@ -1973,7 +1973,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
           fprintf (f, " %s/%i", cgraph_node_name (n), n->uid);
 	  if (n->thunk.thunk_p)
 	    {
-	      fprintf (f, " (thunk of %s fixed ofset %i virtual value %i has "
+	      fprintf (f, " (thunk of %s fixed offset %i virtual value %i has "
 		       "virtual offset %i",
 	      	       lang_hooks.decl_printable_name (n->thunk.alias, 2),
 		       (int)n->thunk.fixed_offset,
@@ -2411,8 +2411,8 @@ cgraph_function_body_availability (struct cgraph_node *node)
     avail = AVAIL_LOCAL;
   else if (!node->local.externally_visible)
     avail = AVAIL_AVAILABLE;
-  /* Inline functions are safe to be analyzed even if their sybol can
-     be overwritten at runtime.  It is not meaningful to enfore any sane
+  /* Inline functions are safe to be analyzed even if their symbol can
+     be overwritten at runtime.  It is not meaningful to enforce any sane
      behaviour on replacing inline function by different body.  */
   else if (DECL_DECLARED_INLINE_P (node->decl))
     avail = AVAIL_AVAILABLE;
@@ -2706,9 +2706,9 @@ cgraph_propagate_frequency (struct cgraph_node *node)
       if (edge->caller != node)
 	{
           only_called_at_startup &= edge->caller->only_called_at_startup;
-	  /* It makes snese to put main() together with the static constructors.
+	  /* It makes sense to put main() together with the static constructors.
 	     It will be executed for sure, but rest of functions called from
-	     main are definitly not at startup only.  */
+	     main are definitely not at startup only.  */
 	  if (MAIN_NAME_P (DECL_NAME (edge->caller->decl)))
 	    only_called_at_startup = 0;
           only_called_at_exit &= edge->caller->only_called_at_exit;
@@ -2843,7 +2843,7 @@ cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
   return true;
 }
 
-/* Return true when function NODE can be excpected to be removed
+/* Return true when function NODE can be expected to be removed
    from program when direct calls in this compilation unit are removed.
 
    As a special case COMDAT functions are
@@ -2852,7 +2852,7 @@ cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
    unit)
 
    This function behaves as cgraph_only_called_directly_p because eliminating
-   all uses of COMDAT function does not make it neccesarily disappear from
+   all uses of COMDAT function does not make it necessarily disappear from
    the program unless we are compiling whole program or we do LTO.  In this
    case we know we win since dynamic linking will not really discard the
    linkonce section.  */
@@ -2874,7 +2874,7 @@ cgraph_will_be_removed_from_program_if_no_direct_calls (struct cgraph_node *node
 }
 
 /* Return true when RESOLUTION indicate that linker will use
-   the symbol from non-LTo object files.  */
+   the symbol from non-LTO object files.  */
 
 bool
 resolution_used_from_other_file_p (enum ld_plugin_symbol_resolution resolution)

@@ -416,7 +416,7 @@ stmt_may_be_vtbl_ptr_store (gimple stmt)
   return true;
 }
 
-/* Callbeck of walk_aliased_vdefs and a helper function for
+/* Callback of walk_aliased_vdefs and a helper function for
    detect_type_change to check whether a particular statement may modify
    the virtual table pointer, and if possible also determine the new type of
    the (sub-)object.  It stores its result into DATA, which points to a
@@ -679,7 +679,7 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
     }
 }
 
-/* Given OP whch is passed as an actual argument to a called function,
+/* Given OP which is passed as an actual argument to a called function,
    determine if it is possible to construct a KNOWN_TYPE jump function for it
    and if so, create one and store it to JFUNC.  */
 
@@ -899,7 +899,7 @@ fill_member_ptr_cst_jump_function (struct ipa_jump_func *jfunc,
   jfunc->value.member_cst.delta = delta;
 }
 
-/* If RHS is an SSA_NAMe and it is defined by a simple copy assign statement,
+/* If RHS is an SSA_NAME and it is defined by a simple copy assign statement,
    return the rhs of its defining statement.  */
 
 static inline tree
@@ -1516,7 +1516,7 @@ ipa_analyze_params_uses (struct cgraph_node *node,
 }
 
 /* Initialize the array describing properties of of formal parameters of NODE,
-   analyze their uses and and compute jump functions associated witu actual
+   analyze their uses and and compute jump functions associated with actual
    arguments of calls from within NODE.  */
 
 void
@@ -1546,7 +1546,7 @@ ipa_analyze_node (struct cgraph_node *node)
 }
 
 
-/* Update the jump function DST when the call graph edge correspondng to SRC is
+/* Update the jump function DST when the call graph edge corresponding to SRC is
    is being inlined, knowing that DST is of type ancestor and src of known
    type.  */
 
@@ -1704,7 +1704,7 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
 }
 
 /* Try to find a destination for indirect edge IE that corresponds to a
-   virtuall call based on a formal parameter which is described by jump
+   virtual call based on a formal parameter which is described by jump
    function JFUNC and if it can be determined, make it direct and return the
    direct edge.  Otherwise, return NULL.  */
 
@@ -2054,7 +2054,7 @@ ipa_unregister_cgraph_hooks (void)
   node_duplication_hook_holder = NULL;
 }
 
-/* Allocate all necessary data strucutures necessary for indirect inlining.  */
+/* Allocate all necessary data structures necessary for indirect inlining.  */
 
 void
 ipa_create_all_structures_for_iinln (void)
@@ -2783,7 +2783,7 @@ ipa_write_node_info (struct output_block *ob, struct cgraph_node *node)
     ipa_write_indirect_edge_info (ob, e);
 }
 
-/* Srtream in NODE info from IB.  */
+/* Stream in NODE info from IB.  */
 
 static void
 ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
@@ -2919,7 +2919,7 @@ ipa_prop_read_jump_functions (void)
 }
 
 /* After merging units, we can get mismatch in argument counts.
-   Also decl merging might've rendered parameter lists obsolette.
+   Also decl merging might've rendered parameter lists obsolete.
    Also compute called_with_variable_arg info.  */
 
 void

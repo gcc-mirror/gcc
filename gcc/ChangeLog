@@ -1,3 +1,15 @@
+2011-02-11  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cgraph.c: Fix comment typos.
+	* cgraph.h: Likewise.
+	* cgraphunit.c: Likewise.
+	* ipa-cp.c: Likewise.
+	* ipa-inline.c: Likewise.
+	* ipa-prop.c: Likewise.
+	* ipa-pure-const.c: Likewise.
+	* ipa-ref.c: Likewise.
+	* ipa-reference.c: Likewise.
+
 2011-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/47684
