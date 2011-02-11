@@ -6597,6 +6597,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
   if (n_infiles == added_libraries)
     fatal_error ("no input files");
 
+  if (seen_error ())
+    goto out;
+
   /* Make a place to record the compiler output file names
      that correspond to the input files.  */
 
@@ -6864,6 +6867,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
       printf ("%s\n", bug_report_url);
     }
 
+ out:
   return (signal_count != 0 ? 2
 	  : seen_error () ? (pass_exit_codes ? greatest_status : 1)
 	  : 0);

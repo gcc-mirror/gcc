@@ -1,3 +1,11 @@
+2011-02-11  Joseph Myers  <joseph@codesourcery.com>
+
+	PR driver/47678
+	* gcc.c (main): Do not compile inputs if there were errors in
+	option handling.
+	* opts-common.c (read_cmdline_option): Check for wrong language
+	after other error checks.
+
 2011-02-11  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* cgraph.c: Fix comment typos.

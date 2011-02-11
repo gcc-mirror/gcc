@@ -1,3 +1,8 @@
+2011-02-11  Joseph Myers  <joseph@codesourcery.com>
+
+	PR driver/47678
+	* gcc.dg/opts-6.c: New test.
+
 2011-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/47684
