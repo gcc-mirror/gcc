@@ -2994,7 +2994,9 @@ If_statement::do_may_fall_through() const
 tree
 If_statement::do_get_tree(Translate_context* context)
 {
-  gcc_assert(this->cond_ == NULL || this->cond_->type()->is_boolean_type());
+  gcc_assert(this->cond_ == NULL
+	     || this->cond_->type()->is_boolean_type()
+	     || this->cond_->type()->is_error_type());
   tree cond_tree = (this->cond_ == NULL
 		    ? boolean_true_node
 		    : this->cond_->get_tree(context));
