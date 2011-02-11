@@ -1,3 +1,8 @@
+2011-02-11  Pat Haugen <pthaugen@us.ibm.com>
+
+	PR rtl-optimization/47614
+	* gfortran.dg/pr47614.f: New.
+
 2011-02-11  Joseph Myers  <joseph@codesourcery.com>
 
 	PR driver/47678

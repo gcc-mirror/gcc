@@ -2302,6 +2302,9 @@ extern int cse_main (rtx, int);
 extern int exp_equiv_p (const_rtx, const_rtx, int, bool);
 extern unsigned hash_rtx (const_rtx x, enum machine_mode, int *, int *, bool);
 
+/* In dse.c */
+extern void check_for_inc_dec (rtx insn);
+
 /* In jump.c */
 extern int comparison_dominates_p (enum rtx_code, enum rtx_code);
 extern int condjump_p (const_rtx);

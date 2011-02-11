@@ -830,7 +830,7 @@ emit_inc_dec_insn_before (rtx mem ATTRIBUTE_UNUSED,
 /* Before we delete INSN, make sure that the auto inc/dec, if it is
    there, is split into a separate insn.  */
 
-static void
+void
 check_for_inc_dec (rtx insn)
 {
   rtx note = find_reg_note (insn, REG_INC, NULL_RTX);

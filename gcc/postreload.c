@@ -112,6 +112,7 @@ reload_cse_simplify (rtx insn, rtx testreg)
 	  if (REG_P (value)
 	      && ! REG_FUNCTION_VALUE_P (value))
 	    value = 0;
+	  check_for_inc_dec (insn);
 	  delete_insn_and_edges (insn);
 	  return;
 	}
@@ -163,6 +164,7 @@ reload_cse_simplify (rtx insn, rtx testreg)
 
       if (i < 0)
 	{
+	  check_for_inc_dec (insn);
 	  delete_insn_and_edges (insn);
 	  /* We're done with this insn.  */
 	  return;
@@ -476,6 +478,8 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 	    continue;
 	}
 #endif /* LOAD_EXTEND_OP */
+      if (side_effects_p (op))
+	continue;
       v = cselib_lookup (op, recog_data.operand_mode[i], 0, VOIDmode);
       if (! v)
 	continue;
