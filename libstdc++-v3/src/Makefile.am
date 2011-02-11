@@ -210,6 +210,7 @@ sources = \
 	misc-inst.cc \
 	ostream-inst.cc \
 	placeholders.cc \
+	regex.cc \
 	sstream-inst.cc \
 	streambuf-inst.cc \
 	streambuf.cc \
@@ -350,6 +351,11 @@ thread.o: thread.cc
 future.lo: future.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 future.o: future.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+regex.lo: regex.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+regex.o: regex.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 debug.lo: debug.cc
