@@ -250,61 +250,34 @@ __gthread_active_p (void)
    calls in shared flavors of the HP-UX C library.  Most of the stubs
    have no functionality.  The details are described in the "libc cumulative
    patch" for each subversion of HP-UX 11.  There are two special interfaces
-   provided for checking whether an application is linked to a pthread
+   provided for checking whether an application is linked to a shared pthread
    library or not.  However, these interfaces aren't available in early
-   libc versions.  We also can't use pthread_once as some libc versions
-   call the init function.  So, we use pthread_create to check whether it
-   is possible to create a thread or not.  The stub implementation returns
-   the error number ENOSYS.  */
+   libpthread libraries.  We also need a test that works for archive
+   libraries.  We can't use pthread_once as some libc versions call the
+   init function.  We also can't use pthread_create or pthread_attr_init
+   as these create a thread and thereby prevent changing the default stack
+   size.  The function pthread_default_stacksize_np is available in both
+   the archive and shared versions of libpthread.   It can be used to
+   determine the default pthread stack size.  There is a stub in some
+   shared libc versions which returns a zero size if pthreads are not
+   active.  We provide an equivalent stub to handle cases where libc
+   doesn't provide one.  */
 
 #if defined(__hppa__) && defined(__hpux__)
 
-#include <errno.h>
-
 static volatile int __gthread_active = -1;
-
-static void *
-__gthread_start (void *__arg __attribute__((unused)))
-{
-  return NULL;
-}
-
-static void __gthread_active_init (void) __attribute__((noinline));
-static void
-__gthread_active_init (void)
-{
-  static pthread_mutex_t __gthread_active_mutex = PTHREAD_MUTEX_INITIALIZER;
-  pthread_t __t;
-  pthread_attr_t __a;
-  int __result;
-
-  __gthrw_(pthread_mutex_lock) (&__gthread_active_mutex);
-  if (__gthread_active < 0)
-    {
-      __gthrw_(pthread_attr_init) (&__a);
-      __gthrw_(pthread_attr_setdetachstate) (&__a, PTHREAD_CREATE_DETACHED);
-      __result = __gthrw_(pthread_create) (&__t, &__a, __gthread_start, NULL);
-      if (__result != ENOSYS)
-	__gthread_active = 1;
-      else
-	__gthread_active = 0;
-      __gthrw_(pthread_attr_destroy) (&__a);
-    }
-  __gthrw_(pthread_mutex_unlock) (&__gthread_active_mutex);
-}
 
 static inline int
 __gthread_active_p (void)
 {
   /* Avoid reading __gthread_active twice on the main code path.  */
   int __gthread_active_latest_value = __gthread_active;
+  size_t __s;
 
-  /* This test is not protected to avoid taking a lock on the main code
-     path so every update of __gthread_active in a threaded program must
-     be atomic with regard to the result of the test.  */
   if (__builtin_expect (__gthread_active_latest_value < 0, 0))
     {
-      __gthread_active_init ();
+      pthread_default_stacksize_np (0, &__s);
+      __gthread_active = __s ? 1 : 0;
       __gthread_active_latest_value = __gthread_active;
     }
 

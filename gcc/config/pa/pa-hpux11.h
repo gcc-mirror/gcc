@@ -116,16 +116,17 @@ along with GCC; see the file COPYING3.  If not see
    -z %{mlinker-opt:-O} %{!shared:-u main -u __gcc_plt_call}\
    %{static:-a archive} %{shared:-b}"
 
-/* HP-UX 11 has posix threads.  HP libc contains pthread stubs so that
-   non-threaded applications can be linked with a thread-safe libc
-   without a subsequent loss of performance.  For more details, see
-   <http://docs.hp.com/en/1896/pthreads.html>.  */
+/* HP-UX 11 has posix threads.  HP's shared libc contains pthread stubs
+   so that non-threaded applications can be linked with a thread-safe
+   libc without a subsequent loss of performance.  For more details,
+   see <http://docs.hp.com/en/1896/pthreads.html>.  */
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:\
-     %{static|mt|pthread:%{fopenmp:%{static:-a archive_shared} -lrt\
-       %{static:-a archive}} -lpthread} -lc\
-     %{static:%{!nolibdld:-a archive_shared -ldld -a archive -lc}}}\
+     %{fopenmp:%{static:-a archive_shared} -lrt %{static:-a archive}}\
+     %{mt|pthread:-lpthread} -lc\
+     %{static:%{!nolibdld:-a archive_shared -ldld -a archive -lc}\
+       %{!mt:%{!pthread:-a shared -lc -a archive}}}}\
    %{shared:%{mt|pthread:-lpthread}}"
 
 #undef STARTFILE_SPEC

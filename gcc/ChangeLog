@@ -1,3 +1,22 @@
+2011-02-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline:
+	2011-02-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa64-hpux.h (LIB_SPEC): In static links, link against
+	shared libc if not linking against libpthread.
+	* config/pa/pa-hpux11.h (LIB_SPEC): Likewise.
+
+	2010-08-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+        PR boehm-gc/34544
+	* gthr-posix.h (__gthread_active_init): Delete.
+	(__gthread_active_p): Do activity check here.
+	Don't include errno.h on hppa-hpux.  Update comment.
+	* gthr-posix95.h (__gthread_active_init): Delete.
+	(__gthread_active_p): Do activity check here.
+	Don't include errno.h on hppa-hpux.  Update comment.
+
 2011-01-31  Nathan Froyd  <froydnj@codesourcery.com>
 
 	Backport from mainline:

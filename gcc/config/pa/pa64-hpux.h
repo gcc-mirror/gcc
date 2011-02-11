@@ -57,36 +57,42 @@ along with GCC; see the file COPYING3.  If not see
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GNU_LD)
 #define LIB_SPEC \
   "%{!shared:\
-     %{!p:%{!pg:%{static|mt|pthread:%{fopenmp:%{static:-a shared} -lrt\
-		  %{static:-a archive}} -lpthread} -lc\
-	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+     %{!p:%{!pg:%{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
+	    %{mt|pthread:-lpthread} -lc\
+	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{p:%{!pg:%{static:%{!mhp-ld:-a shared}%{mhp-ld:-a archive_shared}}\
 	   -lprof %{static:-a archive}\
-	   %{static|mt|pthread:%{fopenmp:%{static:-a shared} -lrt\
-	     %{static:-a archive}} -lpthread} -lc\
-	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+	   %{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
+	   %{mt|pthread:-lpthread} -lc\
+	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{pg:%{static:%{!mhp-ld:-a shared}%{mhp-ld:-a archive_shared}}\
        -lgprof %{static:-a archive}\
-       %{static|mt|pthread:%{fopenmp:%{static:-a shared} -lrt\
-	 %{static:-a archive}} -lpthread} -lc\
-       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+       %{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
+       %{mt|pthread:-lpthread} -lc\
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
    %{shared:%{mt|pthread:-lpthread}}"
 #else
 #define LIB_SPEC \
   "%{!shared:\
-     %{!p:%{!pg:%{static|mt|pthread:%{fopenmp:%{static:-a shared} -lrt\
-		  %{static:-a archive}} -lpthread} -lc\
-	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+     %{!p:%{!pg:%{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
+	    %{mt|pthread:-lpthread} -lc\
+	    %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{p:%{!pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
 	   -lprof %{static:-a archive}\
-	   %{static|mt|pthread:%{fopenmp:%{static:-a shared} -lrt\
-	     %{static:-a archive}} -lpthread} -lc\
-	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+	   %{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
+	   %{mt|pthread:-lpthread} -lc\
+	   %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
      %{pg:%{static:%{mgnu-ld:-a shared}%{!mgnu-ld:-a archive_shared}}\
        -lgprof %{static:-a archive}\
-       %{static|mt|pthread:%{fopenmp:%{static:-a shared} -lrt\
-	 %{static:-a archive}} -lpthread} -lc\
-       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
+       %{fopenmp:%{static:-a shared} -lrt %{static:-a archive}}\
+       %{mt|pthread:-lpthread} -lc\
+       %{static:%{!nolibdld:-a shared -ldld -a archive -lc}\
+		%{!mt:%{!pthread:-a shared -lc -a archive}}}}}\
    %{shared:%{mt|pthread:-lpthread}}"
 #endif
 
