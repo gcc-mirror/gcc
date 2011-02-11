@@ -5159,7 +5159,7 @@ Binary_expression::do_lower(Gogo*, Named_object*, int)
 	  {
 	    // May be a type error--let it be diagnosed later.
 	  }
-	else if (is_comparison)
+	else if (op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ)
 	  {
 	    bool b = Binary_expression::compare_complex(op,
 							(left_type != NULL
