@@ -1,3 +1,7 @@
+2011-02-11  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* doc/lto.texi (Write summary): Fix missing parentheses.
+
 2011-02-10  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_option_override): Disable
