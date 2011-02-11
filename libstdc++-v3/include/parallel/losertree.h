@@ -775,6 +775,7 @@ namespace __gnu_parallel
       void
       __delete_min_insert(_Tp __key, bool)
       {
+        using std::swap;
 #if _GLIBCXX_ASSERTIONS
 	// no dummy sequence can ever be at the top!
 	_GLIBCXX_PARALLEL_ASSERT(_M_losers[0]._M_source != -1);
