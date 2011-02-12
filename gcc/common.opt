@@ -2176,6 +2176,9 @@ Driver
 nodefaultlibs
 Driver
 
+nostartfiles
+Driver
+
 nostdlib
 Driver
 
