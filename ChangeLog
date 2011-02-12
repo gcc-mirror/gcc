@@ -46,7 +46,6 @@
 
 2011-01-25  Jakub Jelinek  <jakub@redhat.com>
 
-	* config/cloog.m4 (CLOOG_REQUESTED): Use $2 if --without-cloog.
 	* configure.ac: If with_ppl is no, move setting with_cloog=no
 	after CLOOG_REQUESTED check.
 	* configure: Regenerated.
@@ -86,11 +85,6 @@
 	* configure.ac: Remove readline, mmalloc, and gdb from noconfigdirs
 	for ia64-hpux.
 	* configure: Regenerate.
-
-2011-01-10  Jan Hubicka  <jh@suse.cz>
-
-	* config/bootstrap-lto.mk: -fuse-linker-plugin is default now;
-	pass -fno-lto to STAGEprofile.
 
 2011-01-07  Jan Hubicka  <jh@suse.cz>
 
