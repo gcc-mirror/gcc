@@ -1238,8 +1238,11 @@ convert_affine_scev (struct loop *loop, tree type,
      performed by default when CT is signed.  */
   new_step = *step;
   if (TYPE_PRECISION (step_type) > TYPE_PRECISION (ct) && TYPE_UNSIGNED (ct))
-    new_step = chrec_convert_1 (signed_type_for (ct), new_step, at_stmt,
-				use_overflow_semantics);
+    {
+      tree signed_ct = build_nonstandard_integer_type (TYPE_PRECISION (ct), 0);
+      new_step = chrec_convert_1 (signed_ct, new_step, at_stmt,
+                                  use_overflow_semantics);
+    }
   new_step = chrec_convert_1 (step_type, new_step, at_stmt, use_overflow_semantics);
 
   if (automatically_generated_chrec_p (new_base)
@@ -1579,4 +1582,3 @@ evolution_function_right_is_integer_cst (const_tree chrec)
       return false;
     }
 }
-
