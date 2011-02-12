@@ -2580,22 +2580,29 @@ darwin_override_options (void)
       && !TARGET_64BIT)
     global_options.x_flag_asynchronous_unwind_tables = 0;
 
-   /* Disable -freorder-blocks-and-partition when unwind tables are being emitted
-      for Darwin < 10 (OSX 10.6).  
-      The strategy is, "Unless the User has specifically set/unset an unwind flag
-      we will switch off -freorder-blocks-and-partition when unwind tables will be
-      generated".  If the User specifically sets flags... we assume (s)he knows
-      why...  */
+   /* Disable -freorder-blocks-and-partition when unwind tables are being
+      emitted for Darwin < 9 (OSX 10.5).
+      The strategy is, "Unless the User has specifically set/unset an unwind
+      flag we will switch off -freorder-blocks-and-partition when unwind tables
+      will be generated".  If the User specifically sets flags... we assume
+      (s)he knows why...  */
    if (generating_for_darwin_version < 9
        && global_options_set.x_flag_reorder_blocks_and_partition
        && ((global_options.x_flag_exceptions 		/* User, c++, java */
 	    && !global_options_set.x_flag_exceptions) 	/* User specified... */
 	   || (global_options.x_flag_unwind_tables
-		&& !global_options_set.x_flag_unwind_tables)
+	       && !global_options_set.x_flag_unwind_tables)
 	   || (global_options.x_flag_non_call_exceptions
-		&& !global_options_set.x_flag_non_call_exceptions)
+	       && !global_options_set.x_flag_non_call_exceptions)
 	   || (global_options.x_flag_asynchronous_unwind_tables
-		&& !global_options_set.x_flag_asynchronous_unwind_tables)))
+	       && !global_options_set.x_flag_asynchronous_unwind_tables)))
+    {
+      inform (input_location,
+	      "-freorder-blocks-and-partition does not work with exceptions "
+	      "on this architecture");
+      flag_reorder_blocks_and_partition = 0;
+      flag_reorder_blocks = 1;
+    }
 
   if (flag_mkernel || flag_apple_kext)
     {
