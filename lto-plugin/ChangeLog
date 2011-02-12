@@ -1,3 +1,8 @@
+2011-02-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.am (all-local): Rename from 'all'.
+	* Makefile.in: Regenerate.
+
 2011-02-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR lto/47225
