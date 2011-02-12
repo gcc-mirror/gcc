@@ -184,6 +184,12 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
   gfc_symbol *vtab;
   gfc_component *c;
 
+  if (*as)
+    {
+      gfc_error ("Polymorphic array at %C not yet supported");
+      return FAILURE;
+    }
+
   /* Determine the name of the encapsulating type.  */
   get_unique_hashed_string (tname, ts->u.derived);
   if ((*as) && (*as)->rank && attr->allocatable)

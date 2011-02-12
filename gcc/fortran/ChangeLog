@@ -1,3 +1,9 @@
+2011-02-12  Janus Weil  <janus@gcc.gnu.org>
+
+	* class.c (gfc_build_class_symbol): Reject polymorphic arrays.
+	* decl.c (build_sym,build_struct,attr_decl1): Use return value of
+	'gfc_build_class_symbol'.
+
 2011-02-12  Michael Matz  <matz@suse.de>
 	    Janus Weil  <janus@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
