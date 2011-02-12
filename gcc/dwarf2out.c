@@ -474,7 +474,7 @@ static bool clobbers_queued_reg_save (const_rtx);
 static void dwarf2out_frame_debug_expr (rtx, const char *);
 
 /* Support for complex CFA locations.  */
-static void output_cfa_loc (dw_cfi_ref);
+static void output_cfa_loc (dw_cfi_ref, int);
 static void output_cfa_loc_raw (dw_cfi_ref);
 static void get_cfa_from_loc_descr (dw_cfa_location *,
 				    struct dw_loc_descr_struct *);
@@ -3317,7 +3317,7 @@ output_cfi (dw_cfi_ref cfi, dw_fde_ref fde, int for_eh)
 
 	case DW_CFA_def_cfa_expression:
 	case DW_CFA_expression:
-	  output_cfa_loc (cfi);
+	  output_cfa_loc (cfi, for_eh);
 	  break;
 
 	case DW_CFA_GNU_negative_offset_extended:
@@ -5053,10 +5053,15 @@ size_of_locs (dw_loc_descr_ref loc)
 static HOST_WIDE_INT extract_int (const unsigned char *, unsigned);
 static void get_ref_die_offset_label (char *, dw_die_ref);
 
-/* Output location description stack opcode's operands (if any).  */
+/* Output location description stack opcode's operands (if any).
+   The for_eh_or_skip parameter controls whether register numbers are
+   converted using DWARF2_FRAME_REG_OUT, which is needed in the case that
+   hard reg numbers have been processed via DWARF_FRAME_REGNUM (i.e. for unwind
+   info).  This should be suppressed for the cases that have not been converted
+   (i.e. symbolic debug info), by setting the parameter < 0.  See PR47324.  */
 
 static void
-output_loc_operands (dw_loc_descr_ref loc)
+output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
 {
   dw_val_ref val1 = &loc->dw_loc_oprnd1;
   dw_val_ref val2 = &loc->dw_loc_oprnd2;
@@ -5227,14 +5232,28 @@ output_loc_operands (dw_loc_descr_ref loc)
       dw2_asm_output_data_sleb128 (val1->v.val_int, NULL);
       break;
     case DW_OP_regx:
-      dw2_asm_output_data_uleb128 (val1->v.val_unsigned, NULL);
+      {
+	unsigned r = val1->v.val_unsigned;
+	if (for_eh_or_skip >= 0)
+	  r = DWARF2_FRAME_REG_OUT (r, for_eh_or_skip);
+	gcc_assert (size_of_uleb128 (r) 
+		    == size_of_uleb128 (val1->v.val_unsigned));
+	dw2_asm_output_data_uleb128 (r, NULL);	
+      }
       break;
     case DW_OP_fbreg:
       dw2_asm_output_data_sleb128 (val1->v.val_int, NULL);
       break;
     case DW_OP_bregx:
-      dw2_asm_output_data_uleb128 (val1->v.val_unsigned, NULL);
-      dw2_asm_output_data_sleb128 (val2->v.val_int, NULL);
+      {
+	unsigned r = val1->v.val_unsigned;
+	if (for_eh_or_skip >= 0)
+	  r = DWARF2_FRAME_REG_OUT (r, for_eh_or_skip);
+	gcc_assert (size_of_uleb128 (r) 
+		    == size_of_uleb128 (val1->v.val_unsigned));
+	dw2_asm_output_data_uleb128 (r, NULL);	
+	dw2_asm_output_data_sleb128 (val2->v.val_int, NULL);
+      }
       break;
     case DW_OP_piece:
       dw2_asm_output_data_uleb128 (val1->v.val_unsigned, NULL);
@@ -5288,19 +5307,42 @@ output_loc_operands (dw_loc_descr_ref loc)
     }
 }
 
-/* Output a sequence of location operations.  */
+/* Output a sequence of location operations.  
+   The for_eh_or_skip parameter controls whether register numbers are
+   converted using DWARF2_FRAME_REG_OUT, which is needed in the case that
+   hard reg numbers have been processed via DWARF_FRAME_REGNUM (i.e. for unwind
+   info).  This should be suppressed for the cases that have not been converted
+   (i.e. symbolic debug info), by setting the parameter < 0.  See PR47324.  */
 
 static void
-output_loc_sequence (dw_loc_descr_ref loc)
+output_loc_sequence (dw_loc_descr_ref loc, int for_eh_or_skip)
 {
   for (; loc != NULL; loc = loc->dw_loc_next)
     {
+      enum dwarf_location_atom opc = loc->dw_loc_opc;
       /* Output the opcode.  */
-      dw2_asm_output_data (1, loc->dw_loc_opc,
-			   "%s", dwarf_stack_op_name (loc->dw_loc_opc));
+      if (for_eh_or_skip >= 0 
+          && opc >= DW_OP_breg0 && opc <= DW_OP_breg31)
+	{
+	  unsigned r = (opc - DW_OP_breg0);
+	  r = DWARF2_FRAME_REG_OUT (r, for_eh_or_skip);
+	  gcc_assert (r <= 31);
+	  opc = (enum dwarf_location_atom) (DW_OP_breg0 + r);
+	}
+      else if (for_eh_or_skip >= 0 
+	       && opc >= DW_OP_reg0 && opc <= DW_OP_reg31)
+	{
+	  unsigned r = (opc - DW_OP_reg0);
+	  r = DWARF2_FRAME_REG_OUT (r, for_eh_or_skip);
+	  gcc_assert (r <= 31);
+	  opc = (enum dwarf_location_atom) (DW_OP_reg0 + r);
+	}
+
+      dw2_asm_output_data (1, opc,
+			     "%s", dwarf_stack_op_name (opc));
 
       /* Output the operand(s) (if any).  */
-      output_loc_operands (loc);
+      output_loc_operands (loc, for_eh_or_skip);
     }
 }
 
@@ -5361,9 +5403,18 @@ output_loc_operands_raw (dw_loc_descr_ref loc)
       }
       break;
 
+    case DW_OP_regx:
+      {
+	unsigned r = DWARF2_FRAME_REG_OUT (val1->v.val_unsigned, 1);
+	gcc_assert (size_of_uleb128 (r) 
+		    == size_of_uleb128 (val1->v.val_unsigned));
+	fputc (',', asm_out_file);
+	dw2_asm_output_data_uleb128_raw (r);
+      }
+      break;
+      
     case DW_OP_constu:
     case DW_OP_plus_uconst:
-    case DW_OP_regx:
     case DW_OP_piece:
       fputc (',', asm_out_file);
       dw2_asm_output_data_uleb128_raw (val1->v.val_unsigned);
@@ -5414,10 +5465,15 @@ output_loc_operands_raw (dw_loc_descr_ref loc)
       break;
 
     case DW_OP_bregx:
-      fputc (',', asm_out_file);
-      dw2_asm_output_data_uleb128_raw (val1->v.val_unsigned);
-      fputc (',', asm_out_file);
-      dw2_asm_output_data_sleb128_raw (val2->v.val_int);
+      {
+	unsigned r = DWARF2_FRAME_REG_OUT (val1->v.val_unsigned, 1);
+	gcc_assert (size_of_uleb128 (r) 
+		    == size_of_uleb128 (val1->v.val_unsigned));
+	fputc (',', asm_out_file);
+	dw2_asm_output_data_uleb128_raw (r);
+	fputc (',', asm_out_file);
+	dw2_asm_output_data_sleb128_raw (val2->v.val_int);
+      }
       break;
 
     case DW_OP_GNU_implicit_pointer:
@@ -5435,8 +5491,24 @@ output_loc_sequence_raw (dw_loc_descr_ref loc)
 {
   while (1)
     {
+      enum dwarf_location_atom opc = loc->dw_loc_opc;
       /* Output the opcode.  */
-      fprintf (asm_out_file, "%#x", loc->dw_loc_opc);
+      if (opc >= DW_OP_breg0 && opc <= DW_OP_breg31)
+	{
+	  unsigned r = (opc - DW_OP_breg0);
+	  r = DWARF2_FRAME_REG_OUT (r, 1);
+	  gcc_assert (r <= 31);
+	  opc = (enum dwarf_location_atom) (DW_OP_breg0 + r);
+	}
+      else if (opc >= DW_OP_reg0 && opc <= DW_OP_reg31)
+	{
+	  unsigned r = (opc - DW_OP_reg0);
+	  r = DWARF2_FRAME_REG_OUT (r, 1);
+	  gcc_assert (r <= 31);
+	  opc = (enum dwarf_location_atom) (DW_OP_reg0 + r);
+	}
+      /* Output the opcode.  */
+      fprintf (asm_out_file, "%#x", opc);
       output_loc_operands_raw (loc);
 
       if (!loc->dw_loc_next)
@@ -5451,14 +5523,16 @@ output_loc_sequence_raw (dw_loc_descr_ref loc)
    description based on a cfi entry with a complex address.  */
 
 static void
-output_cfa_loc (dw_cfi_ref cfi)
+output_cfa_loc (dw_cfi_ref cfi, int for_eh)
 {
   dw_loc_descr_ref loc;
   unsigned long size;
 
   if (cfi->dw_cfi_opc == DW_CFA_expression)
     {
-      dw2_asm_output_data (1, cfi->dw_cfi_oprnd1.dw_cfi_reg_num, NULL);
+      unsigned r = 
+	DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, for_eh);
+      dw2_asm_output_data (1, r, NULL);
       loc = cfi->dw_cfi_oprnd2.dw_cfi_loc;
     }
   else
@@ -5469,7 +5543,7 @@ output_cfa_loc (dw_cfi_ref cfi)
   dw2_asm_output_data_uleb128 (size, NULL);
 
   /* Now output the operations themselves.  */
-  output_loc_sequence (loc);
+  output_loc_sequence (loc, for_eh);
 }
 
 /* Similar, but used for .cfi_escape.  */
@@ -5482,7 +5556,9 @@ output_cfa_loc_raw (dw_cfi_ref cfi)
 
   if (cfi->dw_cfi_opc == DW_CFA_expression)
     {
-      fprintf (asm_out_file, "%#x,", cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
+      unsigned r = 
+	DWARF2_FRAME_REG_OUT (cfi->dw_cfi_oprnd1.dw_cfi_reg_num, 1);
+      fprintf (asm_out_file, "%#x,", r);
       loc = cfi->dw_cfi_oprnd2.dw_cfi_loc;
     }
   else
@@ -11075,7 +11151,7 @@ output_loc_list (dw_loc_list_ref list_head)
       gcc_assert (size <= 0xffff);
       dw2_asm_output_data (2, size, "%s", "Location expression size");
 
-      output_loc_sequence (curr->expr);
+      output_loc_sequence (curr->expr, -1);
     }
 
   dw2_asm_output_data (DWARF2_ADDR_SIZE, 0,
@@ -11153,7 +11229,7 @@ output_die (dw_die_ref die)
 	  else
 	    dw2_asm_output_data (constant_size (size), size, "%s", name);
 
-	  output_loc_sequence (AT_loc (a));
+	  output_loc_sequence (AT_loc (a), -1);
 	  break;
 
 	case dw_val_class_const:
