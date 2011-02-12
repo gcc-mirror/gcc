@@ -3135,6 +3135,7 @@ verify_gimple_call (gimple stmt)
 	{
 	  error ("invalid argument to gimple call");
 	  debug_generic_expr (arg);
+	  return true;
 	}
     }
 
