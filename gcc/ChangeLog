@@ -1,3 +1,7 @@
+2011-02-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (nostartfiles): New Driver option.
+
 2011-02-11  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/47707
