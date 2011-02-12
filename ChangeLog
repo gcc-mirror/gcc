@@ -1,3 +1,10 @@
+2011-02-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR lto/47225
+	* Makefile.def (lto-plugin): Double dash for enable-shared.
+	(configure-gcc): Depend on all-lto-plugin.
+	* Makefile.in: Rebuilt.
+
 2011-02-11  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure.ac: Remove extra bracket.

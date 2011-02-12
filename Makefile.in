@@ -45248,7 +45248,7 @@ configure-lto-plugin:
 	libsrcdir="$$s/lto-plugin"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias} $${srcdiroption} -enable-shared \
+	  --target=${target_alias} $${srcdiroption} --enable-shared \
 	  || exit 1
 @endif lto-plugin
 
@@ -45283,7 +45283,7 @@ configure-stage1-lto-plugin:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} $${srcdiroption} \
 	  $(STAGE1_CONFIGURE_FLAGS) \
-	  -enable-shared
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage2-lto-plugin maybe-configure-stage2-lto-plugin
@@ -45317,7 +45317,7 @@ configure-stage2-lto-plugin:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE2_CONFIGURE_FLAGS) \
-	  -enable-shared
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage3-lto-plugin maybe-configure-stage3-lto-plugin
@@ -45351,7 +45351,7 @@ configure-stage3-lto-plugin:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE3_CONFIGURE_FLAGS) \
-	  -enable-shared
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stage4-lto-plugin maybe-configure-stage4-lto-plugin
@@ -45385,7 +45385,7 @@ configure-stage4-lto-plugin:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGE4_CONFIGURE_FLAGS) \
-	  -enable-shared
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stageprofile-lto-plugin maybe-configure-stageprofile-lto-plugin
@@ -45419,7 +45419,7 @@ configure-stageprofile-lto-plugin:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEprofile_CONFIGURE_FLAGS) \
-	  -enable-shared
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 .PHONY: configure-stagefeedback-lto-plugin maybe-configure-stagefeedback-lto-plugin
@@ -45453,7 +45453,7 @@ configure-stagefeedback-lto-plugin:
 	  --target=${target_alias} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
 	  $(STAGEfeedback_CONFIGURE_FLAGS) \
-	  -enable-shared
+	  --enable-shared
 @endif lto-plugin-bootstrap
 
 
@@ -60266,14 +60266,14 @@ configure-stage3-gcc: maybe-configure-stage3-intl
 configure-stage4-gcc: maybe-configure-stage4-intl
 configure-stageprofile-gcc: maybe-configure-stageprofile-intl
 configure-stagefeedback-gcc: maybe-configure-stagefeedback-intl
-configure-gcc: maybe-configure-lto-plugin
+configure-gcc: maybe-all-lto-plugin
 
-configure-stage1-gcc: maybe-configure-stage1-lto-plugin
-configure-stage2-gcc: maybe-configure-stage2-lto-plugin
-configure-stage3-gcc: maybe-configure-stage3-lto-plugin
-configure-stage4-gcc: maybe-configure-stage4-lto-plugin
-configure-stageprofile-gcc: maybe-configure-stageprofile-lto-plugin
-configure-stagefeedback-gcc: maybe-configure-stagefeedback-lto-plugin
+configure-stage1-gcc: maybe-all-stage1-lto-plugin
+configure-stage2-gcc: maybe-all-stage2-lto-plugin
+configure-stage3-gcc: maybe-all-stage3-lto-plugin
+configure-stage4-gcc: maybe-all-stage4-lto-plugin
+configure-stageprofile-gcc: maybe-all-stageprofile-lto-plugin
+configure-stagefeedback-gcc: maybe-all-stagefeedback-lto-plugin
 configure-gcc: maybe-all-binutils
 
 configure-stage1-gcc: maybe-all-stage1-binutils
