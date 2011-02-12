@@ -1,6 +1,7 @@
 // Algorithm extensions -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+// 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -426,6 +427,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			     __out_last - __out_first);
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  using std::is_heap;
+#else
   /**
    *  This is an SGI extension.
    *  @ingroup SGIextensions
@@ -465,6 +469,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       return std::__is_heap(__first, __comp, __last - __first);
     }
+#endif
 
   // is_sorted, a predicated testing whether a range is sorted in
   // nondescending order.  This is an extension, not part of the C++
