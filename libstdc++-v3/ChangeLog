@@ -1,3 +1,13 @@
+2011-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1/cmath (fabs): Define.
+	* include/tr1/complex (acos, asin, atan): Avoid duplicate definitions
+	in C++0x mode.
+
+2011-02-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/tr1/headers/c++200x/complex.cc: New.
+
 2011-02-11  Johannes Singler  <singler@kit.edu>
 
 	PR libstdc++/47433

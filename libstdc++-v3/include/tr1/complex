@@ -1,6 +1,7 @@
 // TR1 complex -*- C++ -*-
 
-// Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,16 +45,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  // Forward declarations.
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  using std::acos;
+  using std::asin;
+  using std::atan;
+#else
   template<typename _Tp> std::complex<_Tp> acos(const std::complex<_Tp>&);
   template<typename _Tp> std::complex<_Tp> asin(const std::complex<_Tp>&);
   template<typename _Tp> std::complex<_Tp> atan(const std::complex<_Tp>&);
+#endif
 
   template<typename _Tp> std::complex<_Tp> acosh(const std::complex<_Tp>&);
   template<typename _Tp> std::complex<_Tp> asinh(const std::complex<_Tp>&);
   template<typename _Tp> std::complex<_Tp> atanh(const std::complex<_Tp>&);
+
+  // The std::fabs return type in C++0x mode is different (just _Tp).
   template<typename _Tp> std::complex<_Tp> fabs(const std::complex<_Tp>&);
 
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
   template<typename _Tp>
     inline std::complex<_Tp>
     __complex_acos(const std::complex<_Tp>& __z)
@@ -169,6 +178,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     atan(const std::complex<_Tp>& __z)
     { return __complex_atan(__z); }
 #endif
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
   template<typename _Tp>
     std::complex<_Tp>
