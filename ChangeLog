@@ -1,3 +1,8 @@
+2011-02-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR binutils/12283
+	* move-if-change: Import version from gnulib.
+
 2011-02-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR lto/47225
