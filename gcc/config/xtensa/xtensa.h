@@ -723,26 +723,6 @@ typedef struct xtensa_args
    indexing purposes) so give the MEM rtx a words's mode.  */
 #define FUNCTION_MODE SImode
 
-/* A C expression for the cost of moving data from a register in
-   class FROM to one in class TO.  The classes are expressed using
-   the enumeration values such as 'GENERAL_REGS'.  A value of 2 is
-   the default; other values are interpreted relative to that.  */
-#define REGISTER_MOVE_COST(MODE, FROM, TO)				\
-  (((FROM) == (TO) && (FROM) != BR_REGS && (TO) != BR_REGS)		\
-   ? 2									\
-   : (reg_class_subset_p ((FROM), AR_REGS)				\
-      && reg_class_subset_p ((TO), AR_REGS)				\
-      ? 2								\
-      : (reg_class_subset_p ((FROM), AR_REGS)				\
-	 && (TO) == ACC_REG						\
-	 ? 3								\
-	 : ((FROM) == ACC_REG						\
-	    && reg_class_subset_p ((TO), AR_REGS)			\
-	    ? 3								\
-	    : 10))))
-
-#define MEMORY_MOVE_COST(MODE, CLASS, IN) 4
-
 #define BRANCH_COST(speed_p, predictable_p) 3
 
 /* How to refer to registers in assembler output.
