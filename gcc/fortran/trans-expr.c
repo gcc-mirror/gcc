@@ -538,6 +538,11 @@ conv_parent_component_references (gfc_se * se, gfc_ref * ref)
   dt = ref->u.c.sym;
   c = ref->u.c.component;
 
+  /* Return if the component is not in the parent type.  */
+  for (cmp = dt->components; cmp; cmp = cmp->next)
+    if (strcmp (c->name, cmp->name) == 0)
+      return;
+
   /* Build a gfc_ref to recursively call gfc_conv_component_ref.  */
   parent.type = REF_COMPONENT;
   parent.next = NULL;
@@ -547,23 +552,11 @@ conv_parent_component_references (gfc_se * se, gfc_ref * ref)
   if (dt->backend_decl == NULL)
     gfc_get_derived_type (dt);
 
-  if (dt->attr.extension && dt->components)
-    {
-      if (dt->attr.is_class)
-	cmp = dt->components;
-      else
-	cmp = dt->components->next;
-      /* Return if the component is not in the parent type.  */
-      for (; cmp; cmp = cmp->next)
-	if (strcmp (c->name, cmp->name) == 0)
-	  return;
-	
-      /* Otherwise build the reference and call self.  */
-      gfc_conv_component_ref (se, &parent);
-      parent.u.c.sym = dt->components->ts.u.derived;
-      parent.u.c.component = c;
-      conv_parent_component_references (se, &parent);
-    }
+  /* Build the reference and call self.  */
+  gfc_conv_component_ref (se, &parent);
+  parent.u.c.sym = dt->components->ts.u.derived;
+  parent.u.c.component = c;
+  conv_parent_component_references (se, &parent);
 }
 
 /* Return the contents of a variable. Also handles reference/pointer
