@@ -1595,9 +1595,9 @@ __trampoline_setup (addr, size, fnaddr, sc)				\
       exit (-1);							\
     }									\
 									\
-  /* Create a function descriptor with the address of the code below
-     and NULL as the FDPIC value.  We don't need the real GOT value
-     here, since we don't use it, so we use NULL, that is just as
+  /* Create a function descriptor with the address of the code below	\
+     and NULL as the FDPIC value.  We don't need the real GOT value	\
+     here, since we don't use it, so we use NULL, that is just as	\
      good.  */								\
   desc[0] = to;								\
   desc[1] = NULL;							\

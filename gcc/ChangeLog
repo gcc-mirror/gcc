@@ -1,4 +1,9 @@
 2011-02-12  Mike Stump  <mikestump@comcast.net>
+
+	* config/frv/frv.h (TRANSFER_FROM_TRAMPOLINE): Canonicalize
+	comments in backslash regions.
+
+2011-02-12  Mike Stump  <mikestump@comcast.net>
 	    Jakub Jelinek  <jakub@redhat.com>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 
