@@ -137,6 +137,9 @@ static unsigned int xtensa_multibss_section_type_flags (tree, const char *,
 static section *xtensa_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
 static bool xtensa_rtx_costs (rtx, int, int, int *, bool);
+static int xtensa_register_move_cost (enum machine_mode, reg_class_t,
+				      reg_class_t);
+static int xtensa_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (const_tree, const_tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
@@ -213,6 +216,10 @@ static const struct default_options xtensa_option_optimization_table[] =
 #undef TARGET_MODE_DEPENDENT_ADDRESS_P
 #define TARGET_MODE_DEPENDENT_ADDRESS_P xtensa_mode_dependent_address_p
 
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST xtensa_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST xtensa_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xtensa_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -3307,6 +3314,34 @@ xtensa_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
   return function_section (current_function_decl);
 }
 
+/* Worker function for TARGET_REGISTER_MOVE_COST.  */
+
+static int
+xtensa_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			   reg_class_t from, reg_class_t to)
+{
+  if (from == to && from != BR_REGS && to != BR_REGS)
+    return 2;
+  else if (reg_class_subset_p (from, AR_REGS)
+	   && reg_class_subset_p (to, AR_REGS))
+    return 2;
+  else if (reg_class_subset_p (from, AR_REGS) && to == ACC_REG)
+    return 3;
+  else if (from == ACC_REG && reg_class_subset_p (to, AR_REGS))
+    return 3;
+  else
+    return 10;
+}
+
+/* Worker function for TARGET_MEMORY_MOVE_COST.  */
+
+static int
+xtensa_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			 reg_class_t rclass ATTRIBUTE_UNUSED,
+			 bool in ATTRIBUTE_UNUSED)
+{
+  return 4;
+}
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be

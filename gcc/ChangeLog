@@ -1,3 +1,11 @@
+2011-02-12  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/xtensa/xtensa.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST):
+	Remove macros.
+	* config/xtensa/xtensa.c (xtensa_register_move_cost,
+	xtensa_memory_move_cost): New functions.
+	(TARGET_REGISTER_MOVE_COST, TARGET_REGISTER_MOVE_COST): Define.
+
 2011-02-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR lto/47225
