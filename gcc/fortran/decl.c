@@ -1180,7 +1180,7 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
   if (sym->ts.type == BT_CLASS
       && (sym->attr.class_ok = sym->attr.dummy || sym->attr.pointer
 			       || sym->attr.allocatable))
-    gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
+    return gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
 
   return SUCCESS;
 }
@@ -1639,9 +1639,8 @@ scalar:
       bool delayed = (gfc_state_stack->sym == c->ts.u.derived)
 		     || (!c->ts.u.derived->components
 			 && !c->ts.u.derived->attr.zero_comp);
-      gfc_build_class_symbol (&c->ts, &c->attr, &c->as, delayed);
+      return gfc_build_class_symbol (&c->ts, &c->attr, &c->as, delayed);
     }
-
 
   return t;
 }
@@ -6048,8 +6047,12 @@ attr_decl1 (void)
     
   if (sym->ts.type == BT_CLASS && !sym->attr.class_ok
       && (sym->attr.class_ok = sym->attr.class_ok || current_attr.allocatable
-			       || current_attr.pointer))
-    gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
+			       || current_attr.pointer)
+      && gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false) == FAILURE)
+    {
+      m = MATCH_ERROR;
+      goto cleanup;
+    }
 
   if (gfc_set_array_spec (sym, as, &var_locus) == FAILURE)
     {
