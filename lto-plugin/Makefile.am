@@ -12,7 +12,7 @@ AM_CFLAGS = -Wall -Werror
 AM_LIBTOOLFLAGS = --tag=disable-static
 
 libexecsub_LTLIBRARIES = liblto_plugin.la
-gcc_build_dir = ../gcc
+gcc_build_dir = ../$(host_subdir)/gcc
 in_gcc_libs = $(foreach lib, $(libexecsub_LTLIBRARIES), $(gcc_build_dir)/$(lib))
 
 # Can be removed when libiberty becomes a normal convenience library
@@ -27,7 +27,7 @@ liblto_plugin_la_LDFLAGS = $(lt_host_flags) -module -bindir $(libexecsubdir) \
 liblto_plugin_la_DEPENDENCIES = $(if $(wildcard \
 	../libiberty/pic/libiberty.a),../libiberty/pic/libiberty.a,)
 
-all: $(in_gcc_libs)
+all-local: $(in_gcc_libs)
 
 $(in_gcc_libs) : $(gcc_build_dir)/%: %
 	@if test "X`dlname=; . ./$*; echo dlname:$$dlname`" = "Xdlname:"; then \
