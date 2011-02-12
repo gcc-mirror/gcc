@@ -1,3 +1,8 @@
+2011-02-12  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-cfg.c (verify_gimple_call): Return true upon invalid argument
+	to gimple call error.
+
 2011-02-12  Mike Stump  <mikestump@comcast.net>
 
 	* config/frv/frv.h (TRANSFER_FROM_TRAMPOLINE): Canonicalize
