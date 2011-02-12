@@ -1,3 +1,10 @@
+2011-02-12  Jakub Jelinek  <jakub@redhat.com>
+            Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/47662
+	* testsuite/17_intro/headers/c++200x/operator_names.cc: New.
+	* testsuite/17_intro/headers/c++1998/operator_names.cc: Add comment.
+
 2011-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1/cmath (fabs): Define.

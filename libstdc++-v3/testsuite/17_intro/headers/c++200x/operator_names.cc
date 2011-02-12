@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fno-operator-names" }
+// { dg-options "-std=gnu++0x -fno-operator-names" }
 
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //
