@@ -1,3 +1,8 @@
+2011-02-12  Joseph Myers  <joseph@codesourcery.com>
+
+	PR driver/45731
+	* gcc.c (asm_options): Correct spec matching --target-help.
+
 2011-02-12  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-cfg.c (verify_gimple_call): Return true upon invalid argument
