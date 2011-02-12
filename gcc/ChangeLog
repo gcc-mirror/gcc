@@ -1,3 +1,10 @@
+2011-02-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR lto/47225
+	* configure.ac (gcc_cv_lto_plugin): Test for liblto_plugin.la
+	in the current directory.
+	* configure: Rebuilt.
+
 2011-02-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin.c (darwin_override_options): Add a hunk missed
