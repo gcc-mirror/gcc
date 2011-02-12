@@ -1,3 +1,8 @@
+2011-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gnat_ugn.texi (Compiling Different Versions of Ada): Update
+	link to "Ada Issues".
+
 2011-02-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (x86-64 darwin): Handle multilibs.
