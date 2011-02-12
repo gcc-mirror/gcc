@@ -1,3 +1,11 @@
+2011-02-12  Michael Matz  <matz@suse.de>
+	    Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45586
+	* trans-expr.c (conv_parent_component_references): Avoid unintendent
+	skipping of parent compounds.
+
 2011-02-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47550
