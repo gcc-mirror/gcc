@@ -1,3 +1,8 @@
+2011-02-12  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* gcc.c (driver_handle_option): Concatenate the argument to -F with
+	the switch.
+
 2011-02-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (nostartfiles): New Driver option.

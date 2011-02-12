@@ -3330,6 +3330,11 @@ driver_handle_option (struct gcc_options *opts,
       save_switch (concat ("-L", arg, NULL), 0, NULL, validated);
       return true;
 
+    case OPT_F:
+      /* Likewise -F.  */
+      save_switch (concat ("-F", arg, NULL), 0, NULL, validated);
+      return true;
+
     case OPT_save_temps:
       save_temps_flag = SAVE_TEMPS_CWD;
       validated = true;
