@@ -1,3 +1,18 @@
+2011-02-12  Mike Stump  <mikestump@comcast.net>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/47324
+	* dwarf2out.c (output_cfa_loc): When required, apply the
+	DWARF2_FRAME_REG_OUT macro to adjust register numbers.
+	(output_loc_sequence): Likewise.
+	(output_loc_operands_raw): Likewise.
+	(output_loc_sequence_raw): Likewise.
+	(output_cfa_loc): Likewise.
+	(output_loc_list): Suppress register number adjustment when
+	calling output_loc_sequence()
+	(output_die): Likewise.
+
 2011-02-12  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/xtensa/xtensa.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST):
