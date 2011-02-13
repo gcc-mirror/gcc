@@ -4816,7 +4816,16 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  && POINTER_TYPE_P (otype)
 	  && !upc_shared_type_p (TREE_TYPE (otype)))
 	{
-          error ("UPC does not allow casts from local to shared pointers.");
+          error ("UPC does not allow casts from a local pointer to a pointer-to-shared.");
+          return error_mark_node;
+	}
+
+      if (TREE_CODE (type) == POINTER_TYPE
+	  && TREE_CODE (otype) == INTEGER_TYPE
+	  && upc_shared_type_p (TREE_TYPE (type))
+	  && !integer_zerop (value))
+        {
+	  error ("UPC does not allow casts from an integer to a pointer-to-shared");
           return error_mark_node;
 	}
 
@@ -4824,9 +4833,10 @@ build_c_cast (location_t loc, tree type, tree expr)
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && upc_shared_type_p (TREE_TYPE (otype)))
         {
-	  error ("UPC does not allow casts from shared pointers to integers");
+	  error ("UPC does not allow casts from a pointer-to-shared to an integer");
 	  return error_mark_node;
 	}
+
 
       if (TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
@@ -5652,8 +5662,8 @@ convert_for_assignment (location_t location, tree type, tree rhs,
       if ((upc_shared_type_p (ttl) && !upc_shared_type_p (ttr))
            && !integer_zerop (rhs))
         {
-	  error_at (location, "UPC does not allow assignments from local"
-	                      " to shared pointers.");
+	  error_at (location, "UPC does not allow assignments from a local pointer"
+	                      " to pointer-to-shared.");
 	  return error_mark_node;
 	}
       if (!upc_shared_type_p (ttl) && upc_shared_type_p (ttr))
@@ -5674,8 +5684,8 @@ convert_for_assignment (location_t location, tree type, tree rhs,
         {
 	  const tree bs_l = upc_get_block_factor (ttl);
 	  const tree bs_r = upc_get_block_factor (ttr);
-	  /* Both source and destination are non-void shared pointers,
-	     whose target type pointers are not equal.
+	  /* Both source and destination are non-void pointers to shared,
+	     whose target types are not equal.
 	     UPC dictates that their blocking factors must be equal. */
 	  if (!tree_int_cst_equal (bs_l, bs_r))
 	    {
@@ -5897,7 +5907,7 @@ convert_for_assignment (location_t location, tree type, tree rhs,
 	    ERROR_FOR_ASSIGNMENT (location, 0,
 				  G_("passing argument %d of %qE attempts to make "
 				     "a pointer-to-shared from an integer"),
-				  G_("assignment attempts to make pointer-to-shared "
+				  G_("assignment attempts to make a pointer-to-shared "
 				     "from an integer"),
 				  G_("initialization attempts to make a pointer-to-shared "
 				     "from an integer without a cast"),

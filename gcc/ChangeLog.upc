@@ -1,3 +1,11 @@
+2011-02-12  Gary Funck  <gary@intrepid.com>
+
+	* c-typeck.c: (build_c_cast, convert_for_assignment)
+	  Diagnose an attempt to convert from an integer to
+	  a pointer-to-shared as an error.  Also, fix various
+	  error messages so that they use the preferred term
+	  pointer-to-shared instead of "shared pointer".
+
 2011-02-07  Gary Funck  <gary@intrepid.com>
 
 	* c-typeck.c: (convert_for_assignment)
