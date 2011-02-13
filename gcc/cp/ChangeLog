@@ -1,3 +1,8 @@
+2011-02-13  Mike Stump  <mikestump@comcast.net>
+
+	* Make-lang.in (cp/parser.o): Move c-family/c-objc.h dependancy
+	down.
+
 2011-02-12  Mike Stump  <mikestump@comcast.net>
 
 	* Make-lang.in (build/slashify): Plugify Objective-C++.
