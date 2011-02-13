@@ -1,3 +1,7 @@
+2011-02-13  Tobias Burnus  <burnus@net-b.de>
+
+	* parser.c (cp_parser_declaration): Remove unused variable.
+
 2011-02-13  Mike Stump  <mikestump@comcast.net>
 
 	* Make-lang.in (cp/parser.o): Move c-family/c-objc.h dependancy
