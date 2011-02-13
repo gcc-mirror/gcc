@@ -3671,11 +3671,11 @@ cp_parser_primary_expression (cp_parser *parser,
       }
 
     case CPP_OPEN_SQUARE:
-      PLUGIN_PRIMARY_EXPRESSION_3(parser);
+      PLUGIN_PRIMARY_EXPRESSION_3 (parser);
       maybe_warn_cpp0x (CPP0X_LAMBDA_EXPR);
       return cp_parser_lambda_expression (parser);
 
-    PLUGIN_PRIMARY_EXPRESSION_2(parser, cp_parser_error)
+    PLUGIN_PRIMARY_EXPRESSION_2 (parser, cp_parser_error)
 
     case CPP_KEYWORD:
       switch (token->keyword)
@@ -3806,7 +3806,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_IS_LITERAL_TYPE:
 	  return cp_parser_trait_expr (parser, token->keyword);
 
-	PLUGIN_PRIMARY_EXPRESSION_1(parser)
+	PLUGIN_PRIMARY_EXPRESSION_1 (parser)
 
 	case RID_TEMPLATE:
 	  if (parser->in_function_body
@@ -9401,7 +9401,7 @@ cp_parser_declaration (cp_parser* parser)
   else if (token1.keyword == RID_INLINE
 	   && token2.keyword == RID_NAMESPACE)
     cp_parser_namespace_definition (parser);
-  PLUGIN_DECLARATION
+  PLUGIN_DECLARATION (token1, attributes)
   /* We must have either a block declaration or a function
      definition.  */
   else
@@ -12800,7 +12800,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
   if (type && type != error_mark_node)
     {
-      PLUGIN_SIMPLE_TYPE_SPECIFIER;
+      PLUGIN_SIMPLE_TYPE_SPECIFIER (parser, type, decl_specs);
 
       /* There is no valid C++ program where a non-template type is
 	 followed by a "<".  That usually indicates that the user
@@ -12876,11 +12876,11 @@ cp_parser_nonclass_name (cp_parser* parser)
   /* Look up the type-name.  */
   type_decl = cp_parser_lookup_name_simple (parser, identifier, token->location);
 
-  PLUGIN_NONCLASS_NAME1;
+  PLUGIN_NONCLASS_NAME1 (parser, type_decl, identifier);
 
   /* Issue an error if we did not find a type-name.  */
   if (TREE_CODE (type_decl) != TYPE_DECL
-      PLUGIN_NONCLASS_NAME)
+      PLUGIN_NONCLASS_NAME (parser, type_decl, cp_lexer_peek_token))
     {
       if (!cp_parser_simulate_error (parser))
 	cp_parser_name_lookup_error (parser, identifier, type_decl,
@@ -16724,7 +16724,7 @@ cp_parser_class_name (cp_parser *parser,
   else if (TREE_CODE (decl) != TYPE_DECL
 	   || TREE_TYPE (decl) == error_mark_node
 	   || !MAYBE_CLASS_TYPE_P (TREE_TYPE (decl))
-	   PLUGIN_CLASS_NAME)
+	   PLUGIN_CLASS_NAME (parser, cp_lexer_peek_token, CPP_DOT))
     decl = error_mark_node;
 
   if (decl == error_mark_node)
@@ -17585,7 +17585,8 @@ cp_parser_member_declaration (cp_parser* parser)
       return;
     }
 
-  PLUGIN_MEMBER_DECLARATION;
+  PLUGIN_MEMBER_DECLARATION (parser, cp_lexer_next_token_is_keyword,
+			     finish_member_declaration);
 
   /* If the next token is `static_assert' we have a static assertion.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_STATIC_ASSERT))

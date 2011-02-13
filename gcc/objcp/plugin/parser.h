@@ -127,7 +127,7 @@ static tree cp_parser_objc_struct_declaration
    break;@)
 
 
-#define PLUGIN_DECLARATION @(
+#define PLUGIN_DECLARATION(token1, attributes) @(
   /* Objective-C++ declaration/definition.  */
   else if (c_dialect_objc () && OBJC_IS_AT_KEYWORD (token1.keyword))
     cp_parser_objc_declaration (parser, NULL_TREE);
@@ -136,7 +136,7 @@ static tree cp_parser_objc_struct_declaration
 	   && cp_parser_objc_valid_prefix_attributes (parser, &attributes))
     cp_parser_objc_declaration (parser, attributes);@)
 
-#define PLUGIN_SIMPLE_TYPE_SPECIFIER @(
+#define PLUGIN_SIMPLE_TYPE_SPECIFIER(parser, type, decl_specs)  @(
   do {
     /* See if TYPE is an Objective-C type, and if so, parse and
        accept any protocol references following it.  Do this before
@@ -160,7 +160,7 @@ static tree cp_parser_objc_struct_declaration
   } while (0)@)
 
 
-#define PLUGIN_NONCLASS_NAME1 @(
+#define PLUGIN_NONCLASS_NAME1(parser, type_decl, identifier) @(
   do {
     if (TREE_CODE (type_decl) != TYPE_DECL
 	&& (objc_is_id (identifier) || objc_is_class_name (identifier)))
@@ -173,7 +173,7 @@ static tree cp_parser_objc_struct_declaration
       }
   } while (0)@)
 
-#define PLUGIN_NONCLASS_NAME @(
+#define PLUGIN_NONCLASS_NAME(parser, type_decl, cp_lexer_peek_token) @(
   /* In Objective-C, we have the complication that class names are
      normally type names and start declarations (eg, the
      "NSObject" in "NSObject *object;"), but can be used in an
@@ -183,14 +183,14 @@ static tree cp_parser_objc_struct_declaration
   || (objc_is_class_name (TREE_TYPE (type_decl))
       && cp_lexer_peek_token (parser->lexer)->type == CPP_DOT)@)
 
-#define PLUGIN_CLASS_NAME @(
+#define PLUGIN_CLASS_NAME(parser, cp_lexer_peek_token, CPP_DOT) @(
   /* In Objective-C 2.0, a classname followed by '.' starts a
      dot-syntax expression, and it's not a type-name.  */
   || (c_dialect_objc ()
       && cp_lexer_peek_token (parser->lexer)->type == CPP_DOT 
       && objc_is_class_name (decl))@)
 
-#define PLUGIN_MEMBER_DECLARATION @(
+#define PLUGIN_MEMBER_DECLARATION(parser, cp_lexer_next_token_is_keyword, finish_member_declaration) @(
   do {
     /* Check for @defs.  */
     if (cp_lexer_next_token_is_keyword (parser->lexer, RID_AT_DEFS))
@@ -217,11 +217,11 @@ static tree cp_parser_objc_struct_declaration
 #define PLUGIN_PRIMARY_EXPRESSION(parser, decl, cp_lexer_consume_token, cp_lexer_peek_token)
 #define PLUGIN_TOKEN_STARTS_CAST_EXPR
 #define PLUGIN_STATEMENT
-#define PLUGIN_DECLARATION
-#define PLUGIN_SIMPLE_TYPE_SPECIFIER
-#define PLUGIN_NONCLASS_NAME1
-#define PLUGIN_NONCLASS_NAME
-#define PLUGIN_CLASS_NAME
-#define PLUGIN_MEMBER_DECLARATION
+#define PLUGIN_DECLARATION(token1, attributes)
+#define PLUGIN_SIMPLE_TYPE_SPECIFIER(parser, type, decl_specs)
+#define PLUGIN_NONCLASS_NAME1(parser, type_decl, identifier)
+#define PLUGIN_NONCLASS_NAME(parser, type_decl, cp_lexer_peek_token) 
+#define PLUGIN_CLASS_NAME(parser, cp_lexer_peek_token, CPP_DOT)
+#define PLUGIN_MEMBER_DECLARATION(parser, cp_lexer_next_token_is_keyword, finish_member_declaration)
 
 #endif
