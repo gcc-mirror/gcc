@@ -339,11 +339,9 @@ build/slashify: # $(srcdir)/config/slashify.c
 	$(COMPILER_FOR_BUILD) $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) $(srcdir)/config/slashify.c -o $@
 
 $(objdir)/objcp/plugin/parser.h: $(srcdir)/objcp/plugin/parser.h build/slashify
-	test -d objcp || mkdir objcp
-	test -d objcp/plugin || mkdir objcp/plugin
+	$(mkinstalldirs) objcp/plugin
 	build/slashify < $< > $@
 
 $(objdir)/objcp/plugin/lex.h: $(srcdir)/objcp/plugin/lex.h build/slashify
-	test -d objcp || mkdir objcp
-	test -d objcp/plugin || mkdir objcp/plugin
+	$(mkinstalldirs) objcp/plugin
 	build/slashify < $< > $@

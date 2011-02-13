@@ -23,11 +23,11 @@ build/slashify1: $(srcdir)/config/slashify.c
 $(srcdir)/config/darwin.h: config/darwin.h.rebuild
 
 config/darwin.h.rebuild: build/slashify1
+	@$(mkinstalldirs) config
 	@if [ ! -e $(srcdir)/config/darwin.h					\
 	      -o $(srcdir)/config/darwin.h -nt config/darwin.h ]; then		\
-		{ test -d config || mkdir config; } &&				\
-		cp -p $(srcdir)/config/darwin-sections.def			\
-		      config/darwin-sections.def &&				\
+		cp $(srcdir)/config/darwin-sections.def				\
+		   config/darwin-sections.def &&				\
 		build/slashify1 < $(srcdir)/config/darwin.h  >config/darwin.h;	\
 	fi
 
