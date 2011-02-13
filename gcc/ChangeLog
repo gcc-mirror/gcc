@@ -1,5 +1,9 @@
 2011-02-12  Mike Stump  <mikestump@comcast.net>
 
+	* config/t-darwin (build/slashify): Allow others to reuse easier.
+
+2011-02-12  Mike Stump  <mikestump@comcast.net>
+
 	* config/darwin.h: Make pretty.
 	* config/t-darwin (config/darwin.h.rebuild): Add.
 	(build/slashify): Add.

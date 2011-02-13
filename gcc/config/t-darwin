@@ -17,8 +17,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-build/slashify: $(srcdir)/config/slashify.c
-	$(COMPILER_FOR_BUILD) $< -o $@
+build/slashify:: $(srcdir)/config/slashify.c
+	$(COMPILER_FOR_BUILD) $(srcdir)/config/slashify.c -o $@
 
 $(srcdir)/config/darwin.h: config/darwin.h.rebuild
 

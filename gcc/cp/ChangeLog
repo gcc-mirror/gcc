@@ -1,3 +1,10 @@
+2011-02-12  Mike Stump  <mikestump@comcast.net>
+
+	* Make-lang.in (build/slashify): Plugify Objective-C++.
+	(cp/parser.o): Likewise.
+	(objcp/plugin/parser.h): Likewise.
+	* parser.c (cp_parser_token_starts_cast_expression): Likewise.
+
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (cp_make_fname_decl): Set DECL_THIS_STATIC at toplevel.

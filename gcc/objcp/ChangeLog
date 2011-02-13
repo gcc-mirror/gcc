@@ -1,3 +1,9 @@
+2011-02-12  Mike Stump  <mikestump@comcast.net>
+
+	* Make-lang.in (obj-c++.tags): Plugify Objective-C++.
+	* plugin/parser.h: Likewise.
+	* plugin/parser.c: Likewise.
+
 2011-02-07  Mike Stump  <mikestump@comcast.net>
 
 	* Make-lang.in (obj-c++.tags): Don't include *.y.
