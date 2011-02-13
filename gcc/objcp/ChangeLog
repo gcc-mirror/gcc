@@ -1,5 +1,6 @@
 2011-02-13  Mike Stump  <mikestump@comcast.net>
 
+	* plugin/parser.h: Add arguments to all plugins.
 	* plugin/lex.h: Plugify.
 
 2011-02-12  Mike Stump  <mikestump@comcast.net>

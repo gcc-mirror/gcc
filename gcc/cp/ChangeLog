@@ -1,5 +1,6 @@
 2011-02-13  Mike Stump  <mikestump@comcast.net>
 
+	* parser.c (cp_parser_primary_expression): Add arguments to all the plugins.
 	* lex.c: Plugify.
 	* Make-lang.in (objcp/plugin/lex.h): Likewise.
 	* Make-lang.in (cp/parser.o): Move c-family/c-objc.h dependancy
