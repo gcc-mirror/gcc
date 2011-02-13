@@ -17,20 +17,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-build/slashify1: $(srcdir)/config/slashify.c
-	$(COMPILER_FOR_BUILD) $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) $(srcdir)/config/slashify.c -o $@
-
-$(srcdir)/config/darwin.h: config/darwin.h.rebuild
-
-config/darwin.h.rebuild: build/slashify1
-	@$(mkinstalldirs) config
-	@if [ ! -e $(srcdir)/config/darwin.h					\
-	      -o $(srcdir)/config/darwin.h -nt config/darwin.h ]; then		\
-		cp $(srcdir)/config/darwin-sections.def				\
-		   config/darwin-sections.def &&				\
-		build/slashify1 < $(srcdir)/config/darwin.h  >config/darwin.h;	\
-	fi
-
 darwin.o: $(srcdir)/config/darwin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h     \
   $(TM_H) $(RTL_H) $(REGS_H) hard-reg-set.h $(REAL_H) insn-config.h         \
   conditions.h insn-flags.h output.h insn-attr.h flags.h $(TREE_H) expr.h   \
