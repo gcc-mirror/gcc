@@ -1,3 +1,10 @@
+2011-02-12  Mike Stump  <mikestump@comcast.net>
+
+	* config/darwin.h: Make pretty.
+	* config/t-darwin (config/darwin.h.rebuild): Add.
+	(build/slashify): Add.
+	* config/slashify.c: Add.
+
 2011-02-12  Joseph Myers  <joseph@codesourcery.com>
 
 	PR driver/45731
@@ -46,7 +53,7 @@
 2011-02-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin.c (darwin_override_options): Add a hunk missed
-	from the commit of r168571.  Trim comment line lengths and 
+	from the commit of r168571.  Trim comment line lengths and
 	correct indents of the preceding block.
 
 2011-02-12  Iain Sandoe  <iains@gcc.gnu.org>
