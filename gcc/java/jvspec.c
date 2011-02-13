@@ -1,7 +1,7 @@
 /* Specific flags and argument handling of the front-end of the 
    GNU compiler for the Java(TM) language.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,7 +59,7 @@ int shared_libgcc = 1;
 static const char jvgenmain_spec[] =
   "jvgenmain %{findirect-dispatch} %{D*} %b %m.i |\n\
    cc1 %m.i %1 \
-		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
+		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*}\
 		   %{g*} %{O*} \
 		   %{v:-version} %{pg:-p} %{p}\
 		   %<fbounds-check %<fno-bounds-check\
