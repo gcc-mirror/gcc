@@ -1,3 +1,9 @@
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+	* shlibpath.m4 (AC_LIBTOOL_SYS_DYNAMIC_LINKER): Remove handling
+	of freebsd1* which soon would incorrectly match FreeBSD 10.0.
+
 2011-02-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR java/21206

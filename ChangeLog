@@ -1,3 +1,20 @@
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Import from Libtool and gnulib:
+
+	2011-01-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Prepare for supporting FreeBSD 10.
+	* config.rpath: Remove handling of freebsd1* which soon would
+	match FreeBSD 10.0.
+
+	2011-01-20  Gerald Pfeifer  <gerald@pfeifer.com>  (tiny change)
+
+	Remove support for FreeBSD 1.x.
+	* libtool.m4 (_LT_LINKER_SHLIBS)
+	(_LT_SYS_DYNAMIC_LINKER): Remove handling of freebsd1* which
+	soon would incorrectly match FreeBSD 10.0.
+
 2011-02-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR binutils/12283
