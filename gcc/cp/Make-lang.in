@@ -315,8 +315,7 @@ cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) \
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) $(REAL_H) \
   gt-cp-mangle.h $(TARGET_H) $(TM_P_H) $(CGRAPH_H)
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \
-  gt-cp-parser.h output.h $(TARGET_H) $(PLUGIN_H) intl.h \
-  c-family/c-objc.h
+  gt-cp-parser.h output.h $(TARGET_H) $(PLUGIN_H) intl.h
 cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) $(C_COMMON_H) \
 	$(TM_H) coretypes.h pointer-set.h tree-iterator.h
 
@@ -330,7 +329,8 @@ cp/cxx-pretty-print.o: cp/cxx-pretty-print.c $(CXX_PRETTY_PRINT_H) \
 
 # Objective-C++ related rules:
 
-cp/parser.o: $(objdir)/objcp/plugin/parser.h $(srcdir)/objcp/plugin/parser.c
+cp/parser.o: $(objdir)/objcp/plugin/parser.h $(srcdir)/objcp/plugin/parser.c \
+	c-family/c-objc.h
 
 build/slashify:: $(srcdir)/config/slashify.c
 	$(COMPILER_FOR_BUILD) $(srcdir)/config/slashify.c -o $@
