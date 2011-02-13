@@ -1,3 +1,8 @@
+2011-02-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Adjust link to bug database.
+	Remove old item on broken header files.
+
 2011-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/47709
