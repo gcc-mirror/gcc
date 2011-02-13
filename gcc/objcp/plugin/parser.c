@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-#ifdef HIDE_OBJC
+#ifndef HIDE_OBJC
 
 /* Objective-C++ Productions */
 

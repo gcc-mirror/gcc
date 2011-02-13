@@ -1,3 +1,7 @@
+2011-02-13  Mike Stump  <mikestump@comcast.net>
+
+	* plugin/lex.h: Plugify.
+
 2011-02-12  Mike Stump  <mikestump@comcast.net>
 
 	* Make-lang.in (obj-c++.tags): Plugify Objective-C++.

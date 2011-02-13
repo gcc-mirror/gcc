@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This isn't defined anywhere, yet, but it could be.  This will turn off
    the entire C++ Objective-C++ plugin.  */
-#ifdef HIDE_OBJC
+#ifndef HIDE_OBJC
 
 #include "c-family/c-objc.h"
 
