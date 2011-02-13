@@ -25,9 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include <stdio.h>
 
-extern int main (int, char **);
+extern int main (void);
 
-int main (int argc, char **argv) {
+int main (void) {
   int c,c1;
   int saw_start = 0;
   while ((c=getchar ()) != EOF) {
