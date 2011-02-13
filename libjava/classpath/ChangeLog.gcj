@@ -1,3 +1,9 @@
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* config.rpath, ltcf-c.sh, ltcf-gcj.sh, ltconfig: Remove
+	handling of freebsd1* which soon would match FreeBSD 10.0.
+	* configure: Regenerate.
+
 2011-01-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.ac (GCJ_JAVAC): Run false rather than no.

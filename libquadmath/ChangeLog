@@ -1,3 +1,9 @@
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+
 2011-01-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libquadmath/47293

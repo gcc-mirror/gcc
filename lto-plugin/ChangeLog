@@ -1,3 +1,9 @@
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2011-02-12  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.am (all-local): Rename from 'all'.

@@ -1,3 +1,7 @@
+2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* configure: Regenerate.
+
 2011-02-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/47709
