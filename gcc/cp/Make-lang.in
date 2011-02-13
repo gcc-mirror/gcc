@@ -326,3 +326,16 @@ cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 cp/cxx-pretty-print.o: cp/cxx-pretty-print.c $(CXX_PRETTY_PRINT_H) \
   $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h $(CXX_TREE_H) tree-pretty-print.h
+
+
+# Objective-C++ related rules:
+
+cp/parser.o: $(objdir)/objcp/plugin/parser.h $(srcdir)/objcp/plugin/parser.c
+
+build/slashify:: $(srcdir)/config/slashify.c
+	$(COMPILER_FOR_BUILD) $(srcdir)/config/slashify.c -o $@
+
+$(objdir)/objcp/plugin/parser.h: $(srcdir)/objcp/plugin/parser.h | build/slashify
+	test -d objcp || mkdir objcp
+	test -d objcp/plugin || mkdir objcp/plugin
+	build/slashify < $< > $@
