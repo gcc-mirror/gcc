@@ -247,7 +247,8 @@ CXX_TREE_H = $(TREE_H) cp/name-lookup.h cp/cp-tree.h $(C_COMMON_H) \
 CXX_PRETTY_PRINT_H = cp/cxx-pretty-print.h $(C_PRETTY_PRINT_H)
 
 cp/lex.o: cp/lex.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
-  $(C_PRAGMA_H) output.h input.h cp/operators.def $(TM_P_H)
+  $(C_PRAGMA_H) output.h input.h cp/operators.def $(TM_P_H) \
+  c-family/c-objc.h
 cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) debug.h langhooks.h \
   $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-cp.h gt-cp-cp-lang.h \
   cp/cp-objcp-common.h $(EXPR_H) $(TARGET_H)
@@ -314,7 +315,8 @@ cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) \
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) $(REAL_H) \
   gt-cp-mangle.h $(TARGET_H) $(TM_P_H) $(CGRAPH_H)
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \
-  gt-cp-parser.h output.h $(TARGET_H) $(PLUGIN_H) intl.h
+  gt-cp-parser.h output.h $(TARGET_H) $(PLUGIN_H) intl.h \
+  c-family/c-objc.h
 cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) $(C_COMMON_H) \
 	$(TM_H) coretypes.h pointer-set.h tree-iterator.h
 
@@ -324,24 +326,3 @@ cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 cp/cxx-pretty-print.o: cp/cxx-pretty-print.c $(CXX_PRETTY_PRINT_H) \
   $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h $(CXX_TREE_H) tree-pretty-print.h
-
-
-# Objective-C++ related rules:
-
-cp/parser.o: $(objdir)/objcp/plugin/parser.h $(srcdir)/objcp/plugin/parser.c \
-	c-family/c-objc.h
-
-cp/lex.o: $(objdir)/objcp/plugin/lex.h c-family/c-objc.h
-
-# Would like to get rid of the #, but we always rebuild the checksum
-# if we do
-build/slashify: # $(srcdir)/config/slashify.c
-	$(COMPILER_FOR_BUILD) $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) $(srcdir)/config/slashify.c -o $@
-
-$(objdir)/objcp/plugin/parser.h: $(srcdir)/objcp/plugin/parser.h build/slashify
-	$(mkinstalldirs) objcp/plugin
-	build/slashify < $< > $@
-
-$(objdir)/objcp/plugin/lex.h: $(srcdir)/objcp/plugin/lex.h build/slashify
-	$(mkinstalldirs) objcp/plugin
-	build/slashify < $< > $@
