@@ -1,3 +1,9 @@
+2011-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ada/41929
+	* gnat.dg/null_pointer_deref1.exp: Don't skip on
+	sparc*-sun-solaris2.11.
+
 2011-02-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47349
