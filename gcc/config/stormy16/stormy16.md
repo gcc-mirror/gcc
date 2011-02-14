@@ -95,6 +95,7 @@
 			(set_attr "psw_operand" "clobber")])
 
 (include "predicates.md")
+(include "constraints.md")
 
 ;; ::::::::::::::::::::
 ;; ::
