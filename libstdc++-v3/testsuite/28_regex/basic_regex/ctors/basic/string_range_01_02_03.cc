@@ -1,10 +1,9 @@
-// { dg-options "-std=c++0x" }
-// { dg-do run { xfail *-*-* } }
+// { dg-options "-std=gnu++0x" }
 
 //
 // 2010-06-16  Stephen M. Webb <stephen.webb@bregmasoft.ca>
 //
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +37,7 @@ test01()
 	}
 	catch (std::regex_error& ex)
 	{
-		VERIFY( ex.code() == std::regex_constants::error_badbrace );
+		VERIFY( ex.code() == std::regex_constants::error_brace );
 	}
 }
 
