@@ -615,7 +615,7 @@ xstormy16_expand_andqi3 (rtx *operands)
   && INTVAL (X) + (OFFSET) < 0x8000					 \
   && (INTVAL (X) + (OFFSET) < 0x100 || INTVAL (X) + (OFFSET) >= 0x7F00))
 
-static bool
+bool
 xstormy16_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 				rtx x, bool strict)
 {
@@ -681,60 +681,6 @@ xstormy16_mode_dependent_address_p (rtx x)
 
   /* Auto-increment addresses are now treated generically in recog.c.  */
   return 0;
-}
-
-/* A C expression that defines the optional machine-dependent constraint
-   letters (`Q', `R', `S', `T', `U') that can be used to segregate specific
-   types of operands, usually memory references, for the target machine.
-   Normally this macro will not be defined.  If it is required for a particular
-   target machine, it should return 1 if VALUE corresponds to the operand type
-   represented by the constraint letter C.  If C is not defined as an extra
-   constraint, the value returned should be 0 regardless of VALUE.  */
-
-int
-xstormy16_extra_constraint_p (rtx x, int c)
-{
-  switch (c)
-    {
-      /* 'Q' is for pushes.  */
-    case 'Q':
-      return (MEM_P (x)
-	      && GET_CODE (XEXP (x, 0)) == POST_INC
-	      && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx);
-
-      /* 'R' is for pops.  */
-    case 'R':
-      return (MEM_P (x)
-	      && GET_CODE (XEXP (x, 0)) == PRE_DEC
-	      && XEXP (XEXP (x, 0), 0) == stack_pointer_rtx);
-
-      /* 'S' is for immediate memory addresses.  */
-    case 'S':
-      return (MEM_P (x)
-	      && CONST_INT_P (XEXP (x, 0))
-	      && xstormy16_legitimate_address_p (VOIDmode, XEXP (x, 0), 0));
-
-      /* 'T' is for Rx.  */
-    case 'T':
-      /* Not implemented yet.  */
-      return 0;
-
-      /* 'U' is for CONST_INT values not between 2 and 15 inclusive,
-	 for allocating a scratch register for 32-bit shifts.  */
-    case 'U':
-      return (CONST_INT_P (x) && (! IN_RANGE (INTVAL (x), 2, 15)));
-
-      /* 'Z' is for CONST_INT value zero.  This is for adding zero to
-	 a register in addhi3, which would otherwise require a carry.  */
-    case 'Z':
-      return (CONST_INT_P (x) && (INTVAL (x) == 0));
-
-    case 'W':
-      return xstormy16_below100_operand (x, GET_MODE (x));
-
-    default:
-      return 0;
-    }
 }
 
 int

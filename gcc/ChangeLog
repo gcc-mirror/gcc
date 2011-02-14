@@ -1,3 +1,18 @@
+2011-02-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/stormy16/constraints.md: New file.
+	* config/stormy16/predicates.md (nonimmediate_nonstack_operand):
+	Use satisfies_constraint_Q and satisfies_constraint_R.
+	* config/stormy16/stomry16-protos.h (xstormy16_extra_constraint_p):
+	Delete.
+	(xstormy16_legitiamte_address_p): Declare.
+	* config/stormy16/stormy16.h (REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(EXTRA_CONSTRAINT): Delete.
+	* config/stormy16/stormy16.c (xstormy16_legitiamte_address_p):
+	Un-staticize.
+	(xstormy16_extra_constraint_p): Delete.
+
 2011-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/46494
