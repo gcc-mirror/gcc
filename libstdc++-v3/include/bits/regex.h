@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -765,6 +765,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       bool matched;
       
+      constexpr sub_match() : matched() { }
+
       /**
        * Gets the length of the matching sequence.
        */
@@ -1521,6 +1523,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       
       //@}
 
+      // 28.10.2, state:
+      /**
+       * @brief Indicates if the %match_results is ready.
+       * @retval true   The object has a fully-established result state.
+       * @retval false  The object is not ready.
+       */
+      bool ready() const { return !_Base_type::empty(); }
+
       /**
        * @name 10.2 Size
        */
@@ -1553,7 +1563,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       bool
       empty() const
-      { return _Base_type::empty(); }
+      { return size() == 0; }
       
       //@}
 
@@ -1565,17 +1575,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Gets the length of the indicated submatch.
        * @param sub indicates the submatch.
+       * @pre   ready() == true
        *
        * This function returns the length of the indicated submatch, or the
        * length of the entire match if @p sub is zero (the default).
        */
       difference_type
       length(size_type __sub = 0) const
-      { return this[__sub].length(); }
+      { return (*this)[__sub].length(); }
 
       /**
        * @brief Gets the offset of the beginning of the indicated submatch.
        * @param sub indicates the submatch.
+       * @pre   ready() == true
        *
        * This function returns the offset from the beginning of the target
        * sequence to the beginning of the submatch, unless the value of @p sub
@@ -1595,6 +1607,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Gets the match or submatch converted to a string type.
        * @param sub indicates the submatch.
+       * @pre   ready() == true
        *
        * This function gets the submatch (or match, if @p sub is zero) extracted
        * from the target range and converted to the associated string type.
@@ -1606,6 +1619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Gets a %sub_match reference for the match or submatch.
        * @param sub indicates the submatch.
+       * @pre   ready() == true
        *
        * This function gets a reference to the indicated submatch, or the entire
        * match if @p sub is zero.
@@ -1616,6 +1630,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const_reference
       operator[](size_type __sub) const
       { 
+      	_GLIBCXX_DEBUG_ASSERT( ready() );
       	return __sub < size()
 	       ?  _Base_type::operator[](__sub)
 	       : __unmatched_sub<_Bi_iter>();
@@ -1623,6 +1638,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Gets a %sub_match representing the match prefix.
+       * @pre   ready() == true
        *
        * This function gets a reference to a %sub_match object representing the
        * part of the target range between the start of the target range and the
@@ -1631,6 +1647,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const_reference
       prefix() const
       {
+      	_GLIBCXX_DEBUG_ASSERT( ready() );
       	return !empty()
       	       ? _Base_type::operator[](_Base_type::size() - 2)
 	       : __unmatched_sub<_Bi_iter>();
@@ -1638,6 +1655,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /**
        * @brief Gets a %sub_match representing the match suffix.
+       * @pre   ready() == true
        *
        * This function gets a reference to a %sub_match object representing the
        * part of the target range between the end of the match and the end of
@@ -1646,8 +1664,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const_reference
       suffix() const
       {
-      	return !empty()
-      	       ? _Base_type::operator[](_Base_type::size() - 1)
+	_GLIBCXX_DEBUG_ASSERT( ready() );
+	return !empty()
+	       ? _Base_type::operator[](_Base_type::size() - 1)
 	       : __unmatched_sub<_Bi_iter>();
       }
 
@@ -1670,52 +1689,79 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       const_iterator
       end() const
-      {
-      	return !empty()
-      	       ? _Base_type::end() - 2
-	       : _Base_type::end();
-      }
+      { return !empty() ? _Base_type::end() - 2 : _Base_type::end(); }
       
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
        */
       const_iterator
       cend() const
-      {
-      	return !empty()
-      	       ? _Base_type::cend() - 2
-	       : _Base_type::cend();
-      }
+      { return end(); }
 
       //@}
 
       /**
        * @name 10.4 Formatting
        *
-       * These functions perform formatted substitution of the matched character
-       * sequences into their target.  The format specifiers and escape sequences
-       * accepted by these functions are determined by their @p flags parameter 
-       * as documented above.
+       * These functions perform formatted substitution of the matched
+       * character sequences into their target.  The format specifiers and
+       * escape sequences accepted by these functions are determined by
+       * their @p flags parameter as documented above.
        */
        //@{
 
       /**
+       * @pre   ready() == true
        * @todo Implement this function.
        */
       template<typename _Out_iter>
         _Out_iter
-        format(_Out_iter __out, const string_type& __fmt,
+        format(_Out_iter __out, const char_type* __fmt_first,
+	       const char_type* __fmt_last,
 	       regex_constants::match_flag_type __flags
 	       = regex_constants::format_default) const
         { return __out; }
 
       /**
-       * @todo Implement this function.
+       * @pre   ready() == true
+       */
+      template<typename _Out_iter, typename _St, typename _Sa>
+        _Out_iter
+        format(_Out_iter __out, const basic_string<char_type, _St, _Sa>& __fmt,
+	       regex_constants::match_flag_type __flags
+	       = regex_constants::format_default) const
+        {
+          return format(__out, __fmt.data(), __fmt.data() + __fmt.size(),
+                        __flags);
+        }
+
+      /**
+       * @pre   ready() == true
+       */
+      template<typename _Out_iter, typename _St, typename _Sa>
+        basic_string<char_type, _St, _Sa>
+        format(const basic_string<char_type, _St, _Sa>& __fmt,
+	       regex_constants::match_flag_type __flags
+	       = regex_constants::format_default) const
+        {
+          basic_string<char_type, _St, _Sa> __result;
+          format(std::back_inserter(__result), __fmt, __flags);
+          return __result;
+        }
+
+      /**
+       * @pre   ready() == true
        */
       string_type
-      format(const string_type& __fmt,
+      format(const char_type* __fmt,
 	     regex_constants::match_flag_type __flags
-	     = regex_constants::format_default) const;
+	     = regex_constants::format_default) const
+      {
+        string_type __result;
+        format(std::back_inserter(__result), __fmt + __builtin_strlen(__fmt),
+               __flags);
+        return __result;
+      }
 
       //@} 
 
@@ -1762,12 +1808,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @brief Compares two match_results for equality.
    * @returns true if the two objects refer to the same match,
    * false otherwise.
-   * @todo Implement this function.
    */
   template<typename _Bi_iter, typename _Allocator>
     inline bool
     operator==(const match_results<_Bi_iter, _Allocator>& __m1,
-	       const match_results<_Bi_iter, _Allocator>& __m2);
+	       const match_results<_Bi_iter, _Allocator>& __m2)
+    {
+      if (__m1.ready() != __m2.ready())
+        return false;
+      if (!__m1.ready())  // both are not ready
+        return true;
+      if (__m1.empty() != __m2.empty())
+        return false;
+      if (__m1.empty())   // both are empty
+        return true;
+      return __m1.prefix() == __m2.prefix()
+        && __m1.size() == __m2.size()
+        && std::equal(__m1.begin(), __m1.end(), __m2.begin())
+        && __m1.suffix() == __m2.suffix();
+    }
 
   /**
    * @brief Compares two match_results for inequality.

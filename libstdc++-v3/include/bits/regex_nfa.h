@@ -55,7 +55,7 @@ namespace __regex
 #endif
   };
 
-  // Generic shred pointer to an automaton.  
+  // Generic shared pointer to an automaton.  
   typedef std::shared_ptr<_Automaton> _AutomatonPtr;
 
   // Operation codes that define the type of transitions within the base NFA

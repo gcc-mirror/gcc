@@ -1,5 +1,26 @@
 2011-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/regex.h (sub_match::sub_match): Add.
+	(match_results::ready): Add.
+	(match_results::empty): Adjust.
+	(match_results::length): Add missing dereference.
+	(match_results::operator[],prefix,suffix): Add debug mode checks.
+	(match_results::cend): Re-use end().
+	(match_results::format): Adjust signatures.
+	(operator==(match_results,match_results)): Implement.
+	* include/bits/regex_compiler.h (_Scanner_base): Use constexpr.
+	* include/bits/regex_constants.h (syntax_option_type): Likewise.
+	* include/bits/regex_grep_matcher.h: Fix comment typo.
+	(_Specialized_results::_Specialized_results): Simplify.
+	* include/bits/regex_cursor.h: Fix comment typo.
+	* include/bits/regex_nfa.h: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/basic/string_range_01_02_03.cc:
+	Fix error code, remove xfail.
+	* testsuite/28_regex/basic_regex/ctors/extended/
+	string_range_01_02_03.cc: Likewise.
+
+2011-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/regex_compiler.h: Remove unnecessary bind() calls.
 	* include/bits/regex_nfa.h: Remove unnecessary base classes.
 

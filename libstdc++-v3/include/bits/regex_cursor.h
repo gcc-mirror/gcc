@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -82,7 +82,7 @@ namespace __regex
       _FwdIterT _M_e;
     };
 
-  // Helper funxtion to create a cursor specialized for an iterator class.
+  // Helper function to create a cursor specialized for an iterator class.
   template<typename _FwdIterT>
     inline _SpecializedCursor<_FwdIterT>
     __cursor(const _FwdIterT& __b, const _FwdIterT __e)
