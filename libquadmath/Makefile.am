@@ -45,10 +45,9 @@ libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 libquadmath_la_SOURCES = \
   gdtoa/arith.h gdtoa/gdtoa_fltrnds.h gdtoa/gd_qnan.h gdtoa/gdtoaimp.h \
   gdtoa/gdtoa.h quadmath-imp.h \
-  gdtoa/dmisc.c gdtoa/gdtoa.c gdtoa/hd_init.c gdtoa/smisc.c gdtoa/sum.c \
-  gdtoa/g_Qfmt.c gdtoa/gethex.c gdtoa/hexnan.c gdtoa/strtodg.c \
-  gdtoa/ulp.c gdtoa/g__fmt.c gdtoa/gmisc.c gdtoa/misc.c gdtoa/strtopQ.c \
-  quadmath_io.c \
+  gdtoa/hd_init.c gdtoa/smisc.c gdtoa/sum.c \
+  gdtoa/gethex.c gdtoa/hexnan.c gdtoa/strtodg.c \
+  gdtoa/gmisc.c gdtoa/misc.c gdtoa/strtopQ.c \
   math/acoshq.c math/fmodq.c math/acosq.c math/frexpq.c \
   math/rem_pio2q.c math/asinhq.c math/hypotq.c math/remainderq.c \
   math/asinq.c math/rintq.c math/atan2q.c math/isinfq.c \
@@ -65,7 +64,11 @@ libquadmath_la_SOURCES = \
   math/cacoshq.c math/cacosq.c math/casinhq.c math/casinq.c \
   math/catanhq.c math/catanq.c math/cimagq.c math/conjq.c math/cprojq.c \
   math/crealq.c math/fdimq.c math/fmaxq.c math/fminq.c math/ilogbq.c \
-  math/llrintq.c math/log2q.c math/lrintq.c math/nearbyintq.c math/remquoq.c
+  math/llrintq.c math/log2q.c math/lrintq.c math/nearbyintq.c math/remquoq.c \
+  printf/addmul_1.c printf/add_n.c printf/cmp.c printf/divrem.c \
+  printf/flt1282mpn.c printf/fpioconst.c printf/lshift.c printf/mul_1.c \
+  printf/mul_n.c printf/mul.c printf/printf_fphex.c printf/printf_fp.c \
+  printf/quadmath-printf.c printf/rshift.c printf/submul_1.c printf/sub_n.c
 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS

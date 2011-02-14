@@ -132,6 +132,6 @@ __qmath3 (ctanhq)
 
 /* Prototypes for string <-> flt128 conversion functions.  */
 __qmath3 (strtoflt128)
-__qmath3 (quadmath_flt128tostr)
+__qmath3 (quadmath_snprintf)
 
 #endif

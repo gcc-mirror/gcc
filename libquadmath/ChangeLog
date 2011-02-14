@@ -1,3 +1,54 @@
+2011-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/47642
+	* libquadmath.texi (quadmath_snprintf): Document.
+	(quadmath_flt128tostr): Remove.
+	* Makefile.am (libquadmath_la_SOURCES): Add printf/*.c.
+	Remove  quadmath_io.c, gdtoa/gdtoa.c, gdtoa/g__fmt.c,
+	gdtoa/g_Qfmt.c, gdtoa/dmisc.c and gdtoa/ulp.c.
+	* quadmath.h (quadmath_snprintf): New prototype.
+	(quadmath_flt128tostr): Remove.
+	* quadmath_weak.h (quadmath_snprintf): Add.
+	(quadmath_flt128tostr): Remove.
+	* configure.ac: New AC_CHECK_HEADERS headers: langinfo.h, wchar.h,
+	wctype.h, limits.h, ctype.h, printf.h, errno.h.
+	(AC_USE_SYSTEM_EXTENSIONS): Add.
+	(HAVE_HIDDEN_VISIBILITY, HAVE_PRINTF_HOOKS,
+	USE_LOCALE_SUPPORT, USE_I18N_NUMBER_H): New checks.
+	* quadmath.map (QUADMATH_1.0): Add quadmath_snprintf.  Remove
+	quadmath_flt128tostr.
+	* printf/printf_fphex.c: New file.
+	* printf/_itowa.h: New file.
+	* printf/mul_n.c: New file.
+	* printf/quadmath-printf.h: New file.
+	* printf/submul_1.c: New file.
+	* printf/quadmath-printf.c: New file.
+	* printf/gmp-impl.h: New file.
+	* printf/lshift.c: New file.
+	* printf/fpioconst.h: New file.
+	* printf/add_n.c: New file.
+	* printf/cmp.c: New file.
+	* printf/sub_n.c: New file.
+	* printf/mul.c: New file.
+	* printf/divrem.c: New file.
+	* printf/addmul_1.c: New file.
+	* printf/printf_fp.c: New file.
+	* printf/_itoa.h: New file.
+	* printf/fpioconst.c: New file.
+	* printf/_i18n_number.h: New file.
+	* printf/flt1282mpn.c: New file.
+	* printf/rshift.c: New file.
+	* printf/mul_1.c: New file.
+	* quadmath_io.c: Removed.
+	* gdtoa/gdtoa.c: Removed.
+	* gdtoa/g__fmt.c: Removed.
+	* gdtoa/g_Qfmt.c: Removed.
+	* gdtoa/dmisc.c: Removed.
+	* gdtoa/ulp.c: Removed.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.

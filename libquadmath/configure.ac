@@ -42,6 +42,8 @@ AC_MSG_RESULT($version_specific_libs)
 
 GCC_NO_EXECUTABLES
 
+AC_USE_SYSTEM_EXTENSIONS
+
 # See if makeinfo has been installed and is modern enough
 # that we can use it.
 ACX_CHECK_PROG_VER([MAKEINFO], [makeinfo], [--version],
@@ -110,7 +112,7 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-AC_CHECK_HEADERS(fenv.h)
+AC_CHECK_HEADERS(fenv.h langinfo.h wchar.h wctype.h limits.h ctype.h printf.h errno.h)
 
 # If available, sqrtl and cbrtl speed up the calculation -
 # but they are not required
@@ -144,6 +146,16 @@ else
   if test "x$ac_cv_lib_m_fetestexcept" = x""yes; then
     AC_DEFINE([HAVE_FETESTEXCEPT],[1],[libm includes fetestexcept])
   fi
+fi
+
+# Check for hidden visibility (copied from libssp).
+AC_MSG_CHECKING([whether hidden visibility is supported])
+AC_TRY_COMPILE([
+void __attribute__((visibility ("hidden"))) bar (void) {}],,
+[quadmath_hidden=yes],[quadmath_hidden=no])
+AC_MSG_RESULT($quadmath_hidden)
+if test x$quadmath_hidden = xyes; then
+  AC_DEFINE([HAVE_HIDDEN_VISIBILITY],[1],[__attribute__((visibility ("hidden"))) supported])
 fi
 
 # Check for symbol versioning (copied from libssp).
@@ -212,6 +224,75 @@ AC_CACHE_CHECK([whether __float128 is supported], [libquad_cv_have_float128],
     libquad_cv_have_float128=no
 ])])
 AM_CONDITIONAL(BUILD_LIBQUADMATH, [test "x$libquad_cv_have_float128" = xyes])
+
+# Check for printf hook support.
+AC_MSG_CHECKING([whether printf hooks are supported])
+AC_TRY_COMPILE([
+#include <printf.h>
+#include <stdarg.h>
+#include <stdlib.h>
+extern void flt128_va (void *, va_list *);
+extern int flt128_ais (const struct printf_info *, size_t, int *, int *);
+extern int flt128_printf_fp (FILE *, const struct printf_info *, const void *const *);
+],[
+int pa_flt128 = register_printf_type (flt128_va);
+int mod_Q = register_printf_modifier (L"Q");
+int res = register_printf_specifier ('f', flt128_printf_fp, flt128_ais);
+],
+[quadmath_printf_hooks=yes],[quadmath_printf_hooks=no])
+AC_MSG_RESULT($quadmath_printf_hooks)
+if test x$quadmath_printf_hooks = xyes; then
+  AC_DEFINE([HAVE_PRINTF_HOOKS],[1],[GNU C Library stype printf hooks supported])
+fi
+
+# Check for whether locale support for quadmath_snprintf or Q printf hooks
+# should be provided.
+AC_MSG_CHECKING([whether locale support for quadmath_snprintf should be added])
+AC_TRY_COMPILE([#include <langinfo.h>],[
+const char *s;
+s = nl_langinfo (DECIMAL_POINT);
+s = nl_langinfo (MON_DECIMAL_POINT);
+s = nl_langinfo (GROUPING);
+s = nl_langinfo (MON_GROUPING);
+s = nl_langinfo (THOUSANDS_SEP);
+s = nl_langinfo (MON_THOUSANDS_SEP);
+s = nl_langinfo (_NL_NUMERIC_DECIMAL_POINT_WC);
+s = nl_langinfo (_NL_MONETARY_DECIMAL_POINT_WC);
+s = nl_langinfo (_NL_NUMERIC_THOUSANDS_SEP_WC);
+s = nl_langinfo (_NL_MONETARY_THOUSANDS_SEP_WC);
+s = nl_langinfo (_NL_CTYPE_MB_CUR_MAX);
+(void) s;
+],
+[quadmath_use_locale_support=yes],[quadmath_use_locale_support=no])
+AC_MSG_RESULT($quadmath_use_locale_support)
+if test x$quadmath_use_locale_support = xyes; then
+  AC_DEFINE([USE_LOCALE_SUPPORT],[1],[whether nl_langinfo is sufficiently supported])
+fi
+
+# Check for whether i18n number rewriting support for quadmath_snprintf
+# or Q printf hooks should be provided.
+AC_MSG_CHECKING([whether i18n number rewriting support for quadmath_snprintf should be added])
+AC_TRY_COMPILE([#include <langinfo.h>
+#include <limits.h>
+#include <string.h>
+#include <wchar.h>
+#include <wctype.h>],[
+const char *s;
+char decimal[MB_LEN_MAX];
+wctrans_t map = wctrans ("to_outpunct");
+wint_t wdecimal = towctrans (L'.', map);
+mbstate_t state;
+memset (&state, '\0', sizeof (state));
+wcrtomb (decimal, wdecimal, &state);
+s = nl_langinfo (_NL_CTYPE_OUTDIGIT0_MB);
+s = nl_langinfo (_NL_CTYPE_OUTDIGIT0_WC);
+(void) s;
+],
+[quadmath_use_i18n_number_h=yes],[quadmath_use_i18n_number_h=no])
+AC_MSG_RESULT($quadmath_use_i18n_number_h)
+if test x$quadmath_use_i18n_number_h = xyes; then
+  AC_DEFINE([USE_I18N_NUMBER_H],[1],[whether i18n number rewriting can be supported])
+fi
 
 AC_CACHE_SAVE
 

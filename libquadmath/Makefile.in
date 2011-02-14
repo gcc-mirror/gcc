@@ -87,14 +87,11 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" \
 	"$(DESTDIR)$(libsubincludedir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__dirstamp = $(am__leading_dot)dirstamp
-@BUILD_LIBQUADMATH_TRUE@am_libquadmath_la_OBJECTS = gdtoa/dmisc.lo \
-@BUILD_LIBQUADMATH_TRUE@	gdtoa/gdtoa.lo gdtoa/hd_init.lo \
+@BUILD_LIBQUADMATH_TRUE@am_libquadmath_la_OBJECTS = gdtoa/hd_init.lo \
 @BUILD_LIBQUADMATH_TRUE@	gdtoa/smisc.lo gdtoa/sum.lo \
-@BUILD_LIBQUADMATH_TRUE@	gdtoa/g_Qfmt.lo gdtoa/gethex.lo \
-@BUILD_LIBQUADMATH_TRUE@	gdtoa/hexnan.lo gdtoa/strtodg.lo \
-@BUILD_LIBQUADMATH_TRUE@	gdtoa/ulp.lo gdtoa/g__fmt.lo \
-@BUILD_LIBQUADMATH_TRUE@	gdtoa/gmisc.lo gdtoa/misc.lo \
-@BUILD_LIBQUADMATH_TRUE@	gdtoa/strtopQ.lo quadmath_io.lo \
+@BUILD_LIBQUADMATH_TRUE@	gdtoa/gethex.lo gdtoa/hexnan.lo \
+@BUILD_LIBQUADMATH_TRUE@	gdtoa/strtodg.lo gdtoa/gmisc.lo \
+@BUILD_LIBQUADMATH_TRUE@	gdtoa/misc.lo gdtoa/strtopQ.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/acoshq.lo math/fmodq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/acosq.lo math/frexpq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/rem_pio2q.lo math/asinhq.lo \
@@ -133,7 +130,16 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_LIBQUADMATH_TRUE@	math/fminq.lo math/ilogbq.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/llrintq.lo math/log2q.lo \
 @BUILD_LIBQUADMATH_TRUE@	math/lrintq.lo math/nearbyintq.lo \
-@BUILD_LIBQUADMATH_TRUE@	math/remquoq.lo
+@BUILD_LIBQUADMATH_TRUE@	math/remquoq.lo printf/addmul_1.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/add_n.lo printf/cmp.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/divrem.lo printf/flt1282mpn.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/fpioconst.lo printf/lshift.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/mul_1.lo printf/mul_n.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/mul.lo printf/printf_fphex.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/printf_fp.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/quadmath-printf.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/rshift.lo printf/submul_1.lo \
+@BUILD_LIBQUADMATH_TRUE@	printf/sub_n.lo
 libquadmath_la_OBJECTS = $(am_libquadmath_la_OBJECTS)
 libquadmath_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -319,10 +325,9 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@libquadmath_la_SOURCES = \
 @BUILD_LIBQUADMATH_TRUE@  gdtoa/arith.h gdtoa/gdtoa_fltrnds.h gdtoa/gd_qnan.h gdtoa/gdtoaimp.h \
 @BUILD_LIBQUADMATH_TRUE@  gdtoa/gdtoa.h quadmath-imp.h \
-@BUILD_LIBQUADMATH_TRUE@  gdtoa/dmisc.c gdtoa/gdtoa.c gdtoa/hd_init.c gdtoa/smisc.c gdtoa/sum.c \
-@BUILD_LIBQUADMATH_TRUE@  gdtoa/g_Qfmt.c gdtoa/gethex.c gdtoa/hexnan.c gdtoa/strtodg.c \
-@BUILD_LIBQUADMATH_TRUE@  gdtoa/ulp.c gdtoa/g__fmt.c gdtoa/gmisc.c gdtoa/misc.c gdtoa/strtopQ.c \
-@BUILD_LIBQUADMATH_TRUE@  quadmath_io.c \
+@BUILD_LIBQUADMATH_TRUE@  gdtoa/hd_init.c gdtoa/smisc.c gdtoa/sum.c \
+@BUILD_LIBQUADMATH_TRUE@  gdtoa/gethex.c gdtoa/hexnan.c gdtoa/strtodg.c \
+@BUILD_LIBQUADMATH_TRUE@  gdtoa/gmisc.c gdtoa/misc.c gdtoa/strtopQ.c \
 @BUILD_LIBQUADMATH_TRUE@  math/acoshq.c math/fmodq.c math/acosq.c math/frexpq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/rem_pio2q.c math/asinhq.c math/hypotq.c math/remainderq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/asinq.c math/rintq.c math/atan2q.c math/isinfq.c \
@@ -339,7 +344,11 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 @BUILD_LIBQUADMATH_TRUE@  math/cacoshq.c math/cacosq.c math/casinhq.c math/casinq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/catanhq.c math/catanq.c math/cimagq.c math/conjq.c math/cprojq.c \
 @BUILD_LIBQUADMATH_TRUE@  math/crealq.c math/fdimq.c math/fmaxq.c math/fminq.c math/ilogbq.c \
-@BUILD_LIBQUADMATH_TRUE@  math/llrintq.c math/log2q.c math/lrintq.c math/nearbyintq.c math/remquoq.c
+@BUILD_LIBQUADMATH_TRUE@  math/llrintq.c math/log2q.c math/lrintq.c math/nearbyintq.c math/remquoq.c \
+@BUILD_LIBQUADMATH_TRUE@  printf/addmul_1.c printf/add_n.c printf/cmp.c printf/divrem.c \
+@BUILD_LIBQUADMATH_TRUE@  printf/flt1282mpn.c printf/fpioconst.c printf/lshift.c printf/mul_1.c \
+@BUILD_LIBQUADMATH_TRUE@  printf/mul_n.c printf/mul.c printf/printf_fphex.c printf/printf_fp.c \
+@BUILD_LIBQUADMATH_TRUE@  printf/quadmath-printf.c printf/rshift.c printf/submul_1.c printf/sub_n.c
 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -498,19 +507,14 @@ gdtoa/$(am__dirstamp):
 gdtoa/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) gdtoa/$(DEPDIR)
 	@: > gdtoa/$(DEPDIR)/$(am__dirstamp)
-gdtoa/dmisc.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
-gdtoa/gdtoa.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
 gdtoa/hd_init.lo: gdtoa/$(am__dirstamp) \
 	gdtoa/$(DEPDIR)/$(am__dirstamp)
 gdtoa/smisc.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
 gdtoa/sum.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
-gdtoa/g_Qfmt.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
 gdtoa/gethex.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
 gdtoa/hexnan.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
 gdtoa/strtodg.lo: gdtoa/$(am__dirstamp) \
 	gdtoa/$(DEPDIR)/$(am__dirstamp)
-gdtoa/ulp.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
-gdtoa/g__fmt.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
 gdtoa/gmisc.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
 gdtoa/misc.lo: gdtoa/$(am__dirstamp) gdtoa/$(DEPDIR)/$(am__dirstamp)
 gdtoa/strtopQ.lo: gdtoa/$(am__dirstamp) \
@@ -605,19 +609,47 @@ math/lrintq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
 math/nearbyintq.lo: math/$(am__dirstamp) \
 	math/$(DEPDIR)/$(am__dirstamp)
 math/remquoq.lo: math/$(am__dirstamp) math/$(DEPDIR)/$(am__dirstamp)
+printf/$(am__dirstamp):
+	@$(MKDIR_P) printf
+	@: > printf/$(am__dirstamp)
+printf/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) printf/$(DEPDIR)
+	@: > printf/$(DEPDIR)/$(am__dirstamp)
+printf/addmul_1.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/add_n.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/cmp.lo: printf/$(am__dirstamp) printf/$(DEPDIR)/$(am__dirstamp)
+printf/divrem.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/flt1282mpn.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/fpioconst.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/lshift.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/mul_1.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/mul_n.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/mul.lo: printf/$(am__dirstamp) printf/$(DEPDIR)/$(am__dirstamp)
+printf/printf_fphex.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/printf_fp.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/quadmath-printf.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/rshift.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/submul_1.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
+printf/sub_n.lo: printf/$(am__dirstamp) \
+	printf/$(DEPDIR)/$(am__dirstamp)
 libquadmath.la: $(libquadmath_la_OBJECTS) $(libquadmath_la_DEPENDENCIES) 
 	$(libquadmath_la_LINK) $(am_libquadmath_la_rpath) $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f gdtoa/dmisc.$(OBJEXT)
-	-rm -f gdtoa/dmisc.lo
-	-rm -f gdtoa/g_Qfmt.$(OBJEXT)
-	-rm -f gdtoa/g_Qfmt.lo
-	-rm -f gdtoa/g__fmt.$(OBJEXT)
-	-rm -f gdtoa/g__fmt.lo
-	-rm -f gdtoa/gdtoa.$(OBJEXT)
-	-rm -f gdtoa/gdtoa.lo
 	-rm -f gdtoa/gethex.$(OBJEXT)
 	-rm -f gdtoa/gethex.lo
 	-rm -f gdtoa/gmisc.$(OBJEXT)
@@ -636,8 +668,6 @@ mostlyclean-compile:
 	-rm -f gdtoa/strtopQ.lo
 	-rm -f gdtoa/sum.$(OBJEXT)
 	-rm -f gdtoa/sum.lo
-	-rm -f gdtoa/ulp.$(OBJEXT)
-	-rm -f gdtoa/ulp.lo
 	-rm -f math/acoshq.$(OBJEXT)
 	-rm -f math/acoshq.lo
 	-rm -f math/acosq.$(OBJEXT)
@@ -792,15 +822,42 @@ mostlyclean-compile:
 	-rm -f math/tgammaq.lo
 	-rm -f math/truncq.$(OBJEXT)
 	-rm -f math/truncq.lo
+	-rm -f printf/add_n.$(OBJEXT)
+	-rm -f printf/add_n.lo
+	-rm -f printf/addmul_1.$(OBJEXT)
+	-rm -f printf/addmul_1.lo
+	-rm -f printf/cmp.$(OBJEXT)
+	-rm -f printf/cmp.lo
+	-rm -f printf/divrem.$(OBJEXT)
+	-rm -f printf/divrem.lo
+	-rm -f printf/flt1282mpn.$(OBJEXT)
+	-rm -f printf/flt1282mpn.lo
+	-rm -f printf/fpioconst.$(OBJEXT)
+	-rm -f printf/fpioconst.lo
+	-rm -f printf/lshift.$(OBJEXT)
+	-rm -f printf/lshift.lo
+	-rm -f printf/mul.$(OBJEXT)
+	-rm -f printf/mul.lo
+	-rm -f printf/mul_1.$(OBJEXT)
+	-rm -f printf/mul_1.lo
+	-rm -f printf/mul_n.$(OBJEXT)
+	-rm -f printf/mul_n.lo
+	-rm -f printf/printf_fp.$(OBJEXT)
+	-rm -f printf/printf_fp.lo
+	-rm -f printf/printf_fphex.$(OBJEXT)
+	-rm -f printf/printf_fphex.lo
+	-rm -f printf/quadmath-printf.$(OBJEXT)
+	-rm -f printf/quadmath-printf.lo
+	-rm -f printf/rshift.$(OBJEXT)
+	-rm -f printf/rshift.lo
+	-rm -f printf/sub_n.$(OBJEXT)
+	-rm -f printf/sub_n.lo
+	-rm -f printf/submul_1.$(OBJEXT)
+	-rm -f printf/submul_1.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/quadmath_io.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/dmisc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/g_Qfmt.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/g__fmt.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/gdtoa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/gethex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/gmisc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/hd_init.Plo@am__quote@
@@ -810,7 +867,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/strtodg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/strtopQ.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/sum.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gdtoa/$(DEPDIR)/ulp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/acoshq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/acosq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/asinhq.Plo@am__quote@
@@ -888,6 +944,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/tanq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/tgammaq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@math/$(DEPDIR)/truncq.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/add_n.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/addmul_1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/cmp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/divrem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/flt1282mpn.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/fpioconst.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/lshift.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/mul.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/mul_1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/mul_n.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/printf_fp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/printf_fphex.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/quadmath-printf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/rshift.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/sub_n.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@printf/$(DEPDIR)/submul_1.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -920,6 +992,7 @@ clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf gdtoa/.libs gdtoa/_libs
 	-rm -rf math/.libs math/_libs
+	-rm -rf printf/.libs printf/_libs
 
 distclean-libtool:
 	-rm -f libtool config.lt
@@ -1170,6 +1243,8 @@ distclean-generic:
 	-rm -f gdtoa/$(am__dirstamp)
 	-rm -f math/$(DEPDIR)/$(am__dirstamp)
 	-rm -f math/$(am__dirstamp)
+	-rm -f printf/$(DEPDIR)/$(am__dirstamp)
+	-rm -f printf/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1182,7 +1257,7 @@ clean-am: clean-aminfo clean-generic clean-libtool \
 
 distclean: distclean-am distclean-multi
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gdtoa/$(DEPDIR) math/$(DEPDIR)
+	-rm -rf gdtoa/$(DEPDIR) math/$(DEPDIR) printf/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -1306,7 +1381,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am maintainer-clean-multi
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gdtoa/$(DEPDIR) math/$(DEPDIR)
+	-rm -rf gdtoa/$(DEPDIR) math/$(DEPDIR) printf/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-aminfo \
 	maintainer-clean-generic
