@@ -1,3 +1,8 @@
+2011-02-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47349
+	* interface.c (get_expr_storage_size): Handle derived-type components.
+
 2011-02-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47569
