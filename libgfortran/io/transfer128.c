@@ -1,4 +1,4 @@
-/* Copyright (C) 2010
+/* Copyright (C) 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -62,12 +62,12 @@ export_proto(transfer_complex128_write);
 
 
 /* Make sure that libquadmath is pulled in. The functions strtoflt128
-   and quadmath_flt128tostr are weakly referrenced in convert_real and
+   and quadmath_snprintf are weakly referrenced in convert_real and
    write_float; the pointer assignment with USED attribute make sure
    that there is a non-weakref dependence if the quadmath functions
    are used. That avoids segfault when libquadmath is statically linked.  */
 static void __attribute__((used)) *tmp1 = strtoflt128;
-static void __attribute__((used)) *tmp2 = quadmath_flt128tostr;
+static void __attribute__((used)) *tmp2 = quadmath_snprintf;
 
 void
 transfer_real128 (st_parameter_dt *dtp, void *p, int kind)

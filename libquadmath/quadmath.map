@@ -92,7 +92,7 @@ QUADMATH_1.0 {
     ctanhq;
 
     strtoflt128;
-    quadmath_flt128tostr;
+    quadmath_snprintf;
   local:
     *;
 };

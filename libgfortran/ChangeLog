@@ -1,3 +1,11 @@
+2011-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/47642
+	* io/write_float.def (DTOAQ): Use quadmath_snprintf instead of
+	quadmath_flt128tostr.
+	* io/transfer128.c (tmp2): Initialize to quadmath_snprintf instead
+	of quadmath_flt128tostr.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* Makefile.in: Regenerate.

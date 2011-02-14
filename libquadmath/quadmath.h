@@ -132,8 +132,8 @@ extern __complex128 ctanhq (__complex128) __quadmath_throw;
 
 /* Prototypes for string <-> __float128 conversion functions */
 extern __float128 strtoflt128 (const char *, char **) __quadmath_throw;
-extern void quadmath_flt128tostr (char *, size_t, size_t, __float128)
-  __quadmath_throw;
+extern int quadmath_snprintf (char *str, size_t size,
+			      const char *format, ...) __quadmath_throw;
 
 
 /* Macros */

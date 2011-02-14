@@ -246,7 +246,7 @@ The following mathematical functions are available:
 
 @menu
 * @code{strtoflt128}:          strtoflt128,          Convert from string
-* @code{quadmath_flt128tostr}: quadmath_flt128tostr, Convert to string
+* @code{quadmath_snprintf}:    quadmath_snprintf,    Convert to string
 @end menu
 
 
@@ -289,42 +289,72 @@ int main ()
 @end table
 
 
-@node quadmath_flt128tostr
-@section @code{quadmath_flt128tostr} --- Convert to string
+@node quadmath_snprintf
+@section @code{quadmath_snprintf} --- Convert to string
 
-The function @code{quadmath_flt128tostr} converts a @code{__float128} floating-point
-number into a string.
+The function @code{quadmath_snprintf} converts a @code{__float128} floating-point
+number into a string.  It is a specialized alternative to @code{snprintf}, where
+the format string is restricted to a single conversion specifier with @code{Q}
+modifier and conversion specifier @code{e}, @code{E}, @code{f}, @code{F}, @code{g},
+@code{G}, @code{a} or @code{A}, with no extra characters before or after the
+conversion specifier.  The @code{%m$} or @code{*m$} style must not be used in
+the format.
 
 @table @asis
 @item Syntax
-@code{void quadmath_flt128tostr (char *s, size_t size, size_t n, __float128 x)}
+@code{int quadmath_snprintf (char *s, size_t size, const char *format, ...)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{s}    @tab output string
 @item @var{size} @tab byte size of the string, including tailing NUL
-@item @var{n}    @tab number of digits after the decimal point
-@item @var{x}    @tab the number to be converted
+@item @var{format} @tab conversion specifier string
 @end multitable
 
 @item Example
 @smallexample
 #include <quadmath.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 int main ()
 @{
   __float128 r;
-  char str[200];
+  int prec = 20;
+  int width = 46;
+  char buf[128];
 
   r = 2.0q;
-  r = sqrtq(r);
-  quadmath_flt128tostr (str, sizeof (str), 20, r);
-  printf("%s\n", str);
-  /* Prints: +1.41421356237309504880e+00 */
+  r = sqrtq (r);
+  int n = quadmath_snprintf (buf, sizeof buf, "%+-#*.20Qe", width, r);
+  if ((size_t) n < sizeof buf)
+    printf ("%s\n", buf);
+    /* Prints: +1.41421356237309504880e+00 */
+  quadmath_snprintf (buf, sizeof buf, "%Qa", r);
+  if ((size_t) n < sizeof buf)
+    printf ("%s\n", buf);
+    /* Prints: 0x1.6a09e667f3bcc908b2fb1366ea96p+0 */
+  n = quadmath_snprintf (NULL, 0, "%+-#46.*Qe", prec, r);
+  if (n > -1)
+    @{
+      char *str = malloc (n + 1);
+      if (str)
+        @{
+          quadmath_snprintf (str, n + 1, "%+-#46.*Qe", prec, r);
+          printf ("%s\n", str);
+          /* Prints: +1.41421356237309504880e+00 */
+        @}
+      free (str);
+    @}
   return 0;
 @}
 @end smallexample
+
 @end table
+
+On some targets when supported by the C library hooks are installed
+for @code{printf} family of functions, so that @code{printf ("%Qe", 1.2Q);}
+etc.@: works too.
 
 
 @c ---------------------------------------------------------------------
