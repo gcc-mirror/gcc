@@ -11,7 +11,7 @@
 	* include/bits/regex_compiler.h (_Scanner_base): Use constexpr.
 	* include/bits/regex_constants.h (syntax_option_type): Likewise.
 	* include/bits/regex_grep_matcher.h: Fix comment typo.
-	(_Specialized_results::_Specialized_results): Simplify.
+	(_SpecializedResults::_SpecializedResults): Simplify.
 	* include/bits/regex_cursor.h: Fix comment typo.
 	* include/bits/regex_nfa.h: Likewise.
 	* testsuite/28_regex/basic_regex/ctors/basic/string_range_01_02_03.cc:
