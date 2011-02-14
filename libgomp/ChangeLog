@@ -1,3 +1,10 @@
+2011-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/47731
+	* config/linux/futex.h (futex_wait): Pass NULL as timeout argument
+	to FUTEX_WAIT futex syscall.
+	* config/linux/wait.h: Include <futex.h> instead of "futex.h".
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
