@@ -20,7 +20,6 @@
    02111-1307 USA.  */
 
 #include <config.h>
-#include <alloca.h>
 #include <float.h>
 #include <math.h>
 #include <string.h>

@@ -149,6 +149,8 @@ else
 fi
 
 # Check for hidden visibility (copied from libssp).
+saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror"
 AC_MSG_CHECKING([whether hidden visibility is supported])
 AC_TRY_COMPILE([
 void __attribute__((visibility ("hidden"))) bar (void) {}],,
@@ -157,6 +159,7 @@ AC_MSG_RESULT($quadmath_hidden)
 if test x$quadmath_hidden = xyes; then
   AC_DEFINE([HAVE_HIDDEN_VISIBILITY],[1],[__attribute__((visibility ("hidden"))) supported])
 fi
+CFLAGS="$saved_CFLAGS"
 
 # Check for symbol versioning (copied from libssp).
 AC_MSG_CHECKING([whether symbol versioning is supported])

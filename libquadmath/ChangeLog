@@ -1,5 +1,10 @@
 2011-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* configure.ac (HAVE_HIDDEN_VISIBILITY): Test with -Werror in CFLAGS.
+	* printf/printf_fp.c: Don't include <alloca.h>.
+	* printf/quadmath-printf.h (_itoa): Redefine to __quadmath_itoa.
+	* configure: Regenerated.
+
 	PR fortran/47642
 	* libquadmath.texi (quadmath_snprintf): Document.
 	(quadmath_flt128tostr): Remove.
