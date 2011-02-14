@@ -1,3 +1,21 @@
+2011-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ada/41929
+	* config/sparc/sol2-unwind.h: Include <sys/frame.h>, <sys/stack.h>
+	(IS_SIGHANDLER): Define.
+	(sparc64_is_sighandler): New function, split off from
+	sparc64_fallback_frame_state.
+	(sparc_is_sighandler): New function, split off from
+	sparc_fallback_frame_state.
+	(sparc64_fallback_frame_state): Merge with ...
+	(sparc_fallback_frame_state): ... this into ...
+	(MD_FALLBACK_FRAME_STATE_FOR): ... this.
+	Change new_cfa to long.
+	Remove regs_off, fpu_save_off, fpu_save.
+	Define nframes, mctx.
+	Use IS_SIGHANDLER, handler_args, mctx, walk stack instead of
+	hardcoded offsets.
+
 2011-02-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* go/gccgo.texi (Top, Import and Export): Fix a typo and a
