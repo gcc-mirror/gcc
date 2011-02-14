@@ -1,5 +1,13 @@
 2011-02-14  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/47728
+	* class.c (gfc_build_class_symbol): Give a fatal error on polymorphic
+	arrays.
+	* primary.c (gfc_match_varspec): Avoid ICE for invalid class
+	declaration.
+
+2011-02-14  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/47349
 	* interface.c (get_expr_storage_size): Handle derived-type components.
 

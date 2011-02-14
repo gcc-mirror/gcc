@@ -186,7 +186,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 
   if (*as)
     {
-      gfc_error ("Polymorphic array at %C not yet supported");
+      gfc_fatal_error ("Polymorphic array at %C not yet supported");
       return FAILURE;
     }
 

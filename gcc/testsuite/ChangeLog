@@ -1,3 +1,8 @@
+2011-02-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47728
+	* gfortran.dg/class_38.f03: New.
+
 2011-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr46494.c: New test.
