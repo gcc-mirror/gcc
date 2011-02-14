@@ -1,3 +1,8 @@
+2011-02-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47730
+	* gfortran.dg/select_type_22.f03: New.
+
 2011-02-14  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/regress/enum1.C: New.

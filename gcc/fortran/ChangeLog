@@ -1,5 +1,10 @@
 2011-02-14  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/47730
+	* parse.c (gfc_build_block_ns): Commit 'block@' symbol.
+
+2011-02-14  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/47728
 	* class.c (gfc_build_class_symbol): Give a fatal error on polymorphic
 	arrays.

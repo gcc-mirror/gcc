@@ -3154,6 +3154,7 @@ gfc_build_block_ns (gfc_namespace *parent_ns)
       t = gfc_add_flavor (&my_ns->proc_name->attr, FL_LABEL,
 			  my_ns->proc_name->name, NULL);
       gcc_assert (t == SUCCESS);
+      gfc_commit_symbol (my_ns->proc_name);
     }
 
   if (parent_ns->proc_name)
