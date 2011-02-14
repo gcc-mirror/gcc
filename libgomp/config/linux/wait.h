@@ -1,4 +1,4 @@
-/* Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009, 2011 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -42,7 +42,7 @@
 
 extern long int gomp_futex_wait, gomp_futex_wake;
 
-#include "futex.h"
+#include <futex.h>
 
 static inline void do_wait (int *addr, int val)
 {

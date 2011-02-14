@@ -1,4 +1,4 @@
-/* Copyright (C) 2010 Free Software Foundation, Inc.
+/* Copyright (C) 2010, 2011 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -41,12 +41,12 @@
 static inline void
 futex_wait (int *addr, int val)
 {
-  long err = syscall (SYS_futex, addr, gomp_futex_wait, val);
+  long err = syscall (SYS_futex, addr, gomp_futex_wait, val, NULL);
   if (__builtin_expect (err == -ENOSYS, 0))
     {
       gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
       gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
-      syscall (SYS_futex, addr, gomp_futex_wait, val);
+      syscall (SYS_futex, addr, gomp_futex_wait, val, NULL);
     }
 }
 
