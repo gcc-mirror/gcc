@@ -1,5 +1,13 @@
 2011-02-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/47736
+	* configure.ac (HAVE_PRINTF_HOOKS): Test if printf_info struct has
+	user field.
+	* printf/quadmath-printf.c (quadmath_snprintf): Clear whole info
+	field instead of setting individual fields to 0.  Don't set info.user
+	to -1.
+	* configure: Regenerated.
+
 	* configure.ac (HAVE_HIDDEN_VISIBILITY): Test with -Werror in CFLAGS.
 	* printf/printf_fp.c: Don't include <alloca.h>.
 	* printf/quadmath-printf.h (_itoa): Redefine to __quadmath_itoa.

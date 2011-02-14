@@ -241,6 +241,7 @@ extern int flt128_printf_fp (FILE *, const struct printf_info *, const void *con
 int pa_flt128 = register_printf_type (flt128_va);
 int mod_Q = register_printf_modifier (L"Q");
 int res = register_printf_specifier ('f', flt128_printf_fp, flt128_ais);
+struct printf_info info = { .user = -1 };
 ],
 [quadmath_printf_hooks=yes],[quadmath_printf_hooks=no])
 AC_MSG_RESULT($quadmath_printf_hooks)
