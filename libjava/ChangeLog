@@ -1,3 +1,10 @@
+2011-02-14  Gary Benson  <gbenson@redhat.com>
+
+	PR libjava/47484
+	* configure.ac (python_mod_dir, python_mod_dir_expanded):
+	Install Python modules into versioned directory.
+	* configure: Regenerate.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

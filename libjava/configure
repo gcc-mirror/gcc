@@ -24631,25 +24631,22 @@ here=`${PWDCMD-pwd}`
 # We get this from the environment.
 
 
+default_python_dir="/share/gcc-`cat ${srcdir}/../gcc/BASE-VER`/python/libjava"
 
 # Check whether --with-python-dir was given.
 if test "${with_python_dir+set}" = set; then :
   withval=$with_python_dir; with_python_dir=$withval
 else
-  with_python_dir=""
+  with_python_dir="${default_python_dir}"
 fi
 
 
-if test "x${with_python_dir}" = "x"
-then
-  # Needed for installing Python modules during make install.
-  python_mod_dir="\${prefix}/share/python"
-  # Needed for substituting into aot-compile*
-  python_mod_dir_expanded="${expanded_prefix}/share/python"
-else
-  python_mod_dir="\${prefix}${with_python_dir}"
-  python_mod_dir_expanded="${expanded_prefix}${with_python_dir}"
-fi
+# Needed for installing Python modules during make install.
+python_mod_dir="\${prefix}${with_python_dir}"
+
+# Needed for substituting into aot-compile*
+python_mod_dir_expanded="${expanded_prefix}${with_python_dir}"
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: Python modules dir: ${python_mod_dir_expanded}" >&5
 $as_echo "Python modules dir: ${python_mod_dir_expanded}" >&6; };
 

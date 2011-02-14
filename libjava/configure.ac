@@ -1843,21 +1843,18 @@ AC_SUBST(here)
 # We get this from the environment.
 AC_SUBST(GCJFLAGS)
 
+default_python_dir="/share/gcc-`cat ${srcdir}/../gcc/BASE-VER`/python/libjava"
 AC_ARG_WITH([python-dir],
             AS_HELP_STRING([--with-python-dir],
                            [the location to install Python modules. This path should NOT include the prefix.]),
-            [with_python_dir=$withval], [with_python_dir=""])
+            [with_python_dir=$withval], [with_python_dir="${default_python_dir}"])
 
-if test "x${with_python_dir}" = "x"
-then
-  # Needed for installing Python modules during make install.
-  python_mod_dir="\${prefix}/share/python"
-  # Needed for substituting into aot-compile*
-  python_mod_dir_expanded="${expanded_prefix}/share/python"
-else
-  python_mod_dir="\${prefix}${with_python_dir}"
-  python_mod_dir_expanded="${expanded_prefix}${with_python_dir}"
-fi
+# Needed for installing Python modules during make install.
+python_mod_dir="\${prefix}${with_python_dir}"
+
+# Needed for substituting into aot-compile*
+python_mod_dir_expanded="${expanded_prefix}${with_python_dir}"
+
 AC_MSG_RESULT(Python modules dir: ${python_mod_dir_expanded});
 AC_SUBST(python_mod_dir)
 AC_SUBST(python_mod_dir_expanded)
