@@ -13763,6 +13763,10 @@ cp_parser_enumerator_definition (cp_parser* parser, tree type)
   if (check_for_bare_parameter_packs (value))
     value = error_mark_node;
 
+  /* integral_constant_value will pull out this expression, so make sure
+     it's folded as appropriate.  */
+  value = fold_non_dependent_expr (value);
+
   /* Create the enumerator.  */
   build_enumerator (identifier, value, type, loc);
 }
