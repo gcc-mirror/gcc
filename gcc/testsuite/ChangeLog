@@ -1,3 +1,7 @@
+2011-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr46494.c: New test.
+
 2011-02-14  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/attr-weak-hidden-1.c: Make definition of foo strong.

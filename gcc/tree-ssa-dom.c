@@ -799,10 +799,11 @@ struct gimple_opt_pass pass_dominator =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func
+  TODO_cleanup_cfg
     | TODO_update_ssa
-    | TODO_cleanup_cfg
-    | TODO_verify_ssa			/* todo_flags_finish */
+    | TODO_verify_ssa
+    | TODO_verify_flow
+    | TODO_dump_func			/* todo_flags_finish */
  }
 };
 
