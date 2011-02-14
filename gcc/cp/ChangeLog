@@ -1,3 +1,9 @@
+2011-02-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47482
+	* parser.c (cp_parser_enumerator_definition): Call
+	fold_non_dependent_expr.
+
 2011-02-09  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (cp_make_fname_decl): Set DECL_THIS_STATIC at toplevel.
