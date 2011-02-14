@@ -1,3 +1,12 @@
+2011-02-14  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/rx/rx.h (GO_IF_MODE_DEPENDENT_ADDRESS): Remove.
+	* config/rx/rx-protos.h (rx_is_mode_dependent_addr): Remove.
+	* config/xtensa/xtensa.c (rx_is_mode_dependent_addr): Rename to...
+	(rx_mode_dependent_address_p): ...this. Make static. Change argument
+	type to const_rtx.
+	(TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+
 2011-02-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/stormy16/constraints.md: New file.
