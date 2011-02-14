@@ -12294,6 +12294,8 @@ $as_echo "#define HAVE_FETESTEXCEPT 1" >>confdefs.h
 fi
 
 # Check for hidden visibility (copied from libssp).
+saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror"
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether hidden visibility is supported" >&5
 $as_echo_n "checking whether hidden visibility is supported... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -12321,6 +12323,7 @@ if test x$quadmath_hidden = xyes; then
 $as_echo "#define HAVE_HIDDEN_VISIBILITY 1" >>confdefs.h
 
 fi
+CFLAGS="$saved_CFLAGS"
 
 # Check for symbol versioning (copied from libssp).
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether symbol versioning is supported" >&5

@@ -165,3 +165,6 @@ __quadmath_do_putc (struct __quadmath_printf_file *fp, int wide,
 
 #define nl_langinfo_wc(x) \
   ({ union { const char *mb; wchar_t wc; } u; u.mb = nl_langinfo (x); u.wc; })
+
+#undef _itoa
+#define _itoa __quadmath_itoa
