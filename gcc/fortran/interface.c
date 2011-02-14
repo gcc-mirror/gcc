@@ -1910,7 +1910,7 @@ get_expr_storage_size (gfc_expr *e)
       else if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT
 	       && e->expr_type == EXPR_VARIABLE)
 	{
-	  if (e->symtree->n.sym->as->type == AS_ASSUMED_SHAPE
+	  if (ref->u.ar.as->type == AS_ASSUMED_SHAPE
 	      || e->symtree->n.sym->attr.pointer)
 	    {
 	      elements = 1;
@@ -1939,8 +1939,6 @@ get_expr_storage_size (gfc_expr *e)
 			- mpz_get_si (ref->u.ar.as->lower[i]->value.integer));
 	    }
         }
-      else
-	return 0;
     }
 
   if (substrlen)
@@ -2130,9 +2128,9 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
       actual_size = get_expr_storage_size (a->expr);
       formal_size = get_sym_storage_size (f->sym);
-      if (actual_size != 0
-	    && actual_size < formal_size
-	    && a->expr->ts.type != BT_PROCEDURE)
+      if (actual_size != 0 && actual_size < formal_size
+	  && a->expr->ts.type != BT_PROCEDURE
+	  && f->sym->attr.flavor != FL_PROCEDURE)
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
 	    gfc_warning ("Character length of actual argument shorter "
