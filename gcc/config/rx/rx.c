@@ -199,8 +199,10 @@ rx_is_restricted_memory_address (rtx mem, enum machine_mode mode)
     }
 }
 
-bool
-rx_is_mode_dependent_addr (rtx addr)
+/* Implement TARGET_MODE_DEPENDENT_ADDRESS_P.  */
+
+static bool
+rx_mode_dependent_address_p (const_rtx addr)
 {
   if (GET_CODE (addr) == CONST)
     addr = XEXP (addr, 0);
@@ -2773,6 +2775,9 @@ rx_match_ccmode (rtx insn, enum machine_mode cc_mode)
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P		rx_is_legitimate_address
+
+#undef  TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P		rx_mode_dependent_address_p
 
 #undef  TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
 #define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS	rx_allocate_stack_slots_for_args
