@@ -374,82 +374,23 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define INDEX_REG_CLASS  NO_REGS
 #define BASE_REG_CLASS	 GENERAL_REGS
 
-/* Get reg_class from a letter such as appears in the machine 
-   description.  */
-extern const enum reg_class reg_class_from_letter[];
-
-#define REG_CLASS_FROM_LETTER(C) \
-   (ISLOWER (C) ? reg_class_from_letter[(C) - 'a'] : NO_REGS)
-
-/* The letters I, J, K, L, M, N, O, and P in a register constraint string
-   can be used to stand for particular ranges of immediate operands.
-   This macro defines what the ranges are.
-   C is the letter, and VALUE is a constant value.
-   Return 1 if VALUE is in the range specified by C.
-	I: loadable by movi (0..127)
-	J: arithmetic operand 1..32
-	K: shift operand 0..31
-	L: negative arithmetic operand -1..-32
-	M: powers of two, constants loadable by bgeni
-	N: powers of two minus 1, constants loadable by bmaski, including -1
-        O: allowed by cmov with two constants +/- 1 of each other
-        P: values we will generate 'inline' -- without an 'lrw'
-
-   Others defined for use after reload
-        Q: constant 1
-	R: a label
-        S: 0/1/2 cleared bits out of 32	[for bclri's]
-        T: 2 set bits out of 32	[for bseti's]
-        U: constant 0
-        xxxS: 1 cleared bit out of 32 (complement of power of 2). for bclri
-        xxxT: 2 cleared bits out of 32. for pairs of bclris.  */
-#define CONST_OK_FOR_I(VALUE) (((HOST_WIDE_INT)(VALUE)) >= 0 && ((HOST_WIDE_INT)(VALUE)) <= 0x7f)
-#define CONST_OK_FOR_J(VALUE) (((HOST_WIDE_INT)(VALUE)) >  0 && ((HOST_WIDE_INT)(VALUE)) <= 32)
-#define CONST_OK_FOR_L(VALUE) (((HOST_WIDE_INT)(VALUE)) <  0 && ((HOST_WIDE_INT)(VALUE)) >= -32)
-#define CONST_OK_FOR_K(VALUE) (((HOST_WIDE_INT)(VALUE)) >= 0 && ((HOST_WIDE_INT)(VALUE)) <= 31)
-#define CONST_OK_FOR_M(VALUE) (exact_log2 (VALUE) >= 0 && exact_log2 (VALUE) <= 30)
-#define CONST_OK_FOR_N(VALUE) (((HOST_WIDE_INT)(VALUE)) == -1 || (exact_log2 ((VALUE) + 1) >= 0 && exact_log2 ((VALUE) + 1) <= 30))
-#define CONST_OK_FOR_O(VALUE) (CONST_OK_FOR_I(VALUE) || \
-                               CONST_OK_FOR_M(VALUE) || \
-                               CONST_OK_FOR_N(VALUE) || \
-                               CONST_OK_FOR_M((HOST_WIDE_INT)(VALUE) - 1) || \
-                               CONST_OK_FOR_N((HOST_WIDE_INT)(VALUE) + 1))
-
-#define CONST_OK_FOR_P(VALUE) (mcore_const_ok_for_inline (VALUE)) 
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C)     \
-     ((C) == 'I' ? CONST_OK_FOR_I (VALUE)   \
-    : (C) == 'J' ? CONST_OK_FOR_J (VALUE)   \
-    : (C) == 'L' ? CONST_OK_FOR_L (VALUE)   \
-    : (C) == 'K' ? CONST_OK_FOR_K (VALUE)   \
-    : (C) == 'M' ? CONST_OK_FOR_M (VALUE)   \
-    : (C) == 'N' ? CONST_OK_FOR_N (VALUE)   \
-    : (C) == 'P' ? CONST_OK_FOR_P (VALUE)   \
-    : (C) == 'O' ? CONST_OK_FOR_O (VALUE)   \
-    : 0)
-
-/* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.  */
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) \
-   ((C) == 'G' ? CONST_OK_FOR_I (CONST_DOUBLE_HIGH (VALUE)) \
-	      && CONST_OK_FOR_I (CONST_DOUBLE_LOW (VALUE))  \
-    : 0)
-
-/* Letters in the range `Q' through `U' in a register constraint string
-   may be defined in a machine-dependent fashion to stand for arbitrary
-   operand types.  */
-#define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'R' ? (GET_CODE (OP) == MEM			\
-		 && GET_CODE (XEXP (OP, 0)) == LABEL_REF) \
-   : (C) == 'S' ? (GET_CODE (OP) == CONST_INT \
-                   && mcore_num_zeros (INTVAL (OP)) <= 2) \
-   : (C) == 'T' ? (GET_CODE (OP) == CONST_INT \
-                   && mcore_num_ones (INTVAL (OP)) == 2) \
-   : (C) == 'Q' ? (GET_CODE (OP) == CONST_INT \
-                   && INTVAL(OP) == 1) \
-   : (C) == 'U' ? (GET_CODE (OP) == CONST_INT \
-                   && INTVAL(OP) == 0) \
-   : 0)
+/* Convenience wrappers around insn_const_int_ok_for_constraint.  */
+#define CONST_OK_FOR_I(VALUE) \
+  insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_I)
+#define CONST_OK_FOR_J(VALUE) \
+  insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_J)
+#define CONST_OK_FOR_L(VALUE) \
+  insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_L)
+#define CONST_OK_FOR_K(VALUE) \
+  insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_K)
+#define CONST_OK_FOR_M(VALUE) \
+  insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_M)
+#define CONST_OK_FOR_N(VALUE) \
+  insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_N)
+#define CONST_OK_FOR_O(VALUE) \
+  insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_O)
+#define CONST_OK_FOR_P(VALUE) \
+  insn_const_int_ok_for_constraint (VALUE, CONSTRAINT_P)
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.

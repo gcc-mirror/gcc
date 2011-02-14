@@ -1,3 +1,17 @@
+2011-02-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/mcore/constraints.md: New file.
+	* config/mcore/mcore.md: Include it.
+	* config/mcore/mcore.c (reg_class_from_letter): Delete.
+	* config/mcore/mcore.h (reg_class_from_letter): Delete.
+	(REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_I, CONST_OK_FOR_J, CONST_OK_FOR_L): Use
+	insn_const_int_ok_for_constraint.
+	(CONST_OK_FOR_K, CONST_OK_FOR_M, CONST_OK_FOR_N): Likewise.
+	(CONST_OK_FOR_O, CONST_OK_FOR_P): Likewise.
+	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(EXTRA_CONSTRAINT): Delete.
+
 2011-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR ada/41929
