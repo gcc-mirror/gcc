@@ -1,3 +1,8 @@
+2011-02-14  Andriy Gapon <avg@freebsd.org>
+
+	PR target/45808
+	* config/freebsd-spec.h (FBSD_LIB_SPEC): Handle the shared case.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
