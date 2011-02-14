@@ -1,5 +1,11 @@
 2011-02-14  Gary Benson  <gbenson@redhat.com>
 
+	* libjava/contrib/aot-compile.in: Add our module directory
+	to the start of the search path rather than the end.
+	* libjava/contrib/aot-compile-rpm.in: Likewise.
+
+2011-02-14  Gary Benson  <gbenson@redhat.com>
+
 	PR libjava/47484
 	* configure.ac (python_mod_dir, python_mod_dir_expanded):
 	Install Python modules into versioned directory.
