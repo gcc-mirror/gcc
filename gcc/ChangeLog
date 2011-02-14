@@ -1,3 +1,9 @@
+2011-02-14  Anatoly Sokolov  <aesok@post.ru>
+
+	PR target/47696
+	* config/avr/avr-devices.c (avr_mcu_types): Fix ATmega2560 device
+	description.
+
 2011-02-14  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/mcore/constraints.md: New file.
