@@ -1,3 +1,8 @@
+2011-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/regex_compiler.h: Remove unnecessary bind() calls.
+	* include/bits/regex_nfa.h: Remove unnecessary base classes.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
