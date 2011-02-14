@@ -1,4 +1,4 @@
-/* Copyright (C) 2009, 2010
+/* Copyright (C) 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Anatoly Sokolov (aesok@post.ru)
 
@@ -214,7 +214,7 @@ const struct mcu_type_s avr_mcu_types[] = {
   { "at90usb1287",          ARCH_AVR51, "__AVR_AT90USB1287__",      0, 0x0100, "usb1286" },
     /* 3-Byte PC.  */
   { "avr6",                 ARCH_AVR6, NULL,                        0, 0x0200, "m2561" },
-  { "atmega2560",           ARCH_AVR6, "__AVR_ATmega2560__",        0, 0x0200, "m2561" },
+  { "atmega2560",           ARCH_AVR6, "__AVR_ATmega2560__",        0, 0x0200, "m2560" },
   { "atmega2561",           ARCH_AVR6, "__AVR_ATmega2561__",        0, 0x0200, "m2561" },
     /* Assembler only.  */
   { "avr1",                 ARCH_AVR1, NULL,                        0, 0x0060, "s1200" },
