@@ -1,3 +1,19 @@
+2011-02-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+        * config/v850/constraints.md: New file.
+        * config/v850/v850.md: Include it.
+        * config/v850/predicates.md (reg_or_0_operand): Use
+        satisfies_constraint_G.
+        (special_symbolref_operand): Use satisfies_constraint_K.
+        * config/v850/v850.h (CONSTANT_ADDRESS_P): Use constraint_satisfied_p.
+        (GO_IF_LEGITIMATE_ADDRESS): Likewise.
+        (REG_CLASS_FROM_LETTER, INT_7_BITS, INT_8_BITS): Delete.
+        (CONST_OK_FOR_P, CONST_OK_FOR_LETTER_P): Delete.
+        (EXTRA_CONSTRAINT): Delete.
+        (CONST_OK_FOR_I, CONST_OK_FOR_J): Use insn_const_int_ok_for_constraint.
+        (CONST_OK_FOR_K, CONST_OK_FOR_L, CONST_OK_FOR_M): Likewise.
+        (CONST_OK_FOR_N, CONST_OK_FOR_O): Likewise.
+
 2011-02-14  Anatoly Sokolov  <aesok@post.ru>
 
 	PR target/47696
