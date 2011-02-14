@@ -1,3 +1,8 @@
+2011-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_init_options): Do not concatenate -I and
+	its argument, except for the special -I- switch.
+
 2011-02-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gnat_ugn.texi (Compiling Different Versions of Ada): Update

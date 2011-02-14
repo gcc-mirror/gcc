@@ -195,13 +195,12 @@ gnat_init_options (unsigned int decoded_options_count,
 	  || num_elements == 0)
 	continue;
 
-      if (decoded_options[i].opt_index == OPT_I)
-	{
-	  gcc_assert (num_elements == 2);
-	  save_argv[save_argc++]
-	    = concat (decoded_options[i].canonical_option[0],
-		      decoded_options[i].canonical_option[1], NULL);
-	}
+      /* Deal with -I- specially since it must be a single switch.  */
+      if (decoded_options[i].opt_index == OPT_I
+	  && num_elements == 2
+	  && decoded_options[i].canonical_option[1][0] == '-'
+	  && decoded_options[i].canonical_option[1][1] == '\0')
+	save_argv[save_argc++] = "-I-";
       else
 	{
 	  gcc_assert (num_elements >= 1 && num_elements <= 2);
