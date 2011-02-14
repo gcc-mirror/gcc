@@ -1,3 +1,7 @@
+2011-02-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/include.adb: New test.
+
 2011-02-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47728
