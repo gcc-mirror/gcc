@@ -1,3 +1,7 @@
+2011-02-14  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/attr-weak-hidden-1.c: Make definition of foo strong.
+
 2011-02-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR ada/41929
