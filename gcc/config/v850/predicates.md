@@ -26,7 +26,7 @@
     return INTVAL (op) == 0;
 
   else if (GET_CODE (op) == CONST_DOUBLE)
-    return CONST_DOUBLE_OK_FOR_G (op);
+    return satisfies_constraint_G (op);
 
   else
     return register_operand (op, mode);
@@ -129,8 +129,7 @@
 {
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
-      && CONST_OK_FOR_K (INTVAL (XEXP (XEXP (op, 0), 1))))
+      && satisfies_constraint_K (XEXP (XEXP (op, 0), 1)))
     op = XEXP (XEXP (op, 0), 0);
 
   if (GET_CODE (op) == SYMBOL_REF)
