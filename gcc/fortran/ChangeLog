@@ -1,3 +1,9 @@
+2011-02-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47569
+	* interface.c (compare_parameter): Avoid ICE with
+	character components.
+
 2011-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
