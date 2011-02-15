@@ -9307,7 +9307,13 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   offset += frame->va_arg_size;
 
   /* Align start of frame for local function.  */
-  offset = (offset + stack_alignment_needed - 1) & -stack_alignment_needed;
+  if (stack_realign_fp
+      || offset != frame->sse_reg_save_offset
+      || size != 0
+      || !current_function_is_leaf
+      || cfun->calls_alloca
+      || ix86_current_function_calls_tls_descriptor)
+    offset = (offset + stack_alignment_needed - 1) & -stack_alignment_needed;
 
   /* Frame pointer points here.  */
   frame->frame_pointer_offset = offset;
