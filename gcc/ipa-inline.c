@@ -1975,7 +1975,7 @@ estimate_function_body_sizes (struct cgraph_node *node)
 }
 
 /* Compute parameters of functions used by inliner.  */
-unsigned int
+void
 compute_inline_parameters (struct cgraph_node *node)
 {
   HOST_WIDE_INT self_stack_size;
@@ -2013,7 +2013,6 @@ compute_inline_parameters (struct cgraph_node *node)
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */
   node->global.time = inline_summary (node)->self_time;
   node->global.size = inline_summary (node)->self_size;
-  return 0;
 }
 
 
