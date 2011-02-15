@@ -9225,10 +9225,9 @@ void
 Array_index_expression::do_determine_type(const Type_context*)
 {
   this->array_->determine_type_no_context();
-  Type_context subcontext(NULL, true);
-  this->start_->determine_type(&subcontext);
+  this->start_->determine_type_no_context();
   if (this->end_ != NULL)
-    this->end_->determine_type(&subcontext);
+    this->end_->determine_type_no_context();
 }
 
 // Check types of an array index.
