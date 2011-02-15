@@ -1,3 +1,9 @@
+2011-02-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47743
+	* tree-ssa-pre.c (phi_translate_1): If we didn't get a value-number
+	for a non-type-compatible VN lookup bail out.
+
 2011-02-15  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/fr30/constraints.md: New file.

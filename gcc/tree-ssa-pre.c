@@ -1691,6 +1691,12 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		result = fold_build1 (VIEW_CONVERT_EXPR, ref->type, result);
 		converted = true;
 	      }
+	    else if (!result && newref
+		     && !useless_type_conversion_p (ref->type, newref->type))
+	      {
+		VEC_free (vn_reference_op_s, heap, newoperands);
+		return NULL;
+	      }
 
 	    if (result && is_gimple_min_invariant (result))
 	      {
