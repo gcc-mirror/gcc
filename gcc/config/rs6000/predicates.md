@@ -328,13 +328,11 @@
   if (TARGET_PAIRED_FLOAT)
     return false;
 
-  if ((VSX_VECTOR_MODE (mode) || mode == TImode) && zero_constant (op, mode))
-    return true;
-
-  if (ALTIVEC_VECTOR_MODE (mode))
+  if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode))
     {
       if (zero_constant (op, mode))
-        return true;
+	return true;
+
       return easy_altivec_constant (op, mode);
     }
 
