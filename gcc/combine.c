@@ -2137,12 +2137,6 @@ cant_combine_insn_p (rtx insn)
     return 0;
   src = SET_SRC (set);
   dest = SET_DEST (set);
-  if (GET_CODE (src) == ZERO_EXTEND
-      || GET_CODE (src) == SIGN_EXTEND)
-    src = XEXP (src, 0);
-  if (GET_CODE (dest) == ZERO_EXTEND
-      || GET_CODE (dest) == SIGN_EXTEND)
-    dest = XEXP (dest, 0);
   if (GET_CODE (src) == SUBREG)
     src = SUBREG_REG (src);
   if (GET_CODE (dest) == SUBREG)

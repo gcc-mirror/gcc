@@ -1,3 +1,8 @@
+2011-02-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/47725
+	* gcc.dg/torture/pr47725.c: Removed.
+
 2011-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/47755
