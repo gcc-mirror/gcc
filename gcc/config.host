@@ -1,5 +1,5 @@
 # GCC host-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2006, 2007, 2008
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2006, 2007, 2008, 2011
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -155,6 +155,10 @@ esac
 
 # Machine-specific settings.
 case ${host} in
+  alpha*-dec-osf*)
+    out_host_hook_obj=host-osf.o
+    host_xmake_file="${host_xmake_file} alpha/x-osf"
+    ;;
   alpha*-dec-*vms*)
     host_xm_file=alpha/xm-vms.h
     host_xmake_file="${host_xmake_file} alpha/x-vms"

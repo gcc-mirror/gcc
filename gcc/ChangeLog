@@ -1,3 +1,10 @@
+2011-02-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR pch/14940
+	* config/alpha/host-osf.c: New file.
+	* config/alpha/x-osf: New file.
+	* config.host (alpha*-dec-osf*): Use it.
+
 2011-02-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:
