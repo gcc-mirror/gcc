@@ -364,7 +364,7 @@ dump_alias_info (FILE *file)
 
   fprintf (file, "Aliased symbols\n\n");
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       if (may_be_aliased (var))
 	dump_variable (file, var);

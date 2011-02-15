@@ -705,7 +705,7 @@ remove_unused_locals (void)
   mark_scope_block_unused (DECL_INITIAL (current_function_decl));
 
   /* Assume all locals are unused.  */
-  FOR_EACH_REFERENCED_VAR (t, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, t, rvi)
     clear_is_used (t);
 
   /* Walk the CFG marking all referenced symbols.  */
@@ -821,7 +821,7 @@ remove_unused_locals (void)
     }
 
   /* Remove unused variables from REFERENCED_VARs.  */
-  FOR_EACH_REFERENCED_VAR (t, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, t, rvi)
     if (!is_global_var (t)
 	&& TREE_CODE (t) != PARM_DECL
 	&& TREE_CODE (t) != RESULT_DECL

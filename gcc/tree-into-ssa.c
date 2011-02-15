@@ -1156,7 +1156,7 @@ insert_phi_nodes (bitmap_head *dfs)
      differences but no UID ordering differences.  */
 
   vars = BITMAP_ALLOC (NULL);
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       struct def_blocks_d *def_map;
 
@@ -1573,7 +1573,7 @@ dump_currdefs (FILE *file)
   tree var;
 
   fprintf (file, "\n\nCurrent reaching definitions\n\n");
-  FOR_EACH_REFERENCED_VAR (var, i)
+  FOR_EACH_REFERENCED_VAR (cfun, var, i)
     if (SYMS_TO_RENAME (cfun) == NULL
 	|| bitmap_bit_p (SYMS_TO_RENAME (cfun), DECL_UID (var)))
       {
@@ -2313,7 +2313,7 @@ init_ssa_renamer (void)
   def_blocks = htab_create (num_referenced_vars, def_blocks_hash,
                             def_blocks_eq, def_blocks_free);
 
-  FOR_EACH_REFERENCED_VAR(var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     set_current_def (var, NULL_TREE);
 }
 

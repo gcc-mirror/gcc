@@ -1540,7 +1540,7 @@ find_var_candidates (void)
   referenced_var_iterator rvi;
   bool ret = false;
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       if (TREE_CODE (var) != VAR_DECL && TREE_CODE (var) != PARM_DECL)
         continue;

@@ -314,9 +314,9 @@ typedef struct
    to the hashtable while using this macro.  Doing so may cause it to behave
    erratically.  */
 
-#define FOR_EACH_REFERENCED_VAR(VAR, ITER) \
-  for ((VAR) = first_referenced_var (&(ITER)); \
-       !end_referenced_vars_p (&(ITER)); \
+#define FOR_EACH_REFERENCED_VAR(FN, VAR, ITER)		\
+  for ((VAR) = first_referenced_var ((FN), &(ITER));	\
+       !end_referenced_vars_p (&(ITER));		\
        (VAR) = next_referenced_var (&(ITER)))
 
 extern tree referenced_var_lookup (struct function *, unsigned int);

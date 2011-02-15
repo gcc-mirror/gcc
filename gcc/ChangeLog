@@ -2,6 +2,24 @@
 
 	PR debug/47106
 	PR debug/47402
+	* tree-flow.h (FOR_EACH_REFERENCED_VAR): Add FN argument.
+	Adjust all users.  Pass FN to...
+	* tree-flow-inline.h (first_referenced_var): ... this.  Add
+	fn argument.
+	* ipa-struct-reorg.c: Adjust.
+	* tree-dfa.c: Adjust.
+	* tree-into-ssa.c: Adjust.
+	* tree-sra.c: Adjust.
+	* tree-ssa-alias.c: Adjust.
+	* tree-ssa-live.c: Adjust.
+	* tree-ssa.c: Adjust.
+	* tree-ssanames.c: Adjust.
+	* tree-tailcall.c: Adjust.
+
+2011-02-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/47106
+	PR debug/47402
 	* tree-flow.h (referenced_var_lookup): Add fn parameter.
 	Adjust all callers.
 	* tree-dfa.c (referenced_var_lookup): Use fn instead of cfun.
