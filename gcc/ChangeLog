@@ -1,3 +1,16 @@
+2011-02-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+        * config/iq2000/i2000.h (REG_CLASS_FROM_LETTER): Delete.
+        (CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+        (EXTRA_CONSTRAINT): Delete.
+        * config/iq2000/constraints.md: New file.
+        * config/iq2000/iq2000.md: Include it.
+	(define_insn ""): Delete.
+	(movsi_internal2, movhi_internal2, movqi_internal2): Delete
+	unsupported constraint letters from patterns.
+	(call_value, call_value_internal1): Likewise.
+	(call_value_multiple_internal1): Likewise.
+
 2011-02-15  Nick Clifton  <nickc@redhat.com>
 
 	* config/mn10300/mn10300.c: Include tm-constrs.h.
