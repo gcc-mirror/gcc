@@ -40,6 +40,7 @@
 #include "obstack.h"
 #include "diagnostic-core.h"
 #include "tm_p.h"
+#include "tm-constrs.h"
 #include "target.h"
 #include "target-def.h"
 #include "df.h"
@@ -2945,89 +2946,141 @@ mn10300_split_and_operand_count (rtx op)
     }
 }
 
-/* Extract operands and (if requested) the LIW op type from the insn.
-   Returns false if the insn can't be bundled.  */
+struct liw_data
+{
+  enum attr_liw slot;
+  enum attr_liw_op op;
+  rtx dest;
+  rtx src;
+};
+
+/* Decide if the given insn is a candidate for LIW bundling.  If it is then
+   extract the operands and LIW attributes from the insn and use them to fill
+   in the liw_data structure.  Return true upon success or false if the insn
+   cannot be bundled.  */
 
 static bool
-extract_bundle (rtx insn, rtx * ops, enum attr_liw_op * plop)
+extract_bundle (rtx insn, struct liw_data * pdata)
 {
-  enum attr_liw_op lop;
-  rtx p, s;
+  bool allow_consts = true;
+  rtx p,s;
 
+  gcc_assert (pdata != NULL);
+
+  if (insn == NULL_RTX)
+    return false;
+  /* Make sure that we are dealing with a simple SET insn.  */
   p = single_set (insn);
-  s = SET_SRC (p);
-  lop = get_attr_liw_op (insn);
-  if (plop != NULL)
-    * plop = lop;
+  if (p == NULL_RTX)
+    return false;
 
-  switch (lop)
+  /* Make sure that it could go into one of the LIW pipelines.  */
+  pdata->slot = get_attr_liw (insn);
+  if (pdata->slot == LIW_BOTH)
+    return false;
+
+  pdata->op = get_attr_liw_op (insn);
+
+  s = SET_SRC (p);
+
+  switch (pdata->op)
     {
     case LIW_OP_MOV:
-      ops[0] = SET_DEST (p);
-      ops[1] = SET_SRC (p);
+      pdata->dest = SET_DEST (p);
+      pdata->src = SET_SRC (p);
       break;
     case LIW_OP_CMP:
-      ops[0] = XEXP (SET_SRC (p), 0);
-      ops[1] = XEXP (SET_SRC (p), 1);
+      pdata->dest = XEXP (SET_SRC (p), 0);
+      pdata->src = XEXP (SET_SRC (p), 1);
       break;
     case LIW_OP_NONE:
       return false;
+    case LIW_OP_AND:
+    case LIW_OP_OR:
+    case LIW_OP_XOR:
+      /* The AND, OR and XOR long instruction words only accept register arguments.  */
+      allow_consts = false;
+      /* Fall through.  */
     default:
-      ops[0] = SET_DEST (p);
-      ops[1] = XEXP (SET_SRC (p), 1);
+      pdata->dest = SET_DEST (p);
+      pdata->src = XEXP (SET_SRC (p), 1);
       break;
     }
 
-  return REG_P (ops[0]) && REG_P (ops[1]);
-}
-
-/* Look for conflicts in the operands used in
-   the potential bundling of the two insns.  */
-
-static bool
-check_liw_constraints (rtx ops[4],
-		       enum attr_liw_op op1,
-		       enum attr_liw_op op2,
-		       bool swapped)
-{
-  /* Look for the two destination registers being the same.  This is OK if
-     the first op is a comparison op, since it will compare the value prior
-     to the completion of the second op.  */
-  if (REGNO (ops[0]) == REGNO (ops[2])
-      && ( (! swapped && op1 != LIW_OP_CMP)
-	  || (swapped && op2 != LIW_OP_CMP)))
+  if (! REG_P (pdata->dest))
     return false;
 
-  /* Look for the source of the second op being the destination of the first op.
-     Nomrally this will prevent the bundling since GCC has generated sequential
-     operations and the LIW opcodes are executed in parallel.  But if the first
-     opcode is a MOV, we can copy its source to the second ops source.  */
-  if (swapped)
-    return REGNO (ops[1]) != REGNO (ops[2]);
+  if (REG_P (pdata->src))
+    return true;
 
-  if (REGNO (ops[3]) == REGNO (ops[0]))
+  return allow_consts && satisfies_constraint_O (pdata->src);
+}
+
+/* Make sure that it is OK to execute LIW1 and LIW2 in parallel.  GCC generated
+   the instructions with the assumption that LIW1 would be executed before LIW2
+   so we must check for overlaps between their sources and destinations.  */
+
+static bool
+check_liw_constraints (struct liw_data * pliw1, struct liw_data * pliw2)
+{
+  /* Check for slot conflicts.  */
+  if (pliw2->slot == pliw1->slot && pliw1->slot != LIW_EITHER)
+    return false;
+
+  /* If either operation is a compare, then "dest" is really an input; the real
+     destination is CC_REG.  So these instructions need different checks.  */
+
+  /* Changing "CMP ; OP" into "CMP | OP" is OK because the comparison will
+     check its values prior to any changes made by OP.  */
+  if (pliw1->op == LIW_OP_CMP)
     {
-      if (op1 == LIW_OP_MOV)
+      /* Two sequential comparisons means dead code, which ought to 
+         have been eliminated given that bundling only happens with
+         optimization.  We cannot bundle them in any case.  */
+      gcc_assert (pliw1->op != pliw2->op);
+      return true;
+    }
+
+  /* Changing "OP ; CMP" into "OP | CMP" does not work if the value being compared
+     is the destination of OP, as the CMP will look at the old value, not the new
+     one.  */
+  if (pliw2->op == LIW_OP_CMP)
+    {
+      if (REGNO (pliw2->dest) == REGNO (pliw1->dest))
+	return false;
+
+      if (REG_P (pliw2->src))
+	return REGNO (pliw2->src) != REGNO (pliw1->dest);
+
+      return true;
+    }
+
+  /* Changing "OP1 ; OP2" into "OP1 | OP2" does not work if they both write to the
+     same destination register.  */
+  if (REGNO (pliw2->dest) == REGNO (pliw1->dest))
+    return false;
+
+  /* Changing "OP1 ; OP2" into "OP1 | OP2" generally does not work if the destination
+     of OP1 is the source of OP2.  The exception is when OP1 is a MOVE instruction when
+     we can replace the source in OP2 with the source of OP1.  */
+  if (REG_P (pliw2->src) && REGNO (pliw2->src) == REGNO (pliw1->dest))
+    {
+      if (pliw1->op == LIW_OP_MOV && REG_P (pliw1->src))
 	{
-	  ops[3] = ops[1];
+	  if (! REG_P (pliw1->src)
+	      && (pliw2->op == LIW_OP_AND
+		  || pliw2->op == LIW_OP_OR
+		  || pliw2->op == LIW_OP_XOR))
+	    return false;
+		  
+	  pliw2->src = pliw1->src;
 	  return true;
 	}
       return false;
     }
 
+  /* Everything else is OK.  */
   return true;
-}
-
-/* Decide if the given insn is a candidate for LIW bundling.  For now we just
-   check that the insn has an LIW attribute.  Later on we check operand
-   constraints and such.  */
-
-static bool
-liw_candidate (rtx insn)
-{
-  return insn != NULL_RTX
-    && single_set (insn) != NULL_RTX
-    && get_attr_liw (insn) != LIW_BOTH;
 }
 
 /* Combine pairs of insns into LIW bundles.  */
@@ -3039,61 +3092,41 @@ mn10300_bundle_liw (void)
 
   for (r = get_insns (); r != NULL_RTX; r = next_nonnote_nondebug_insn (r))
     {
-      rtx insn1, insn2, ops[4];
-      enum attr_liw liw1, liw2;
-      enum attr_liw_op op1, op2;
-      bool swapped = false;
+      rtx insn1, insn2;
+      struct liw_data liw1, liw2;
 
       insn1 = r;
-      if (! liw_candidate (insn1))
+      if (! extract_bundle (insn1, & liw1))
 	continue;
 
       insn2 = next_nonnote_nondebug_insn (insn1);
-      if (! liw_candidate (insn2))
+      if (! extract_bundle (insn2, & liw2))
 	continue;
 
-      liw1 = get_attr_liw (insn1);
-      if (liw1 == LIW_BOTH)
-	continue;
-      liw2 = get_attr_liw (insn2);
-      if (liw2 == LIW_BOTH)
-	continue;
-      if (liw2 == liw1 && liw1 != LIW_EITHER)
+      /* Check for source/destination overlap.  */
+      if (! check_liw_constraints (& liw1, & liw2))
 	continue;
 
-      /* The scheduler always groups the insns correctly, but not
-	 always in sequence.  So, we can do a naive check and expect
-	 it to work.  */
-      if (liw1 == LIW_OP2 || liw2 == LIW_OP1)
+      if (liw1.slot == LIW_OP2 || liw2.slot == LIW_OP1)
 	{
-	  rtx r;
-	  enum attr_liw lt;
-
-	  r = insn1;
-	  insn1 = insn2;
-	  insn2 = r;
-	  lt = liw1;
+	  struct liw_data temp;
+	  
+	  temp = liw1;
 	  liw1 = liw2;
-	  liw2 = lt;
-	  swapped = true;
+	  liw2 = temp;
 	}
-
-      if (! extract_bundle (insn1, ops, & op1))
-	continue;
-      if (! extract_bundle (insn2, ops + 2, & op2))
-	continue;
-      if (! check_liw_constraints (ops, op1, op2, swapped))
-	continue;
 
       delete_insn (insn2);
 
-      if (op1 == LIW_OP_CMP)
-	insn2 = gen_cmp_liw (ops[2], ops[3], ops[0], ops[1], GEN_INT (op2));
-      else if (op2 == LIW_OP_CMP)
-	insn2 = gen_liw_cmp (ops[0], ops[1], ops[2], ops[3], GEN_INT (op1));
+      if (liw1.op == LIW_OP_CMP)
+	insn2 = gen_cmp_liw (liw2.dest, liw2.src, liw1.dest, liw1.src,
+			     GEN_INT (liw2.op));
+      else if (liw2.op == LIW_OP_CMP)
+	insn2 = gen_liw_cmp (liw1.dest, liw1.src, liw2.dest, liw2.src,
+			     GEN_INT (liw1.op));
       else
-	insn2 = gen_liw (ops[0], ops[2], ops[1], ops[3],
-			 GEN_INT (op1), GEN_INT (op2));
+	insn2 = gen_liw (liw1.dest, liw2.dest, liw1.src, liw2.src,
+			 GEN_INT (liw1.op), GEN_INT (liw2.op));
 
       insn2 = emit_insn_after (insn2, insn1);
       delete_insn (insn1);

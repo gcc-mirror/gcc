@@ -1,3 +1,31 @@
+2011-02-15  Nick Clifton  <nickc@redhat.com>
+
+	* config/mn10300/mn10300.c: Include tm-constrs.h.
+	(struct liw_data): New data structure describing an LIW candidate
+	instruction.
+	(extract_bundle): Use struct liw_data.  Allow small integer
+	operands for some instructions.
+	(check_liw_constraints): Use struct liw_data.  Remove swapped
+	parameter.  Add comments describing the checks.  Fix bug when
+	assigning the source of liw1 to the source of liw2.
+	(liw_candidate): Delete.  Code moved into extract_bundle.
+	(mn10300_bundle_liw): Use struct liw_data.  Check constraints
+	before swapping.
+	* config/mn10300/predicates.md (liw_operand): New predicate.
+	Allows registers and small integer constants.
+	* config/mn10300/constraints.md (O): New constraint.  Accetps
+	integers in the range -8 to +7 inclusive.
+	* config/mn10300/mn10300.md (movesi_internal): Add an alternative
+	for moving a small integer into a register.  Give this alternative
+	LIW attributes.
+	(addsi3, subsi3, cmpsi, lshrsi3, ashrsi3): Likewise.
+	(ashlsi3): Likewise, plus give LIW attributes to the alternatives
+	using the J,K,L and M constraints,
+	(liw): Remove SI mode on second operands to allow for HI and QI
+	mode values.
+	(cmp_liw, liw_cmp): Likewise.  Plus fix order of operands in the
+	instruction.
+
 2011-02-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47725
