@@ -284,24 +284,33 @@ AC_DEFUN([LIBGFOR_CHECK_FLOAT128], [
 
   AC_CACHE_CHECK([whether we have a usable __float128 type],
                  libgfor_cv_have_float128, [
-    AC_TRY_LINK([
-/* no header */
-],[
-  typedef _Complex float __attribute__((mode(TC))) __complex128;
+   GCC_TRY_COMPILE_OR_LINK([
+    typedef _Complex float __attribute__((mode(TC))) __complex128;
 
-  __float128 x;
-  x = __builtin_huge_valq() - 2.e1000Q;
+    __float128 foo (__float128 x)
+    {
 
-  __complex128 z1, z2;
-  z1 = x;
-  z2 = 2.Q;
+     __complex128 z1, z2;
 
-  z1 /= z2;
-  z1 /= 7.Q;
-],
-    libgfor_cv_have_float128=yes,
-    libgfor_cv_have_float128=no)
-  ])
+     z1 = x;
+     z2 = x / 7.Q;
+     z2 /= z1;
+
+     return (__float128) z2;
+    }
+
+    __float128 bar (__float128 x)
+    {
+      return x * __builtin_huge_valq ();
+    }
+  ],[
+    foo (1.2Q);
+    bar (1.2Q);
+  ],[
+    libgfor_cv_have_float128=yes
+  ],[
+    libgfor_cv_have_float128=no
+])])
 
   if test "x$libgfor_cv_have_float128" = xyes; then
     AC_DEFINE(HAVE_FLOAT128, 1, [Define if have a usable __float128 type.])
