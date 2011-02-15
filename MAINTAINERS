@@ -237,6 +237,7 @@ auto-vectorizer		Zdenek Dvorak		ook@ucw.cz
 auto-vectorizer		Ira Rosen		irar@il.ibm.com
 loop infrastructure	Zdenek Dvorak		ook@ucw.cz
 OpenMP			Jakub Jelinek		jakub@redhat.com
+testsuite		Mike Stump		mikestump@comcast.net
 
 Note that individuals who maintain parts of the compiler need approval to
 check in changes outside of the parts of the compiler they maintain.

@@ -1,3 +1,7 @@
+2011-02-15  Mike Stump  <mikestump@comcast.net>
+
+	* MAINTAINERS: Add myself as testsuite maintainer.
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	Import from Libtool and gnulib:
