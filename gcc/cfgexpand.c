@@ -520,7 +520,7 @@ update_alias_info_with_stack_vars (void)
 	     for -O0 where we are preserving even unreferenced variables.  */
 	  gcc_assert (DECL_P (decl)
 		      && (!optimize
-			  || referenced_var_lookup (DECL_UID (decl))));
+			  || referenced_var_lookup (cfun, DECL_UID (decl))));
 	  bitmap_set_bit (part, uid);
 	  *((bitmap *) pointer_map_insert (decls_to_partitions,
 					   (void *)(size_t) uid)) = part;

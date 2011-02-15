@@ -319,7 +319,7 @@ typedef struct
        !end_referenced_vars_p (&(ITER)); \
        (VAR) = next_referenced_var (&(ITER)))
 
-extern tree referenced_var_lookup (unsigned int);
+extern tree referenced_var_lookup (struct function *, unsigned int);
 extern bool referenced_var_check_and_insert (tree);
 #define num_referenced_vars htab_elements (gimple_referenced_vars (cfun))
 

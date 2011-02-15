@@ -1,3 +1,16 @@
+2011-02-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/47106
+	PR debug/47402
+	* tree-flow.h (referenced_var_lookup): Add fn parameter.
+	Adjust all callers.
+	* tree-dfa.c (referenced_var_lookup): Use fn instead of cfun.
+	* tree-flow-inline.h: Adjust.
+	* gimple-pretty-print.c: Adjust.
+	* tree-into-ssa.c: Adjust.
+	* tree-ssa.c: Adjust.
+	* cfgexpand.c: Adjust.
+
 2011-02-15  Nathan Froyd  <froydnj@codesourcery.com>
 
         * config/iq2000/i2000.h (REG_CLASS_FROM_LETTER): Delete.

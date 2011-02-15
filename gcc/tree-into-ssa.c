@@ -1469,7 +1469,7 @@ dump_decl_set (FILE *file, bitmap set)
 
       EXECUTE_IF_SET_IN_BITMAP (set, 0, i, bi)
 	{
-	  tree var = referenced_var_lookup (i);
+	  tree var = referenced_var_lookup (cfun, i);
 	  if (var)
 	    print_generic_expr (file, var, 0);
 	  else

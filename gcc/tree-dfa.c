@@ -488,12 +488,12 @@ find_referenced_vars_in (gimple stmt)
    variable.  */
 
 tree
-referenced_var_lookup (unsigned int uid)
+referenced_var_lookup (struct function *fn, unsigned int uid)
 {
   tree h;
   struct tree_decl_minimal in;
   in.uid = uid;
-  h = (tree) htab_find_with_hash (gimple_referenced_vars (cfun), &in, uid);
+  h = (tree) htab_find_with_hash (gimple_referenced_vars (fn), &in, uid);
   return h;
 }
 
