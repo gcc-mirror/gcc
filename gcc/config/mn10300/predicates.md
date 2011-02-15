@@ -63,3 +63,7 @@
 
 (define_predicate "CCZN_comparison_operator"
   (match_code "eq,ne,lt,ge"))
+
+(define_predicate "liw_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_test "satisfies_constraint_O (op)")))

@@ -94,6 +94,12 @@
        (ior (match_test "ival == 255")
 	    (match_test "ival == 65535"))))
 
+(define_constraint "O"
+  "An integer between -8 and +7 inclusive."
+  (and (match_code "const_int")
+       (and (match_test "ival >= -8")
+	    (match_test "ival <=  7"))))
+
 ;; Floating-point constraints
 (define_constraint "G"
   "Floating-point zero."
