@@ -103,7 +103,7 @@ next_htab_element (htab_iterator *hti)
 static inline tree
 referenced_var (unsigned int uid)
 {
-  tree var = referenced_var_lookup (uid);
+  tree var = referenced_var_lookup (cfun, uid);
   gcc_assert (var || uid == 0);
   return var;
 }
