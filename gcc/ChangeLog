@@ -1,5 +1,13 @@
 2011-02-15  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/fr30/constraints.md: New file.
+	* config/fr30/fr30.md: Include it.
+	* config/fr30/fr30.h (REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(EXTRA_CONSTRAINT): Delete.
+
+2011-02-15  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/frv/constraints.md: New file.
 	* config/frv/predicates.md: Include it.
 	* config/frv/frv.c (reg_class_from_letter): Delete.
