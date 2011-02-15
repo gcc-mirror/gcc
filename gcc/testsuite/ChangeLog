@@ -1,3 +1,8 @@
+2011-02-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/47725
+	* gcc.dg/torture/pr47725.c: New.
+
 2011-02-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47743
