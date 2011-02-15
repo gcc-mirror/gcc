@@ -1,3 +1,8 @@
+2011-02-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/47633
+	. simplify.c (gfc_simplify_compiler_version): Fix off-by-one issue.
+
 2011-02-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47730

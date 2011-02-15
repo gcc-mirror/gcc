@@ -6844,9 +6844,9 @@ gfc_simplify_compiler_version (void)
   char *buffer;
   size_t len;
 
-  len = strlen ("GCC version ") + strlen (version_string) + 1;
-  buffer = (char*) alloca (len);
-  snprintf (buffer, len, "GCC version %s", version_string);
+  len = strlen ("GCC version ") + strlen (version_string);
+  buffer = XALLOCAVEC (char, len + 1);
+  snprintf (buffer, len + 1, "GCC version %s", version_string);
   return gfc_get_character_expr (gfc_default_character_kind,
                                 &gfc_current_locus, buffer, len);
 }
