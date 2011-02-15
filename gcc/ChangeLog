@@ -1,3 +1,10 @@
+2011-02-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR pch/14940
+	* config/alpha/host-osf.c: New file.
+	* config/alpha/x-osf: New file.
+	* config.host (alpha*-dec-osf*): Use it.
+
 2011-02-15  Tijl Coosemans  <tijl@coosemans.org>
 
 	* config/i386/freebsd.h (SUBTARGET32_DEFAULT_CPU): Add.
