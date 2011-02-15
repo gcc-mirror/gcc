@@ -1778,10 +1778,7 @@ Thunk_statement::do_determine_types()
   // pass parameters.
   Call_expression* ce = this->call_->call_expression();
   if (ce == NULL)
-    {
-      gcc_assert(this->call_->is_error_expression());
-      return;
-    }
+    return;
   Function_type* fntype = ce->get_function_type();
   if (fntype != NULL && !this->is_simple(fntype))
     this->struct_type_ = this->build_struct(fntype);
@@ -1795,7 +1792,8 @@ Thunk_statement::do_check_types(Gogo*)
   Call_expression* ce = this->call_->call_expression();
   if (ce == NULL)
     {
-      gcc_assert(this->call_->is_error_expression());
+      if (!this->call_->is_error_expression())
+	this->report_error("expected call expression");
       return;
     }
   Function_type* fntype = ce->get_function_type();
