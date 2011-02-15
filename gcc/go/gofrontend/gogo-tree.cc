@@ -1252,8 +1252,9 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 
 	  this->fndecl_ = decl;
 
-	  gcc_assert(no->package() == NULL);
-	  if (this->enclosing_ != NULL || Gogo::is_thunk(no))
+	  if (no->package() != NULL)
+	    ;
+	  else if (this->enclosing_ != NULL || Gogo::is_thunk(no))
 	    ;
 	  else if (Gogo::unpack_hidden_name(no->name()) == "init"
 		   && !this->type_->is_method())
