@@ -1,3 +1,21 @@
+2011-02-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/frv/constraints.md: New file.
+	* config/frv/predicates.md: Include it.
+	* config/frv/frv.c (reg_class_from_letter): Delete.
+	(frv_option_override): Don't initialize it.
+	* config/frv/frv.h (REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_I, CONST_OK_FOR_J, CONST_OK_FOR_K): Delete.
+	(CONST_OK_FOR_L, CONST_OK_FOR_M, CONST_OK_FOR_N): Delete.
+	(CONST_OK_FOR_O, CONST_OK_FOR_P, CONST_OK_FOR_LETTER_P): Delete.
+	(CONST_DOUBLE_OK_FOR_G, CONST_DOUBLE_OK_FOR_H): Delete.
+	(CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(EXTRA_CONSTRAINT_FOR_Q, EXTRA_CONSTRAINT_FOR_R): Delete.
+	(EXTRA_CONSTRAINT_FOR_S, EXTRA_CONSTRAINT_FOR_T): Delete.
+	(EXTRA_CONSTRAINT_FOR_U, EXTRA_CONSTRAINT): Delete.
+	(EXTRA_MEMORY_CONSTRAINT, CONSTRAINT_LEN): Delete.
+	(REG_CLASS_FROM_CONSTRAINT): Delete.
+
 2011-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/47581
