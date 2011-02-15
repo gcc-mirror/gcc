@@ -25075,42 +25075,99 @@ if test "${libgfor_cv_have_float128+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-    if test x$gcc_no_link = xyes; then
-  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+   if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-/* no header */
+    typedef _Complex float __attribute__((mode(TC))) __complex128;
+
+    __float128 foo (__float128 x)
+    {
+
+     __complex128 z1, z2;
+
+     z1 = x;
+     z2 = x / 7.Q;
+     z2 /= z1;
+
+     return (__float128) z2;
+    }
+
+    __float128 bar (__float128 x)
+    {
+      return x * __builtin_huge_valq ();
+    }
 
 int
 main ()
 {
 
-  typedef _Complex float __attribute__((mode(TC))) __complex128;
+    foo (1.2Q);
+    bar (1.2Q);
 
-  __float128 x;
-  x = __builtin_huge_valq() - 2.e1000Q;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
 
-  __complex128 z1, z2;
-  z1 = x;
-  z2 = 2.Q;
+    libgfor_cv_have_float128=yes
 
-  z1 /= z2;
-  z1 /= 7.Q;
+else
+
+    libgfor_cv_have_float128=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    typedef _Complex float __attribute__((mode(TC))) __complex128;
+
+    __float128 foo (__float128 x)
+    {
+
+     __complex128 z1, z2;
+
+     z1 = x;
+     z2 = x / 7.Q;
+     z2 /= z1;
+
+     return (__float128) z2;
+    }
+
+    __float128 bar (__float128 x)
+    {
+      return x * __builtin_huge_valq ();
+    }
+
+int
+main ()
+{
+
+    foo (1.2Q);
+    bar (1.2Q);
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  libgfor_cv_have_float128=yes
+
+    libgfor_cv_have_float128=yes
+
 else
-  libgfor_cv_have_float128=no
+
+    libgfor_cv_have_float128=no
+
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-
+fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_float128" >&5
 $as_echo "$libgfor_cv_have_float128" >&6; }

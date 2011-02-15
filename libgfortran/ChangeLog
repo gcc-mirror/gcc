@@ -1,3 +1,11 @@
+2011-02-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47716
+	PR fortran/47648
+	* acinclude.m4 (LIBGFOR_CHECK_FLOAT128): Use check from
+	libquadmath, which uses more features.
+	* configure: Regenerate.
+
 2011-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/47642
