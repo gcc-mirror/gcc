@@ -1982,9 +1982,8 @@ compute_inline_parameters (struct cgraph_node *node)
 
   gcc_assert (!node->global.inlined_to);
 
-  /* Estimate the stack size for the function.  But not at -O0
-     because estimated_stack_frame_size is a quadratic problem.  */
-  self_stack_size = optimize ? estimated_stack_frame_size (node->decl) : 0;
+  /* Estimate the stack size for the function if we're optimizing.  */
+  self_stack_size = optimize ? estimated_stack_frame_size (node) : 0;
   inline_summary (node)->estimated_self_stack_size = self_stack_size;
   node->global.estimated_stack_size = self_stack_size;
   node->global.stack_frame_offset = 0;
