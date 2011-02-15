@@ -1,3 +1,9 @@
+2011-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/47581
+	* config/i386/i386.c (ix86_compute_frame_size): Don't align offset
+	if frame size is 0 in a leaf function.
+
 2011-02-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR pch/14940
