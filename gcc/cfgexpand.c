@@ -1366,24 +1366,25 @@ fini_vars_expansion (void)
   stack_vars_alloc = stack_vars_num = 0;
 }
 
-/* Make a fair guess for the size of the stack frame of the decl
-   passed.  This doesn't have to be exact, the result is only used
-   in the inline heuristics.  So we don't want to run the full stack
-   var packing algorithm (which is quadratic in the number of stack
-   vars).  Instead, we calculate the total size of all stack vars.
-   This turns out to be a pretty fair estimate -- packing of stack
-   vars doesn't happen very often.  */
+/* Make a fair guess for the size of the stack frame of the function
+   in NODE.  This doesn't have to be exact, the result is only used in
+   the inline heuristics.  So we don't want to run the full stack var
+   packing algorithm (which is quadratic in the number of stack vars).
+   Instead, we calculate the total size of all stack vars.  This turns
+   out to be a pretty fair estimate -- packing of stack vars doesn't
+   happen very often.  */
 
 HOST_WIDE_INT
-estimated_stack_frame_size (tree decl)
+estimated_stack_frame_size (struct cgraph_node *node)
 {
   HOST_WIDE_INT size = 0;
   size_t i;
   tree var, outer_block = DECL_INITIAL (current_function_decl);
   unsigned ix;
   tree old_cur_fun_decl = current_function_decl;
-  current_function_decl = decl;
-  push_cfun (DECL_STRUCT_FUNCTION (decl));
+
+  current_function_decl = node->decl;
+  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
   init_vars_expansion ();
 
