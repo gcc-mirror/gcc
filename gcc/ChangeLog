@@ -1,3 +1,8 @@
+2011-02-15  Tijl Coosemans  <tijl@coosemans.org>
+
+	* config/i386/freebsd.h (SUBTARGET32_DEFAULT_CPU): Add.
+	Update copyright years.
+
 2011-02-11  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/47166

@@ -1,5 +1,6 @@
 /* Definitions for Intel 386 running FreeBSD with ELF format
-   Copyright (C) 1996, 2000, 2002, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1996, 2000, 2002, 2004, 2007, 2011
+   Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
    Adapted from GNU/Linux version by John Polstra.
@@ -138,3 +139,8 @@ along with GCC; see the file COPYING3.  If not see
    compiler get the contents of <float.h> and std::numeric_limits correct.  */
 #undef TARGET_96_ROUND_53_LONG_DOUBLE
 #define TARGET_96_ROUND_53_LONG_DOUBLE (!TARGET_64BIT)
+
+/* Support for i386 has been removed from FreeBSD 6.0 onward.  */
+#if FBSD_MAJOR >= 6
+#define SUBTARGET32_DEFAULT_CPU "i486"
+#endif
