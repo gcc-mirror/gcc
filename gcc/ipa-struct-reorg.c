@@ -2712,7 +2712,7 @@ create_new_local_vars (void)
   new_local_vars = htab_create (num_referenced_vars,
 				new_var_hash, new_var_eq, NULL);
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       if (!is_global_var (var))
 	create_new_var (var, new_local_vars);

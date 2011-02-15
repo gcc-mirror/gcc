@@ -112,10 +112,10 @@ referenced_var (unsigned int uid)
    referenced_vars hashtable, and return that variable.  */
 
 static inline tree
-first_referenced_var (referenced_var_iterator *iter)
+first_referenced_var (struct function *fn, referenced_var_iterator *iter)
 {
   return (tree) first_htab_element (&iter->hti,
-				    gimple_referenced_vars (cfun));
+				    gimple_referenced_vars (fn));
 }
 
 /* Return true if we have hit the end of the referenced variables ITER is

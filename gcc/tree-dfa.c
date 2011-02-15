@@ -218,7 +218,7 @@ dump_referenced_vars (FILE *file)
   fprintf (file, "\nReferenced variables in %s: %u\n\n",
 	   get_name (current_function_decl), (unsigned) num_referenced_vars);
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, rvi)
     {
       fprintf (file, "Variable: ");
       dump_variable (file, var);
@@ -400,7 +400,7 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
   memset ((void *)dfa_stats_p, 0, sizeof (struct dfa_stats_d));
 
   /* Count all the variable annotations.  */
-  FOR_EACH_REFERENCED_VAR (var, vi)
+  FOR_EACH_REFERENCED_VAR (cfun, var, vi)
     if (var_ann (var))
       dfa_stats_p->num_var_anns++;
 
