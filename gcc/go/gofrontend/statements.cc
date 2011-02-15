@@ -2215,6 +2215,8 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
   Struct_field_list::const_iterator p = fields->begin();
   for (unsigned int i = 0; i < next_index; ++i)
     ++p;
+  bool is_recover_call = ce->is_recover_call();
+  Expression* recover_arg = NULL;
   for (; p != fields->end(); ++p, ++next_index)
     {
       Expression* thunk_param = Expression::make_var_reference(named_parameter,
@@ -2224,25 +2226,40 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
       Expression* param = Expression::make_field_reference(thunk_param,
 							   next_index,
 							   location);
-      call_params->push_back(param);
+      if (!is_recover_call)
+	call_params->push_back(param);
+      else
+	{
+	  gcc_assert(call_params->empty());
+	  recover_arg = param;
+	}
+    }
+
+  if (call_params->empty())
+    {
+      delete call_params;
+      call_params = NULL;
     }
 
   Expression* call = Expression::make_call(func_to_call, call_params, false,
 					   location);
   // We need to lower in case this is a builtin function.
   call = call->lower(gogo, function, -1);
-  if (may_call_recover)
-    {
-      Call_expression* ce = call->call_expression();
-      if (ce != NULL)
-	ce->set_is_deferred();
-    }
+  Call_expression* call_ce = call->call_expression();
+  if (call_ce != NULL && may_call_recover)
+    call_ce->set_is_deferred();
 
   Statement* call_statement = Statement::make_statement(call);
 
   // We already ran the determine_types pass, so we need to run it
   // just for this statement now.
   call_statement->determine_types();
+
+  // Sanity check.
+  call->check_types(gogo);
+
+  if (call_ce != NULL && recover_arg != NULL)
+    call_ce->set_recover_arg(recover_arg);
 
   gogo->add_statement(call_statement);
 
