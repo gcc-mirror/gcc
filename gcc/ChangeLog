@@ -1,3 +1,8 @@
+2011-02-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/47725
+	* combine.c (cant_combine_insn_p): Revert the last change.
+
 2011-02-15  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/47755
