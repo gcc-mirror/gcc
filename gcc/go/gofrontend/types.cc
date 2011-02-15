@@ -5659,7 +5659,7 @@ Interface_type::finalize_methods()
 	{
 	  if (q->name().empty())
 	    {
-	      if (q->type() == p->type())
+	      if (q->type()->forwarded() == p->type()->forwarded())
 		error_at(p->location(), "interface inheritance loop");
 	      else
 		{
@@ -5667,7 +5667,8 @@ Interface_type::finalize_methods()
 		  for (i = from + 1; i < this->methods_->size(); ++i)
 		    {
 		      const Typed_identifier* r = &this->methods_->at(i);
-		      if (r->name().empty() && r->type() == q->type())
+		      if (r->name().empty()
+			  && r->type()->forwarded() == q->type()->forwarded())
 			{
 			  error_at(p->location(),
 				   "inherited interface listed twice");
