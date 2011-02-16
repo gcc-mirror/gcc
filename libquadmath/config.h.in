@@ -42,6 +42,9 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
+/* Define to 1 if you have the <locale.h> header file. */
+#undef HAVE_LOCALE_H
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -115,8 +118,14 @@
 /* whether i18n number rewriting can be supported */
 #undef USE_I18N_NUMBER_H
 
-/* whether nl_langinfo is sufficiently supported */
-#undef USE_LOCALE_SUPPORT
+/* whether localeconv should be used */
+#undef USE_LOCALECONV
+
+/* whether nl_langinfo should be used */
+#undef USE_NL_LANGINFO
+
+/* whether nl_langinfo should be used for wide char locale info */
+#undef USE_NL_LANGINFO_WC
 
 /* Enable extensions on AIX 3, Interix.  */
 #ifndef _ALL_SOURCE

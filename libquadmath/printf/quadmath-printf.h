@@ -38,6 +38,9 @@ Boston, MA 02110-1301, USA.  */
 #ifdef HAVE_PRINTF_HOOKS
 #include <printf.h>
 #endif
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
 #include "quadmath-imp.h"
 #include "gmp-impl.h"
 

@@ -1,3 +1,24 @@
+2011-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* printf/quadmath-printf.c: Also check __GLIBC__ when checking
+	whether workarounds for printf hook handling should be added.
+
+	* configure.ac: Check for locale.h too.
+	(USE_LOCALE_SUPPORT): Remove check.
+	(USE_NL_LANGINFO, USE_NL_LANGINFO_WC, USE_LOCALECONV): New checks.
+	(USE_I18_NUMBER_H): Check also for _NL_CTYPE_MB_CUR_MAX.
+	* printf/printf_fphex.c (__quadmath_printf_fphex): Use nl_langinfo
+	or localeconv for narrow version and nl_langinfo if USE_NL_LANGINFO_WC
+	for wide version.
+	* printf/quadmath-printf.h: Include locale.h if HAVE_LOCALE_H.
+	* printf/printf_fp.c (USE_I18N_NUMBER_H): Don't define to 0.
+	(__quadmath_printf_fp): Use nl_langinfo or localeconv for narrow
+	version and nl_langinfo if USE_NL_LANGINFO_WC for wide version.
+	Guard nl_langinfo (_NL_CTYPE_MB_CUR_MAX) use with
+	USE_I18N_NUMBER_H #ifdef.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+
 2011-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/47736
