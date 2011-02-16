@@ -1,5 +1,9 @@
 2011-02-16  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/m68k/uclinux.opt (static-libc): New Driver option.
+
+2011-02-16  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/m32c/m32c.h (LIB_SPEC): Match -msim not -msim*.
 
 2011-02-16  Joseph Myers  <joseph@codesourcery.com>
