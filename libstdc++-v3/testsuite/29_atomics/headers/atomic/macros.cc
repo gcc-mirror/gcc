@@ -94,14 +94,6 @@ namespace gnu
 # endif
 #endif
 
-#ifndef ATOMIC_ADDRESS_LOCK_FREE
-# error "ATOMIC_ADDRESS_LOCK_FREE must be a macro"
-# if ATOMIC_ADDRESS_LOCK_FREE != 0 \
-    && ATOMIC_ADDRESS_LOCK_FREE != 1 && ATOMIC_ADDRESS_LOCK_FREE != 2
-# error "ATOMIC_ADDRESS_LOCK_FREE must be 0, 1, or 2"
-# endif
-#endif
-
 #ifndef ATOMIC_FLAG_INIT
     #error "ATOMIC_FLAG_INIT_must_be_a_macro"
 #endif
