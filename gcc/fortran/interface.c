@@ -2924,7 +2924,11 @@ matching_typebound_op (gfc_expr** tb_base,
 	gfc_try result;
 
 	if (base->expr->ts.type == BT_CLASS)
-	  derived = CLASS_DATA (base->expr)->ts.u.derived;
+	  {
+	    if (!gfc_expr_attr (base->expr).class_ok)
+	      continue;
+	    derived = CLASS_DATA (base->expr)->ts.u.derived;
+	  }
 	else
 	  derived = base->expr->ts.u.derived;
 

@@ -4536,11 +4536,8 @@ select_type_set_tmp (gfc_typespec *ts)
   gfc_add_pointer (&tmp->n.sym->attr, NULL);
   gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
   if (ts->type == BT_CLASS)
-    {
-      gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
-			      &tmp->n.sym->as, false);
-      tmp->n.sym->attr.class_ok = 1;
-    }
+    gfc_build_class_symbol (&tmp->n.sym->ts, &tmp->n.sym->attr,
+			    &tmp->n.sym->as, false);
   tmp->n.sym->attr.select_type_temporary = 1;
 
   /* Add an association for it, so the rest of the parser knows it is
