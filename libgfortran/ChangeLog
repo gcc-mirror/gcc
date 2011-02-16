@@ -1,3 +1,10 @@
+2011-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/47757
+	* gfortran.map (GFORTRAN_1.4): Export
+	_gfortran_{m,s}i{all,any,parity}_i{1,2,4,8,16} and
+	_gfortran_{cshift0,eoshift{0,2}}_16_char4.
+
 2011-02-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47716
