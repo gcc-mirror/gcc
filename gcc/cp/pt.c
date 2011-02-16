@@ -6993,6 +6993,8 @@ lookup_template_class (tree d1,
               SET_SCOPED_ENUM_P (t, SCOPED_ENUM_P (template_type));
             }
           SET_OPAQUE_ENUM_P (t, OPAQUE_ENUM_P (template_type));
+	  ENUM_FIXED_UNDERLYING_TYPE_P (t)
+	    = ENUM_FIXED_UNDERLYING_TYPE_P (template_type);
 	}
       else
 	{
