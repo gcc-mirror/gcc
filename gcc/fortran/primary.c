@@ -2033,7 +2033,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   sym = expr->symtree->n.sym;
   attr = sym->attr;
 
-  if (sym->ts.type == BT_CLASS)
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
     {
       dimension = CLASS_DATA (sym)->attr.dimension;
       pointer = CLASS_DATA (sym)->attr.class_pointer;

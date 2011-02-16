@@ -1,3 +1,15 @@
+2011-02-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47745
+	* class.c (gfc_build_class_symbol): Set 'class_ok' attribute.
+	* decl.c (build_sym,attr_decl1): Move setting of 'class_ok' into
+	'gfc_build_class_symbol'.
+	(gfc_match_decl_type_spec): Reject unlimited polymorphism.
+	* interface.c (matching_typebound_op): Check for 'class_ok' attribute.
+	* match.c (select_type_set_tmp): Move setting of 'class_ok' into
+	'gfc_build_class_symbol'.
+	* primary.c (gfc_variable_attr): Check for 'class_ok' attribute.
+
 2011-02-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/47633
