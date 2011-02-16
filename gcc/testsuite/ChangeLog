@@ -1,5 +1,10 @@
 2011-02-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR libfortran/47757
+	* gfortran.dg/pr47757-1.f90: New test.
+	* gfortran.dg/pr47757-2.f90: New test.
+	* gfortran.dg/pr47757-3.f90: New test.
+
 	PR c++/47704
 	* g++.dg/cpp0x/enum8.C: New test.
 
