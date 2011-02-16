@@ -1,3 +1,8 @@
+2011-02-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/lm32/lm32.h (ASM_SPEC): Use %{muser-enabled} instead of
+	%{muser-extend-enabled}.
+
 2011-02-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47738
