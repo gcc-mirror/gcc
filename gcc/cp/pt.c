@@ -11382,10 +11382,17 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case SIZEOF_EXPR:
       if (PACK_EXPANSION_P (TREE_OPERAND (t, 0)))
         {
-          /* We only want to compute the number of arguments.  */
-          tree expanded = tsubst_pack_expansion (TREE_OPERAND (t, 0), args,
-                                                complain, in_decl);
+
+          tree expanded;
 	  int len = 0;
+
+	  ++cp_unevaluated_operand;
+	  ++c_inhibit_evaluation_warnings;
+	  /* We only want to compute the number of arguments.  */
+	  expanded = tsubst_pack_expansion (TREE_OPERAND (t, 0), args,
+					    complain, in_decl);
+	  --cp_unevaluated_operand;
+	  --c_inhibit_evaluation_warnings;
 
 	  if (TREE_CODE (expanded) == TREE_VEC)
 	    len = TREE_VEC_LENGTH (expanded);
