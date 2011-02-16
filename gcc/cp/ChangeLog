@@ -1,3 +1,9 @@
+2011-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46807
+	* method.c (synthesized_method_walk): Always exit early for
+	trivial fn in C++98 mode.
+
 2011-02-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47482

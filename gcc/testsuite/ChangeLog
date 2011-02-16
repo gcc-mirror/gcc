@@ -1,3 +1,8 @@
+2011-02-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/inherit/implicit-trivial1.C: New.
+	* g++.dg/cpp0x/implicit-trivial1.C: New.
+
 2011-02-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/47725
