@@ -1,3 +1,11 @@
+2011-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/47704
+	* cp-tree.h (ENUM_FIXED_UNDERLYING_TYPE_P): Use TYPE_LANG_FLAG_5
+	instead of TYPE_LANG_FLAG_3.
+	* pt.c (lookup_template_class): Copy over
+	ENUM_FIXED_UNDERLYING_TYPE_P.
+
 2011-02-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46807
