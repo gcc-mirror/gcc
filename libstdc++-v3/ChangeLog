@@ -1,3 +1,7 @@
+2011-02-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/regex.h (match_results::format): Use char_traits.
+
 2011-02-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/atomic: Remove atomic_address, uplift to N3225.
