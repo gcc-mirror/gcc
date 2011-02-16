@@ -179,8 +179,7 @@ run_tree_predictive_commoning (void)
   if (!current_loops)
     return 0;
 
-  tree_predictive_commoning ();
-  return 0;
+  return tree_predictive_commoning ();
 }
 
 static bool

@@ -1,3 +1,9 @@
+2011-02-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47738
+	* tree-ssa-loop.c (run_tree_predictive_commoning): Return
+	the TODO from tree_predictive_commoning.
+
 2011-02-15  Jeff Law  <law@redhat.com>
 
 	Revert
