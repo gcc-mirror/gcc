@@ -1,3 +1,11 @@
+2011-02-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/atomic: Remove atomic_address, uplift to N3225.
+	* include/bits/atomic_0.h: Same.
+	* include/bits/atomic_2.h: Same.
+	* include/bits/atomic_base.h: Same.
+	* testsuite/29_atomics/atomic_address/*: Delete.
+
 2011-02-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/regex.h (sub_match::sub_match): Add.
@@ -36,7 +44,7 @@
 	* testsuite/ext/is_heap/47709.cc: New.
 
 2011-02-12  Jakub Jelinek  <jakub@redhat.com>
-            Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/47662
 	* testsuite/17_intro/headers/c++200x/operator_names.cc: New.
@@ -259,10 +267,10 @@
 
 2011-01-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
-        * doc/html/ext/lwg-active.html: Update to Revision D73.
-        * doc/html/ext/lwg-closed.html: Likewise.
-        * doc/html/ext/lwg-defects.html: Likewise.
-        * doc/xml/manual/intro.xml: Update status of issues 408, 539, 865.
+	* doc/html/ext/lwg-active.html: Update to Revision D73.
+	* doc/html/ext/lwg-closed.html: Likewise.
+	* doc/html/ext/lwg-defects.html: Likewise.
+	* doc/xml/manual/intro.xml: Update status of issues 408, 539, 865.
 
 2011-01-30  Benjamin Kosnik  <bkoz@redhat.com>
 
