@@ -1,3 +1,9 @@
+2011-02-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR libgomp/47758
+	* testsuite/libgomp.fortran/fortran.exp: Check for the existence
+	of libquadmath.a before adding its libpath to ldflags.
+
 2011-02-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/47731
