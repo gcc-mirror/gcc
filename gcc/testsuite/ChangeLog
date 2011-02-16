@@ -1,3 +1,8 @@
+2011-02-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47326
+	* g++.dg/cpp0x/variadic106.C: New test.
+
 2011-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libfortran/47757
