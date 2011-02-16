@@ -117,25 +117,44 @@ __quadmath_printf_fphex (struct __quadmath_printf_file *fp,
   int wide = info->wide;
 
   /* Figure out the decimal point character.  */
-#ifdef USE_LOCALE_SUPPORT
+#ifdef USE_NL_LANGINFO
   if (info->extra == 0)
-    {
-      decimal = nl_langinfo (DECIMAL_POINT);
-      decimalwc = nl_langinfo_wc (_NL_NUMERIC_DECIMAL_POINT_WC);
-    }
+    decimal = nl_langinfo (DECIMAL_POINT);
   else
     {
       decimal = nl_langinfo (MON_DECIMAL_POINT);
       if (*decimal == '\0')
 	decimal = nl_langinfo (DECIMAL_POINT);
+    }
+  /* The decimal point character must never be zero.  */
+  assert (*decimal != '\0');
+#elif defined USE_LOCALECONV
+  const struct lconv *lc = localeconv ();
+  if (info->extra == 0)
+    decimal = lc->decimal_point;
+  else
+    {
+      decimal = lc->mon_decimal_point;
+      if (decimal == NULL || *decimal == '\0')
+	decimal = lc->decimal_point;
+    }
+  if (decimal == NULL || *decimal == '\0')
+    decimal = ".";
+#else
+  decimal = ".";
+#endif
+#ifdef USE_NL_LANGINFO_WC
+  if (info->extra == 0)
+    decimalwc = nl_langinfo_wc (_NL_NUMERIC_DECIMAL_POINT_WC);
+  else
+    {
       decimalwc = nl_langinfo_wc (_NL_MONETARY_DECIMAL_POINT_WC);
-      if (decimalwc == L'\0')
+      if (decimalwc == L_('\0'))
 	decimalwc = nl_langinfo_wc (_NL_NUMERIC_DECIMAL_POINT_WC);
     }
   /* The decimal point character must never be zero.  */
-  assert (*decimal != '\0' && decimalwc != L'\0');
+  assert (decimalwc != L_('\0'));
 #else
-  decimal = ".";
   decimalwc = L_('.');
 #endif
 

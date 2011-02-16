@@ -37,8 +37,6 @@
 
 #ifdef USE_I18N_NUMBER_H
 #include "_i18n_number.h"
-#else
-#define USE_I18N_NUMBER_H 0
 #endif
 
 
@@ -227,30 +225,48 @@ __quadmath_printf_fp (struct __quadmath_printf_file *fp,
     }
 
   /* Figure out the decimal point character.  */
-#ifdef USE_LOCALE_SUPPORT
+#ifdef USE_NL_LANGINFO
   if (info->extra == 0)
-    {
-      decimal = nl_langinfo (DECIMAL_POINT);
-      decimalwc = nl_langinfo_wc (_NL_NUMERIC_DECIMAL_POINT_WC);
-    }
+    decimal = nl_langinfo (DECIMAL_POINT);
   else
     {
       decimal = nl_langinfo (MON_DECIMAL_POINT);
       if (*decimal == '\0')
 	decimal = nl_langinfo (DECIMAL_POINT);
+    }
+  /* The decimal point character must never be zero.  */
+  assert (*decimal != '\0');
+#elif defined USE_LOCALECONV
+  const struct lconv *lc = localeconv ();
+  if (info->extra == 0)
+    decimal = lc->decimal_point;
+  else
+    {
+      decimal = lc->mon_decimal_point;
+      if (decimal == NULL || *decimal == '\0')
+	decimal = lc->decimal_point;
+    }
+  if (decimal == NULL || *decimal == '\0')
+    decimal = ".";
+#else
+  decimal = ".";
+#endif
+#ifdef USE_NL_LANGINFO_WC
+  if (info->extra == 0)
+    decimalwc = nl_langinfo_wc (_NL_NUMERIC_DECIMAL_POINT_WC);
+  else
+    {
       decimalwc = nl_langinfo_wc (_NL_MONETARY_DECIMAL_POINT_WC);
       if (decimalwc == L_('\0'))
 	decimalwc = nl_langinfo_wc (_NL_NUMERIC_DECIMAL_POINT_WC);
     }
-  /* The decimal point character must not be zero.  */
-  assert (*decimal != '\0');
+  /* The decimal point character must never be zero.  */
   assert (decimalwc != L_('\0'));
 #else
-  decimal = ".";
   decimalwc = L_('.');
 #endif
 
-#ifdef USE_LOCALE_SUPPORT
+#if defined USE_NL_LANGINFO && defined USE_NL_LANGINFO_WC
   if (info->group)
     {
       if (info->extra == 0)
@@ -269,6 +285,9 @@ __quadmath_printf_fp (struct __quadmath_printf_file *fp,
 		thousands_sepwc = nl_langinfo_wc (_NL_NUMERIC_THOUSANDS_SEP_WC);
 	      else
 		thousands_sepwc = nl_langinfo_wc (_NL_MONETARY_THOUSANDS_SEP_WC);
+
+	      if (thousands_sepwc == L_('\0'))
+		grouping = NULL;
 	    }
 	  else
 	    {
@@ -276,22 +295,66 @@ __quadmath_printf_fp (struct __quadmath_printf_file *fp,
 		thousands_sep = nl_langinfo (THOUSANDS_SEP);
 	      else
 		thousands_sep = nl_langinfo (MON_THOUSANDS_SEP);
+	      if (*thousands_sep == '\0')
+		grouping = NULL;
 	    }
+	}
+    }
+  else
+#elif defined USE_NL_LANGINFO
+  if (info->group && !wide)
+    {
+      if (info->extra == 0)
+	grouping = nl_langinfo (GROUPING);
+      else
+	grouping = nl_langinfo (MON_GROUPING);
 
-	  if ((wide && thousands_sepwc == L_('\0'))
-	      || (! wide && *thousands_sep == '\0'))
+      if (*grouping <= 0 || *grouping == CHAR_MAX)
+	grouping = NULL;
+      else
+	{
+	  /* Figure out the thousands separator character.  */
+	  if (info->extra == 0)
+	    thousands_sep = nl_langinfo (THOUSANDS_SEP);
+	  else
+	    thousands_sep = nl_langinfo (MON_THOUSANDS_SEP);
+
+	  if (*thousands_sep == '\0')
 	    grouping = NULL;
-	  else if (thousands_sepwc == L_('\0'))
-	    /* If we are printing multibyte characters and there is a
-	       multibyte representation for the thousands separator,
-	       we must ensure the wide character thousands separator
-	       is available, even if it is fake.  */
-	    thousands_sepwc = (wchar_t) 0xfffffffe;
+	}
+    }
+  else
+#elif defined USE_LOCALECONV
+  if (info->group && !wide)
+    {
+      if (info->extra == 0)
+	grouping = lc->grouping;
+      else
+	grouping = lc->mon_grouping;
+
+      if (grouping == NULL || *grouping <= 0 || *grouping == CHAR_MAX)
+	grouping = NULL;
+      else
+	{
+	  /* Figure out the thousands separator character.  */
+	  if (info->extra == 0)
+	    thousands_sep = lc->thousands_sep;
+	  else
+	    thousands_sep = lc->mon_thousands_sep;
+
+	  if (thousands_sep == NULL || *thousands_sep == '\0')
+	    grouping = NULL;
 	}
     }
   else
 #endif
     grouping = NULL;
+  if (grouping != NULL && !wide)
+    /* If we are printing multibyte characters and there is a
+       multibyte representation for the thousands separator,
+       we must ensure the wide character thousands separator
+       is available, even if it is fake.  */
+    thousands_sepwc = (wchar_t) 0xfffffffe;
 
   /* Fetch the argument value.	*/
     {
@@ -1095,8 +1158,8 @@ __quadmath_printf_fp (struct __quadmath_printf_file *fp,
 	  size_t decimal_len;
 	  size_t thousands_sep_len;
 	  wchar_t *copywc;
-#ifdef USE_LOCALE_SUPPORT
-	  size_t factor = ((info->i18n && USE_I18N_NUMBER_H)
+#ifdef USE_I18N_NUMBER_H
+	  size_t factor = (info->i18n
 			   ? nl_langinfo_wc (_NL_CTYPE_MB_CUR_MAX)
 			   : 1);
 #else

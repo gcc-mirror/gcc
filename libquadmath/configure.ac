@@ -112,7 +112,7 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-AC_CHECK_HEADERS(fenv.h langinfo.h wchar.h wctype.h limits.h ctype.h printf.h errno.h)
+AC_CHECK_HEADERS(fenv.h langinfo.h locale.h wchar.h wctype.h limits.h ctype.h printf.h errno.h)
 
 # If available, sqrtl and cbrtl speed up the calculation -
 # but they are not required
@@ -251,7 +251,7 @@ fi
 
 # Check for whether locale support for quadmath_snprintf or Q printf hooks
 # should be provided.
-AC_MSG_CHECKING([whether locale support for quadmath_snprintf should be added])
+AC_MSG_CHECKING([whether nl_langinfo should be used])
 AC_TRY_COMPILE([#include <langinfo.h>],[
 const char *s;
 s = nl_langinfo (DECIMAL_POINT);
@@ -260,17 +260,45 @@ s = nl_langinfo (GROUPING);
 s = nl_langinfo (MON_GROUPING);
 s = nl_langinfo (THOUSANDS_SEP);
 s = nl_langinfo (MON_THOUSANDS_SEP);
+(void) s;
+],
+[quadmath_use_nl_langinfo=yes],[quadmath_use_nl_langinfo=no])
+AC_MSG_RESULT($quadmath_use_nl_langinfo)
+if test x$quadmath_use_nl_langinfo = xyes; then
+  AC_DEFINE([USE_NL_LANGINFO],[1],[whether nl_langinfo should be used])
+fi
+
+AC_MSG_CHECKING([whether nl_langinfo should be used for wide char locale info])
+AC_TRY_COMPILE([#include <langinfo.h>],[
+const char *s;
 s = nl_langinfo (_NL_NUMERIC_DECIMAL_POINT_WC);
 s = nl_langinfo (_NL_MONETARY_DECIMAL_POINT_WC);
 s = nl_langinfo (_NL_NUMERIC_THOUSANDS_SEP_WC);
 s = nl_langinfo (_NL_MONETARY_THOUSANDS_SEP_WC);
-s = nl_langinfo (_NL_CTYPE_MB_CUR_MAX);
 (void) s;
 ],
-[quadmath_use_locale_support=yes],[quadmath_use_locale_support=no])
-AC_MSG_RESULT($quadmath_use_locale_support)
-if test x$quadmath_use_locale_support = xyes; then
-  AC_DEFINE([USE_LOCALE_SUPPORT],[1],[whether nl_langinfo is sufficiently supported])
+[quadmath_use_nl_langinfo_wc=yes],[quadmath_use_nl_langinfo_wc=no])
+AC_MSG_RESULT($quadmath_use_nl_langinfo_wc)
+if test x$quadmath_use_nl_langinfo_wc = xyes; then
+  AC_DEFINE([USE_NL_LANGINFO_WC],[1],[whether nl_langinfo should be used for wide char locale info])
+fi
+
+AC_MSG_CHECKING([whether localeconv should be used])
+AC_TRY_COMPILE([#include <locale.h>],[
+const struct lconv *l = localeconv ();
+const char *s;
+s = l->decimal_point;
+s = l->mon_decimal_point;
+s = l->grouping;
+s = l->mon_grouping;
+s = l->thousands_sep;
+s = l->mon_thousands_sep;
+(void) s;
+],
+[quadmath_use_localeconv=yes],[quadmath_use_localeconv=no])
+AC_MSG_RESULT($quadmath_use_localeconv)
+if test x$quadmath_use_localeconv = xyes; then
+  AC_DEFINE([USE_LOCALECONV],[1],[whether localeconv should be used])
 fi
 
 # Check for whether i18n number rewriting support for quadmath_snprintf
@@ -290,6 +318,7 @@ memset (&state, '\0', sizeof (state));
 wcrtomb (decimal, wdecimal, &state);
 s = nl_langinfo (_NL_CTYPE_OUTDIGIT0_MB);
 s = nl_langinfo (_NL_CTYPE_OUTDIGIT0_WC);
+s = nl_langinfo (_NL_CTYPE_MB_CUR_MAX);
 (void) s;
 ],
 [quadmath_use_i18n_number_h=yes],[quadmath_use_i18n_number_h=no])

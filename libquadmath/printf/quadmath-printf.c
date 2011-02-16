@@ -292,7 +292,7 @@ flt128_ais (const struct printf_info *info, size_t n __attribute__ ((unused)),
       size[0] = sizeof (__float128);
       return 1;
     }
-#if __GLIBC_MINOR__ <= 13
+#if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ <= 13)
   /* Workaround bug in glibc printf hook handling.  */
   size[0] = -1;
   switch (info->spec)

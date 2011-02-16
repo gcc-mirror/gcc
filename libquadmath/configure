@@ -11922,7 +11922,7 @@ esac
 
 
 
-for ac_header in fenv.h langinfo.h wchar.h wctype.h limits.h ctype.h printf.h errno.h
+for ac_header in fenv.h langinfo.h locale.h wchar.h wctype.h limits.h ctype.h printf.h errno.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -12577,8 +12577,8 @@ fi
 
 # Check for whether locale support for quadmath_snprintf or Q printf hooks
 # should be provided.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether locale support for quadmath_snprintf should be added" >&5
-$as_echo_n "checking whether locale support for quadmath_snprintf should be added... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether nl_langinfo should be used" >&5
+$as_echo_n "checking whether nl_langinfo should be used... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <langinfo.h>
@@ -12593,11 +12593,6 @@ s = nl_langinfo (GROUPING);
 s = nl_langinfo (MON_GROUPING);
 s = nl_langinfo (THOUSANDS_SEP);
 s = nl_langinfo (MON_THOUSANDS_SEP);
-s = nl_langinfo (_NL_NUMERIC_DECIMAL_POINT_WC);
-s = nl_langinfo (_NL_MONETARY_DECIMAL_POINT_WC);
-s = nl_langinfo (_NL_NUMERIC_THOUSANDS_SEP_WC);
-s = nl_langinfo (_NL_MONETARY_THOUSANDS_SEP_WC);
-s = nl_langinfo (_NL_CTYPE_MB_CUR_MAX);
 (void) s;
 
   ;
@@ -12605,16 +12600,87 @@ s = nl_langinfo (_NL_CTYPE_MB_CUR_MAX);
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  quadmath_use_locale_support=yes
+  quadmath_use_nl_langinfo=yes
 else
-  quadmath_use_locale_support=no
+  quadmath_use_nl_langinfo=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $quadmath_use_locale_support" >&5
-$as_echo "$quadmath_use_locale_support" >&6; }
-if test x$quadmath_use_locale_support = xyes; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $quadmath_use_nl_langinfo" >&5
+$as_echo "$quadmath_use_nl_langinfo" >&6; }
+if test x$quadmath_use_nl_langinfo = xyes; then
 
-$as_echo "#define USE_LOCALE_SUPPORT 1" >>confdefs.h
+$as_echo "#define USE_NL_LANGINFO 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether nl_langinfo should be used for wide char locale info" >&5
+$as_echo_n "checking whether nl_langinfo should be used for wide char locale info... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <langinfo.h>
+int
+main ()
+{
+
+const char *s;
+s = nl_langinfo (_NL_NUMERIC_DECIMAL_POINT_WC);
+s = nl_langinfo (_NL_MONETARY_DECIMAL_POINT_WC);
+s = nl_langinfo (_NL_NUMERIC_THOUSANDS_SEP_WC);
+s = nl_langinfo (_NL_MONETARY_THOUSANDS_SEP_WC);
+(void) s;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  quadmath_use_nl_langinfo_wc=yes
+else
+  quadmath_use_nl_langinfo_wc=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $quadmath_use_nl_langinfo_wc" >&5
+$as_echo "$quadmath_use_nl_langinfo_wc" >&6; }
+if test x$quadmath_use_nl_langinfo_wc = xyes; then
+
+$as_echo "#define USE_NL_LANGINFO_WC 1" >>confdefs.h
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether localeconv should be used" >&5
+$as_echo_n "checking whether localeconv should be used... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <locale.h>
+int
+main ()
+{
+
+const struct lconv *l = localeconv ();
+const char *s;
+s = l->decimal_point;
+s = l->mon_decimal_point;
+s = l->grouping;
+s = l->mon_grouping;
+s = l->thousands_sep;
+s = l->mon_thousands_sep;
+(void) s;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  quadmath_use_localeconv=yes
+else
+  quadmath_use_localeconv=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $quadmath_use_localeconv" >&5
+$as_echo "$quadmath_use_localeconv" >&6; }
+if test x$quadmath_use_localeconv = xyes; then
+
+$as_echo "#define USE_LOCALECONV 1" >>confdefs.h
 
 fi
 
@@ -12642,6 +12708,7 @@ memset (&state, '\0', sizeof (state));
 wcrtomb (decimal, wdecimal, &state);
 s = nl_langinfo (_NL_CTYPE_OUTDIGIT0_MB);
 s = nl_langinfo (_NL_CTYPE_OUTDIGIT0_WC);
+s = nl_langinfo (_NL_CTYPE_MB_CUR_MAX);
 (void) s;
 
   ;
