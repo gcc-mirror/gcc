@@ -1758,7 +1758,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     = regex_constants::format_default) const
       {
         string_type __result;
-        format(std::back_inserter(__result), __fmt + __builtin_strlen(__fmt),
+        format(std::back_inserter(__result),
+               __fmt + char_traits<char_type>::length(__fmt),
                __flags);
         return __result;
       }
