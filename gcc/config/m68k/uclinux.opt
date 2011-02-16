@@ -30,4 +30,7 @@ Driver
 elf2flt=
 Driver JoinedOrMissing
 
+static-libc
+Driver
+
 ; This comment is to ensure we retain the blank line above.
