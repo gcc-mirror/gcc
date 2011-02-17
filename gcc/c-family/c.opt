@@ -853,6 +853,10 @@ fnothrow-opt
 C++ ObjC++ Optimization Var(flag_nothrow_opt)
 Treat a throw() exception specification as noexcept to improve code size
 
+fobjc-abi-version=
+ObjC ObjC++ Joined Report RejectNegative UInteger Var(flag_objc_abi)
+Specify which ABI to use for Objective-C family code and meta-data generation.
+
 ; Generate special '- .cxx_construct' and '- .cxx_destruct' methods
 ; to initialize any non-POD ivars in Objective-C++ classes.
 fobjc-call-cxx-cdtors
@@ -872,6 +876,10 @@ Enable Objective-C exception and synchronization syntax
 fobjc-gc
 ObjC ObjC++ Var(flag_objc_gc)
 Enable garbage collection (GC) in Objective-C/Objective-C++ programs
+
+fobjc-nilcheck
+ObjC ObjC++ Var(flag_objc_nilcheck,1)
+Enable inline checks for nil receivers with the NeXT runtime and ABI version 2.
 
 ; Nonzero means that we generate NeXT setjmp based exceptions.
 fobjc-sjlj-exceptions

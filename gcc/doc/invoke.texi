@@ -208,10 +208,12 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fconstant-string-class=@var{class-name} @gol
 -fgnu-runtime  -fnext-runtime @gol
 -fno-nil-receivers @gol
+-fobjc-abi-version=@var{n} @gol
 -fobjc-call-cxx-cdtors @gol
 -fobjc-direct-dispatch @gol
 -fobjc-exceptions @gol
 -fobjc-gc @gol
+-fobjc-nilcheck @gol
 -fobjc-std=objc1 @gol
 -freplace-objc-classes @gol
 -fzero-link @gol
@@ -2555,8 +2557,19 @@ used.
 Assume that all Objective-C message dispatches (@code{[receiver
 message:arg]}) in this translation unit ensure that the receiver is
 not @code{nil}.  This allows for more efficient entry points in the
-runtime to be used.  Currently, this option is only available in
-conjunction with the NeXT runtime on Mac OS X 10.3 and later.
+runtime to be used.  This option is only available in conjunction with
+the NeXT runtime and ABI version 0 or 1.
+
+@item -fobjc-abi-version=@var{n}
+@opindex fobjc-abi-version
+Use version @var{n} of the Objective-C ABI for the selected runtime.
+This option is currently supported only for the NeXT runtime.  In that
+case, Version 0 is the traditional (32-bit) ABI without support for
+properties and other Objective-C 2.0 additions.  Version 1 is the
+traditional (32-bit) ABI with support for properties and other
+Objective-C 2.0 additions.  Version 2 is the modern (64-bit) ABI.  If
+nothing is specified, the default is Version 0 on 32-bit target
+machines, and Version 2 on 64-bit target machines.
 
 @item -fobjc-call-cxx-cdtors
 @opindex fobjc-call-cxx-cdtors
@@ -2604,6 +2617,16 @@ Enable garbage collection (GC) in Objective-C and Objective-C++
 programs.  This option is only available with the NeXT runtime; the
 GNU runtime has a different garbage collection implementation that
 does not require special compiler flags.
+
+@item -fobjc-nilcheck
+@opindex fobjc-nilcheck
+For the NeXT runtime with version 2 of the ABI, check for a nil
+receiver in method invocations before doing the actual method call.
+This is the default and can be disabled using
+@option{-fno-objc-nilcheck}.  Class methods and super calls are never
+checked for nil in this way no matter what this flag is set to.
+Currently this flag does nothing when the GNU runtime, or an older
+version of the NeXT runtime ABI, is used.
 
 @item -fobjc-std=objc1
 @opindex fobjc-std

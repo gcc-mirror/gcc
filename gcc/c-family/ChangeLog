@@ -1,3 +1,8 @@
+2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* c.opt (fobjc-abi-version=) New.
+	(fobjc-nilcheck): New.
+
 2011-02-03  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/46890

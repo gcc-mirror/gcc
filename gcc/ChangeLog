@@ -1,3 +1,10 @@
+2011-02-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* doc/invoke.texi (fobjc-abi-version): Documented.
+	(fobjc-nilcheck): Documented.
+	(fno-nil-receiver): Updated documentation to refer to the NeXT ABI
+	version.
+
 2011-02-17  Joseph Myers  <joseph@codesourcery.com>
 
 	PR driver/47390
