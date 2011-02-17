@@ -246,13 +246,14 @@ cgraph_process_new_functions (void)
 	    cgraph_analyze_function (node);
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	  current_function_decl = fndecl;
-	  compute_inline_parameters (node);
 	  if ((cgraph_state == CGRAPH_STATE_IPA_SSA
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
 	      /* When not optimizing, be sure we run early local passes anyway
 		 to expand OMP.  */
 	      || !optimize)
 	    execute_pass_list (pass_early_local_passes.pass.sub);
+	  else
+	    compute_inline_parameters (node);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  pop_cfun ();
@@ -782,6 +783,11 @@ cgraph_analyze_function (struct cgraph_node *node)
   push_cfun (DECL_STRUCT_FUNCTION (decl));
 
   assign_assembler_name_if_neeeded (node->decl);
+
+  /* disregard_inline_limits affects topological order of the early optimization,
+     so we need to compute it ahead of rest of inline parameters.  */
+  node->local.disregard_inline_limits
+    = DECL_DISREGARD_INLINE_LIMITS (node->decl);
 
   /* Make sure to gimplify bodies only once.  During analyzing a
      function we lower it, which will require gimplified nested

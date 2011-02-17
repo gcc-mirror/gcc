@@ -1,3 +1,29 @@
+2011-02-17  Alexandre Oliva  <aoliva@redhat.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR debug/47106
+	PR debug/47402
+	* cfgexpand.c (account_used_vars_for_block): Remove.
+	(estimated_stack_frame_size): Use referenced vars.
+	* tree-inline.c (remap_decl): Only mark VAR_DECLs as referenced
+	that were referenced in the original function.  Test src_fn
+	rather than cfun.  Drop redundant get_var_ann.
+	(setup_one_parameter): Drop redundant get_var_ann.
+	(declare_return_variable): Likewise.
+	(copy_decl_for_dup_finish): Mark VAR_DECLs referenced in src_fn.
+	(copy_arguments_for_versioning): Drop redundant get_var_ann.
+	* ipa-inline.c (compute_inline_parameters): Do not compute
+	disregard_inline_limits here.
+	are not available.
+	(compute_inlinable_for_current, pass_inlinable): New.
+	(pass_inline_parameters): Require PROP_referenced_vars.
+	* cgraphunit.c (cgraph_process_new_functions): Don't run
+	compute_inline_parameters explicitly unless function is in
+	SSA form.
+	(cgraph_analyze_function): Set .disregard_inline_limits.
+	* tree-sra.c (convert_callers): Compute inliner parameters
+	only for functions already in SSA form.
+
 2011-02-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sparc/sparc.h (CPP_ENDIAN_SPEC): Don't handle
