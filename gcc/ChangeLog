@@ -1,3 +1,7 @@
+2011-02-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rx/rx.h (LIB_SPEC): Match -msim not -msim*.
+
 2011-02-17  Alexandre Oliva  <aoliva@redhat.com>
 	    Jan Hubicka  <jh@suse.cz>
 
