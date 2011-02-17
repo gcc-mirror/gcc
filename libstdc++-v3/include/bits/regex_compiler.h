@@ -171,6 +171,9 @@ namespace __regex
 	  _M_scan_in_brace();
 	  return;
 	}
+#if 0
+      // TODO: re-enable line anchors when _M_assertion is implemented.
+      // See PR libstdc++/47724
       else if (_M_state & _S_state_at_start && __c == _M_ctype.widen('^'))
 	{
 	  _M_curToken = _S_token_line_begin;
@@ -183,6 +186,7 @@ namespace __regex
 	  ++_M_current;
 	  return;
 	}
+#endif
       else if (__c == _M_ctype.widen('.'))
 	{
 	  _M_curToken = _S_token_anychar;
