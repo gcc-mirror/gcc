@@ -1,3 +1,10 @@
+2011-02-17  Alexandre Oliva  <aoliva@redhat.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR debug/47106
+	PR debug/47402
+	* g++.dg/debug/pr47106.C: New.
+
 2011-02-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/43653

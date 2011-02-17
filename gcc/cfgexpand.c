@@ -1311,30 +1311,6 @@ create_stack_guard (void)
   crtl->stack_protect_guard = guard;
 }
 
-/* A subroutine of expand_used_vars.  Walk down through the BLOCK tree
-   expanding variables.  Those variables that can be put into registers
-   are allocated pseudos; those that can't are put on the stack.
-
-   TOPLEVEL is true if this is the outermost BLOCK.  */
-
-static HOST_WIDE_INT
-account_used_vars_for_block (tree block, bool toplevel)
-{
-  tree t;
-  HOST_WIDE_INT size = 0;
-
-  /* Expand all variables at this level.  */
-  for (t = BLOCK_VARS (block); t ; t = DECL_CHAIN (t))
-    if (var_ann (t) && is_used_p (t))
-      size += expand_one_var (t, toplevel, false);
-
-  /* Expand all variables at containing levels.  */
-  for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
-    size += account_used_vars_for_block (t, false);
-
-  return size;
-}
-
 /* Prepare for expanding variables.  */
 static void
 init_vars_expansion (void)
@@ -1379,23 +1355,17 @@ estimated_stack_frame_size (struct cgraph_node *node)
 {
   HOST_WIDE_INT size = 0;
   size_t i;
-  tree var, outer_block = DECL_INITIAL (current_function_decl);
-  unsigned ix;
+  tree var;
   tree old_cur_fun_decl = current_function_decl;
+  referenced_var_iterator rvi;
+  struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
 
   current_function_decl = node->decl;
-  push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+  push_cfun (fn);
 
-  init_vars_expansion ();
-
-  FOR_EACH_LOCAL_DECL (cfun, ix, var)
-    {
-      /* TREE_USED marks local variables that do not appear in lexical
-	 blocks.  We don't want to expand those that do twice.  */
-      if (TREE_USED (var))
-        size += expand_one_var (var, true, false);
-    }
-  size += account_used_vars_for_block (outer_block, true);
+  gcc_checking_assert (gimple_referenced_vars (fn));
+  FOR_EACH_REFERENCED_VAR (fn, var, rvi)
+    size += expand_one_var (var, true, false);
 
   if (stack_vars_num > 0)
     {
