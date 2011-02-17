@@ -1,3 +1,12 @@
+2011-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/47773
+	* include/ext/vstring.h (hash<__gnu_cxx::__vstring>,
+	hash<__gnu_cxx::__wvstring>, hash<__gnu_cxx::__u16vstring>,
+	hash<__gnu_cxx::__u32vstring>): Add.
+	* testsuite/ext/vstring/hash/char/1.cc: New.
+	* testsuite/ext/vstring/hash/wchar_t/1.cc: Likewise.
+
 2011-02-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/regex.h (match_results::format): Use char_traits.

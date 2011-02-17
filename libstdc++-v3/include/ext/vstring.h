@@ -2731,6 +2731,66 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+#include <bits/functional_hash.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /// std::hash specialization for __vstring.
+  template<>
+    struct hash<__gnu_cxx::__vstring>
+    : public __hash_base<size_t, __gnu_cxx::__vstring>
+    {
+      size_t
+      operator()(const __gnu_cxx::__vstring& __s) const
+      { return std::_Hash_impl::hash(__s.data(), __s.length()); }
+    };
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  /// std::hash specialization for __wvstring.
+  template<>
+    struct hash<__gnu_cxx::__wvstring>
+    : public __hash_base<size_t, __gnu_cxx::__wvstring>
+    {
+      size_t
+      operator()(const __gnu_cxx::__wvstring& __s) const
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(wchar_t)); }
+    };
+#endif
+
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+  /// std::hash specialization for __u16vstring.
+  template<>
+    struct hash<__gnu_cxx::__u16vstring>
+    : public __hash_base<size_t, __gnu_cxx::__u16vstring>
+    {
+      size_t
+      operator()(const __gnu_cxx::__u16vstring& __s) const
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(char16_t)); }
+    };
+
+  /// std::hash specialization for __u32vstring.
+  template<>
+    struct hash<__gnu_cxx::__u32vstring>
+    : public __hash_base<size_t, __gnu_cxx::__u32vstring>
+    {
+      size_t
+      operator()(const __gnu_cxx::__u32vstring& __s) const
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(char32_t)); }
+    };
+#endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
+
+#endif /* __GXX_EXPERIMENTAL_CXX0X__ */
+
 #include "vstring.tcc" 
 
 #endif /* _VSTRING_H */
