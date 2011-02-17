@@ -644,6 +644,7 @@ proper position among the other output files.  */
    directories.  */
 /* We pass any -flto flags on to the linker, which is expected
    to understand them.  In practice, this means it had better be collect2.  */
+/* %{e*} includes -export-dynamic; see comment in common.opt.  */
 #ifndef LINK_COMMAND_SPEC
 #define LINK_COMMAND_SPEC "\
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
