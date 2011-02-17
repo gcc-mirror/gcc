@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH 
    non-Linux embedded targets.
-   Copyright (C) 2002, 2003, 2007, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2007, 2010, 2011 Free Software Foundation, Inc.
    Contributed by J"orn Rennecke <joern.rennecke@superh.com>
 
 This file is part of GCC.
@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBGCC_SPEC "%{!shared: \
   %{m4-100*:-lic_invalidate_array_4-100} \
   %{m4-200*:-lic_invalidate_array_4-200} \
-  %{m4-300*|-m4-340:-lic_invalidate_array_4a %{!Os: -lgcc-4-300}} \
+  %{m4-300*|m4-340:-lic_invalidate_array_4a %{!Os: -lgcc-4-300}} \
   %{m4a*:-lic_invalidate_array_4a}} \
   %{Os: -lgcc-Os-4-200} \
   -lgcc \

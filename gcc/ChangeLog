@@ -1,5 +1,10 @@
 2011-02-16  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/sh/embed-elf.h (LIBGCC_SPEC): Match -m4-340 instead of
+	--m4-340.
+
+2011-02-16  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/mn10300/mn10300.opt (mno-crt0): New.
 
 2011-02-16  Joseph Myers  <joseph@codesourcery.com>
