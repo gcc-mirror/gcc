@@ -1,5 +1,10 @@
 2011-02-16  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/mips/mips.opt (mno-mdmx): Use Var(TARGET_MDMX, 0) instead
+	of InverseVar(MDMX).
+
+2011-02-16  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/sh/embed-elf.h (LIBGCC_SPEC): Match -m4-340 instead of
 	--m4-340.
 

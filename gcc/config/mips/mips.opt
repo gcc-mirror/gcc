@@ -239,7 +239,7 @@ Target RejectNegative
 Do not use a cache-flushing function before calling stack trampolines
 
 mno-mdmx
-Target Report RejectNegative InverseVar(MDMX)
+Target Report RejectNegative Var(TARGET_MDMX, 0)
 Do not use MDMX instructions
 
 mno-mips16
