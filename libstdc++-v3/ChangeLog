@@ -1,5 +1,16 @@
 2011-02-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/regex.h (basic_regex::traits_type): Add typedef.
+	(basic_regex::basic_regex(basic_regex&&)): Add noexcept.
+	(basic_regex::operator=(basic_regex&&)): Likewise.
+	(basic_regex::assign(basic_regex&&)): Likewise.
+	(operator==(sub_match,...)): Implement DR 1181.
+	(match_results::match_results(match_results&&)): Define.
+	(match_results::operator=(const match_results&)): Fix parameter type.
+	(match_results::operator=(match_results&&)): Define.
+
+2011-02-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/47724
 	* include/bits/regex_compiler.h (_Scanner::_M_advance): Do not treat
 	line anchors as metacharacters.
