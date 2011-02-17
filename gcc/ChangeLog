@@ -1,3 +1,9 @@
+2011-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43653
+	* config/i386/i386.c (ix86_secondary_reload): Handle SSE
+	input reload with PLUS RTX.
+
 2011-02-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR pch/14940
@@ -16,7 +22,7 @@
 
 	2010-08-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-        PR boehm-gc/34544
+	PR boehm-gc/34544
 	* gthr-posix.h (__gthread_active_init): Delete.
 	(__gthread_active_p): Do activity check here.
 	Don't include errno.h on hppa-hpux.  Update comment.
@@ -29,9 +35,9 @@
 	Backport from mainline:
 	2010-12-30  Nathan Froyd  <froydnj@codesourcery.com>
 
-        PR target/44606
-        * reload1.c (choose_reload_regs): Don't look for equivalences for
-        output reloads of constant loads.
+	PR target/44606
+	* reload1.c (choose_reload_regs): Don't look for equivalences for
+	output reloads of constant loads.
 
 2011-01-17  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -152,7 +158,7 @@
 
 	Backport from mainline:
 	2010-09-15  Olivier Hainque  <hainque@adacore.com>
-        	    Jose Ruiz  <ruiz@adacore.com>
+		    Jose Ruiz  <ruiz@adacore.com>
 
 	* config/alpha/osf.h (MD_UNWIND_SUPPORT): Define.
 	* config/alpha/osf-unwind.h: New file.
@@ -260,7 +266,7 @@
 
 	PR middle-end/44569
 	* lower-suberg.c (simplify_subreg_concatn): For VOIDmode elements,
-	determine the mode of a subreg by GET_MODE_INNER of CONCATN RTX.
+	determine the mode of a subreg by GET_MODE_INNER of a CONCATN RTX.
 
 2010-10-22  Uros Bizjak  <ubizjak@gmail.com>
 

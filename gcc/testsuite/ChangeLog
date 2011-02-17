@@ -1,3 +1,8 @@
+2011-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43653
+	* gcc.target/i386/pr43653.c: New test.
+
 2011-02-14  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/argument_checking_13.f90: Update dg-error.
