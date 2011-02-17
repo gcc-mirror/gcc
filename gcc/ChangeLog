@@ -1,3 +1,9 @@
+2011-02-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (optimize_fast): New Variable.
+	* opts.c (default_options_optimization): Use opts->x_optimize_fast
+	instead of local variable ofast.
+
 2011-02-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* doc/invoke.texi (fobjc-abi-version): Documented.

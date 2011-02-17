@@ -524,7 +524,6 @@ default_options_optimization (struct gcc_options *opts,
 {
   unsigned int i;
   int opt2;
-  int ofast = 0;
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
@@ -538,7 +537,7 @@ default_options_optimization (struct gcc_options *opts,
 	    {
 	      opts->x_optimize = 1;
 	      opts->x_optimize_size = 0;
-	      ofast = 0;
+	      opts->x_optimize_fast = 0;
 	    }
 	  else
 	    {
@@ -553,7 +552,7 @@ default_options_optimization (struct gcc_options *opts,
 		  if ((unsigned int) opts->x_optimize > 255)
 		    opts->x_optimize = 255;
 		  opts->x_optimize_size = 0;
-		  ofast = 0;
+		  opts->x_optimize_fast = 0;
 		}
 	    }
 	  break;
@@ -563,14 +562,14 @@ default_options_optimization (struct gcc_options *opts,
 
 	  /* Optimizing for size forces optimize to be 2.  */
 	  opts->x_optimize = 2;
-	  ofast = 0;
+	  opts->x_optimize_fast = 0;
 	  break;
 
 	case OPT_Ofast:
 	  /* -Ofast only adds flags to -O3.  */
 	  opts->x_optimize_size = 0;
 	  opts->x_optimize = 3;
-	  ofast = 1;
+	  opts->x_optimize_fast = 1;
 	  break;
 
 	default:
@@ -581,7 +580,7 @@ default_options_optimization (struct gcc_options *opts,
 
   maybe_default_options (opts, opts_set, default_options_table,
 			 opts->x_optimize, opts->x_optimize_size,
-			 ofast, lang_mask, handlers, loc, dc);
+			 opts->x_optimize_fast, lang_mask, handlers, loc, dc);
 
   /* -O2 param settings.  */
   opt2 = (opts->x_optimize >= 2);
@@ -611,7 +610,7 @@ default_options_optimization (struct gcc_options *opts,
   maybe_default_options (opts, opts_set,
 			 targetm.target_option.optimization_table,
 			 opts->x_optimize, opts->x_optimize_size,
-			 ofast, lang_mask, handlers, loc, dc);
+			 opts->x_optimize_fast, lang_mask, handlers, loc, dc);
 }
 
 /* After all options at LOC have been read into OPTS and OPTS_SET,

@@ -32,6 +32,11 @@ int optimize
 Variable
 int optimize_size
 
+; Not used directly to control optimizations, only to save -Ofast
+; setting for "optimize" attributes.
+Variable
+int optimize_fast
+
 ; 0 means straightforward implementation of complex divide acceptable.
 ; 1 means wide ranges of inputs must work for complex divide.
 ; 2 means C99-like requirements for complex multiply and divide.
