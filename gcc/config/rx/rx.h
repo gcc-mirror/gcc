@@ -85,10 +85,10 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define LIB_SPEC "					\
 --start-group						\
 -lc							\
-%{msim*:-lsim}%{!msim*:-lnosys}				\
+%{msim:-lsim}%{!msim:-lnosys}				\
 %{fprofile-arcs|fprofile-generate|coverage:-lgcov} 	\
 --end-group					   	\
-%{!T*: %{msim*:%Trx-sim.ld}%{!msim*:%Trx.ld}}		\
+%{!T*: %{msim:%Trx-sim.ld}%{!msim:%Trx.ld}}		\
 "
 
 #undef  LINK_SPEC
