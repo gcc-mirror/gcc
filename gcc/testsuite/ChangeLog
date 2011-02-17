@@ -1,3 +1,8 @@
+2011-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43653
+	* gcc.target/i386/pr43653.c: New test.
+
 2011-02-14  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/argument_checking_13.f90: Update dg-error.
@@ -62,8 +67,8 @@
 	Backport from mainline:
 	2010-12-30  Nathan Froyd  <froydnj@codesourcery.com>
 
-        PR target/44606
-        * gcc.dg/pr44606.c: New test.
+	PR target/44606
+	* gcc.dg/pr44606.c: New test.
 
 2011-01-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
@@ -278,7 +283,7 @@
 
 	Backport from mainline
 	2010-12-06  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR target/43897
 	* gcc.target/ia64/pr43897.c: New test.
 
@@ -297,7 +302,7 @@
 	* gcc.dg/pr46499-2.c: New test.
 
 	2010-11-20  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR c++/46538
 	* g++.dg/other/error34.C: New test.
 

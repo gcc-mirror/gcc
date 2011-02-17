@@ -25137,7 +25137,8 @@ ix86_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
 {
   /* QImode spills from non-QI registers require
      intermediate register on 32bit targets.  */
-  if (!in_p && mode == QImode && !TARGET_64BIT
+  if (!TARGET_64BIT
+      && !in_p && mode == QImode
       && (rclass == GENERAL_REGS
 	  || rclass == LEGACY_REGS
 	  || rclass == INDEX_REGS))
@@ -25156,6 +25157,45 @@ ix86_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
       if (regno == -1)
 	return Q_REGS;
     }
+
+  /* This condition handles corner case where an expression involving
+     pointers gets vectorized.  We're trying to use the address of a
+     stack slot as a vector initializer.  
+
+     (set (reg:V2DI 74 [ vect_cst_.2 ])
+          (vec_duplicate:V2DI (reg/f:DI 20 frame)))
+
+     Eventually frame gets turned into sp+offset like this:
+
+     (set (reg:V2DI 21 xmm0 [orig:74 vect_cst_.2 ] [74])
+          (vec_duplicate:V2DI (plus:DI (reg/f:DI 7 sp)
+	                               (const_int 392 [0x188]))))
+
+     That later gets turned into:
+
+     (set (reg:V2DI 21 xmm0 [orig:74 vect_cst_.2 ] [74])
+          (vec_duplicate:V2DI (plus:DI (reg/f:DI 7 sp)
+	    (mem/u/c/i:DI (symbol_ref/u:DI ("*.LC0") [flags 0x2]) [0 S8 A64]))))
+
+     We'll have the following reload recorded:
+
+     Reload 0: reload_in (DI) =
+           (plus:DI (reg/f:DI 7 sp)
+            (mem/u/c/i:DI (symbol_ref/u:DI ("*.LC0") [flags 0x2]) [0 S8 A64]))
+     reload_out (V2DI) = (reg:V2DI 21 xmm0 [orig:74 vect_cst_.2 ] [74])
+     SSE_REGS, RELOAD_OTHER (opnum = 0), can't combine
+     reload_in_reg: (plus:DI (reg/f:DI 7 sp) (const_int 392 [0x188]))
+     reload_out_reg: (reg:V2DI 21 xmm0 [orig:74 vect_cst_.2 ] [74])
+     reload_reg_rtx: (reg:V2DI 22 xmm1)
+
+     Which isn't going to work since SSE instructions can't handle scalar
+     additions.  Returning GENERAL_REGS forces the addition into integer
+     register and reload can handle subsequent reloads without problems.  */
+
+  if (in_p && GET_CODE (x) == PLUS
+      && SSE_CLASS_P (rclass)
+      && SCALAR_INT_MODE_P (mode))
+    return GENERAL_REGS;
 
   return NO_REGS;
 }

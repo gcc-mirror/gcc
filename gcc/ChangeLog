@@ -1,3 +1,9 @@
+2011-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43653
+	* config/i386/i386.c (ix86_secondary_reload): Handle SSE
+	input reload with PLUS RTX.
+
 2011-02-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR pch/14940
@@ -285,9 +291,9 @@
 	Backport from mainline:
 	2010-12-30  Nathan Froyd  <froydnj@codesourcery.com>
 
-        PR target/44606
-        * reload1.c (choose_reload_regs): Don't look for equivalences for
-        output reloads of constant loads.
+	PR target/44606
+	* reload1.c (choose_reload_regs): Don't look for equivalences for
+	output reloads of constant loads.
 
 2011-01-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
@@ -313,7 +319,7 @@
 	Backport from mainline:
 	2010-08-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
-        PR boehm-gc/34544
+	PR boehm-gc/34544
 	* gthr-posix.h (__gthread_active_init): Delete.
 	(__gthread_active_p): Do activity check here.
 	Don't include errno.h on hppa-hpux.  Update comment.
@@ -412,8 +418,8 @@
 	(avx_maskstore<ssemodesuffix><avxmodesuffix>): Likewise.
 
 2011-01-17  Olivier Hainque  <hainque@adacore.com>
-            Michael Haubenwallner  <michael.haubenwallner@salomon.at>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Michael Haubenwallner  <michael.haubenwallner@salomon.at>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/46655
 	* xcoffout.c (ASM_OUTPUT_LINE): Output line only if positive, and only
@@ -566,7 +572,7 @@
 
 	Backport from mainline
 	Fix PR45758: reset scevs before Graphite.
-        2010-09-24  Sebastian Pop  <sebastian.pop@amd.com>
+	2010-09-24  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/45552
 	* graphite.c (graphite_initialize): Call scev_reset.
@@ -770,7 +776,7 @@
 
 	Backport from mainline:
 	2010-09-15  Olivier Hainque  <hainque@adacore.com>
-        	    Jose Ruiz  <ruiz@adacore.com>
+		    Jose Ruiz  <ruiz@adacore.com>
 
 	* config/alpha/osf.h (MD_UNWIND_SUPPORT): Define.
 	* config/alpha/osf-unwind.h: New file.
