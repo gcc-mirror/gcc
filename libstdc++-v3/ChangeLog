@@ -1,3 +1,10 @@
+2011-02-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/47724
+	* include/bits/regex_compiler.h (_Scanner::_M_advance): Do not treat
+	line anchors as metacharacters.
+	* testsuite/28_regex/basic_regex/ctors/47724.cc: New.
+
 2011-02-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/47773
