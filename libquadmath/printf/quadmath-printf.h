@@ -62,10 +62,20 @@ Boston, MA 02110-1301, USA.  */
 /* Won't work for EBCDIC.  */
 #undef isupper
 #undef isdigit
+#undef isxdigit
 #undef tolower
-#define isupper(x) ((x) >= 'A' && (x) <= 'Z')
-#define isdigit(x) ((x) >= '0' && (x) <= '9')
-#define tolower(x) (isupper (x) ? (x) - 'A' + 'a' : (x))
+#define isupper(x) \
+  ({__typeof(x) __is_x = (x); __is_x >= 'A' && __is_x <= 'Z'; })
+#define isdigit(x) \
+  ({__typeof(x) __is_x = (x); __is_x >= '0' && __is_x <= '9'; })
+#define isxdigit(x) \
+  ({__typeof(x) __is_x = (x); \
+    (__is_x >= '0' && __is_x <= '9') \
+    || ((x) >= 'A' && (x) <= 'F') \
+    || ((x) >= 'a' && (x) <= 'f'); })
+#define tolower(x) \
+  ({__typeof(x) __is_x = (x); \
+    (__is_x >= 'A' && __is_x <= 'Z') ? __is_x - 'A' + 'a' : __is_x; })
 #endif
 
 #ifndef CHAR_MAX

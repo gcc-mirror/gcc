@@ -1,3 +1,55 @@
+2011-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* libquadmath.texi (FLT128_DIG, FLT128_MIN_10_EXP,
+	FLT128_MAX_10_EXP): Document.
+	(strtoflt128): Remove obsolete comment.
+	* configure.ac (HAVE_STRTOULL): New check.
+	* printf/gmp-impl.h (mpn_construct_float128): New prototype,
+	define.
+	* printf/mul_n.c: Include <config.h>.
+	* printf/add_n.c: Likewise.
+	* printf/cmp.c: Likewise.
+	* printf/fpioconst.c: Likewise.
+	* printf/mul_1.c: Likewise.
+	* printf/rshift.c: Likewise.
+	* printf/lshift.c: Likewise.
+	* printf/submul_1.c: Likewise.
+	* printf/sub_n.c: Likewise.
+	* printf/divrem.c: Likewise.
+	* printf/addmul_1.c: Likewise.
+	* printf/mul.c: Likewise.
+	* printf/quadmath-printf.h (isupper, isdigit, tolower): Change
+	to avoid evaluating argument multiple times.
+	(isxdigit): Redefine.
+	* strtod/strtoflt128.c: New file.
+	* strtod/strtod_l.c: New file.
+	* strtod/mpn2flt128.c: New file.
+	* strtod/grouping.h: New file.
+	* strtod/tens_in_limb.c: New file.
+	* gdtoa/arith.h: Removed.
+	* gdtoa/gd_qnan.h: Removed.
+	* gdtoa/gdtoa_fltrnds.h: Removed.
+	* gdtoa/gdtoa.h: Removed.
+	* gdtoa/gdtoaimp.h: Removed.
+	* gdtoa/gethex.c: Removed.
+	* gdtoa/gmisc.c: Removed.
+	* gdtoa/hd_init.c: Removed.
+	* gdtoa/hexnan.c: Removed.
+	* gdtoa/makefile: Removed.
+	* gdtoa/misc.c: Removed.
+	* gdtoa/README.gdtoa: Removed.
+	* gdtoa/smisc.c: Removed.
+	* gdtoa/strtodg.c: Removed.
+	* gdtoa/strtopQ.c: Removed.
+	* gdtoa/sum.c: Removed.
+	* quadmath.h (FLT128_DIG, FLT128_MIN_10_EXP, FLT128_MAX_10_EXP):
+	Define.
+	* Makefile.am (libquadmath_la_SOURCES): Remove gdtoa/*, add
+	strtod/strtoflt128.c, strtod/mpn2flt128.c and strtod/tens_in_limb.c.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+
 2011-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* printf/quadmath-printf.c: Also check __GLIBC__ when checking
