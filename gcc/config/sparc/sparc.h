@@ -388,10 +388,9 @@ extern enum cmodel sparc_cmodel;
 %{!m32:%{!m64:%(cpp_arch_default)}} \
 "
 
-/* Macros to distinguish endianness.  */
+/* Macro to distinguish endianness.  */
 #define CPP_ENDIAN_SPEC "\
-%{mlittle-endian:-D__LITTLE_ENDIAN__} \
-%{mlittle-endian-data:-D__LITTLE_ENDIAN_DATA__}"
+%{mlittle-endian:-D__LITTLE_ENDIAN__}"
 
 /* Macros to distinguish the particular subtarget.  */
 #define CPP_SUBTARGET_SPEC ""

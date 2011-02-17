@@ -1,5 +1,10 @@
 2011-02-17  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/sparc/sparc.h (CPP_ENDIAN_SPEC): Don't handle
+	-mlittle-endian-data.
+
+2011-02-17  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/sparc/linux64.h (OPTION_DEFAULT_SPECS): Match -mfpu and
 	-mno-fpu, not -fpu and -no-fpu.
 	* config/sparc/sol2-bi.h (OPTION_DEFAULT_SPECS): Likewise.
