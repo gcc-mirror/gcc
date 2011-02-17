@@ -2028,8 +2028,19 @@ finish_call_expr (tree fn, VEC(tree,gc) **args, bool disallow_virtual,
 
   if (processing_template_decl)
     {
+      /* If the call expression is dependent, build a CALL_EXPR node
+	 with no type; type_dependent_expression_p recognizes
+	 expressions with no type as being dependent.  */
       if (type_dependent_expression_p (fn)
-	  || any_type_dependent_arguments_p (*args))
+	  || any_type_dependent_arguments_p (*args)
+	  /* For a non-static member function, we need to specifically
+	     test the type dependency of the "this" pointer because it
+	     is not included in *ARGS even though it is considered to
+	     be part of the list of arguments.  Note that this is
+	     related to CWG issues 515 and 1005.  */
+	  || ((TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE)
+	      && current_class_ref
+	      && type_dependent_expression_p (current_class_ref)))
 	{
 	  result = build_nt_call_vec (fn, *args);
 	  KOENIG_LOOKUP_P (result) = koenig_p;

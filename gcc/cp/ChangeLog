@@ -1,3 +1,10 @@
+2011-02-11  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47172
+	* pt.c (finish_call_expr): Consider a call expression that has a
+	dependent "this" pointer as being dependent.  Add comments.
+	(dependent_type_p, type_dependent_expression_p): Update comments.
+
 2011-02-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47326

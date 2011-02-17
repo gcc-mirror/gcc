@@ -17921,7 +17921,7 @@ dependent_type_p_r (tree type)
 }
 
 /* Returns TRUE if TYPE is dependent, in the sense of
-   [temp.dep.type].  */
+   [temp.dep.type].  Note that a NULL type is considered dependent.  */
 
 bool
 dependent_type_p (tree type)
@@ -18193,7 +18193,10 @@ value_dependent_expression_p (tree expression)
 }
 
 /* Returns TRUE if the EXPRESSION is type-dependent, in the sense of
-   [temp.dep.expr].  */
+   [temp.dep.expr].  Note that an expression with no type is
+   considered dependent.  Other parts of the compiler arrange for an
+   expression with type-dependent subexpressions to have no type, so
+   this function doesn't have to be fully recursive.  */
 
 bool
 type_dependent_expression_p (tree expression)

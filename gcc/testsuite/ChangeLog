@@ -1,3 +1,8 @@
+2011-02-11  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47172
+	* g++.dg/template/inherit6.C: New test.
+
 2011-02-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47745
