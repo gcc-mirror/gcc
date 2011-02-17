@@ -1,3 +1,9 @@
+2011-02-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/47776
+	* testsuite/ext/vstring/hash/char/1.cc: Fix.
+	* testsuite/ext/vstring/hash/wchar_t/1.cc: Likewise.
+
 2011-02-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/regex.h (basic_regex::traits_type): Add typedef.

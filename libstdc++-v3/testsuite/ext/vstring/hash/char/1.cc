@@ -37,15 +37,14 @@ void test01()
 
   VERIFY( mymap.size() == 2 );
 
-  map_t::const_iterator imap = mymap.begin();
- 
-  VERIFY( vstring_t(imap->first.c_str()) == "hi" );
-  VERIFY( imap->second == 20 );
+  map_t::const_iterator imap1 = mymap.begin();
+  map_t::const_iterator imap2 = mymap.begin();
+  ++imap2;
 
-  ++imap;
-
-  VERIFY( vstring_t(imap->first.c_str()) == "hello" );
-  VERIFY( imap->second == 10 );
+  VERIFY( ((imap1->first == "hello" && imap1->second == 10
+	    && imap2->first == "hi" && imap2->second == 20)
+	   || (imap1->first == "hi" && imap1->second == 20
+	       && imap2->first == "hello" && imap2->second == 10)) );
 }
 
 int main()
