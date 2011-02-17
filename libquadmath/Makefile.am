@@ -43,11 +43,6 @@ nodist_libsubinclude_HEADERS = quadmath.h quadmath_weak.h
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 libquadmath_la_SOURCES = \
-  gdtoa/arith.h gdtoa/gdtoa_fltrnds.h gdtoa/gd_qnan.h gdtoa/gdtoaimp.h \
-  gdtoa/gdtoa.h quadmath-imp.h \
-  gdtoa/hd_init.c gdtoa/smisc.c gdtoa/sum.c \
-  gdtoa/gethex.c gdtoa/hexnan.c gdtoa/strtodg.c \
-  gdtoa/gmisc.c gdtoa/misc.c gdtoa/strtopQ.c \
   math/acoshq.c math/fmodq.c math/acosq.c math/frexpq.c \
   math/rem_pio2q.c math/asinhq.c math/hypotq.c math/remainderq.c \
   math/asinq.c math/rintq.c math/atan2q.c math/isinfq.c \
@@ -68,7 +63,8 @@ libquadmath_la_SOURCES = \
   printf/addmul_1.c printf/add_n.c printf/cmp.c printf/divrem.c \
   printf/flt1282mpn.c printf/fpioconst.c printf/lshift.c printf/mul_1.c \
   printf/mul_n.c printf/mul.c printf/printf_fphex.c printf/printf_fp.c \
-  printf/quadmath-printf.c printf/rshift.c printf/submul_1.c printf/sub_n.c
+  printf/quadmath-printf.c printf/rshift.c printf/submul_1.c printf/sub_n.c \
+  strtod/strtoflt128.c strtod/mpn2flt128.c strtod/tens_in_limb.c
 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS

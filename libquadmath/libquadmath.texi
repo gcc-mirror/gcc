@@ -109,6 +109,9 @@ The following macros are defined, which give the numeric limits of the
 @item @code{FLT128_MANT_DIG}: number of digits in the mantissa (bit precision)
 @item @code{FLT128_MIN_EXP}: maximal negative exponent
 @item @code{FLT128_MAX_EXP}: maximal positive exponent
+@item @code{FLT128_DIG}: number of decimal digits in the mantissa
+@item @code{FLT128_MIN_10_EXP}: maximal negative decimal exponent
+@item @code{FLT128_MAX_10_EXP}: maximal positive decimal exponent
 @end table
 
 The following mathematical constants of type @code{__float128} are defined.
@@ -259,10 +262,6 @@ The function @code{dmath_strtopQ} converts a string into a
 @table @asis
 @item Syntax
 @code{__float128 strtoflt128 (const char *s, char **sp)}
-
-@c The return values are defined in gdtoa/gdtoa.h STRTOG_*
-@c However, the values are currently not exported - thus we
-@c do not define them here, either.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70

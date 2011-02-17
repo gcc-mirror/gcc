@@ -144,8 +144,9 @@ extern int quadmath_snprintf (char *str, size_t size,
 #define FLT128_MANT_DIG 113
 #define FLT128_MIN_EXP (-16381)
 #define FLT128_MAX_EXP 16384
-/* TODO -- One day, we need to add the following macros:
-   FLT128_DIG, FLT128_MIN_10_EXP, FLT128_MAX_10_EXP */
+#define FLT128_DIG 33
+#define FLT128_MIN_10_EXP (-4931)
+#define FLT128_MAX_10_EXP 4932
 
 
 #define HUGE_VALQ __builtin_huge_valq()

@@ -140,6 +140,10 @@ mp_limb_t mpn_submul_1 (mp_ptr, mp_srcptr, mp_size_t, mp_limb_t)
 mp_size_t mpn_extract_flt128 (mp_ptr res_ptr, mp_size_t size, int *expt,
 			      int *is_neg, __float128 value) attribute_hidden;
 
+#define mpn_construct_float128 __MPN(construct_float128)
+__float128 mpn_construct_float128 (mp_srcptr frac_ptr, int expt, int sign)
+     attribute_hidden;
+
 #define mpn_divmod(qp,np,nsize,dp,dsize) mpn_divrem (qp,0,np,nsize,dp,dsize)
 
 static inline mp_limb_t

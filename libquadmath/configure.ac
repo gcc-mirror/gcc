@@ -124,6 +124,7 @@ if test x$gcc_no_link != xyes; then
   AC_CHECK_LIB([m],[feupdateenv],[AC_DEFINE([HAVE_FEUPDATEENV],[1],[libm includes feupdateenv])])
   AC_CHECK_LIB([m],[fesetenv],[AC_DEFINE([HAVE_FESETENV],[1],[libm includes fesetenv])])
   AC_CHECK_LIB([m],[fetestexcept],[AC_DEFINE([HAVE_FETESTEXCEPT],[1],[libm includes fetestexcept])])
+  AC_CHECK_FUNCS(strtoull)
 else
   if test "x$ac_cv_lib_m_sqrtl" = x""yes; then
     AC_DEFINE([HAVE_SQRTL],[1],[libm includes sqrtl])  

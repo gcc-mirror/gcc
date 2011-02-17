@@ -12255,6 +12255,17 @@ $as_echo "#define HAVE_FETESTEXCEPT 1" >>confdefs.h
 
 fi
 
+  for ac_func in strtoull
+do :
+  ac_fn_c_check_func "$LINENO" "strtoull" "ac_cv_func_strtoull"
+if test "x$ac_cv_func_strtoull" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_STRTOULL 1
+_ACEOF
+
+fi
+done
+
 else
   if test "x$ac_cv_lib_m_sqrtl" = x""yes; then
 
