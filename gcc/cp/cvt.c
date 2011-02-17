@@ -512,6 +512,7 @@ convert_from_reference (tree val)
       tree t = TREE_TYPE (TREE_TYPE (val));
       tree ref = build1 (INDIRECT_REF, t, val);
 
+      mark_exp_read (val);
        /* We *must* set TREE_READONLY when dereferencing a pointer to const,
 	  so that we get the proper error message if the result is used
 	  to assign to.  Also, &* is supposed to be a no-op.  */

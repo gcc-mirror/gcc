@@ -1,3 +1,8 @@
+2011-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/47783
+	* cvt.c (convert_from_reference): Call mark_exp_read.
+
 2011-02-11  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47172
