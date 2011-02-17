@@ -1,3 +1,9 @@
+2011-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/43653
+	* config/i386/i386.c (ix86_secondary_reload): Handle SSE
+	input reload with PLUS RTX.
+
 2011-02-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.opt (mno-mdmx): Use Var(TARGET_MDMX, 0) instead
@@ -101,11 +107,11 @@
 
 2011-02-15  Nathan Froyd  <froydnj@codesourcery.com>
 
-        * config/iq2000/i2000.h (REG_CLASS_FROM_LETTER): Delete.
-        (CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
-        (EXTRA_CONSTRAINT): Delete.
-        * config/iq2000/constraints.md: New file.
-        * config/iq2000/iq2000.md: Include it.
+	* config/iq2000/i2000.h (REG_CLASS_FROM_LETTER): Delete.
+	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
+	(EXTRA_CONSTRAINT): Delete.
+	* config/iq2000/constraints.md: New file.
+	* config/iq2000/iq2000.md: Include it.
 	(define_insn ""): Delete.
 	(movsi_internal2, movhi_internal2, movqi_internal2): Delete
 	unsupported constraint letters from patterns.
@@ -211,7 +217,7 @@
 	* config/stormy16/stormy16.h (REG_CLASS_FROM_LETTER): Delete.
 	(CONST_OK_FOR_LETTER_P, CONST_DOUBLE_OK_FOR_LETTER_P): Delete.
 	(EXTRA_CONSTRAINT): Delete.
-	* config/stormy16/stormy16.c (xstormy16_legitiamte_address_p):
+	* config/stormy16/stormy16.c (xstormy16_legitimate_address_p):
 	Un-staticize.
 	(xstormy16_extra_constraint_p): Delete.
 
@@ -280,18 +286,15 @@
 	(sparc64_fallback_frame_state): Merge with ...
 	(sparc_fallback_frame_state): ... this into ...
 	(MD_FALLBACK_FRAME_STATE_FOR): ... this.
-	Change new_cfa to long.
-	Remove regs_off, fpu_save_off, fpu_save.
-	Define nframes, mctx.
-	Use IS_SIGHANDLER, handler_args, mctx, walk stack instead of
-	hardcoded offsets.
+	Change new_cfa to long.  Remove regs_off, fpu_save_off, fpu_save.
+	Define nframes, mctx.  Use IS_SIGHANDLER, handler_args, mctx, walk
+	stack instead of hardcoded offsets.
 
 2011-02-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
-	* go/gccgo.texi (Top, Import and Export): Fix a typo and a
-	markup nit.
+	* go/gccgo.texi (Top, Import and Export): Fix a typo and a markup nit.
 
-2011-02-14  Andriy Gapon <avg@freebsd.org>
+2011-02-14  Andriy Gapon  <avg@freebsd.org>
 
 	PR target/45808
 	* config/freebsd-spec.h (FBSD_LIB_SPEC): Handle the shared case.
@@ -348,7 +351,7 @@
 2011-02-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin.c (darwin_override_options): Add a hunk missed
-	from the commit of r168571.  Trim comment line lengths and 
+	from the commit of r168571.  Trim comment line lengths and
 	correct indents of the preceding block.
 
 2011-02-12  Iain Sandoe  <iains@gcc.gnu.org>
