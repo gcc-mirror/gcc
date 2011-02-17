@@ -712,6 +712,13 @@ Driver
 e
 Driver Joined Separate
 
+; This option has historically been passed down to the linker by an
+; accident of a %{e*} spec, so ensure it continues to be passed down
+; as a single option.  The supported option for this purpose is
+; -rdynamic.  See PR 47390.
+export-dynamic
+Driver Undocumented
+
 ; The version of the C++ ABI in use.  The following values are allowed:
 ;
 ; 0: The version of the ABI believed most conformant with the C++ ABI
