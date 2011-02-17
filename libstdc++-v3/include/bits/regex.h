@@ -343,9 +343,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       // types:
       typedef _Ch_type                            value_type;
+      typedef _Rx_traits                          traits_type;
+      typedef typename traits_type::string_type   string_type;
       typedef regex_constants::syntax_option_type flag_type;
-      typedef typename _Rx_traits::locale_type    locale_type;
-      typedef typename _Rx_traits::string_type    string_type;
+      typedef typename traits_type::locale_type   locale_type;
 
       /**
        * @name Constants
@@ -435,7 +436,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *
        * @param rhs A @p regex object.
        */
-      basic_regex(const basic_regex&& __rhs)
+      basic_regex(const basic_regex&& __rhs) noexcept
       : _M_flags(__rhs._M_flags), _M_traits(__rhs._M_traits),
         _M_automaton(std::move(__rhs._M_automaton))
       { }
@@ -511,7 +512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @brief Move-assigns one regular expression to another.
        */
       basic_regex&
-      operator=(basic_regex&& __rhs)
+      operator=(basic_regex&& __rhs) noexcept
       { return this->assign(std::move(__rhs)); }
 
       /**
@@ -556,7 +557,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @param rhs Another regular expression object.
        */
       basic_regex&
-      assign(basic_regex&& __rhs)
+      assign(basic_regex&& __rhs) noexcept
       {
 	basic_regex __tmp(std::move(__rhs));
 	this->swap(__tmp);
@@ -943,7 +944,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs == __rhs.str(); }
+    { return __rhs.compare(__lhs.c_str()) == 0; }
 
   /**
    * @brief Tests the inequivalence of a string and a regular expression
@@ -957,7 +958,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-    { return __lhs != __rhs.str(); }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -970,7 +971,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<(const basic_string<
 	      typename iterator_traits<_Bi_iter>::value_type,
 	      _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-     { return __lhs < __rhs.str(); }
+     { return __rhs.compare(__lhs.c_str()) > 0; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -983,7 +984,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>(const basic_string<
 	      typename iterator_traits<_Bi_iter>::value_type, 
 	      _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-    { return __lhs > __rhs.str(); }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -996,7 +997,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-    { return __lhs >= __rhs.str(); }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1009,7 +1010,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<=(const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __lhs, const sub_match<_Bi_iter>& __rhs)
-    { return __lhs <= __rhs.str(); }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a regular expression submatch and a
@@ -1024,7 +1025,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() == __rhs; }
+    { return __lhs.compare(__rhs.c_str()) == 0; }
 
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
@@ -1039,7 +1040,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() != __rhs; }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1053,7 +1054,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      const basic_string<
 	      typename iterator_traits<_Bi_iter>::value_type,
 	      _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() < __rhs; }
+    { return __lhs.compare(__rhs.c_str()) < 0; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1067,7 +1068,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      const basic_string<
 	      typename iterator_traits<_Bi_iter>::value_type,
 	      _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() > __rhs; }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1081,7 +1082,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() >= __rhs; }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1095,7 +1096,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const basic_string<
 	       typename iterator_traits<_Bi_iter>::value_type,
 	       _Ch_traits, _Ch_alloc>& __rhs)
-    { return __lhs.str() <= __rhs; }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a C string and a regular expression
@@ -1108,7 +1109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs == __rhs.str(); }
+    { return __rhs.compare(__lhs) == 0; }
 
   /**
    * @brief Tests the inequivalence of an iterator value and a regular
@@ -1121,7 +1122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator!=(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs != __rhs.str(); }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1133,7 +1134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	      const sub_match<_Bi_iter>& __rhs)
-    { return __lhs < __rhs.str(); }
+    { return __rhs.compare(__lhs) > 0; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1145,7 +1146,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	      const sub_match<_Bi_iter>& __rhs)
-    { return __lhs > __rhs.str(); }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1157,7 +1158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>=(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs >= __rhs.str(); }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1169,7 +1170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<=(typename iterator_traits<_Bi_iter>::value_type const* __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs <= __rhs.str(); }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a regular expression submatch and a
@@ -1182,7 +1183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() == __rhs; }
+    { return __lhs.compare(__rhs) == 0; }
 
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
@@ -1195,7 +1196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator!=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() != __rhs; }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1207,7 +1208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<(const sub_match<_Bi_iter>& __lhs,
 	      typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() < __rhs; }
+    { return __lhs.compare(__rhs) < 0; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1219,7 +1220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>(const sub_match<_Bi_iter>& __lhs,
 	      typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() > __rhs; }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1231,7 +1232,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() >= __rhs; }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1243,7 +1244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const* __rhs)
-    { return __lhs.str() <= __rhs; }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a string and a regular expression
@@ -1256,7 +1257,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs == __rhs.str(); }
+    {
+      return __rhs.compare(typename sub_match<_Bi_iter>::string_type(1, __lhs))
+             == 0;
+    }
 
   /**
    * @brief Tests the inequivalence of a string and a regular expression
@@ -1269,7 +1273,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator!=(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs != __rhs.str(); }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1281,7 +1285,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	      const sub_match<_Bi_iter>& __rhs)
-    { return __lhs < __rhs.str(); }
+    {
+      return __rhs.compare(typename sub_match<_Bi_iter>::string_type(1, __lhs))
+             > 0;
+    }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1293,7 +1300,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	      const sub_match<_Bi_iter>& __rhs)
-    { return __lhs > __rhs.str(); }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1305,7 +1312,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>=(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs >= __rhs.str(); }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a string and a regular expression submatch.
@@ -1317,7 +1324,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<=(typename iterator_traits<_Bi_iter>::value_type const& __lhs,
 	       const sub_match<_Bi_iter>& __rhs)
-    { return __lhs <= __rhs.str(); }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Tests the equivalence of a regular expression submatch and a
@@ -1330,7 +1337,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator==(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() == __rhs; }
+    {
+      return __lhs.compare(typename sub_match<_Bi_iter>::string_type(1, __rhs))
+             == 0;
+    }
 
   /**
    * @brief Tests the inequivalence of a regular expression submatch and a
@@ -1343,7 +1353,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator!=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() != __rhs; }
+    { return !(__lhs == __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1355,7 +1365,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<(const sub_match<_Bi_iter>& __lhs,
 	      typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() < __rhs; }
+    {
+      return __lhs.compare(typename sub_match<_Bi_iter>::string_type(1, __rhs))
+             < 0;
+    }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1367,7 +1380,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>(const sub_match<_Bi_iter>& __lhs,
 	      typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() > __rhs; }
+    { return __rhs < __lhs; }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1379,7 +1392,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator>=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() >= __rhs; }
+    { return !(__lhs < __rhs); }
 
   /**
    * @brief Tests the ordering of a regular expression submatch and a string.
@@ -1391,7 +1404,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline bool
     operator<=(const sub_match<_Bi_iter>& __lhs,
 	       typename iterator_traits<_Bi_iter>::value_type const& __rhs)
-    { return __lhs.str() <= __rhs; }
+    { return !(__rhs < __lhs); }
 
   /**
    * @brief Inserts a matched string into an output stream.
@@ -1485,7 +1498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   
     public:
       /**
-       * @name 10.1 Construction, Copying, and Destruction
+       * @name 28.10.1 Construction, Copying, and Destruction
        */
       //@{
 
@@ -1506,12 +1519,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       /**
+       * @brief Move constructs a %match_results.
+       */
+      match_results(match_results&& __rhs) noexcept
+      : _Base_type(std::move(__rhs))
+      { }
+
+      /**
        * @brief Assigns rhs to *this.
        */
       match_results&
-      operator=(const match_results __rhs)
+      operator=(const match_results& __rhs)
       {
 	match_results(__rhs).swap(*this);
+	return *this;
+      }
+
+      /**
+       * @brief Move-assigns rhs to *this.
+       */
+      match_results&
+      operator=(match_results&& __rhs)
+      {
+	match_results(std::move(__rhs)).swap(*this);
 	return *this;
       }
 
@@ -1532,7 +1562,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool ready() const { return !_Base_type::empty(); }
 
       /**
-       * @name 10.2 Size
+       * @name 28.10.2 Size
        */
       //@{
 
