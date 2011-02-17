@@ -176,12 +176,12 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_DEFAULT_SPECS \
   {"cpu", "%{!m64:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
-  {"float", "%{!msoft-float:%{!mhard-float:%{!fpu:%{!no-fpu:-m%(VALUE)-float}}}}" }
+  {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
 #else
 #define OPTION_DEFAULT_SPECS \
   {"cpu", "%{!m32:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
-  {"float", "%{!msoft-float:%{!mhard-float:%{!fpu:%{!no-fpu:-m%(VALUE)-float}}}}" }
+  {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
 #endif
 
 #if DEFAULT_ARCH32_P

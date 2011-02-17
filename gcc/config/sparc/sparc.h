@@ -551,7 +551,7 @@ extern enum processor_type sparc_cpu;
 #define OPTION_DEFAULT_SPECS \
   {"cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
-  {"float", "%{!msoft-float:%{!mhard-float:%{!fpu:%{!no-fpu:-m%(VALUE)-float}}}}" }
+  {"float", "%{!msoft-float:%{!mhard-float:%{!mfpu:%{!mno-fpu:-m%(VALUE)-float}}}}" }
 
 /* sparc_select[0] is reserved for the default cpu.  */
 struct sparc_cpu_select
