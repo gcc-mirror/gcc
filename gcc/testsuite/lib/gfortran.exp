@@ -142,10 +142,15 @@ proc gfortran_init { args } {
     global TOOL_EXECUTABLE TOOL_OPTIONS
     global GFORTRAN_UNDER_TEST
     global TESTING_IN_BUILD_TREE
+    global gcc_warning_prefix
+    global gcc_error_prefix
 
     # We set LC_ALL and LANG to C so that we get the same error messages as expected.
     setenv LC_ALL C
     setenv LANG C
+
+    set gcc_warning_prefix "\[Ww\]arning:"
+    set gcc_error_prefix "(Fatal )?\[Ee\]rror:"
 
     # Many hosts now default to a non-ASCII C locale, however, so
     # they can set a charset encoding here if they need.

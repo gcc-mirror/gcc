@@ -23,9 +23,9 @@ end block
 88 continue
 
 ! 3rd example: jumping into BLOCK (invalid)
-goto 99        ! { dg-error "is not in the same block" }
+goto 99        ! { dg-warning "is not in the same block" }
 block
-  99 continue  ! { dg-error "is not in the same block" }
+  99 continue  ! { dg-warning "is not in the same block" }
 end block
 
 end

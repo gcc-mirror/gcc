@@ -14,8 +14,8 @@
 
       program test
       EXTERNAL R
-      call PHLOAD (R, 1) ! { dg-error "Missing alternate return spec" }
-      CALL PHLOAD (R, 2) ! { dg-error "Missing alternate return spec" }
+      call PHLOAD (R, 1) ! { dg-warning "Missing alternate return spec" }
+      CALL PHLOAD (R, 2) ! { dg-warning "Missing alternate return spec" }
       CALL PHLOAD (R, *999) ! This one is OK
  999  continue
       END program test
