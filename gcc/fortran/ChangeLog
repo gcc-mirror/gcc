@@ -1,3 +1,9 @@
+2011-02-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47789
+	* primary.c (gfc_match_structure_constructor): Handle empty parent
+	types.
+
 2011-02-18  Tobias Burnus
 
 	PR fortran/47775
