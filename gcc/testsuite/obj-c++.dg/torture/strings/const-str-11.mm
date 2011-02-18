@@ -29,6 +29,7 @@ extern struct objc_class _XStrClassReference;
 
 const XStr *appKey = @"MyApp";
 
-/* { dg-final { scan-assembler ".section __OBJC, __cstring_object" } } */
-/* { dg-final { scan-assembler ".long\t__XStrClassReference\n\t.long\t.*\n\t.long\t5\n\t.data" { target { *-*-darwin* && { ! lp64 } } } } } */
-/* { dg-final { scan-assembler ".quad\t__XStrClassReference\n\t.quad\t.*\n\t.long\t5\n\t.space 4\n\t.data" { target { *-*-darwin* && { lp64 } } } } } */
+/* { dg-final { scan-assembler ".section __OBJC, __cstring_object" { target { *-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler ".section __DATA, __objc_stringobj" { target { *-*-darwin* && { lp64 } } } } } */
+/* { dg-final { scan-assembler ".long\t__XStrClassReference\n\t.long\t.*\n\t.long\t5\n\t.data"  { target { *-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler ".quad\t_OBJC_CLASS_._XStr\n\t.quad\t.*\n\t.long\t5\n\t.space" { target { *-*-darwin* && { lp64 } } } } } */

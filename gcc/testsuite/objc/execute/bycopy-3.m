@@ -24,6 +24,12 @@ extern int printf (const char *, ...);
 
 /* This no-op class to keep it compile under broken gcc 3.x */
 @interface MyObject : Object <MyProtocol> 
+#ifdef __OBJC2__
++ (id) initialize;
++ (id) alloc;
++ new;
+- init;
+#endif
 @end
 
 @implementation MyObject
@@ -31,6 +37,12 @@ extern int printf (const char *, ...);
 {
   return [MyObject alloc];
 }
+#ifdef __OBJC2__
++ initialize {return self;}
++ alloc { return class_createInstance (self, 0);}
++ new { return [[self alloc] init]; }
+- init {return self;}
+#endif
 @end
 
 /* The following header, together with the implementation included below,

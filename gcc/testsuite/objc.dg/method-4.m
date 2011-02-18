@@ -22,5 +22,5 @@ void foo(void) {
   obj = [ObjectAlias2 new];
 }
 
-/* { dg-final { scan-assembler "_OBJC_CLASS_REFERENCES_0" } } */
-/* { dg-final { scan-assembler-not "_OBJC_CLASS_REFERENCES_1" } } */
+/* { dg-final { scan-assembler "_OBJC_ClassRefs_0" } } */
+/* { dg-final { scan-assembler-not "_OBJC_ClassRefs_1" } } */

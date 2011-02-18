@@ -1,6 +1,6 @@
 # Top level configure fragment for GNU Objective-C
-#   Copyright (C) 1997, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010
-#   Free Software Foundation, Inc.
+#   Copyright (C) 1997, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010,
+#   2011 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -33,4 +33,4 @@ target_libs=target-libobjc
 # Most of the object files for cc1obj actually come from C.
 lang_requires="c"
 
-gtfiles="\$(srcdir)/objc/objc-act.h \$(srcdir)/c-parser.c \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-objc.h \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c \$(srcdir)/objc/objc-act.c"
+gtfiles="\$(srcdir)/objc/objc-act.h \$(srcdir)/objc/objc-act.c \$(srcdir)/objc/objc-runtime-shared-support.c \$(srcdir)/objc/objc-gnu-runtime-abi-01.c \$(srcdir)/objc/objc-next-runtime-abi-01.c \$(srcdir)/objc/objc-next-runtime-abi-02.c \$(srcdir)/c-parser.c \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-lang.h \$(srcdir)/c-objc-common.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-objc.h \$(srcdir)/c-family/c-cppbuiltin.c \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c"

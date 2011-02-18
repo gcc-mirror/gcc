@@ -94,7 +94,7 @@ DEF_SECTION (mod_term_section, 0, ".mod_term_func", 0)
 DEF_SECTION (constructor_section, 0, ".constructor", 0)
 DEF_SECTION (destructor_section, 0, ".destructor", 0)
 
-/* Objective-C (V1) sections.  */
+/* Objective-C ABI=0 (Original version) sections.  */
 DEF_SECTION (objc_class_section, 0, ".objc_class", 1)
 DEF_SECTION (objc_meta_class_section, 0, ".objc_meta_class", 1)
 DEF_SECTION (objc_category_section, 0, ".objc_category", 1)
@@ -112,7 +112,7 @@ DEF_SECTION (objc_module_info_section, 0, ".objc_module_info", 1)
 DEF_SECTION (objc_protocol_section, 0, ".objc_protocol", 1)
 DEF_SECTION (objc_string_object_section, 0, ".objc_string_object", 1)
 DEF_SECTION (objc_constant_string_object_section, 0,
-	     ".section __OBJC, __cstring_object, regular, no_dead_strip", 1)
+	     ".section __OBJC, __cstring_object, regular, no_dead_strip", 0)
 
 /* Fix-and-Continue image marker.  */
 DEF_SECTION (objc_image_info_section, 0,
@@ -156,3 +156,40 @@ DEF_SECTION (darwin_exception_section, SECTION_NO_ANCHOR,
 DEF_SECTION (darwin_eh_frame_section, SECTION_NO_ANCHOR,
 	     ".section " EH_FRAME_SECTION_NAME ",__eh_frame"
 	     EH_FRAME_SECTION_ATTR, 0)
+
+/* Sections for ObjC ABI=1 (ObjC 'V1' extensions) */
+DEF_SECTION (objc1_class_ext_section, 0,
+	    ".section __OBJC, __class_ext, regular, no_dead_strip", 1)
+DEF_SECTION (objc1_prop_list_section, 0,
+	    ".section __OBJC, __property, regular, no_dead_strip", 1)
+DEF_SECTION (objc1_protocol_ext_section, 0,
+	    ".section __OBJC, __protocol_ext, regular, no_dead_strip", 1)
+
+/* Sections for ObjC ABI=2 (m64).  */
+DEF_SECTION (objc2_message_refs_section, 0,
+	     ".section __DATA, __objc_msgrefs, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_classdefs_section, 0, ".section __DATA, __objc_data", 1)
+DEF_SECTION (objc2_metadata_section, 0, ".section __DATA, __objc_const", 1)
+
+DEF_SECTION (objc2_classrefs_section, 0, 
+             ".section __DATA, __objc_classrefs, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_classlist_section, 0,
+	     ".section __DATA, __objc_classlist, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_categorylist_section, 0,
+	     ".section __DATA, __objc_catlist, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_selector_refs_section, 0,
+	     ".section __DATA, __objc_selrefs, literal_pointers, no_dead_strip", 1)
+DEF_SECTION (objc2_nonlazy_class_section, 0,
+	     ".section __DATA, __objc_nlclslist, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_nonlazy_category_section, 0,
+	     ".section __DATA, __objc_nlcatlist, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_protocollist_section, 0,
+	     ".section __DATA, __objc_protolist, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_protocolrefs_section, 0,
+	     ".section __DATA, __objc_protorefs, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_super_classrefs_section, 0,
+	     ".section __DATA, __objc_superrefs, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_image_info_section, 0,
+	     ".section __DATA, __objc_imageinfo, regular, no_dead_strip", 1)
+DEF_SECTION (objc2_constant_string_object_section, 0,
+	     ".section __DATA, __objc_stringobj, regular, no_dead_strip", 1)

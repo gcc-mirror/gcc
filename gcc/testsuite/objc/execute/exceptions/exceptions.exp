@@ -28,6 +28,7 @@ lappend additional_flags "-fobjc-exceptions"
 # load support procs
 load_lib objc-torture.exp
 load_lib torture-options.exp
+load_lib target-supports.exp
 
 torture-init
 objc-set-runtime-options "execute" "additional_flags=-fobjc-exceptions"

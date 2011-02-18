@@ -1,14 +1,18 @@
 /* { dg-do run } */
 /* See if -forward::/-performv:: is able to work. */
 /* { dg-xfail-run-if "PR36610" { ! { { i?86-*-* x86_64-*-* } && ilp32 } } { "-fgnu-runtime" } { "" } } */
-/* { dg-skip-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+/* { dg-skip-if "Needs OBJC2 Implementation" { *-*-darwin* && { lp64 } } { "-fnext-runtime" } { "" } } */
+/* There is no implementation of forward: in the NeXT m64 libobjc/Object
+   neither have we implemented this in our extensions - so we have to skip it
+   for now.  */
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#import "../../objc-obj-c++-shared/Object1.h"
-#import "../../objc-obj-c++-shared/next-mapping.h"
-#include <objc/objc-api.h>
+#ifndef __NEXT_RUNTIME__
+#  include <objc/objc-api.h>
+#endif
+#include <objc/Object.h>
 
 #define VALUETOUSE 1234567890
 

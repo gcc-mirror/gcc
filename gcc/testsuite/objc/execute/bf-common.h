@@ -11,6 +11,7 @@
 #define objc_get_class(C) objc_getClass(C)
 #endif
 
+#ifndef __OBJC2__
 void print_ivars (Class class)
 {
   struct objc_ivar_list* ivars = class->ivars;
@@ -61,9 +62,11 @@ void compare_structures (Class class, const char* type)
   
   printf ("%d ivars checked\n", i);
 }
+#endif
 
 int main ()
 {
+#ifndef __OBJC2__
   struct class_vars
     {
       @defs (MyObject);
@@ -80,8 +83,10 @@ int main ()
       printf ("sizes don't match (computed %d, exact %d)\n", size1, size2);
       abort ();
     }
+#endif
   
   exit (0);
 }
-
+#ifndef __OBJC2__
 #include "../../objc-obj-c++-shared/objc-test-suite-next-encode-assist-impl.h"
+#endif

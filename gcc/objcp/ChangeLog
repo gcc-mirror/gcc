@@ -1,3 +1,19 @@
+2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* Make-lang.in (START_HDRS): New.
+	(OBJCXX_OBJS): Added new object files from objc/.
+	(objcp/objcp-act.o): Updated prerequisites.
+	(objcp/objcp-lang.o): Updated prerequisites.
+	(objcp/objc-runtime-shared-support.o): New.
+	(objcp/objc-gnu-runtime-abi-01.o): New.
+	(objcp/objc-next-runtime-abi-01.o): New.
+	(objcp/objc-next-runtime-abi-02.o): New.
+	* config-lang.in (gtfiles): Updated.
+	* objcp-lang.c (objcxx_eh_personality): Removed.
+	(LANG_HOOKS_EH_PERSONALITY): Removed.
+	(LANG_HOOKS_EH_RUNTIME_TYPE): Removed.
+	(objcp_eh_personality_decl): Removed.
+	
 2011-02-07  Mike Stump  <mikestump@comcast.net>
 
 	* Make-lang.in (obj-c++.tags): Don't include *.y.

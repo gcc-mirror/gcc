@@ -1,5 +1,6 @@
 /* Contributed by Nicola Pero on Tue Mar  6 23:05:53 CET 2001 */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include "../../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
