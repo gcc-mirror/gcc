@@ -676,31 +676,38 @@ extract_true_false_args_from_phi (basic_block dom, gimple phi,
      by the true edge of the predicate block and the other edge
      dominated by the false edge.  This ensures that the PHI argument
      we are going to take is completely determined by the path we
-     take from the predicate block.  */
+     take from the predicate block.
+     We can only use BB dominance checks below if the destination of
+     the true/false edges are dominated by their edge, thus only
+     have a single predecessor.  */
   extract_true_false_edges_from_block (dom, &true_edge, &false_edge);
   tem = EDGE_PRED (bb, 0);
   if (tem == true_edge
-      || tem->src == true_edge->dest
-      || dominated_by_p (CDI_DOMINATORS,
-			 tem->src, true_edge->dest))
+      || (single_pred_p (true_edge->dest)
+	  && (tem->src == true_edge->dest
+	      || dominated_by_p (CDI_DOMINATORS,
+				 tem->src, true_edge->dest))))
     arg0 = PHI_ARG_DEF (phi, tem->dest_idx);
   else if (tem == false_edge
-	   || tem->src == false_edge->dest
-	   || dominated_by_p (CDI_DOMINATORS,
-			      tem->src, false_edge->dest))
+	   || (single_pred_p (false_edge->dest)
+	       && (tem->src == false_edge->dest
+		   || dominated_by_p (CDI_DOMINATORS,
+				      tem->src, false_edge->dest))))
     arg1 = PHI_ARG_DEF (phi, tem->dest_idx);
   else
     return false;
   tem = EDGE_PRED (bb, 1);
   if (tem == true_edge
-      || tem->src == true_edge->dest
-      || dominated_by_p (CDI_DOMINATORS,
-			 tem->src, true_edge->dest))
+      || (single_pred_p (true_edge->dest)
+	  && (tem->src == true_edge->dest
+	      || dominated_by_p (CDI_DOMINATORS,
+				 tem->src, true_edge->dest))))
     arg0 = PHI_ARG_DEF (phi, tem->dest_idx);
   else if (tem == false_edge
-	   || tem->src == false_edge->dest
-	   || dominated_by_p (CDI_DOMINATORS,
-			      tem->src, false_edge->dest))
+	   || (single_pred_p (false_edge->dest)
+	       && (tem->src == false_edge->dest
+		   || dominated_by_p (CDI_DOMINATORS,
+				      tem->src, false_edge->dest))))
     arg1 = PHI_ARG_DEF (phi, tem->dest_idx);
   else
     return false;
