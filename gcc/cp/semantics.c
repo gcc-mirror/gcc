@@ -3148,7 +3148,8 @@ finish_id_expression (tree id_expression,
       /* Only certain kinds of names are allowed in constant
 	 expression.  Enumerators and template parameters have already
 	 been handled above.  */
-      if (integral_constant_expression_p
+      if (! error_operand_p (decl)
+	  && integral_constant_expression_p
 	  && ! decl_constant_var_p (decl)
 	  && ! builtin_valid_in_constant_expr_p (decl))
 	{

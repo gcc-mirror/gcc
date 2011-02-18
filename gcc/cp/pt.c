@@ -18926,7 +18926,11 @@ do_auto_deduction (tree type, tree init, tree auto_node)
 			       DEDUCE_CALL, LOOKUP_NORMAL);
   if (val > 0)
     {
-      error ("unable to deduce %qT from %qE", type, init);
+      if (type && type != error_mark_node)
+	/* If type is error_mark_node a diagnostic must have been
+	   emitted by now.  Also, having a mention to '<type error>'
+	   in the diagnostic is not really useful to the user.  */
+	error ("unable to deduce %qT from %qE", type, init);
       return error_mark_node;
     }
 

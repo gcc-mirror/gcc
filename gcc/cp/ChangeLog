@@ -1,3 +1,11 @@
+2011-02-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47208
+	* pt.c (do_auto_deduction): Do not mention error_mark_node in
+    	diagnostics.
+	* semantics.c (finish_id_expression): Do not pass erroneous decl
+    	to decl_constant_var_p.
+
 2011-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/47783
