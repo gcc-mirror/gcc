@@ -3104,7 +3104,7 @@ expand_debug_expr (tree exp)
 
 	    gcc_assert (part >= 0 && (unsigned)part < SA.map->num_partitions);
 
-	    op0 = SA.partition_to_pseudo[part];
+	    op0 = copy_rtx (SA.partition_to_pseudo[part]);
 	  }
 	goto adjust_mode;
       }
