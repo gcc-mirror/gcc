@@ -504,6 +504,26 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
   field = c->backend_decl;
   gcc_assert (TREE_CODE (field) == FIELD_DECL);
   decl = se->expr;
+
+  /* Components can correspond to fields of different containing
+     types, as components are created without context, whereas
+     a concrete use of a component has the type of decl as context.
+     So, if the type doesn't match, we search the corresponding
+     FIELD_DECL in the parent type.  To not waste too much time
+     we cache this result in norestrict_decl.  */
+
+  if (DECL_FIELD_CONTEXT (field) != TREE_TYPE (decl))
+    {
+      tree f2 = c->norestrict_decl;
+      if (!f2 || DECL_FIELD_CONTEXT (f2) != TREE_TYPE (decl))
+	for (f2 = TYPE_FIELDS (TREE_TYPE (decl)); f2; f2 = DECL_CHAIN (f2))
+	  if (TREE_CODE (f2) == FIELD_DECL
+	      && DECL_NAME (f2) == DECL_NAME (field))
+	    break;
+      gcc_assert (f2);
+      c->norestrict_decl = f2;
+      field = f2;
+    }
   tmp = fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
 			 decl, field, NULL_TREE);
 

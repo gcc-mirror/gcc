@@ -1746,6 +1746,171 @@ gfc_build_pointer_type (gfc_symbol * sym, tree type)
   else
     return build_pointer_type (type);
 }
+
+static tree gfc_nonrestricted_type (tree t);
+/* Given two record or union type nodes TO and FROM, ensure
+   that all fields in FROM have a corresponding field in TO,
+   their type being nonrestrict variants.  This accepts a TO
+   node that already has a prefix of the fields in FROM.  */
+static void
+mirror_fields (tree to, tree from)
+{
+  tree fto, ffrom;
+  tree *chain;
+
+  /* Forward to the end of TOs fields.  */
+  fto = TYPE_FIELDS (to);
+  ffrom = TYPE_FIELDS (from);
+  chain = &TYPE_FIELDS (to);
+  while (fto)
+    {
+      gcc_assert (ffrom && DECL_NAME (fto) == DECL_NAME (ffrom));
+      chain = &DECL_CHAIN (fto);
+      fto = DECL_CHAIN (fto);
+      ffrom = DECL_CHAIN (ffrom);
+    }
+
+  /* Now add all fields remaining in FROM (starting with ffrom).  */
+  for (; ffrom; ffrom = DECL_CHAIN (ffrom))
+    {
+      tree newfield = copy_node (ffrom);
+      DECL_CONTEXT (newfield) = to;
+      /* The store to DECL_CHAIN might seem redundant with the
+	 stores to *chain, but not clearing it here would mean
+	 leaving a chain into the old fields.  If ever
+	 our called functions would look at them confusion
+	 will arise.  */
+      DECL_CHAIN (newfield) = NULL_TREE;
+      *chain = newfield;
+      chain = &DECL_CHAIN (newfield);
+
+      if (TREE_CODE (ffrom) == FIELD_DECL)
+	{
+	  tree elemtype = gfc_nonrestricted_type (TREE_TYPE (ffrom));
+	  TREE_TYPE (newfield) = elemtype;
+	}
+    }
+  *chain = NULL_TREE;
+}
+
+/* Given a type T, returns a different type of the same structure,
+   except that all types it refers to (recursively) are always
+   non-restrict qualified types.  */
+static tree
+gfc_nonrestricted_type (tree t)
+{
+  tree ret = t;
+
+  /* If the type isn't layed out yet, don't copy it.  If something
+     needs it for real it should wait until the type got finished.  */
+  if (!TYPE_SIZE (t))
+    return t;
+
+  if (!TYPE_LANG_SPECIFIC (t))
+    TYPE_LANG_SPECIFIC (t)
+      = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));
+  /* If we're dealing with this very node already further up
+     the call chain (recursion via pointers and struct members)
+     we haven't yet determined if we really need a new type node.
+     Assume we don't, return T itself.  */
+  if (TYPE_LANG_SPECIFIC (t)->nonrestricted_type == error_mark_node)
+    return t;
+
+  /* If we have calculated this all already, just return it.  */
+  if (TYPE_LANG_SPECIFIC (t)->nonrestricted_type)
+    return TYPE_LANG_SPECIFIC (t)->nonrestricted_type;
+
+  /* Mark this type.  */
+  TYPE_LANG_SPECIFIC (t)->nonrestricted_type = error_mark_node;
+
+  switch (TREE_CODE (t))
+    {
+      default:
+	break;
+
+      case POINTER_TYPE:
+      case REFERENCE_TYPE:
+	{
+	  tree totype = gfc_nonrestricted_type (TREE_TYPE (t));
+	  if (totype == TREE_TYPE (t))
+	    ret = t;
+	  else if (TREE_CODE (t) == POINTER_TYPE)
+	    ret = build_pointer_type (totype);
+	  else
+	    ret = build_reference_type (totype);
+	  ret = build_qualified_type (ret,
+				      TYPE_QUALS (t) & ~TYPE_QUAL_RESTRICT);
+	}
+	break;
+
+      case ARRAY_TYPE:
+	{
+	  tree elemtype = gfc_nonrestricted_type (TREE_TYPE (t));
+	  if (elemtype == TREE_TYPE (t))
+	    ret = t;
+	  else
+	    {
+	      ret = build_variant_type_copy (t);
+	      TREE_TYPE (ret) = elemtype;
+	      if (TYPE_LANG_SPECIFIC (t)
+		  && GFC_TYPE_ARRAY_DATAPTR_TYPE (t))
+		{
+		  tree dataptr_type = GFC_TYPE_ARRAY_DATAPTR_TYPE (t);
+		  dataptr_type = gfc_nonrestricted_type (dataptr_type);
+		  if (dataptr_type != GFC_TYPE_ARRAY_DATAPTR_TYPE (t))
+		    {
+		      TYPE_LANG_SPECIFIC (ret)
+			= ggc_alloc_cleared_lang_type (sizeof (struct
+							       lang_type));
+		      *TYPE_LANG_SPECIFIC (ret) = *TYPE_LANG_SPECIFIC (t);
+		      GFC_TYPE_ARRAY_DATAPTR_TYPE (ret) = dataptr_type;
+		    }
+		}
+	    }
+	}
+	break;
+
+      case RECORD_TYPE:
+      case UNION_TYPE:
+      case QUAL_UNION_TYPE:
+	{
+	  tree field;
+	  /* First determine if we need a new type at all.
+	     Careful, the two calls to gfc_nonrestricted_type per field
+	     might return different values.  That happens exactly when
+	     one of the fields reaches back to this very record type
+	     (via pointers).  The first calls will assume that we don't
+	     need to copy T (see the error_mark_node marking).  If there
+	     are any reasons for copying T apart from having to copy T,
+	     we'll indeed copy it, and the second calls to
+	     gfc_nonrestricted_type will use that new node if they
+	     reach back to T.  */
+	  for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
+	    if (TREE_CODE (field) == FIELD_DECL)
+	      {
+		tree elemtype = gfc_nonrestricted_type (TREE_TYPE (field));
+		if (elemtype != TREE_TYPE (field))
+		  break;
+	      }
+	  if (!field)
+	    break;
+	  ret = build_variant_type_copy (t);
+	  TYPE_FIELDS (ret) = NULL_TREE;
+
+	  /* Here we make sure that as soon as we know we have to copy
+	     T, that also fields reaching back to us will use the new
+	     copy.  It's okay if that copy still contains the old fields,
+	     we won't look at them.  */
+	  TYPE_LANG_SPECIFIC (t)->nonrestricted_type = ret;
+	  mirror_fields (ret, t);
+	}
+        break;
+    }
+
+  TYPE_LANG_SPECIFIC (t)->nonrestricted_type = ret;
+  return ret;
+}
+
 
 /* Return the type for a symbol.  Special handling is required for character
    types to get the correct level of indirection.
@@ -1796,6 +1961,9 @@ gfc_sym_type (gfc_symbol * sym)
 
   restricted = !sym->attr.target && !sym->attr.pointer
                && !sym->attr.proc_pointer && !sym->attr.cray_pointee;
+  if (!restricted)
+    type = gfc_nonrestricted_type (type);
+
   if (sym->attr.dimension)
     {
       if (gfc_is_nodesc_array (sym))
