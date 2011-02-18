@@ -1,5 +1,12 @@
 2011-02-18  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/47798
+	* lto-streamer.h (lto_global_var_decls): Declare.
+	* lto-streamer-in.c (lto_register_var_decl_in_symtab): Register
+	statics for global var processing.
+
+2011-02-18  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/47737
 	* tree-ssa-loop-im.c (extract_true_false_args_from_phi): Fix
 	edge dominance check.

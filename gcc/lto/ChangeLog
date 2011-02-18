@@ -1,3 +1,10 @@
+2011-02-18  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47798
+	* lto-tree.h (lto_global_var_decls): Do not declare here.
+	* lto-lang.c: Include lto-streamer.h.
+	* Make-lang.in (lto-lang.o): Adjust dependencies.
+
 2011-02-10  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR lto/47241
