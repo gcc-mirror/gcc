@@ -1033,22 +1033,14 @@ find_reg_class_closure (void)
 static void
 setup_hard_regno_cover_class (void)
 {
-  int i, j;
-  enum reg_class cl;
+  int i;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      ira_hard_regno_cover_class[i] = NO_REGS;
-      for (j = 0; j < ira_reg_class_cover_size; j++)
-	{
-	  cl = ira_reg_class_cover[j];
-	  if (ira_class_hard_reg_index[cl][i] >= 0)
-	    {
-	      ira_hard_regno_cover_class[i] = cl;
-	      break;
-	    }
-	}
-
+      ira_hard_regno_cover_class[i]
+	= (TEST_HARD_REG_BIT (no_unit_alloc_regs, i)
+	   ? NO_REGS
+	   : ira_class_translate[REGNO_REG_CLASS (i)]);
     }
 }
 
