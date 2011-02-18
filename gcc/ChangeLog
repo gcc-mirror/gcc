@@ -1,3 +1,9 @@
+2011-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47780
+	* cfgexpand.c (expand_debug_expr) <case SSA_NAME>: Call copy_rtx to
+	avoid invalid rtx sharing.
+
 2011-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/cpp.texi (Obsolete Features): Add background on the

@@ -1,3 +1,8 @@
+2011-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47780
+	* gcc.target/i386/pr47780.c: New test.
+
 2011-02-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47767
