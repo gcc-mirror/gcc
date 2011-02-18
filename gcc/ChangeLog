@@ -1,3 +1,8 @@
+2011-02-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/cpp.texi (Obsolete Features): Add background on the
+	origin of assertions.
+
 2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin-c.c (darwin_cpp_builtins): Define __OBJC2__ for
