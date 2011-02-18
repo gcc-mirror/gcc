@@ -1,3 +1,8 @@
+2011-02-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47767
+	* gfortran.dg/class_40.f03: New.
+
 2011-02-18  Dodji Seketeli  <dodji@redhat.com>
 
     	PR c++/47208
