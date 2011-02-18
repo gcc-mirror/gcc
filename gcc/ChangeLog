@@ -1,3 +1,8 @@
+2011-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/47792
+	* gthr-dce.h (__gthread_mutx_destroy): Fix typo in name.
+
 2011-02-18  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32r/m32r.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P,
