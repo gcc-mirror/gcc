@@ -1,3 +1,12 @@
+2011-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config.gcc (hppa[12]*-*-hpux11*): Set extra_parts.
+	* config/pa/stublib.c (pthread_default_stacksize_np, pthread_mutex_lock,
+	pthread_mutex_unlock, pthread_once): Reinstate pthread stubs.
+	* config/pa/t-pa-hpux11: Add rules to build pthread stubs.
+	* config/pa/t-pa64: Likewise.
+	* config/pa/pa-hpux11.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+
 2011-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/47787
