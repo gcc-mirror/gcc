@@ -2310,6 +2310,12 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result,
 	{
 	  gfc_component *this_comp = NULL;
 
+	  if (comp == sym->components && sym->attr.extension
+	      && comp->ts.type == BT_DERIVED
+	      && comp->ts.u.derived->attr.zero_comp)
+	    /* Skip empty parents.  */ 
+	    comp = comp->next;
+
 	  if (!comp_head)
 	    comp_tail = comp_head = gfc_get_structure_ctor_component ();
 	  else
