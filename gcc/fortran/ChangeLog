@@ -1,3 +1,10 @@
+2011-02-18  Tobias Burnus
+
+	PR fortran/47775
+	* trans-expr.c (arrayfunc_assign_needs_temporary): Use
+	esym to check whether the specific procedure returns an
+	allocatable or pointer.
+
 2011-02-18  Michael Matz  <matz@suse.de>
 
 	PR fortran/45586
