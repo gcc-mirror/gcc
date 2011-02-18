@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, Renesas M32R cpu.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -858,99 +858,6 @@ L2:     .word STATIC
       && (GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF || GET_CODE (XEXP (XEXP (X, 0), 0)) == LABEL_REF) \
       && CONST_INT_P (XEXP (XEXP (X, 0), 1))			\
       && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (X, 0), 1)) > 32767))
-
-/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
-   and check its validity for a certain class.
-   We have two alternate definitions for each of them.
-   The usual definition accepts all pseudo regs; the other rejects
-   them unless they have been allocated suitable hard regs.
-   The symbol REG_OK_STRICT causes the latter definition to be used.
-
-   Most source files want to accept pseudo regs in the hope that
-   they will get allocated to the class that the insn wants them to be in.
-   Source files for reload pass need to be strict.
-   After reload, it makes no difference, since pseudo regs have
-   been eliminated by then.  */
-
-#ifdef REG_OK_STRICT
-
-/* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X) GPR_P (REGNO (X))
-/* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
-
-#else
-
-/* Nonzero if X is a hard reg that can be used as a base reg
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X)		\
-  (GPR_P (REGNO (X))			\
-   || (REGNO (X)) == ARG_POINTER_REGNUM	\
-   || REGNO (X) >= FIRST_PSEUDO_REGISTER)
-/* Nonzero if X is a hard reg that can be used as an index
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
-
-#endif
-
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.  */
-
-/* Local to this file.  */
-#define RTX_OK_FOR_BASE_P(X) (REG_P (X) && REG_OK_FOR_BASE_P (X))
-
-/* Local to this file.  */
-#define RTX_OK_FOR_OFFSET_P(X) \
-  (CONST_INT_P (X) && INT16_P (INTVAL (X)))
-
-/* Local to this file.  */
-#define LEGITIMATE_OFFSET_ADDRESS_P(MODE, X)			\
-  (GET_CODE (X) == PLUS						\
-   && RTX_OK_FOR_BASE_P (XEXP (X, 0))				\
-   && RTX_OK_FOR_OFFSET_P (XEXP (X, 1)))
-
-/* Local to this file.  */
-/* For LO_SUM addresses, do not allow them if the MODE is > 1 word,
-   since more than one instruction will be required.  */
-#define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X)			\
-  (GET_CODE (X) == LO_SUM					\
-   && (MODE != BLKmode && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)\
-   && RTX_OK_FOR_BASE_P (XEXP (X, 0))				\
-   && CONSTANT_P (XEXP (X, 1)))
-
-/* Local to this file.  */
-/* Is this a load and increment operation.  */
-#define LOAD_POSTINC_P(MODE, X)					\
-  (((MODE) == SImode || (MODE) == SFmode)			\
-   && GET_CODE (X) == POST_INC					\
-   && REG_P (XEXP (X, 0))				\
-   && RTX_OK_FOR_BASE_P (XEXP (X, 0)))
-
-/* Local to this file.  */
-/* Is this an increment/decrement and store operation.  */
-#define STORE_PREINC_PREDEC_P(MODE, X)				\
-  (((MODE) == SImode || (MODE) == SFmode)			\
-   && (GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC)	\
-   && REG_P (XEXP (X, 0))				\
-   && RTX_OK_FOR_BASE_P (XEXP (X, 0)))
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\
-  do								\
-    {								\
-      if (RTX_OK_FOR_BASE_P (X))				\
-	goto ADDR;						\
-      if (LEGITIMATE_OFFSET_ADDRESS_P ((MODE), (X)))		\
-	goto ADDR;						\
-      if (LEGITIMATE_LO_SUM_ADDRESS_P ((MODE), (X)))		\
-	goto ADDR;						\
-      if (LOAD_POSTINC_P ((MODE), (X)))				\
-	goto ADDR;						\
-      if (STORE_PREINC_PREDEC_P ((MODE), (X)))			\
-	goto ADDR;						\
-    }								\
-  while (0)
 
 /* Condition code usage.  */
 
