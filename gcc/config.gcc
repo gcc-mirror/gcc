@@ -1012,6 +1012,7 @@ hppa[12]*-*-hpux11*)
 	else
 	    tmake_file="$tmake_file pa/t-slibgcc-dwarf-ver"
 	fi
+	extra_parts="libgcc_stub.a"
 	case x${enable_threads} in
 	x | xyes | xposix )
 		thread_file=posix
