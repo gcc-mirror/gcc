@@ -1,3 +1,8 @@
+2011-02-18  Tobias Burnus
+
+	PR fortran/47775
+	* gfortran.dg/func_result_6.f90: New.
+
 2011-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/47795
