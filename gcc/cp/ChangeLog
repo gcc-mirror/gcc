@@ -1,3 +1,9 @@
+2011-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47795
+	* semantics.c (finish_non_static_data_member): Early return if
+	object is error_mark_node.
+
 2011-02-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47208
