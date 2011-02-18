@@ -1533,6 +1533,9 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       object = maybe_dummy_object (scope, NULL);
     }
 
+  if (object == error_mark_node)
+    return error_mark_node;
+
   /* DR 613: Can use non-static data members without an associated
      object in sizeof/decltype/alignof.  */
   if (is_dummy_object (object) && cp_unevaluated_operand == 0
