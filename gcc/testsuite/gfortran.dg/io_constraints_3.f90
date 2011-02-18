@@ -44,8 +44,8 @@
   open(10, iostat=u,position="append")
   open(10, iostat=u,position=foo) ! { dg-warning "POSITION specifier in OPEN statement" }
 
-  open(10, iostat=u,recl="ee") ! { dg-warning "must be of type INTEGER" }
-  open(10, iostat=u,recl=0.4) ! { dg-warning "must be of type INTEGER" }
+  open(10, iostat=u,recl="ee") ! { dg-error "must be of type INTEGER" }
+  open(10, iostat=u,recl=0.4) ! { dg-error "must be of type INTEGER" }
   open(10, iostat=u,recl=zero) ! { dg-warning "must be positive" }
   open(10, iostat=u,recl=mone) ! { dg-warning "must be positive" }
 
@@ -105,8 +105,8 @@
   open(10, err=99,position="append")
   open(10, err=99,position=foo) ! { dg-warning "POSITION specifier in OPEN statement" }
 
-  open(10, err=99,recl="ee") ! { dg-warning "must be of type INTEGER" }
-  open(10, err=99,recl=0.4) ! { dg-warning "must be of type INTEGER" }
+  open(10, err=99,recl="ee") ! { dg-error "must be of type INTEGER" }
+  open(10, err=99,recl=0.4) ! { dg-error "must be of type INTEGER" }
   open(10, err=99,recl=zero) ! { dg-warning "must be positive" }
   open(10, err=99,recl=mone) ! { dg-warning "must be positive" }
 

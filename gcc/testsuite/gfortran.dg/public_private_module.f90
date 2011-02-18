@@ -8,12 +8,12 @@ end module a
 module b
   use a
   implicit none
-  public a  ! { dg-warning "attribute applied to" }
+  public a  ! { dg-error "attribute applied to" }
 end module b
 
 module d
   use a
   implicit none
-  private a  ! { dg-warning "attribute applied to" }
+  private a  ! { dg-error "attribute applied to" }
 end module d
 ! { dg-final { cleanup-modules "a" } }

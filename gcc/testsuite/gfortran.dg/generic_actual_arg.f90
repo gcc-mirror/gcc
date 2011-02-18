@@ -37,7 +37,7 @@ USE TEST
 USE TEST2
 CALL F(CALCULATION)  ! { dg-error "GENERIC procedure" } 
 
-CALL F(CALCULATION2) ! OK because there is a same name specific, but: ! { dg-warning "More actual than formal arguments" }
+CALL F(CALCULATION2) ! OK because there is a same name specific, but: ! { dg-error "More actual than formal arguments" }
 END
 
 SUBROUTINE F()

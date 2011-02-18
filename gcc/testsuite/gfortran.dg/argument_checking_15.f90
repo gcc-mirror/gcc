@@ -45,8 +45,8 @@ subroutine test()
 implicit none
 character(len=5), pointer :: c
 character(len=5) :: str(5)
-call foo(c) ! { dg-error "Character length mismatch" }
-call bar(str) ! { dg-error "Character length mismatch" }
+call foo(c) ! { dg-warning "Character length mismatch" }
+call bar(str) ! { dg-warning "Character length mismatch" }
 contains
   subroutine foo(a)
     character(len=3), pointer :: a

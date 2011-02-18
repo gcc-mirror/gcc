@@ -1,3 +1,42 @@
+2011-02-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47750
+	* lib/gfortran.exp (gfortran_init): Set gcc_error_prefix and
+	gcc_warning_prefix.
+	* lib/gfortran-dg.exp (gfortran-dg-test): Update regexp for
+	normalizing the error/warning output.
+	* gfortran.dg/Wall.f90: Update dg-error/warning.
+	* gfortran.dg/argument_checking_15.f90: Update dg-error/warning.
+	* gfortran.dg/argument_checking_3.f90: Update dg-error/warning.
+	* gfortran.dg/argument_checking_6.f90: Update dg-error/warning.
+	* gfortran.dg/bounds_temporaries_1.f90: Update dg-error/warning.
+	* gfortran.dg/class_30.f90: Update dg-error/warning.
+	* gfortran.dg/continuation_1.f90: Update dg-error/warning.
+	* gfortran.dg/continuation_9.f90: Update dg-error/warning.
+	* gfortran.dg/do_check_5.f90: Update dg-error/warning.
+	* gfortran.dg/entry_17.f90: Update dg-error/warning.
+	* gfortran.dg/entry_19.f90: Update dg-error/warning.
+	* gfortran.dg/fmt_error.f90: Update dg-error/warning.
+	* gfortran.dg/fmt_read_2.f90: Update dg-error/warning.
+	* gfortran.dg/g77/12632.f: Update dg-error/warning.
+	* gfortran.dg/g77/970625-2.f: Update dg-error/warning.
+	* gfortran.dg/g77/980615-0.f: Update dg-error/warning.
+	* gfortran.dg/generic_actual_arg.f90: Update dg-error/warning.
+	* gfortran.dg/global_references_1.f90: Update dg-error/warning.
+	* gfortran.dg/goto_8.f90: Update dg-error/warning.
+	* gfortran.dg/initialization_1.f90: Update dg-error/warning.
+	* gfortran.dg/io_constraints_1.f90: Update dg-error/warning.
+	* gfortran.dg/io_constraints_2.f90: Update dg-error/warning.
+	* gfortran.dg/io_constraints_3.f90: Update dg-error/warning.
+	* gfortran.dg/iostat_3.f90: Update dg-error/warning.
+	* gfortran.dg/public_private_module.f90: Update dg-error/warning.
+	* gfortran.dg/volatile3.f90: Update dg-error/warning.
+	* gfortran.dg/warning-directive-2.F90: Update dg-error/warning.
+	* gfortran.dg/warnings_are_errors_1.f: Update dg-error/warning.
+	* gfortran.dg/whole_file_1.f90: Update dg-error/warning.
+	* gfortran.dg/whole_file_2.f90: Update dg-error/warning.
+	* gfortran.dg/whole_file_3.f90: Update dg-error/warning.
+
 2011-02-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47768
@@ -15,7 +54,7 @@
 
 2011-02-18  Dodji Seketeli  <dodji@redhat.com>
 
-    	PR c++/47208
+	PR c++/47208
 	* g++.dg/cpp0x/auto21.C: New test.
 
 2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>

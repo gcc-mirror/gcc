@@ -22,9 +22,9 @@ end interface
   len2 = '12'
   len4 = '1234'
 
-  call foo(len2) ! { dg-warning "Rank mismatch in argument" }
-  call foo("ca") ! { dg-warning "Rank mismatch in argument" }
-  call bar("ca") ! { dg-warning "Rank mismatch in argument" }
+  call foo(len2) ! { dg-error "Rank mismatch in argument" }
+  call foo("ca") ! { dg-error "Rank mismatch in argument" }
+  call bar("ca") ! { dg-error "Rank mismatch in argument" }
   call foobar(len2) ! { dg-warning "contains too few elements" }
   call foobar(len4)
   call foobar("bar") ! { dg-warning "contains too few elements" }
