@@ -1,3 +1,11 @@
+2011-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/47804
+	* testsuite/libgomp.fortran/fortran.exp: Check for both
+	libquadmath.a and libquadmath.${shlib_ext}.  If neither exists,
+	but $blddir != "", still append ${blddir}/${lang_library_path}
+	to ld_library_path.
+
 2011-02-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR libgomp/47758
