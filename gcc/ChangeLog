@@ -1,3 +1,9 @@
+2011-02-18  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR rtl-optimization/46178
+	* ira.c (setup_hard_regno_class): Use ira_class_translate[] to
+	compute ira_hard_regno_cover_class[].
+
 2011-02-18  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/47798
