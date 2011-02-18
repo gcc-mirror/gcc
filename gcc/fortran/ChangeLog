@@ -1,3 +1,18 @@
+2011-02-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47767
+	* gfortran.h (gfc_check_access): Removed prototype.
+	(gfc_check_symbol_access): Added prototype.
+	* module.c (gfc_check_access): Renamed to 'check_access', made static.
+	(gfc_check_symbol_access): New function, basically a shortcut for
+	'check_access'.
+	(write_dt_extensions,write_symbol0,write_generic,write_symtree): Use
+	'gfc_check_symbol_access'.
+	(write_operator,write_module): Renamed 'gfc_check_access'.
+	* resolve.c (resolve_fl_procedure,resolve_fl_derived,
+	resolve_fl_namelist,resolve_symbol,resolve_fntype): Use
+	'gfc_check_symbol_access'.
+
 2011-02-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47745

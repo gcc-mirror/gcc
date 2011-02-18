@@ -4592,8 +4592,8 @@ read_module (void)
    PRIVATE, then private, and otherwise it is public unless the default
    access in this context has been declared PRIVATE.  */
 
-bool
-gfc_check_access (gfc_access specific_access, gfc_access default_access)
+static bool
+check_access (gfc_access specific_access, gfc_access default_access)
 {
   if (specific_access == ACCESS_PUBLIC)
     return TRUE;
@@ -4604,6 +4604,16 @@ gfc_check_access (gfc_access specific_access, gfc_access default_access)
     return default_access == ACCESS_PUBLIC;
   else
     return default_access != ACCESS_PRIVATE;
+}
+
+
+bool
+gfc_check_symbol_access (gfc_symbol *sym)
+{
+  if (sym->attr.vtab || sym->attr.vtype)
+    return true;
+  else
+    return check_access (sym->attr.access, sym->ns->default_access);
 }
 
 
@@ -4792,8 +4802,7 @@ write_equiv (void)
 static void
 write_dt_extensions (gfc_symtree *st)
 {
-  if (!gfc_check_access (st->n.sym->attr.access,
-			 st->n.sym->ns->default_access))
+  if (!gfc_check_symbol_access (st->n.sym))
     return;
 
   mio_lparen ();
@@ -4874,7 +4883,7 @@ write_symbol0 (gfc_symtree *st)
       && !sym->attr.subroutine && !sym->attr.function)
     dont_write = true;
 
-  if (!gfc_check_access (sym->attr.access, sym->ns->default_access))
+  if (!gfc_check_symbol_access (sym))
     dont_write = true;
 
   if (!dont_write)
@@ -4931,8 +4940,7 @@ write_operator (gfc_user_op *uop)
   static char nullstring[] = "";
   const char *p = nullstring;
 
-  if (uop->op == NULL
-      || !gfc_check_access (uop->access, uop->ns->default_access))
+  if (uop->op == NULL || !check_access (uop->access, uop->ns->default_access))
     return;
 
   mio_symbol_interface (&uop->name, &p, &uop->op);
@@ -4956,8 +4964,7 @@ write_generic (gfc_symtree *st)
   if (!sym || check_unique_name (st->name))
     return;
 
-  if (sym->generic == NULL
-      || !gfc_check_access (sym->attr.access, sym->ns->default_access))
+  if (sym->generic == NULL || !gfc_check_symbol_access (sym))
     return;
 
   if (sym->module == NULL)
@@ -4982,7 +4989,7 @@ write_symtree (gfc_symtree *st)
 	&& sym->ns->proc_name->attr.if_source == IFSRC_IFBODY)
     return;
 
-  if (!gfc_check_access (sym->attr.access, sym->ns->default_access)
+  if (!gfc_check_symbol_access (sym)
       || (sym->attr.flavor == FL_PROCEDURE && sym->attr.generic
 	  && !sym->attr.subroutine && !sym->attr.function))
     return;
@@ -5013,8 +5020,8 @@ write_module (void)
       if (i == INTRINSIC_USER)
 	continue;
 
-      mio_interface (gfc_check_access (gfc_current_ns->operator_access[i],
-				       gfc_current_ns->default_access)
+      mio_interface (check_access (gfc_current_ns->operator_access[i],
+				   gfc_current_ns->default_access)
 		     ? &gfc_current_ns->op[i] : NULL);
     }
 

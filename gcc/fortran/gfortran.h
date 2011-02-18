@@ -2832,7 +2832,7 @@ gfc_try gfc_resolve_wait (gfc_wait *);
 void gfc_module_init_2 (void);
 void gfc_module_done_2 (void);
 void gfc_dump_module (const char *, int);
-bool gfc_check_access (gfc_access, gfc_access);
+bool gfc_check_symbol_access (gfc_symbol *);
 void gfc_free_use_stmts (gfc_use_list *);
 
 /* primary.c */
