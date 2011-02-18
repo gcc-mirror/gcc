@@ -8091,6 +8091,14 @@ resolve_transfer (gfc_code *code)
 	  return;
 	}
 
+      /* F08:C935.  */
+      if (ts->u.derived->attr.proc_pointer_comp)
+	{
+	  gfc_error ("Data transfer element at %L cannot have "
+		     "procedure pointer components", &code->loc);
+	  return;
+	}
+
       if (ts->u.derived->attr.alloc_comp)
 	{
 	  gfc_error ("Data transfer element at %L cannot have "

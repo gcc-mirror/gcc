@@ -1,5 +1,11 @@
 2011-02-18  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/47768
+	* resolve.c (resolve_transfer): Reject variables with procedure pointer
+	components.
+
+2011-02-18  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/47767
 	* gfortran.h (gfc_check_access): Removed prototype.
 	(gfc_check_symbol_access): Added prototype.
