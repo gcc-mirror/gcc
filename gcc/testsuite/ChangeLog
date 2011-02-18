@@ -1,3 +1,8 @@
+2011-02-18  Dodji Seketeli  <dodji@redhat.com>
+
+    	PR c++/47208
+	* g++.dg/cpp0x/auto21.C: New test.
+
 2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/special/unclaimed-category-1.h: Updated for
