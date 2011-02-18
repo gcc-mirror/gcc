@@ -2432,6 +2432,8 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
       ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
       SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
       rest_of_decl_compilation (decl, 1, 0);
+
+      VEC_safe_push (tree, gc, lto_global_var_decls, decl);
     }
 
   /* If this variable has already been declared, queue the
