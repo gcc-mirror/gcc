@@ -1,3 +1,13 @@
+2011-02-18  Michael Matz  <matz@suse.de>
+
+	PR fortran/45586
+	* gfortran.h (struct gfc_component): Add norestrict_decl member.
+	* trans.h (struct lang_type): Add nonrestricted_type member.
+	* trans-expr.c (gfc_conv_component_ref): Search fields with correct
+	parent type.
+	* trans-types.c (mirror_fields, gfc_nonrestricted_type): New.
+	(gfc_sym_type): Use it.
+
 2011-02-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47768
