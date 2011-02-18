@@ -140,6 +140,16 @@ extern GTY(()) int darwin_ms_struct;
   } while (0)
 
 #define SUBTARGET_C_COMMON_OVERRIDE_OPTIONS do {                        \
+  /* Unless set, force ABI=2 for NeXT and m64, 0 otherwise.  */		\
+  if (!global_options_set.x_flag_objc_abi)				\
+    global_options.x_flag_objc_abi					\
+	= (flag_next_runtime && TARGET_64BIT) ? 2 : 0;			\
+  /* Objective-C family ABI 2 is only valid for next/m64 at present. */	\
+  if (global_options_set.x_flag_objc_abi && flag_next_runtime)		\
+    if (TARGET_64BIT && global_options.x_flag_objc_abi < 2)		\
+      error_at (UNKNOWN_LOCATION, "%<-fobjc-abi-version%> >= 2 is only"	\
+		" supported on %<-m64%> targets for"			\
+		" %<-fnext-runtime%>");					\
   /* Sort out ObjC exceptions: If the runtime is NeXT we default to	\
      sjlj for m32 only.  */						\
   if (!global_options_set.x_flag_objc_sjlj_exceptions)			\
@@ -599,7 +609,7 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
 	 }								     \
        else if (xname[0] == '+' || xname[0] == '-')			     \
          fprintf (FILE, "\"%s\"", xname);				     \
-       else if (darwin_label_is_anonymous_local_objc_name (xname))				     \
+       else if (darwin_label_is_anonymous_local_objc_name (xname))	     \
          fprintf (FILE, "L%s", xname);					     \
        else if (!strncmp (xname, ".objc_class_name_", 17))		     \
 	 fprintf (FILE, "%s", xname);					     \

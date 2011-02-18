@@ -7,12 +7,18 @@
 /* { dg-skip-if "NeXT-only" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-options "-freplace-objc-classes" } */
 
-#include "../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
+#include <objc/Object.h>
 
 extern void abort(void);
-
 #define CHECK_IF(expr) if(!(expr)) abort();
+
+@interface Object (TEST_SUITE_C1)
+- init;
+@end
+@implementation Object (TEST_SUITE_C1)
+- init {return self;}
+@end
 
 @interface Base: Object {
 @public
@@ -33,4 +39,5 @@ extern void abort(void);
 }
 @end
 
-/* { dg-final { scan-assembler "\t.section __OBJC, __image_info.*\n\t.align.*\nL_OBJC_IMAGE_INFO.*:\n\t.long\t0\n\t.long\t1" } } */
+/* { dg-final { scan-assembler "\t.section __OBJC, __image_info.*\n\t.align.*\nL_OBJC_ImageInfo.*:\n\t.long\t0\n\t.long\t1"  { target { *-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler "\t.section __DATA, __objc_imageinfo.*\n\t.align.*\nL_OBJC_ImageInfo.*:\n\t.long\t0\n\t.long\t17" { target { *-*-darwin* && { lp64 } } } } } */

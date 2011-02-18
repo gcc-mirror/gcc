@@ -1,5 +1,5 @@
 /* Language-dependent hooks for Objective-C.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010
+   Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "c-objc-common.h"
+#include "c-lang.h"
 
 enum c_language_kind c_language = clk_objc;
 static void objc_init_ts (void);
@@ -50,13 +51,6 @@ static void objc_init_ts (void);
 #define LANG_HOOKS_GIMPLIFY_EXPR objc_gimplify_expr
 #undef LANG_HOOKS_INIT_TS
 #define LANG_HOOKS_INIT_TS objc_init_ts
-
-#ifndef OBJCPLUS
-#undef LANG_HOOKS_EH_PERSONALITY
-#define LANG_HOOKS_EH_PERSONALITY objc_eh_personality
-#undef LANG_HOOKS_EH_RUNTIME_TYPE
-#define LANG_HOOKS_EH_RUNTIME_TYPE objc_eh_runtime_type
-#endif
 
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;

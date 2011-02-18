@@ -5,7 +5,11 @@
 
 @interface TestClass
 {
+#ifdef __OBJC2__
+  Class isa;
+#else
   id isa;
+#endif
 }
 - (int)D;
 @end

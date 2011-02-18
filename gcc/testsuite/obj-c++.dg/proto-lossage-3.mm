@@ -19,9 +19,16 @@
 int
 main()
 {
+#ifdef __OBJC2__
+protocol_getMethodDescription(@protocol(NoInstanceMethods), @selector(name), NO, YES);
+protocol_getMethodDescription(@protocol(NoInstanceMethods), @selector(name), NO, NO);
+protocol_getMethodDescription(@protocol(NoClassMethods), @selector(name), NO, YES);
+protocol_getMethodDescription(@protocol(NoClassMethods), @selector(name), NO, NO);
+#else
 [@protocol(NoInstanceMethods) descriptionForInstanceMethod: @selector(name)];
 [@protocol(NoInstanceMethods) descriptionForClassMethod: @selector(name)];
 [@protocol(NoClassMethods) descriptionForInstanceMethod: @selector(name)];
 [@protocol(NoClassMethods) descriptionForClassMethod: @selector(name)];
+#endif
 return 0;
 }

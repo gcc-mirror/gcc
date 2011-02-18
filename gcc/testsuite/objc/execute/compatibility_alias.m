@@ -10,3 +10,4 @@ int main (void)
 
   return 0;
 }
+#include "../../objc-obj-c++-shared/Object1-implementation.h"

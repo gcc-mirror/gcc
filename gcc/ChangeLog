@@ -1,3 +1,23 @@
+2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin-c.c (darwin_cpp_builtins): Define __OBJC2__ for
+	objc_abi == 2.	
+	* config/darwin.c (output_objc_section_asm_op): Added support for
+	ABI v1 and v2.
+	(is_objc_metadata): New.
+	(darwin_objc2_section): New.
+	(darwin_objc1_section): New.
+	(machopic_select_section): Added support for ABI v1 and v2.
+	(darwin_emit_objc_zeroed): New.
+	(darwin_output_aligned_bss): Detect objc metadata and treat it
+	appropriately.
+	(darwin_asm_output_aligned_decl_common): Same.
+	(darwin_asm_output_aligned_decl_local): Same.
+	* config/darwin-sections.def: Updated for ABI v1 and v2.
+	* config/darwin.h (SUBTARGET_C_COMMON_OVERRIDE_OPTIONS): When
+	compiling Objective-C code for the NeXT runtime, default to using
+	ABI version 0 for 32-bit, and version 2 for 64-bit.
+
 2011-02-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (optimize_fast): New Variable.

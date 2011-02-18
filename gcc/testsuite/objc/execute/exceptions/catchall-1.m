@@ -74,3 +74,4 @@ int main (void) {
 	test((Object *)-1);
 	return 0;
 }
+#import "../../../objc-obj-c++-shared/Object1-implementation.h"

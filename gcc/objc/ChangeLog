@@ -1,3 +1,106 @@
+2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config-lang.in (gtfiles): Updated.
+	* Make-lang.in (START_HDRS): New.
+	(OBJC_OBJS): Added new object files.
+	(objc/objc-act.o): Updated prerequisites.
+	(objc/objc-lang.o): Updated prerequisites.
+	(objc/objc-runtime-shared-support.o): New.
+	(objc/objc-gnu-runtime-abi-01.o): New.
+	(objc/objc-next-runtime-abi-01.o): New.
+	(objc/objc-next-runtime-abi-02.o): New.
+	* objc-runtime-hooks.h: New.
+	* objc-runtime-shared-support.h: New.
+	* objc-runtime-shared-support.c: New.
+	* objc-gnu-runtime-abi-01.c: New.
+	* objc-next-metadata-tags.h: New.
+	* objc-next-runtime-abi-01.c: New.
+	* objc-next-runtime-abi-02.c: New.
+	* objc-lang.c: Include c-lang.h.
+	(LANG_HOOKS_EH_PERSONALITY): Removed.
+	* objc-act.h: Moved many declarations and code from objc-act.c
+	into objc-act.h to make them available outside objc-act.c.
+	(objc_eh_runtime_type): Removed.
+	(objc_eh_personality): Removed.
+	(CLASS_HAS_EXCEPTION_ATTR): New.
+	(OCTI_SUPER_SUPERFIELD_ID): New.
+	(OCTI_V1_PROP_LIST_TEMPL): New.
+	(OCTI_V1_PROP_NAME_ATTR_CHAIN): New.
+	(super_superclassfield_id): New.
+	(objc_prop_list_ptr): New.
+	(prop_names_attr_chain): New.
+	* objc-act.c: Include new runtime headers.  Moved many #defines
+	and declarations into objc-act.h and
+	objc-runtime-shared-support.h.  Made some corresponding functions
+	non-static, and moved some others into
+	objc-runtime-shared-support.c.  Moved metadata generation code
+	into the new runtime hook files.
+	(ivar_offset_hash_list): New.
+	(objc_init): Call generate_struct_value_by_array() before doing
+	any runtime initialization.  Create the appropriate runtime hook
+	structures.
+	(init_objc): Removed.  Code moved directly into objc_init.
+	(finish_objc): Removed.  Code moved directly into
+	objc_write_global_declarations.
+	(objc_write_global_declarations): Do the warn_selector checks
+	before emitting metadata.  Use a runtime hook to emit the
+	metadata.  Do not emit the metadata or do -gen-decls processing if
+	-fsyntax-only or we are producing a PCH.
+	(build_objc_exception_stuff): Renamed to
+	build_common_objc_exception_stuff.  Remove TREE_NOTHROW flag from
+	objc_exception_throw_decl.
+	(synth_module_prologue): Call runtime initialize hook instead of
+	building runtime declarations here.  Use the
+	default_constant_string_class_name runtime hook to set the
+	constant string class name.
+	(objc_build_string_object): Call the setup_const_string_class_decl
+	runtime hook instead of setup_string_decl.  Call the
+	build_const_string_constructor runtime hook instead of building
+	the string object here.
+	(get_objc_string_decl): Added prop_names_attr case.  Removed
+	gcc_unreachable() at the end.
+	(objc_begin_catch_clause): Distinguish between @catch (...) and
+	@catch (id x).  Call the begin_catch runtime hook instead of
+	building the CATCH_EXPR here.
+	(objc_finish_catch_clause): Call the finish_catch runtime hook
+	instead of adding the catch here.
+	(objc_finish_try_stmt): Call the finish_try_stmt runtime hook
+	instead of doing it here.
+	(objc_build_throw_stmt): Bail out early for error_mark_node.  Call
+	the build_exc_ptr runtime hook instead of objc_build_exc_ptr.
+	Call the build_throw_stmt runtime hook instead of building the
+	throw call here.
+	(objc_generate_cxx_cdtors): Set has_cxx_cdtors for the GNU runtime
+	as well.
+	(get_arg_type_list): Call the get_arg_type_list_base runtime hook
+	instead of building the list of arguments here.
+	(receiver_is_class_object): Call the receiver_is_class_object
+	runtime hook instead of doing the check here.  Call the
+	tag_getclass runtime hook instead of using TAG_GETCLASS.
+	(objc_finish_message_expr): Call the build_objc_method_call
+	runtime hook.
+	(objc_build_protocol_expr): Call the get_protocol_reference
+	runtime hook.
+	(objc_build_selector_expr): Call the build_selector_reference
+	runtime hook.
+	(build_ivar_reference): Call the build_ivar_reference runtime
+	hook.
+	(hash_init): Set up ivar_offset_hash_list.
+	(start_class): Recognize the objc_exception attribute and store
+	it.
+	(continue_class): Use the class_decl and metaclass_decl runtime
+	hooks.
+	(build_objc_property_accessor_helpers): Renamed to
+	build_common_objc_property_accessor_helpers.  Do not build
+	objc_copyStruct_decl, objc_getPropertyStruct_decl and
+	objc_setPropertyStruct_decl.
+	(objc_synthesize_getter): Check what struct setter/getter helper
+	is available instead of checking the type of runtime.
+	(get_super_receiver): Use the super_superclassfield_ident runtime
+	hook.  Added assert.  Use the get_class_super_ref and
+	get_category_super_ref runtime hooks.
+	(objc_v2_encode_prop_attr): New.
+	
 2011-01-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47314
