@@ -1,3 +1,8 @@
+2011-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/47787
+	* gcc.c (default_compilers): Clear combinable field for "@cpp-output".
+
 2011-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/47792
