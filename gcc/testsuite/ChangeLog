@@ -1,4 +1,9 @@
-2011-02-15  Tobias Burnus  <burnus@net-b.de>
+2011-02-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47795
+	* g++.dg/cpp0x/lambda/lambda-ice3.C: New.
+
+2011-02-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47750
 	* lib/gfortran.exp (gfortran_init): Set gcc_error_prefix and
@@ -66,26 +71,26 @@
 	* objc.dg/lookup-1.m: Same.
 	* objc.dg/torture/strings/const-str-9.m
 	* objc.dg/torture/strings/const-str-10.m: Same.
-	* objc.dg/torture/strings/const-str-11.m: Same. 
+	* objc.dg/torture/strings/const-str-11.m: Same.
 	* objc.dg/torture/forward-1.m: Same.
-	* objc.dg/zero-link-2.m: Same.  
-	* objc.dg/encode-7-next-64bit.m: Same. 
+	* objc.dg/zero-link-2.m: Same.
+	* objc.dg/encode-7-next-64bit.m: Same.
 	* objc.dg/method-4.m: Same.
 	* objc.dg/next-runtime-1.m: Same.
-	* objc.dg/image-info.m: Same. 
+	* objc.dg/image-info.m: Same.
 	* objc.dg/pr23214.m: Same.
 	* objc.dg/symtab-1.m: Same.
-	* obj-c++.dg/basic.m: Same.m
-	* obj-c++.dg/proto-lossage-3.m: Same.m
-	* obj-c++.dg/torture/strings/const-str-10.m: Same.m
-	* obj-c++.dg/torture/strings/const-str-11.m: Same.m 
-	* obj-c++.dg/torture/strings/const-str-9.m: Same.m
-	* obj-c++.dg/method-11.m: Same.m
+	* obj-c++.dg/basic.m: Same.
+	* obj-c++.dg/proto-lossage-3.m: Same.
+	* obj-c++.dg/torture/strings/const-str-10.m: Same.
+	* obj-c++.dg/torture/strings/const-str-11.m: Same.
+	* obj-c++.dg/torture/strings/const-str-9.m: Same.
+	* obj-c++.dg/method-11.m: Same.
 	* objc/execute/enumeration-1.m: Same.
-	* objc/execute/object_is_class.m: Same. 
+	* objc/execute/object_is_class.m: Same.
 	* objc/execute/formal_protocol-2.m: Same.
-	* objc/execute/formal_protocol-4.m: Same. 
-	* objc/execute/formal_protocol-6.m: Same. 
+	* objc/execute/formal_protocol-4.m: Same.
+	* objc/execute/formal_protocol-6.m: Same.
 	* objc/execute/bycopy-3.m: Same.
 	* objc/execute/exceptions/catchall-1.m: Same.
 	* objc/execute/exceptions/finally-1.m: Same.
@@ -94,7 +99,7 @@
 	* objc/execute/bf-common.h
 	* objc/execute/enumeration-2.m: Same.
 	* objc/execute/formal_protocol-1.m: Same.
-	* objc/execute/formal_protocol-3.m: Same. 
+	* objc/execute/formal_protocol-3.m: Same.
 	* objc/execute/formal_protocol-5.m: Same.
 	* objc/execute/accessing_ivars.m: Same.
 	* objc/execute/bycopy-2.m: Same.
@@ -108,7 +113,7 @@
 	* obj-c++.dg/try-catch-9.mm: xfail-run the test with both
 	runtimes.
 	* obj-c++.dg/try-catch-2.mm: Same.
-	
+
 2011-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/47783
