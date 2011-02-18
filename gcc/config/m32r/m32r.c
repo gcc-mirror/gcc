@@ -66,6 +66,7 @@ static void  m32r_option_override (void);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
+static bool  m32r_legitimate_address_p (enum machine_mode, rtx, bool);
 static rtx   m32r_legitimize_address (rtx, rtx, enum machine_mode);
 static bool  m32r_mode_dependent_address_p (const_rtx);
 static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
@@ -124,6 +125,8 @@ static const struct default_options m32r_option_optimization_table[] =
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32r_attribute_table
 
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P m32r_legitimate_address_p
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS m32r_legitimize_address
 #undef TARGET_MODE_DEPENDENT_ADDRESS_P
@@ -2842,6 +2845,107 @@ m32r_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 		       LCT_NORMAL, VOIDmode, 3, XEXP (m_tramp, 0), Pmode,
 		       gen_int_mode (TRAMPOLINE_SIZE, SImode), SImode,
 		       GEN_INT (3), SImode);
+}
+
+/* True if X is a reg that can be used as a base reg.  */
+
+static bool
+m32r_rtx_ok_for_base_p (const_rtx x, bool strict)
+{
+  if (! REG_P (x))
+    return false;
+
+  if (strict)
+    {
+      if (GPR_P (REGNO (x)))
+	return true;
+    }
+  else
+    {
+      if (GPR_P (REGNO (x))
+	  || REGNO (x) == ARG_POINTER_REGNUM
+	  || ! HARD_REGISTER_P (x))
+	return true;
+    }
+
+  return false;
+}
+
+static inline bool
+m32r_rtx_ok_for_offset_p (const_rtx x)
+{
+  return (CONST_INT_P (x) && INT16_P (INTVAL (x)));
+}
+
+static inline bool
+m32r_legitimate_offset_addres_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+				 const_rtx x, bool strict)
+{
+  if (GET_CODE (x) == PLUS
+      && m32r_rtx_ok_for_base_p (XEXP (x, 0), strict)
+      && m32r_rtx_ok_for_offset_p (XEXP (x, 1)))
+    return true;
+
+  return false;
+}
+
+/* For LO_SUM addresses, do not allow them if the MODE is > 1 word,
+   since more than one instruction will be required.  */
+
+static inline bool
+m32r_legitimate_lo_sum_addres_p (enum machine_mode mode, const_rtx x,
+				 bool strict)
+{
+  if (GET_CODE (x) == LO_SUM
+      && (mode != BLKmode && GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+      && m32r_rtx_ok_for_base_p (XEXP (x, 0), strict)
+      && CONSTANT_P (XEXP (x, 1)))
+    return true;
+
+  return false;
+}
+
+/* Is this a load and increment operation.  */
+
+static inline bool
+m32r_load_postinc_p (enum machine_mode mode, const_rtx x, bool strict)
+{
+  if ((mode == SImode || mode == SFmode)
+      && GET_CODE (x) == POST_INC
+      && REG_P (XEXP (x, 0))
+      && m32r_rtx_ok_for_base_p (XEXP (x, 0), strict))
+    return true;
+
+  return false;
+}
+
+/* Is this an increment/decrement and store operation.  */
+
+static inline bool
+m32r_store_preinc_predec_p (enum machine_mode mode, const_rtx x, bool strict)
+{
+  if ((mode == SImode || mode == SFmode)
+      && (GET_CODE (x) == PRE_INC || GET_CODE (x) == PRE_DEC)
+      && REG_P (XEXP (x, 0))                           \
+      && m32r_rtx_ok_for_base_p (XEXP (x, 0), strict))
+    return true;
+
+  return false;
+}
+
+/* Implement  TARGET_LEGITIMATE_ADDRESS_P.  */
+
+static bool
+m32r_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+{
+  if (m32r_rtx_ok_for_base_p (x, strict)
+      || m32r_legitimate_offset_addres_p (mode, x, strict)
+      || m32r_legitimate_lo_sum_addres_p (mode, x, strict)
+      || m32r_load_postinc_p (mode, x, strict)
+      || m32r_store_preinc_predec_p (mode, x, strict))
+    return true;
+
+  return false;
 }
 
 static void

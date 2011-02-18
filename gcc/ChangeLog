@@ -1,3 +1,18 @@
+2011-02-18  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32r/m32r.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P,
+	RTX_OK_FOR_BASE_P, RTX_OK_FOR_OFFSET_P, LEGITIMATE_OFFSET_ADDRESS_P,
+	LEGITIMATE_LO_SUM_ADDRESS_P, LOAD_POSTINC_P, STORE_PREINC_PREDEC_P,
+	GO_IF_LEGITIMATE_ADDRESS): Remove macros.
+	* config/m32r/m32r.c (TARGET_LEGITIMATE_ADDRESS_P): Define.
+	(m32r_rtx_ok_for_base_p, m32r_rtx_ok_for_offset_p,
+	m32r_legitimate_offset_addres_p, m32r_legitimate_lo_sum_addres_p,
+	m32r_load_postinc_p, m32r_store_preinc_predec_p,
+	m32r_legitimate_address_p): New functions.
+	* config/m32r/constraints.md (constraint "S"): Don't use
+	STORE_PREINC_PREDEC_P.
+	(constraint "U"): Don't use LOAD_POSTINC_P.
+
 2011-02-18  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR rtl-optimization/46178
