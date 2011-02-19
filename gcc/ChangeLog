@@ -1,3 +1,9 @@
+2011-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/47800
+	* config/i386/i386.md (peephole2 for shift and plus): Use
+	operands[1] original mode in the first insn.
+
 2011-02-18  Mike Stump  <mikestump@comcast.net>
 
 	* config/t-darwin (TM_H): Add dependency on darwin-sections.def.
