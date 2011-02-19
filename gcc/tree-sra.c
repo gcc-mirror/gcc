@@ -1661,13 +1661,13 @@ try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
 		  || mbit + msize <= fbit)
 		continue;
 
-	      if (fbit <= mbit)
+	      if (fbit < bit)
 		{
 		  unsigned HOST_WIDE_INT diff = fbit + fsize - mbit;
 		  mbit += diff;
 		  msize -= diff;
 		}
-	      else if (fbit > mbit)
+	      else if (fbit > bit)
 		msize -= (mbit + msize - fbit);
 	      else
 		gcc_unreachable ();
