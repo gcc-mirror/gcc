@@ -1,13 +1,12 @@
 2011-02-18  Mike Stump  <mikestump@comcast.net>
 
-	* config/t-darwin (TM_H): Add dependency on on
-	darwin-sections.def.
+	* config/t-darwin (TM_H): Add dependency on darwin-sections.def.
 
 2011-02-18  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/47788
-	* ipa-inline.c (compute_inline_parameters): Clear disregard_inline_limits
-	when function is not inlinable at all.
+	* ipa-inline.c (compute_inline_parameters): Set disregard_inline_limits
+	to zero when the function is not inlinable at all.
 
 2011-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
