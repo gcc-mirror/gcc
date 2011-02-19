@@ -1,3 +1,8 @@
+2011-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47809
+	* gcc.target/i386/pr47809.c: New test.
+
 2011-02-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
