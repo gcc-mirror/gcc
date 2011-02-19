@@ -4473,6 +4473,8 @@ Array_type::fill_in_tree(Gogo* gogo, tree struct_type)
   gcc_assert(this->length_ == NULL);
 
   tree element_type_tree = this->element_type_->get_tree(gogo);
+  if (element_type_tree == error_mark_node)
+    return error_mark_node;
   tree field = TYPE_FIELDS(struct_type);
   gcc_assert(strcmp(IDENTIFIER_POINTER(DECL_NAME(field)), "__values") == 0);
   gcc_assert(POINTER_TYPE_P(TREE_TYPE(field))
@@ -6923,12 +6925,12 @@ Named_type::do_verify()
     }
 
   // If this is a struct, then if any of the fields of the struct
-  // themselves have struct type, then this struct must be converted
-  // to the backend representation before the field's type is
-  // converted.  That may seem backward, but it works because if the
-  // field's type refers to this one, e.g., via a pointer, then the
-  // conversion process will pick up the half-built struct and do the
-  // right thing.
+  // themselves have struct type, or array of struct type, then this
+  // struct must be converted to the backend representation before the
+  // field's type is converted.  That may seem backward, but it works
+  // because if the field's type refers to this one, e.g., via a
+  // pointer, then the conversion process will pick up the half-built
+  // struct and do the right thing.
   if (this->struct_type() != NULL)
     {
       const Struct_field_list* fields = this->struct_type()->fields();
@@ -6939,6 +6941,16 @@ Named_type::do_verify()
 	  Struct_type* st = p->type()->struct_type();
 	  if (st != NULL)
 	    st->add_prerequisite(this);
+	  else
+	    {
+	      Array_type* at = p->type()->array_type();
+	      if (at != NULL && !at->is_open_array_type())
+		{
+		  st = at->element_type()->struct_type();
+		  if (st != NULL)
+		    st->add_prerequisite(this);
+		}
+	    }
 	}
     }
 
@@ -7488,7 +7500,13 @@ Type::add_interface_methods_for_type(const Type* type,
        ++pm)
     {
       Function_type* fntype = pm->type()->function_type();
-      gcc_assert(fntype != NULL && !fntype->is_method());
+      if (fntype == NULL)
+	{
+	  // This is an error, but it should be reported elsewhere
+	  // when we look at the methods for IT.
+	  continue;
+	}
+      gcc_assert(!fntype->is_method());
       fntype = fntype->copy_with_receiver(const_cast<Type*>(type));
       Method* m = new Interface_method(pm->name(), pm->location(), fntype,
 				       field_indexes, depth);

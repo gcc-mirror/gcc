@@ -716,7 +716,11 @@ Expression::float_constant_tree(mpfr_t val, tree type)
 tree
 Expression::complex_constant_tree(mpfr_t real, mpfr_t imag, tree type)
 {
-  if (TREE_CODE(type) == COMPLEX_TYPE)
+  if (type == error_mark_node)
+    return error_mark_node;
+  else if (TREE_CODE(type) == INTEGER_TYPE || TREE_CODE(type) == REAL_TYPE)
+    return Expression::float_constant_tree(real, type);
+  else if (TREE_CODE(type) == COMPLEX_TYPE)
     {
       REAL_VALUE_TYPE r1;
       real_from_mpfr(&r1, real, TREE_TYPE(type), GMP_RNDN);
@@ -6960,6 +6964,8 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
       if (arg_type->is_abstract())
 	return false;
       tree arg_type_tree = arg_type->get_tree(this->gogo_);
+      if (arg_type_tree == error_mark_node)
+	return false;
       unsigned long val_long;
       if (this->code_ == BUILTIN_SIZEOF)
 	{
@@ -10325,7 +10331,11 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   gcc_assert(vno != NULL);
   Expression* ve = Expression::make_var_reference(vno, location);
   Expression* bm = Type::bind_field_or_method(gogo, nt, ve, name, location);
-  gcc_assert(bm != NULL && !bm->is_error_expression());
+
+  // Even though we found the method above, if it has an error type we
+  // may see an error here.
+  if (bm->is_error_expression())
+    return bm;
 
   Expression_list* args;
   if (method_parameters == NULL)

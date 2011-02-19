@@ -1865,6 +1865,8 @@ Named_object*
 Parse::create_dummy_global(Type* type, Expression* init,
 			   source_location location)
 {
+  if (type == NULL && init == NULL)
+    type = Type::lookup_bool_type();
   Variable* var = new Variable(type, init, true, false, false, location);
   static int count;
   char buf[30];
