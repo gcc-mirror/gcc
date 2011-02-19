@@ -1,3 +1,8 @@
+2011-02-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/pr31167.c: Require int128 instead of lp64.
+	* gcc.target/i386/pr32280-1.c: Likewise.
+
 2011-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/47800
