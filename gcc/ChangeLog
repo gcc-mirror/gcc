@@ -1,3 +1,10 @@
+2011-02-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/47620
+	PR debug/47630
+	* haifa-sched.c (fix_tick_ready): Skip tick computation
+	for debug insns.
+
 2011-02-19  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/47647

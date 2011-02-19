@@ -3903,7 +3903,7 @@ fix_tick_ready (rtx next)
 {
   int tick, delay;
 
-  if (!sd_lists_empty_p (next, SD_LIST_RES_BACK))
+  if (!DEBUG_INSN_P (next) && !sd_lists_empty_p (next, SD_LIST_RES_BACK))
     {
       int full_p;
       sd_iterator_def sd_it;
