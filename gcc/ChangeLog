@@ -1,3 +1,11 @@
+2011-02-19  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47647
+	* lto-streamer-in.c (lto_input_ts_decl_minimal_tree_pointers):
+	Remove lazy BLOCK_VARS streaming.
+	(lto_input_ts_block_tree_pointers): Likewise.
+	* lto-streamer-out.c (lto_output_ts_block_tree_pointers): Likewise.
+
 2011-02-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (i[34567]86-pc-msdosdjgpp*): Use i386/djgpp-stdint.h.

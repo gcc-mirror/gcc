@@ -1057,8 +1057,7 @@ lto_output_ts_block_tree_pointers (struct output_block *ob, tree expr,
   tree t;
 
   lto_output_location (ob, BLOCK_SOURCE_LOCATION (expr));
-  /* We do not stream BLOCK_VARS but lazily construct it when reading
-     in decls.  */
+  lto_output_chain (ob, BLOCK_VARS (expr), ref_p);
 
   output_uleb128 (ob, VEC_length (tree, BLOCK_NONLOCALIZED_VARS (expr)));
   FOR_EACH_VEC_ELT (tree, BLOCK_NONLOCALIZED_VARS (expr), i, t)
