@@ -1,5 +1,10 @@
 2011-01-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c (objc_init, generate_struct_by_value_array): Updated
+	comments.
+
+2011-01-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-act.c: Updated comments.
 	* objc-next-runtime-abi-02.c: Same.
 	* objc-runtime-shared-support.c: Same.
