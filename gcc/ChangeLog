@@ -1,5 +1,9 @@
 2011-02-19  Joseph Myers  <joseph@codesourcery.com>
 
+	* config.gcc (i[34567]86-pc-msdosdjgpp*): Use i386/djgpp-stdint.h.
+
+2011-02-19  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/i386/biarch32.h, config/i386/mach.h,
 	config/rs6000/aix.opt, config/sh/superh64.h: Remove.
 
