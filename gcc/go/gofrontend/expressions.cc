@@ -10335,7 +10335,10 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   // Even though we found the method above, if it has an error type we
   // may see an error here.
   if (bm->is_error_expression())
-    return bm;
+    {
+      gogo->finish_function(location);
+      return bm;
+    }
 
   Expression_list* args;
   if (method_parameters == NULL)
