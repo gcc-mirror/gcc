@@ -1,3 +1,8 @@
+2011-01-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-gnu-runtime-abi-01.c (objc_generate_v1_gnu_metadata): Do
+	not generate metadata if there is nothing to put into it.
+
 2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config-lang.in (gtfiles): Updated.
