@@ -1,3 +1,8 @@
+2011-02-18  Mike Stump  <mikestump@comcast.net>
+
+	* config/t-darwin (TM_H): Add dependency on on
+	darwin-sections.def.
+
 2011-02-18  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/47788
