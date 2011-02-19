@@ -1,3 +1,7 @@
+2011-02-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc/execute/exceptions/foward-1.x: New.
+	
 2011-02-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47789
