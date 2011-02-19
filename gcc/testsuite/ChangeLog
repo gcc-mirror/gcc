@@ -1,3 +1,21 @@
+2011-02-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47348
+	* trans-array.c (get_array_ctor_all_strlen): Move up in file.
+	(get_array_ctor_var_strlen): Add block dummy and add call to
+	get_array_ctor_all_strlen instead of giving up on substrings.
+	Call gcc_unreachable for default case.
+	(get_array_ctor_strlen): Add extra argument to in call to
+	get_array_ctor_var_strlen.
+
+2011-02-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47348
+	* gfortran.dg/array_constructor_36.f90 : New test.
+	* gfortran.dg/bounds_check_10.f90 : Change dg-output message to
+	allow for comparison between different elements of the array
+	constructor at different levels of optimization.
+
 2011-02-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pr31167.c: Require int128 instead of lp64.
