@@ -1,5 +1,14 @@
 2011-01-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-act.c: Updated comments.
+	* objc-next-runtime-abi-02.c: Same.
+	* objc-runtime-shared-support.c: Same.
+	* objc-runtime-hooks.h: Same.
+	* objc-act.h: Same.
+	* objc-gnu-runtime-abi-01.c: Same.
+
+2011-01-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-gnu-runtime-abi-01.c (objc_generate_v1_gnu_metadata): Do
 	not generate metadata if there is nothing to put into it.
 

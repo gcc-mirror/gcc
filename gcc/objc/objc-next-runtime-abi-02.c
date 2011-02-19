@@ -22,14 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The NeXT ABI2 is used for m64 implementations on Darwin/OSX machines.
    
-   This version is intended to match (logically) output of Apple's 4.2.1
-   compiler.
-   
-   References:
-   FSF GCC branches/apple/trunk.
-   objc4-371.2 Open Source release (Apple Computer). (objc-runtime-new.h)
-   gcc_42-5664 Apple Local modifications to GCC (Apple Computer).
-*/
+   This version is intended to match (logically) the output of Apple's
+   4.2.1 compiler.  */
 
 #include "config.h"
 #include "system.h"
