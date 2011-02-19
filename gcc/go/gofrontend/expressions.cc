@@ -5859,13 +5859,21 @@ Binary_expression::do_get_tree(Translate_context* context)
   tree eval_saved = NULL_TREE;
   if (is_shift_op)
     {
-      if (!DECL_P(left))
-	left = save_expr(left);
-      if (!DECL_P(right))
-	right = save_expr(right);
       // Make sure the values are evaluated.
-      eval_saved = fold_build2_loc(this->location(), COMPOUND_EXPR,
-				   void_type_node, left, right);
+      if (!DECL_P(left) && TREE_SIDE_EFFECTS(left))
+	{
+	  left = save_expr(left);
+	  eval_saved = left;
+	}
+      if (!DECL_P(right) && TREE_SIDE_EFFECTS(right))
+	{
+	  right = save_expr(right);
+	  if (eval_saved == NULL_TREE)
+	    eval_saved = right;
+	  else
+	    eval_saved = fold_build2_loc(this->location(), COMPOUND_EXPR,
+					 void_type_node, eval_saved, right);
+	}
     }
 
   tree ret = fold_build2_loc(this->location(),
@@ -5914,8 +5922,9 @@ Binary_expression::do_get_tree(Translate_context* context)
       ret = fold_build3_loc(this->location(), COND_EXPR, TREE_TYPE(left),
 			    compare, ret, overflow_result);
 
-      ret = fold_build2_loc(this->location(), COMPOUND_EXPR,
-			    TREE_TYPE(ret), eval_saved, ret);
+      if (eval_saved != NULL_TREE)
+	ret = fold_build2_loc(this->location(), COMPOUND_EXPR,
+			      TREE_TYPE(ret), eval_saved, ret);
     }
 
   return ret;
