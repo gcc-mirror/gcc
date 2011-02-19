@@ -1,3 +1,8 @@
+2011-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47809
+	* c-common.c (c_fully_fold_internal): Handle VIEW_CONVERT_EXPR.
+
 2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* c.opt (fobjc-abi-version=) New.
