@@ -5051,9 +5051,13 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
   if (gfc_ref_needs_temporary_p (expr1->ref))
     return true;
 
-  /* Functions returning pointers need temporaries.  */
-  if (expr2->symtree->n.sym->attr.pointer 
-      || expr2->symtree->n.sym->attr.allocatable)
+  /* Functions returning pointers or allocatables need temporaries.  */
+  c = expr2->value.function.esym
+      ? (expr2->value.function.esym->attr.pointer 
+	 || expr2->value.function.esym->attr.allocatable)
+      : (expr2->symtree->n.sym->attr.pointer
+	 || expr2->symtree->n.sym->attr.allocatable);
+  if (c)
     return true;
 
   /* Character array functions need temporaries unless the
