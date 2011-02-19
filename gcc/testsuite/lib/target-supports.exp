@@ -956,6 +956,22 @@ proc check_effective_target_fortran_large_real { } {
     }]
 }
 
+# Return 1 if the target supports Fortran real kind real(16),
+# 0 otherwise. Contrary to check_effective_target_fortran_large_real
+# this checks for Real(16) only; the other returned real(10) if
+# both real(10) and real(16) are available.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_fortran_real_16 { } {
+    return [check_no_compiler_messages fortran_real_16 executable {
+	! Fortran
+	real(kind=16) :: x
+	x = cos (x)
+	end
+    }]
+}
+
 # Return 1 if the target supports Fortran integer kinds larger than
 # integer(8), 0 otherwise.
 #
