@@ -5605,6 +5605,7 @@ Interface_type::finalize_methods()
 {
   if (this->methods_ == NULL)
     return;
+  std::vector<Named_type*> seen;
   bool is_recursive = false;
   size_t from = 0;
   size_t to = 0;
@@ -5632,6 +5633,7 @@ Interface_type::finalize_methods()
 	  ++from;
 	  continue;
 	}
+
       Interface_type* it = p->type()->interface_type();
       if (it == NULL)
 	{
@@ -5649,6 +5651,27 @@ Interface_type::finalize_methods()
 	  ++from;
 	  continue;
 	}
+
+      Named_type* nt = p->type()->named_type();
+      if (nt != NULL)
+	{
+	  std::vector<Named_type*>::const_iterator q;
+	  for (q = seen.begin(); q != seen.end(); ++q)
+	    {
+	      if (*q == nt)
+		{
+		  error_at(p->location(), "inherited interface loop");
+		  break;
+		}
+	    }
+	  if (q != seen.end())
+	    {
+	      ++from;
+	      continue;
+	    }
+	  seen.push_back(nt);
+	}
+
       const Typed_identifier_list* methods = it->methods();
       if (methods == NULL)
 	{
