@@ -6019,6 +6019,10 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
       return t;
     }
 
+  /* Shortcut trivial copy constructor/op=.  */
+  if (call_expr_nargs (t) == 2 && trivial_fn_p (fun))
+    return convert_from_reference (get_nth_callarg (t, 1));
+
   /* If in direct recursive call, optimize definition search.  */
   if (old_call != NULL && old_call->fundef->decl == fun)
     new_call.fundef = old_call->fundef;
