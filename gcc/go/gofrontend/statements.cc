@@ -3212,7 +3212,12 @@ Case_clauses::Case_clause::get_constant_tree(Translate_context* context,
 	  mpz_t ival;
 	  mpz_init(ival);
 	  if (!(*p)->integer_constant_value(true, ival, &itype))
-	    gcc_unreachable();
+	    {
+	      // Something went wrong.  This can happen with a
+	      // negative constant and an unsigned switch value.
+	      gcc_assert(saw_errors());
+	      continue;
+	    }
 	  gcc_assert(itype != NULL);
 	  tree type_tree = itype->get_tree(context->gogo());
 	  tree val = Expression::integer_constant_tree(ival, type_tree);
