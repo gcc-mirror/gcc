@@ -1265,9 +1265,6 @@ class Call_expression : public Expression
 
  private:
   bool
-  is_compatible_varargs_argument(Named_object*, Expression*, Type*, bool*);
-
-  bool
   check_argument_type(int, const Type*, const Type*, source_location, bool);
 
   tree
