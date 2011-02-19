@@ -165,6 +165,7 @@ typedef enum objc_property_assign_semantics {
 #define CLASS_PROTOCOL_LIST(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 4)
 #define TOTAL_CLASS_RAW_IVARS(CLASS) TREE_VEC_ELT (TYPE_LANG_SLOT_1 (CLASS), 5)
 
+/* FIXME */
 #define CLASS_HAS_EXCEPTION_ATTR(CLASS) ((CLASS)->type.lang_flag_0)
 
 #define PROTOCOL_NAME(CLASS) ((CLASS)->type.name)
@@ -396,6 +397,7 @@ enum objc_tree_index
     OCTI_GET_PROPERTY_STRUCT_DECL,
     OCTI_SET_PROPERTY_STRUCT_DECL,
 
+    /* TODO: Add comment.  */
     /* "V1" stuff.  */
     OCTI_V1_PROP_LIST_TEMPL,
     OCTI_V1_PROP_NAME_ATTR_CHAIN,
@@ -586,6 +588,7 @@ extern GTY(()) tree objc_global_trees[OCTI_MAX];
 #define objc_setPropertyStruct_decl \
 				objc_global_trees[OCTI_SET_PROPERTY_STRUCT_DECL]
 
+/* TODO: Add comment.  */
 /* V1 stuff.  */
 #define objc_prop_list_ptr	objc_global_trees[OCTI_V1_PROP_LIST_TEMPL]
 #define prop_names_attr_chain	objc_global_trees[OCTI_V1_PROP_NAME_ATTR_CHAIN]

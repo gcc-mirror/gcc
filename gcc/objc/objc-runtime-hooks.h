@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Objective-C supports several runtime library variants: 
 
-   "GNU" runtime selected by -fgnu-runtime (currently at API version 1).
+   "GNU" runtime selected by -fgnu-runtime (currently at ABI version 8).
    "NeXT" runtime (selected by -fnext-runtime) and installed on OSX/Darwin
    systems at API version 1 (for m32 code) and version 2 (for m64 code).
    
@@ -33,8 +33,11 @@ along with GCC; see the file COPYING3.  If not see
    and so on, and the purpose of this interface is to abstract such
    differences from the parser's perspective.  */
 
+/* TODO: Do we want the initial underscore ? */
 typedef struct _objc_runtime_hooks_r 
 {
+  /* TODO: Expand comments in this file.  */
+
   /* Initialize for this runtime.  */
   void (*initialize) (void);
   const char *default_constant_string_class_name;

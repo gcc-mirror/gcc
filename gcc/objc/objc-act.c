@@ -6553,6 +6553,7 @@ start_class (enum tree_code code, tree class_name, tree super_name,
 	    {
 	      tree name = TREE_PURPOSE (attribute);
 	      
+	      /* TODO: Document what the objc_exception attribute is/does.  */
 	      /* We handle the 'deprecated' and (undocumented) 'objc_exception'
 		 attributes.  */
 	      if (is_attribute_p  ("deprecated", name))
@@ -7505,10 +7506,6 @@ objc_gen_property_data (tree klass, tree class_methods)
       /* @dynamic property - nothing to check or synthesize.  */
       if (PROPERTY_DYNAMIC (x))
 	continue;
-  /* Add any property that is declared in the interface, but undeclared in the
-     implementation to thie implementation. These are the 'dynamic' properties.
-  
-  objc_v2_merge_dynamic_property ();*/
       
       /* @synthesize property - need to synthesize the accessors.  */
       if (PROPERTY_IVAR_NAME (x))
@@ -7771,7 +7768,6 @@ objc_declare_protocols (tree names, tree attributes)
 	  add_protocol (protocol);
 	  PROTOCOL_DEFINED (protocol) = 0;
 	  PROTOCOL_FORWARD_DECL (protocol) = NULL_TREE;
-/*	  PROTOCOL_V2_FORWARD_DECL (protocol) = NULL_TREE;*/
 	  
 	  if (attributes)
 	    {
@@ -7824,7 +7820,6 @@ start_protocol (enum tree_code code, tree name, tree list, tree attributes)
       add_protocol (protocol);
       PROTOCOL_DEFINED (protocol) = 1;
       PROTOCOL_FORWARD_DECL (protocol) = NULL_TREE;
-/*      PROTOCOL_V2_FORWARD_DECL (protocol) = NULL_TREE;*/
 
       check_protocol_recursively (protocol, list);
     }
@@ -8466,10 +8461,11 @@ void
 objc_clear_super_receiver (void)
 {
   if (objc_method_context
-      && UOBJC_SUPER_scope == objc_get_current_scope ()) {
-    UOBJC_SUPER_decl = 0;
-    UOBJC_SUPER_scope = 0;
-  }
+      && UOBJC_SUPER_scope == objc_get_current_scope ())
+    {
+      UOBJC_SUPER_decl = 0;
+      UOBJC_SUPER_scope = 0;
+    }
 }
 
 void
@@ -10357,26 +10353,32 @@ encode_field_decl (tree field_decl, int curtype, int format)
     encode_type (TREE_TYPE (field_decl), curtype, format);
 }
 
-/* This routine encodes the attribute of the input PROPERTY according to following
-   formula:
+/* This routine encodes the attribute of the input PROPERTY according
+   to following formula:
 
-Property attributes are stored as a comma-delimited C string. The simple attributes 
-readonly and copies are encoded as single characters. The parametrized attributes, 
-getter=name, setter=name, and ivar=name, are encoded as single characters, followed 
-by an identifier. Property types are also encoded as a parametrized attribute. The 
-characters used to encode these attributes are defined by the following enumeration:
+   Property attributes are stored as a comma-delimited C string.
+   Simple attributes such as readonly are encoded as single
+   character. The parametrized attributes, getter=name and
+   setter=name, are encoded as a single character followed by an
+   identifier.  Property types are also encoded as a parametrized
+   attribute.  The characters used to encode these attributes are
+   defined by the following enumeration:
 
-enum PropertyAttributes {
-    kPropertyReadOnly = 'r',                    // property is read-only.
-    kPropertyCopies = 'c',                      // property is a copy of the value last assigned
-    kPropertyGetter = 'g',                      // followed by getter selector name
-    kPropertySetter = 's',                      // followed by setter selector name
-    kPropertyInstanceVariable = 'i'     	// followed by instance variable  name
-    kPropertyType = 't'                         // followed by old-style type encoding.
-};
+   enum PropertyAttributes {
+     kPropertyReadOnly = 'R',
+     kPropertyBycopy = 'C',
+     kPropertyByref = '&',
+     kPropertyDynamic = 'D',
+     kPropertyGetter = 'G',
+     kPropertySetter = 'S',
+     kPropertyInstanceVariable = 'V',
+     kPropertyType = 't',
+     kPropertyWeak = 'W',
+     kPropertyStrong = 'S',
+     kPropertyNonAtomic = 'N'
+   };
 
-*/
-
+   FIXME: Update the implementation to match.  */
 tree
 objc_v2_encode_prop_attr (tree property)
 {

@@ -1,4 +1,4 @@
-/* GNU Runtime (ABI-0/1) private.
+/* GNU Runtime ABI version 8
    Copyright (C) 2011 Free Software Foundation, Inc.
    Contributed by Iain Sandoe (split from objc-act.c)
 
@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
   if (VERS)								\
     DECL_ATTRIBUTES (DECL) = build_tree_list ((VERS), (KIND));
 
+/* FIXME: Remove this macro, not needed.  */
 #ifndef TARGET_64BIT
 #define TARGET_64BIT 0
 #endif
@@ -142,6 +143,10 @@ objc_gnu_runtime_abi_01_init (objc_runtime_hooks *rthooks)
       inform (UNKNOWN_LOCATION, "%<-fobjc-sjlj-exceptions%> is ignored for %<-fgnu-runtime%>");
       flag_objc_sjlj_exceptions = 0;
     }
+
+  /* TODO: Complain if -fobjc-abi-version=N was used.  */
+
+  /* TODO: Complain if -fobj-nilcheck was used.  */
 
   rthooks->initialize = gnu_runtime_01_initialize;
   rthooks->default_constant_string_class_name = DEF_CONSTANT_STRING_CLASS_NAME;
@@ -573,7 +578,8 @@ gnu_runtime_abi_01_get_class_reference (tree ident)
 						(IDENTIFIER_LENGTH (ident) + 1,
 						 IDENTIFIER_POINTER (ident)));
 
-/*      assemble_external (objc_get_class_decl);*/
+  /* FIXME: Do we need this assemble_external() ? */
+  /* assemble_external (objc_get_class_decl);*/
   return build_function_call (input_location, objc_get_class_decl, params);
 }
 
@@ -794,7 +800,7 @@ gnu_runtime_abi_01_get_protocol_reference (location_t loc, tree p)
   return expr;
 }
 
-/* For ABI 0/1 and IVAR is just a fixed offset in the class struct.  */
+/* For ABI 8 an IVAR is just a fixed offset in the class struct.  */
 
 static tree
 gnu_runtime_abi_01_build_ivar_ref (location_t loc ATTRIBUTE_UNUSED, 
@@ -837,7 +843,8 @@ gnu_runtime_abi_01_get_category_super_ref (location_t loc ATTRIBUTE_UNUSED,
 
   add_class_reference (super_name);
   super_class = (inst_meth ? objc_get_class_decl : objc_get_meta_class_decl);
-/* assemble_external (super_class);*/
+  /* FIXME: Do we need this assemble_external() ? */
+  /* assemble_external (super_class);*/
   super_name = my_build_string_pointer (IDENTIFIER_LENGTH (super_name) + 1,
 					IDENTIFIER_POINTER (super_name));
   /* super_class = get_{meta_}class("CLASS_SUPER_NAME");  */
@@ -1475,16 +1482,10 @@ generate_category (struct imp_entry *impent)
      long instance_size;
      struct objc_ivar_list *ivars;
      struct objc_method_list *methods;
-     if (flag_next_runtime)
-       struct objc_cache *cache;
-     else {
-       struct sarray *dtable;
-       struct objc_class *subclass_list;
-       struct objc_class *sibling_class;
-     }
+     struct sarray *dtable;
+     struct objc_class *subclass_list;
+     struct objc_class *sibling_class;
      struct objc_protocol_list *protocols;
-     if (flag_next_runtime)
-       void *sel_id;
      void *gc_object_type;
    };  */
 
@@ -1542,6 +1543,7 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, expr);
     }
 
+  /* FIXME: Remove NeXT runtime code.  */
   if (flag_next_runtime)
     {
       ltyp = build_pointer_type (xref_tag (RECORD_TYPE,
@@ -1573,6 +1575,7 @@ build_shared_structure_initializer (tree type, tree isa, tree super,
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, expr);
     }
 
+  /* FIXME: Remove NeXT runtime code.  */
   if (flag_next_runtime)
     /* sel_id = NULL */
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, 0));
@@ -1864,6 +1867,7 @@ generate_static_references (void)
   char buf[BUFSIZE];
   VEC(constructor_elt,gc) *decls = NULL;
 
+  /* FIXME: Remove NeXT runtime code.  */
   if (flag_next_runtime)
     gcc_unreachable ();
 
@@ -1991,6 +1995,7 @@ build_objc_symtab_template (void)
   /* short cat_def_cnt; */
   add_field_decl (short_integer_type_node, "cat_def_cnt", &chain);
 
+  /* FIXME: Remove.  */
   if (TARGET_64BIT)
     add_field_decl (integer_type_node, "_explicit_padder", &chain);
 
@@ -2037,6 +2042,8 @@ init_objc_symtab (tree type)
 
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, 
 			  build_int_cst (short_integer_type_node, cat_count));
+
+  /* FIXME: Remove.  */
   if (TARGET_64BIT)
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			  build_int_cst (integer_type_node, 0));
@@ -2044,8 +2051,11 @@ init_objc_symtab (tree type)
   /* cls_def = { ..., { &Foo, &Bar, ...}, ... } */
 
   field = TYPE_FIELDS (type);
+
+  /* FIXME: Remove.  */
   if (TARGET_64BIT)
     field = DECL_CHAIN (field);
+
   field = DECL_CHAIN (DECL_CHAIN (DECL_CHAIN (DECL_CHAIN (field))));
 
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init_def_list (TREE_TYPE (field)));
