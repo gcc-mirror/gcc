@@ -8306,11 +8306,6 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
 	  this->report_error(_("too many arguments"));
 	  return this;
 	}
-      else if (pa + 1 == old_args->end()
-	       && this->is_compatible_varargs_argument(function, *pa,
-						       varargs_type,
-						       &issued_error))
-	new_args->push_back(*pa);
       else
 	{
 	  Type* element_type = varargs_type->array_type()->element_type();
@@ -8346,84 +8341,6 @@ Call_expression::lower_varargs(Gogo* gogo, Named_object* function,
   gogo->lower_expression(function, &ret);
   gcc_assert(ret == this);
   return ret;
-}
-
-// Return true if ARG is a varargs argment which should be passed to
-// the varargs parameter of type PARAM_TYPE without wrapping.  ARG
-// will be the last argument passed in the call, and PARAM_TYPE will
-// be the type of the last parameter of the varargs function being
-// called.
-
-bool
-Call_expression::is_compatible_varargs_argument(Named_object* function,
-						Expression* arg,
-						Type* param_type,
-						bool* issued_error)
-{
-  *issued_error = false;
-
-  Type* var_type = NULL;
-
-  // The simple case is passing the varargs parameter of the caller.
-  Var_expression* ve = arg->var_expression();
-  if (ve != NULL && ve->named_object()->is_variable())
-    {
-      Variable* var = ve->named_object()->var_value();
-      if (var->is_varargs_parameter())
-	var_type = var->type();
-    }
-
-  // The complex case is passing the varargs parameter of some
-  // enclosing function.  This will look like passing down *c.f where
-  // c is the closure variable and f is a field in the closure.
-  if (function != NULL
-      && function->func_value()->needs_closure()
-      && arg->classification() == EXPRESSION_UNARY)
-    {
-      Unary_expression* ue = static_cast<Unary_expression*>(arg);
-      if (ue->op() == OPERATOR_MULT)
-	{
-	  Field_reference_expression* fre =
-	    ue->operand()->deref()->field_reference_expression();
-	  if (fre != NULL)
-	    {
-	      Var_expression* ve = fre->expr()->deref()->var_expression();
-	      if (ve != NULL)
-		{
-		  Named_object* no = ve->named_object();
-		  Function* f = function->func_value();
-		  if (no == f->closure_var())
-		    {
-		      // At this point we know that this indeed a
-		      // reference to some enclosing variable.  Now we
-		      // need to figure out whether that variable is a
-		      // varargs parameter.
-		      Named_object* enclosing =
-			f->enclosing_var(fre->field_index());
-		      Variable* var = enclosing->var_value();
-		      if (var->is_varargs_parameter())
-			var_type = var->type();
-		    }
-		}
-	    }
-	}
-    }
-
-  if (var_type == NULL)
-    return false;
-
-  // We only match if the parameter is the same, with an identical
-  // type.
-  Array_type* var_at = var_type->array_type();
-  gcc_assert(var_at != NULL);
-  Array_type* param_at = param_type->array_type();
-  if (param_at != NULL
-      && Type::are_identical(var_at->element_type(),
-			     param_at->element_type(), true, NULL))
-    return true;
-  error_at(arg->location(), "... mismatch: passing ...T as ...");
-  *issued_error = true;
-  return false;
 }
 
 // Get the function type.  Returns NULL if we don't know the type.  If
