@@ -1990,6 +1990,8 @@ compute_inline_parameters (struct cgraph_node *node)
 
   /* Can this function be inlined at all?  */
   node->local.inlinable = tree_inlinable_function_p (node->decl);
+  if (!node->local.inlinable)
+    node->local.disregard_inline_limits = 0;
 
   /* Inlinable functions always can change signature.  */
   if (node->local.inlinable)
