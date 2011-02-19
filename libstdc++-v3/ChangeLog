@@ -1,3 +1,11 @@
+2011-02-19  François Dumont  <francois.cppdevs@free.fr>
+
+	* include/debug/string (basic_string::insert): Add iterator check and
+	pass normal iterator to normal insert.
+	* include/debug/macros.h (__glibcxx_check_heap,
+	__glibcxx_check_heap_pred): Remove __glibcxx_check_valid_range,
+	already done.
+
 2011-02-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/47776
