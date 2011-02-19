@@ -1,6 +1,12 @@
-2011-02-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2011-02-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/47567
+	* io/write_float.def (output_float): Adjust width for F0.d to
+	allow space for negative signs on zero.
+
+2011-02-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47667
 	* io/list_read.c (read_logical): Check for end of line before calling
 	eat_line. (read_integer): Likewise. (parse_real): Don't unget the
 	separator. Check for end of line before calling	eat_line.

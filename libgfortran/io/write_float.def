@@ -116,7 +116,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 
       /* Handle special cases.  */
       if (w == 0)
-	w = d + 1;
+	w = d + (sign != S_NONE ? 2 : 1) + (d == 0 ? 1 : 0);
 
       /* For this one we choose to not output a decimal point.
 	 F95 10.5.1.2.1  */
