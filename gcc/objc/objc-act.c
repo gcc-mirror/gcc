@@ -330,8 +330,9 @@ generate_struct_by_value_array (void)
   int aggregate_in_mem[32];
   int found = 0;
 
-  /* ??? as an example, m64/ppc/Darwin can pass up to 8*long+13*double in regs.
-     Presumably no platform passes 32 byte structures in a register.  */
+  /* Presumably no platform passes 32 byte structures in a register.  */
+  /* ??? As an example, m64/ppc/Darwin can pass up to 8*long+13*double
+     in registers.  */
   for (i = 1; i < 32; i++)
     {
       char buffer[5];
@@ -379,8 +380,24 @@ objc_init (void)
 #endif
     return false;
 
+  /* print_struct_values is triggered by -print-runtime-info (used
+     when building libobjc, with an empty file as input).  It does not
+     require any ObjC setup, and it never returns.
+
+     -fcompare-debug is used to check the compiler output; we are
+     executed twice, once with flag_compare_debug set, and once with
+     it not set.  If the flag is used together with
+     -print-runtime-info, we want to print the runtime info only once,
+     else it would be output in duplicate.  So we check
+     flag_compare_debug to output it in only one of the invocations.
+
+     As a side effect, this also that means -fcompare-debug
+     -print-runtime-info will run the compiler twice, and compare the
+     generated assembler file; the first time the compiler exits
+     immediately (producing no file), and the second time it compiles
+     an empty file.  This checks, as a side effect, that compiling an
+     empty file produces no assembler output.  */
   if (print_struct_values && !flag_compare_debug)
-    /* This routine does not require any ObjC set-up and never returns.  */
     generate_struct_by_value_array ();
 
   /* Set up stuff used by FE parser and all runtimes.  */
