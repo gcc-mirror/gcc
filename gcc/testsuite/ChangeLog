@@ -1,3 +1,8 @@
+2011-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/47800
+	* gcc.target/i386/pr47800.c: New test.
+
 2011-02-18  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc/execute/exceptions/foward-1.x: New.
