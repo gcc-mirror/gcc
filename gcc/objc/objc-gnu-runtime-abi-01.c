@@ -2105,11 +2105,23 @@ objc_generate_v1_gnu_metadata (void)
     generate_protocols ();
 
   /* Arrange for ObjC data structures to be initialized at run time.  */
-  generate_objc_symtab_decl ();
-  /* Make sure that the meta-data are identified as being GNU-runtime.  */
-  build_module_descriptor (OBJC_VERSION, 
-			   build_tree_list (objc_meta, meta_base));
-  build_module_initializer_routine ();
+  /* FIXME: Have some more elegant way to determine if we need to
+     generate objc_symtab_decl or not, instead of checking these
+     global symbols.  */
+  if (imp_list || class_names_chain
+      || meth_var_names_chain || meth_var_types_chain || sel_ref_chain
+      || prop_names_attr_chain)
+    generate_objc_symtab_decl ();
+
+  if (imp_list || class_names_chain || objc_static_instances
+      || meth_var_names_chain || meth_var_types_chain || sel_ref_chain)
+    {
+      /* Make sure that the meta-data are identified as being
+	 GNU-runtime.  */
+      build_module_descriptor (OBJC_VERSION, 
+			       build_tree_list (objc_meta, meta_base));
+      build_module_initializer_routine ();
+    }
 
   /* Dump the class references.  This forces the appropriate classes
      to be linked into the executable image, preserving unix archive
