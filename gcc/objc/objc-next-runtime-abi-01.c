@@ -18,10 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* This implements the original NeXT ABI (0) used for m32 code and indicated
-   by module version 6.  It also implements the small number of additions made
-   for properties and optional protocol methods as ABI=1 
-   (module version 7).  */
+/* This implements the original NeXT ABI (0) used for m32 code and
+   indicated by module version 6.  It also implements the small number
+   of additions made for properties and optional protocol methods as
+   ABI=1 (module version 7).  */
 
 #include "config.h"
 #include "system.h"
@@ -39,8 +39,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "objc-act.h"
 
-/* When building Objective-C++, we are not linking against the C front-end
-   and so need to replicate the C tree-construction functions in some way.  */
+/* When building Objective-C++, we are not linking against the C
+   front-end and so need to replicate the C tree-construction
+   functions in some way.  */
 #ifdef OBJCPLUS
 #define OBJCP_REMAP_FUNCTIONS
 #include "objcp-decl.h"
@@ -85,9 +86,9 @@ along with GCC; see the file COPYING3.  If not see
 #define TAG_MSGSEND_FAST		"objc_msgSend_Fast"
 #define TAG_ASSIGNIVAR_FAST		"objc_assign_ivar_Fast"
 
-/* The version identifies which language generation and runtime
-   the module (file) was compiled for, and is recorded in the
-   module descriptor.  */
+/* The version identifies which language generation and runtime the
+   module (file) was compiled for, and is recorded in the module
+   descriptor.  */
 #define OBJC_VERSION			(flag_objc_abi >= 1 ? 7 : 6)
 
 #define UTAG_CLASS_EXT			"_objc_class_ext"
@@ -96,10 +97,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #define CLS_HAS_CXX_STRUCTORS		0x2000L
 
-/* rt_trees identifiers - shared between NeXT implementations.  These allow
-   the FE to tag meta-data in a manner that survives LTO and can be used when
-   the  runtime requires that certain meta-data items appear in particular
-   named sections.  */
+/* rt_trees identifiers - shared between NeXT implementations.  These
+   allow the FE to tag meta-data in a manner that survives LTO and can
+   be used when the runtime requires that certain meta-data items
+   appear in particular named sections.  */
 
 #include "objc-next-metadata-tags.h"
 extern GTY(()) tree objc_rt_trees[OCTI_RT_META_MAX];
@@ -187,14 +188,15 @@ objc_next_runtime_abi_01_init (objc_runtime_hooks *rthooks)
   return true;
 }
 
-/* We need a way to convey what kind of meta-data are represented by a given
-   variable, since each type is expected (by the runtime) to be found in a
-   specific named section.  The solution must be usable with LTO.
+/* We need a way to convey what kind of meta-data are represented by a
+   given variable, since each type is expected (by the runtime) to be
+   found in a specific named section.  The solution must be usable
+   with LTO.
    
-   The scheme used for NeXT ABI 0/1 (partial matching of variable names) is not
-   satisfactory for LTO & ABI-2.  We now tag ObjC meta-data with identification
-   attributes in the front end.  The back-end may choose to act on these as it
-   requires.  */
+   The scheme used for NeXT ABI 0/1 (partial matching of variable
+   names) is not satisfactory for LTO & ABI-2.  We now tag ObjC
+   meta-data with identification attributes in the front end.  The
+   back-end may choose to act on these as it requires.  */
 
 static void
 next_runtime_abi_01_init_metadata_attributes (void)
@@ -252,9 +254,10 @@ static void next_runtime_01_initialize (void)
   tree type;
 
 #ifdef OBJCPLUS
-      /* For all NeXT objc ABIs -fobjc-call-cxx-cdtors is on by default. */
-      if (!global_options_set.x_flag_objc_call_cxx_cdtors)
-        global_options.x_flag_objc_call_cxx_cdtors = 1;
+  /* For all NeXT objc ABIs -fobjc-call-cxx-cdtors is on by
+     default.  */
+  if (!global_options_set.x_flag_objc_call_cxx_cdtors)
+    global_options.x_flag_objc_call_cxx_cdtors = 1;
 #endif
 
   /* Set up attributes to be attached to the meta-data so that they
@@ -265,7 +268,8 @@ static void next_runtime_01_initialize (void)
     objc_prop_list_ptr = build_pointer_type (xref_tag (RECORD_TYPE,
 					     get_identifier ("_prop_list_t")));
 
- /* Declare type of selector-objects that represent an operation name.  */
+ /* Declare type of selector-objects that represent an operation
+    name.  */
   /* `struct objc_selector *' */
   objc_selector_type = build_pointer_type (xref_tag (RECORD_TYPE,
 					   get_identifier (TAG_SELECTOR)));
@@ -306,8 +310,8 @@ static void next_runtime_01_initialize (void)
 						 NULL, NULL_TREE);
 
   /* These can throw, because the function that gets called can throw
-     in Obj-C++, or could itself call something that can throw even
-     in Obj-C.  */
+     in Obj-C++, or could itself call something that can throw even in
+     Obj-C.  */
   TREE_NOTHROW (umsg_decl) = 0;
   TREE_NOTHROW (umsg_nonnil_decl) = 0;
   TREE_NOTHROW (umsg_stret_decl) = 0;
@@ -357,7 +361,8 @@ static void next_runtime_01_initialize (void)
   objc_get_meta_class_decl
     = add_builtin_function (TAG_GETMETACLASS, type, 0, NOT_BUILT_IN, NULL, NULL_TREE);
 
-  /* This is the type of all of the following functions objc_copyStruct().  */
+  /* This is the type of all of the following functions
+     objc_copyStruct().  */
   type = build_function_type_list (void_type_node,
 				   ptr_type_node,
 				   const_ptr_type_node,
@@ -368,7 +373,7 @@ static void next_runtime_01_initialize (void)
   /* Declare the following function:
 	 void
          objc_copyStruct (void *destination, const void *source, 
-	                  ptrdiff_t size, BOOL is_atomic, BOOL has_strong);  */
+	                  ptrdiff_t size, BOOL is_atomic, BOOL has_strong); */
   objc_copyStruct_decl = add_builtin_function ("objc_copyStruct",
 						   type, 0, NOT_BUILT_IN,
 						   NULL, NULL_TREE);
@@ -385,7 +390,8 @@ static void next_runtime_01_initialize (void)
 
 /* --- templates --- */
 
-/* struct _objc_class {
+/* struct _objc_class 
+   {
      struct _objc_class *isa;
      struct _objc_class *super_class;
      char *name;
@@ -403,10 +409,11 @@ static void next_runtime_01_initialize (void)
      void *sel_id;
      void *gc_object_type;
     #endif
-   };  */
+   }; */
 
-/* The 'sel_id' & 'gc_object_type' fields are not used by the NeXT runtime.
-   We generate them for ABI==0 to maintain backward binary compatibility.  */
+/* The 'sel_id' & 'gc_object_type' fields are not used by the NeXT
+   runtime.  We generate them for ABI==0 to maintain backward binary
+   compatibility.  */
 
 static void
 build_v1_class_template (void)
@@ -474,16 +481,17 @@ build_v1_class_template (void)
   objc_finish_struct (objc_class_template, decls);
 }
 
-/* struct _objc_category {
+/* struct _objc_category
+   {
      char *category_name;
      char *class_name;
      struct _objc_method_list *instance_methods;
      struct _objc_method_list *class_methods;
      struct _objc_protocol_list *protocols;
-   if ABI=1
+   #if ABI=1
      uint32_t size;	// sizeof (struct _objc_category)
      struct _objc_property_list *instance_properties;  // category's own @property decl.
-   END
+   #endif
    };   */
 
 static void
@@ -515,7 +523,7 @@ build_v1_category_template (void)
  
       /* struct _objc_property_list *instance_properties;
          This field describes a category's @property declarations.
-         Properties from inherited protocols are not included. */
+         Properties from inherited protocols are not included.  */
       ptype = build_pointer_type (xref_tag (RECORD_TYPE, 
 					    get_identifier (UTAG_PROPERTY_LIST)));
       add_field_decl (ptype, "instance_properties", &chain);
@@ -523,20 +531,22 @@ build_v1_category_template (void)
   objc_finish_struct (objc_category_template, decls);
 }
 
-/* Begin code generation for protocols... 
+/* Begin code generation for protocols...
    Modified for ObjC #1 extensions.  */
 
-/* struct _objc_protocol {
-   IF ABI=1
+/* struct _objc_protocol
+   {
+   #if ABI=1
      struct _objc_protocol_extension *isa;
-   ElSE
+   #else
      struct _objc_class *isa;
- 
+   #endif 
+
      char *protocol_name;
      struct _objc_protocol **protocol_list;
      struct _objc__method_prototype_list *instance_methods;
      struct _objc__method_prototype_list *class_methods;
-   };  */
+   }; */
 
 static void
 build_v1_protocol_template (void)
@@ -550,7 +560,7 @@ build_v1_protocol_template (void)
     ptype = build_pointer_type (xref_tag (RECORD_TYPE,
 					  get_identifier (UTAG_PROTOCOL_EXT)));
   else
-    /* struct _objc_class *isa;  */
+    /* struct _objc_class *isa; */
     ptype = build_pointer_type (xref_tag (RECORD_TYPE,
 					get_identifier (UTAG_CLASS)));
 
@@ -969,7 +979,7 @@ next_runtime_abi_01_get_category_super_ref (location_t loc ATTRIBUTE_UNUSED,
 /* assemble_external (super_class);*/
   super_name = my_build_string_pointer (IDENTIFIER_LENGTH (super_name) + 1,
 					IDENTIFIER_POINTER (super_name));
-  /* super_class = objc_get{Meta}Class("CLASS_SUPER_NAME");  */
+  /* super_class = objc_get{Meta}Class("CLASS_SUPER_NAME"); */
   return build_function_call (input_location,
 			      super_class,
 			      build_tree_list (NULL_TREE, super_name));
@@ -1727,7 +1737,7 @@ build_v1_category_initializer (tree type, tree cat_name, tree class_name,
   return objc_build_constructor (type, v);
 }
 
-/* static struct objc_category _OBJC_CATEGORY_<name> = { ... };  */
+/* static struct objc_category _OBJC_CATEGORY_<name> = { ... }; */
 /* TODO: get rid of passing stuff around in globals.  */
 static void
 generate_v1_category (struct imp_entry *impent)
@@ -1789,8 +1799,7 @@ generate_v1_category (struct imp_entry *impent)
   impent->class_decl = cat_decl;
 }
 
-/* This routine builds the class extension used by v1 NeXT.
-*/
+/* This routine builds the class extension used by v1 NeXT.  */
 
 static tree
 generate_objc_class_ext (tree property_list, tree context)
@@ -1861,7 +1870,7 @@ generate_objc_class_ext (tree property_list, tree context)
      void *sel_id;
      void *gc_object_type;
   #endif
-   };  */
+   }; */
 
 static tree
 build_v1_shared_structure_initializer (tree type, tree isa, tree super,
@@ -1984,7 +1993,7 @@ generate_ivars_list (tree chain, const char *name, tree attr)
 }
 
 /* static struct objc_class _OBJC_METACLASS_Foo={ ... };
-   static struct objc_class _OBJC_CLASS_Foo={ ... };  */
+   static struct objc_class _OBJC_CLASS_Foo={ ... }; */
 
 static void
 generate_v1_class_structs (struct imp_entry *impent)
@@ -2357,6 +2366,9 @@ objc_generate_v1_next_metadata (void)
   tree chain, attr;
   long vers;
 
+  /* FIXME: Make sure that we generate no metadata if there is nothing
+     to put into it.  */
+
   if (objc_static_instances)
     gcc_unreachable (); /* Not for NeXT */
 
@@ -2590,7 +2602,7 @@ next_sjlj_build_enter_and_setjmp (struct objc_try_context **ctcp)
 
 /* Build:
 
-   DECL = objc_exception_extract(&_stack);  */
+   DECL = objc_exception_extract(&_stack); */
 
 static tree
 next_sjlj_build_exc_extract (struct objc_try_context **ctcp, tree decl)
