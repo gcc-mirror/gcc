@@ -22,5 +22,8 @@ typedef const struct objc_selector    *SEL;
   a = @selector(b1ar);
   b = @selector(bar);
 }
-@end /* { dg-warning "creating selector for nonexistent method .b1ar." } */
+@end
+
+/* FIXME: The error message should be on the correct line.  */
+/* { dg-warning "creating selector for nonexistent method .b1ar." "" { target *-*-* } 0 } */
 

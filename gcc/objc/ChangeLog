@@ -1,3 +1,10 @@
+2011-02-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+       * objc-gnu-runtime-abi-01.c (TARGET_64BIT): Removed.  Removed
+       usage of padding fields.  Do not include tm.h.
+       * objc-act.c (objc_write_global_declaration): Set input_location
+       to BUILTINS_LOCATION while generating runtime metadata.
+
 2011-01-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47784

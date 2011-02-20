@@ -15,4 +15,6 @@ typedef struct
 @end
 
 @implementation Test
-@end /* { dg-error "instance variable has unknown size" } */
+@end
+
+/* { dg-error "instance variable has unknown size" "" { target *-*-* } 0 } */
