@@ -3318,6 +3318,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	  if (proc_sym->ts.deferred)
 	    {
 	      tmp = NULL;
+	      gfc_save_backend_locus (&loc);
+	      gfc_set_backend_locus (&proc_sym->declared_at);
 	      gfc_start_block (&init);
 	      /* Zero the string length on entry.  */
 	      gfc_add_modify (&init, proc_sym->ts.u.cl->backend_decl,
@@ -3332,6 +3334,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      gfc_add_modify (&init, tmp,
 			      fold_convert (TREE_TYPE (se.expr),
 					    null_pointer_node));
+	      gfc_restore_backend_locus (&loc);
 
 	      /* Pass back the string length on exit.  */
 	      tmp = proc_sym->ts.u.cl->passed_length;
@@ -3353,7 +3356,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
   /* Initialize the INTENT(OUT) derived type dummy arguments.  This
      should be done here so that the offsets and lbounds of arrays
      are available.  */
+  gfc_save_backend_locus (&loc);
+  gfc_set_backend_locus (&proc_sym->declared_at);
   init_intent_out_dt (proc_sym, block);
+  gfc_restore_backend_locus (&loc);
 
   for (sym = proc_sym->tlink; sym != proc_sym; sym = sym->tlink)
     {
@@ -3372,7 +3378,12 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      else if (sym->attr.pointer || sym->attr.allocatable)
 		{
 		  if (TREE_STATIC (sym->backend_decl))
-		    gfc_trans_static_array_pointer (sym);
+		    {
+		      gfc_save_backend_locus (&loc);
+		      gfc_set_backend_locus (&sym->declared_at);
+		      gfc_trans_static_array_pointer (sym);
+		      gfc_restore_backend_locus (&loc);
+		    }
 		  else
 		    {
 		      seen_trans_deferred_array = true;
@@ -3381,6 +3392,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		}
 	      else
 		{
+		  gfc_save_backend_locus (&loc);
+		  gfc_set_backend_locus (&sym->declared_at);
+
 		  if (sym_has_alloc_comp)
 		    {
 		      seen_trans_deferred_array = true;
@@ -3398,8 +3412,6 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					    NULL_TREE);
 		    }
 
-		  gfc_save_backend_locus (&loc);
-		  gfc_set_backend_locus (&sym->declared_at);
 		  gfc_trans_auto_array_allocation (sym->backend_decl,
 						   sym, block);
 		  gfc_restore_backend_locus (&loc);
@@ -3451,6 +3463,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      gfc_conv_expr (&se, e);
 	      gfc_free_expr (e);
 
+	      gfc_save_backend_locus (&loc);
+	      gfc_set_backend_locus (&sym->declared_at);
 	      gfc_start_block (&init);
 
 	      if (!sym->attr.dummy || sym->attr.intent == INTENT_OUT)
@@ -3477,6 +3491,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  else
 		    gfc_add_modify (&init, sym->ts.u.cl->backend_decl, tmp);
 
+		  gfc_restore_backend_locus (&loc);
+
 		  /* Pass the final character length back.  */
 		  if (sym->attr.intent != INTENT_IN)
 		    tmp = fold_build2_loc (input_location, MODIFY_EXPR,
@@ -3485,6 +3501,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  else
 		    tmp = NULL_TREE;
 		}
+	      else
+		gfc_restore_backend_locus (&loc);
 
 	      /* Deallocate when leaving the scope. Nullifying is not
 		 needed.  */
@@ -3497,6 +3515,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  /* Initialize _vptr to declared type.  */
 		  gfc_symbol *vtab = gfc_find_derived_vtab (sym->ts.u.derived);
 		  tree rhs;
+
+		  gfc_save_backend_locus (&loc);
+		  gfc_set_backend_locus (&sym->declared_at);
 		  e = gfc_lval_expr_from_sym (sym);
 		  gfc_add_vptr_component (e);
 		  gfc_init_se (&se, NULL);
@@ -3506,6 +3527,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  rhs = gfc_build_addr_expr (TREE_TYPE (se.expr),
 					     gfc_get_symbol_decl (vtab));
 		  gfc_add_modify (&init, se.expr, rhs);
+		  gfc_restore_backend_locus (&loc);
 		}
 
 	      gfc_add_init_cleanup (block, gfc_finish_block (&init), tmp);

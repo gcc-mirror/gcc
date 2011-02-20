@@ -7156,6 +7156,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 		 "allocatable attribute or derived type without allocatable "
 		 "components.");
 
+  gfc_save_backend_locus (&loc);
+  gfc_set_backend_locus (&sym->declared_at);
   gfc_init_block (&init);
 
   gcc_assert (TREE_CODE (sym->backend_decl) == VAR_DECL
@@ -7172,11 +7174,10 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   if (sym->attr.dummy || sym->attr.use_assoc || sym->attr.result)
     {
       gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
+      gfc_restore_backend_locus (&loc);
       return;
     }
 
-  gfc_save_backend_locus (&loc);
-  gfc_set_backend_locus (&sym->declared_at);
   descriptor = sym->backend_decl;
 
   /* Although static, derived types with default initializers and
@@ -7225,8 +7226,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   if (GFC_DESCRIPTOR_TYPE_P (type) && !sym->attr.save)
     gfc_conv_descriptor_data_set (&init, descriptor, null_pointer_node);
 
-  gfc_init_block (&cleanup);
   gfc_restore_backend_locus (&loc);
+  gfc_init_block (&cleanup);
 
   /* Allocatable arrays need to be freed when they go out of scope.
      The allocatable components of pointers must not be touched.  */
