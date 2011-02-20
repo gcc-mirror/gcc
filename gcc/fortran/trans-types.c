@@ -2087,7 +2087,7 @@ gfc_add_field_to_struct (tree context, tree name, tree type, tree **chain)
 
 int
 gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
-		       bool from_gsym)
+			   bool from_gsym)
 {
   gfc_component *to_cm;
   gfc_component *from_cm;
@@ -2160,7 +2160,6 @@ gfc_get_derived_type (gfc_symbol * derived)
   gfc_component *c;
   gfc_dt_list *dt;
   gfc_namespace *ns;
-  gfc_gsymbol *gsym;
 
   gcc_assert (derived && derived->attr.flavor == FL_DERIVED);
 
@@ -2185,27 +2184,13 @@ gfc_get_derived_type (gfc_symbol * derived)
       return derived->backend_decl;
     }
 
-/* If use associated, use the module type for this one.  */
+  /* If use associated, use the module type for this one.  */
   if (gfc_option.flag_whole_file
 	&& derived->backend_decl == NULL
 	&& derived->attr.use_assoc
-	&& derived->module)
-    {
-      gsym =  gfc_find_gsymbol (gfc_gsym_root, derived->module);
-      if (gsym && gsym->ns && gsym->type == GSYM_MODULE)
-	{
-	  gfc_symbol *s;
-	  s = NULL;
-	  gfc_find_symbol (derived->name, gsym->ns, 0, &s);
-	  if (s)
-	    {
-	      if (!s->backend_decl)
-		s->backend_decl = gfc_get_derived_type (s);
-	      gfc_copy_dt_decls_ifequal (s, derived, true);
-	      goto copy_derived_types;
-	    }
-	}
-    }
+	&& derived->module
+	&& gfc_get_module_backend_decl (derived))
+    goto copy_derived_types;
 
   /* If a whole file compilation, the derived types from an earlier
      namespace can be used as the the canonical type.  */

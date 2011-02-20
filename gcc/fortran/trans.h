@@ -444,6 +444,9 @@ void gfc_build_builtin_function_decls (void);
 /* Set the backend source location of a decl.  */
 void gfc_set_decl_location (tree, locus *);
 
+/* Get a module symbol backend_decl if possible.  */
+bool gfc_get_module_backend_decl (gfc_symbol *);
+
 /* Return the variable decl for a symbol.  */
 tree gfc_get_symbol_decl (gfc_symbol *);
 

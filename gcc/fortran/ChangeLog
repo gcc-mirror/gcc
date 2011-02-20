@@ -1,3 +1,13 @@
+2011-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/45077
+	PR fortran/44945
+	* trans-types.c (gfc_get_derived_type): Remove code that looks
+	for decls in gsym and add call to gfc_get_module_backend_decl.
+	* trans.h : Add prototype for gfc_get_module_backend_decl.
+	* trans-decl.c (gfc_get_module_backend_decl): New function.
+	(gfc_get_symbol_decl): Call it.
+
 2011-02-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/47348

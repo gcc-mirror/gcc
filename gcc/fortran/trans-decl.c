@@ -632,6 +632,64 @@ gfc_defer_symbol_init (gfc_symbol * sym)
 }
 
 
+/* Used in gfc_get_symbol_decl and gfc_get_derived_type to obtain the
+   backend_decl for a module symbol, if it all ready exists.  If the
+   module gsymbol does not exist, it is created.  If the symbol does
+   not exist, it is added to the gsymbol namespace.  Returns true if
+   an existing backend_decl is found.  */
+
+bool
+gfc_get_module_backend_decl (gfc_symbol *sym)
+{
+  gfc_gsymbol *gsym;
+  gfc_symbol *s;
+  gfc_symtree *st;
+
+  gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->module);
+
+  if (!gsym || (gsym->ns && gsym->type == GSYM_MODULE))
+    {
+      st = NULL;
+      s = NULL;
+
+      if (gsym)
+	gfc_find_symbol (sym->name, gsym->ns, 0, &s);
+
+      if (!s)
+	{
+	  if (!gsym)
+	    {
+	      gsym = gfc_get_gsymbol (sym->module);
+	      gsym->type = GSYM_MODULE;
+	      gsym->ns = gfc_get_namespace (NULL, 0);
+	    }
+
+	  st = gfc_new_symtree (&gsym->ns->sym_root, sym->name);
+	  st->n.sym = sym;
+	  sym->refs++;
+	}
+      else if (sym->attr.flavor == FL_DERIVED)
+	{
+	  if (!s->backend_decl)
+	    s->backend_decl = gfc_get_derived_type (s);
+	  gfc_copy_dt_decls_ifequal (s, sym, true);
+	  return true;
+	}
+      else if (s->backend_decl)
+	{
+	  if (sym->ts.type == BT_DERIVED)
+	    gfc_copy_dt_decls_ifequal (s->ts.u.derived, sym->ts.u.derived,
+				       true);
+	  else if (sym->ts.type == BT_CHARACTER)
+	    sym->ts.u.cl->backend_decl = s->ts.u.cl->backend_decl;
+	  sym->backend_decl = s->backend_decl;
+	  return true;
+	}
+    }
+  return false;
+}
+
+
 /* Create an array index type variable with function scope.  */
 
 static tree
@@ -1176,29 +1234,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (gfc_option.flag_whole_file
 	&& (sym->attr.flavor == FL_VARIABLE
 	    || sym->attr.flavor == FL_PARAMETER)
-	&& sym->attr.use_assoc && !intrinsic_array_parameter
-	&& sym->module)
-    {
-      gfc_gsymbol *gsym;
-
-      gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->module);
-      if (gsym && gsym->ns && gsym->type == GSYM_MODULE)
-	{
-	  gfc_symbol *s;
-	  s = NULL;
-	  gfc_find_symbol (sym->name, gsym->ns, 0, &s);
-	  if (s && s->backend_decl)
-	    {
-	      if (sym->ts.type == BT_DERIVED)
-		gfc_copy_dt_decls_ifequal (s->ts.u.derived, sym->ts.u.derived,
-					   true);
-	      if (sym->ts.type == BT_CHARACTER)
-		sym->ts.u.cl->backend_decl = s->ts.u.cl->backend_decl;
-	      sym->backend_decl = s->backend_decl;
-	      return sym->backend_decl;
-	    }
-	}
-    }
+	&& sym->attr.use_assoc
+	&& !intrinsic_array_parameter
+	&& sym->module
+	&& gfc_get_module_backend_decl (sym))
+    return sym->backend_decl;
 
   if (sym->attr.flavor == FL_PROCEDURE)
     {
