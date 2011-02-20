@@ -1,3 +1,10 @@
+2011-02-20  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/46394
+	* pt.c (tsubst_pack_expansion): do not use
+	cp_tree_equal/same_type_p to detect an expansion of a parameter
+	pack.
+
 2011-02-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47503

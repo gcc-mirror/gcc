@@ -1,3 +1,8 @@
+2011-02-20  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/46394
+	* g++.dg/template/typedef38.C: New test.
+
 2011-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/46818
