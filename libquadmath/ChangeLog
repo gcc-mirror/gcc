@@ -1,3 +1,8 @@
+2011-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/47827
+	* printf/quadmath-printf.h (NAN): Redefine to __builtin_nanf ("").
+
 2011-02-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* libquadmath.texi (FLT128_DIG, FLT128_MIN_10_EXP,
