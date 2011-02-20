@@ -466,6 +466,8 @@ objc_write_global_declarations (void)
      and code if only checking syntax, or if generating a PCH file.  */
   if (!flag_syntax_only && !pch_file)
     {
+      location_t saved_location;
+
       /* If gen_declaration desired, open the output file.  */
       if (flag_gen_declaration)
 	{
@@ -475,8 +477,24 @@ objc_write_global_declarations (void)
 	    fatal_error ("can%'t open %s: %m", dumpname);
 	  free (dumpname);
 	}
+
+      /* Set the input location to BUILTINS_LOCATION.  This is good
+	 for error messages, in case any is generated while producing
+	 the metadata, but it also silences warnings that would be
+	 produced when compiling with -Wpadded in case when padding is
+	 automatically added to the built-in runtime data structure
+	 declarations.  We know about this padding, and it is fine; we
+	 don't want users to see any warnings about it if they use
+	 -Wpadded.  */
+      saved_location = input_location;
+      input_location = BUILTINS_LOCATION;
+
       /* Compute and emit the meta-data tables for this runtime.  */
       (*runtime.generate_metadata) ();
+
+      /* Restore the original location, just in case it mattered.  */
+      input_location = saved_location;
+
       /* ... and then close any declaration file we opened.  */
       if (gen_declaration_file)
 	fclose (gen_declaration_file);

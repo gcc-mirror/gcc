@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "tree.h"
 
 #ifdef OBJCPLUS
@@ -82,11 +81,6 @@ along with GCC; see the file COPYING3.  If not see
 #define OBJCMETA(DECL,VERS,KIND)					\
   if (VERS)								\
     DECL_ATTRIBUTES (DECL) = build_tree_list ((VERS), (KIND));
-
-/* FIXME: Remove this macro, not needed.  */
-#ifndef TARGET_64BIT
-#define TARGET_64BIT 0
-#endif
 
 static void gnu_runtime_01_initialize (void);
 
@@ -1995,9 +1989,7 @@ build_objc_symtab_template (void)
   /* short cat_def_cnt; */
   add_field_decl (short_integer_type_node, "cat_def_cnt", &chain);
 
-  /* FIXME: Remove.  */
-  if (TARGET_64BIT)
-    add_field_decl (integer_type_node, "_explicit_padder", &chain);
+  /* Note that padding will be added here on LP64.  */
 
   /* void *defs[imp_count + cat_count (+ 1)]; */
   /* NB: The index is one less than the size of the array.  */
@@ -2043,19 +2035,9 @@ init_objc_symtab (tree type)
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, 
 			  build_int_cst (short_integer_type_node, cat_count));
 
-  /* FIXME: Remove.  */
-  if (TARGET_64BIT)
-    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
-			  build_int_cst (integer_type_node, 0));
-
   /* cls_def = { ..., { &Foo, &Bar, ...}, ... } */
 
   field = TYPE_FIELDS (type);
-
-  /* FIXME: Remove.  */
-  if (TARGET_64BIT)
-    field = DECL_CHAIN (field);
-
   field = DECL_CHAIN (DECL_CHAIN (DECL_CHAIN (DECL_CHAIN (field))));
 
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init_def_list (TREE_TYPE (field)));
