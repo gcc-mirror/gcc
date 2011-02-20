@@ -4577,6 +4577,25 @@ free_lang_data_in_decl (tree decl)
     }
   else if (TREE_CODE (decl) == TYPE_DECL)
     DECL_INITIAL (decl) = NULL_TREE;
+  else if (TREE_CODE (decl) == TRANSLATION_UNIT_DECL
+           && DECL_INITIAL (decl)
+           && TREE_CODE (DECL_INITIAL (decl)) == BLOCK)
+    {
+      /* Strip builtins from the translation-unit BLOCK.  We still have
+	 targets without builtin_decl support and also builtins are
+	 shared nodes and thus we can't use TREE_CHAIN in multiple
+	 lists.  */
+      tree *nextp = &BLOCK_VARS (DECL_INITIAL (decl));
+      while (*nextp)
+        {
+          tree var = *nextp;
+          if (TREE_CODE (var) == FUNCTION_DECL
+              && DECL_BUILT_IN (var))
+	    *nextp = TREE_CHAIN (var);
+	  else
+	    nextp = &TREE_CHAIN (var);
+        }
+    }
 }
 
 
