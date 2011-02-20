@@ -8711,19 +8711,51 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	  return result;
 	}
 
+      /* For clarity in the comments below let's use the
+	 representation 'argument_pack<elements>' to denote an
+	 argument pack and its elements.
+
+	 In the 'if' block below, we want to detect cases where
+	 ARG_PACK is argument_pack<PARM_PACK...>.  I.e, we want to
+	 check if ARG_PACK is an argument pack which sole element is
+	 the expansion of PARM_PACK.  That argument pack is typically
+	 created by template_parm_to_arg when passed a parameter
+	 pack.  */
       if (arg_pack
           && TREE_VEC_LENGTH (ARGUMENT_PACK_ARGS (arg_pack)) == 1
           && PACK_EXPANSION_P (TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg_pack), 0)))
         {
           tree expansion = TREE_VEC_ELT (ARGUMENT_PACK_ARGS (arg_pack), 0);
           tree pattern = PACK_EXPANSION_PATTERN (expansion);
-          if ((TYPE_P (pattern) && same_type_p (pattern, parm_pack))
-              || (!TYPE_P (pattern) && cp_tree_equal (parm_pack, pattern)))
-            /* The argument pack that the parameter maps to is just an
-               expansion of the parameter itself, such as one would
-               find in the implicit typedef of a class inside the
-               class itself.  Consider this parameter "unsubstituted",
-               so that we will maintain the outer pack expansion.  */
+	  /* So we have an argument_pack<P...>.  We want to test if P
+	     is actually PARM_PACK.  We will not use cp_tree_equal to
+	     test P and PARM_PACK because during type fixup (by
+	     fixup_template_parm) P can be a pre-fixup version of a
+	     type and PARM_PACK be its post-fixup version.
+	     cp_tree_equal would consider them as different even
+	     though we would want to consider them compatible for our
+	     precise purpose here.
+
+	     Thus we are going to consider that P and PARM_PACK are
+	     compatible if they have the same DECL.  */
+	  if ((/* If ARG_PACK is a type parameter pack named by the
+		  same DECL as parm_pack ...  */
+	       (TYPE_P (pattern)
+		&& TYPE_P (parm_pack)
+		&& TYPE_NAME (pattern) == TYPE_NAME (parm_pack))
+	       /* ... or if ARG_PACK is a non-type parameter
+		  named by the same DECL as parm_pack ...  */
+	       || (TREE_CODE (pattern) == TEMPLATE_PARM_INDEX
+		   && TREE_CODE (parm_pack) == PARM_DECL
+		   && TEMPLATE_PARM_DECL (pattern)
+		   == TEMPLATE_PARM_DECL (DECL_INITIAL (parm_pack))))
+	      && template_parameter_pack_p (pattern))
+            /* ... then the argument pack that the parameter maps to
+               is just an expansion of the parameter itself, such as
+               one would find in the implicit typedef of a class
+               inside the class itself.  Consider this parameter
+               "unsubstituted", so that we will maintain the outer
+               pack expansion.  */
             arg_pack = NULL_TREE;
         }
           
