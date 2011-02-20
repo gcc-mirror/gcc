@@ -1,5 +1,7 @@
 2011-02-20  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/overload/conv-op1.C: New.
+
 	* g++.dg/cpp0x/constexpr-synth1.C: New.
 
 2011-02-20  Nicola Pero  <nicola.pero@meta-innovation.com>

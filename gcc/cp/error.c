@@ -2493,7 +2493,11 @@ location_of (tree t)
   if (TREE_CODE (t) == PARM_DECL && DECL_CONTEXT (t))
     t = DECL_CONTEXT (t);
   else if (TYPE_P (t))
-    t = TYPE_MAIN_DECL (t);
+    {
+      t = TYPE_MAIN_DECL (t);
+      if (t == NULL_TREE)
+	return input_location;
+    }
   else if (TREE_CODE (t) == OVERLOAD)
     t = OVL_FUNCTION (t);
 
