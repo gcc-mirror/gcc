@@ -1790,49 +1790,71 @@ objc_maybe_build_modify_expr (tree lhs, tree rhs)
       to get these to work with very little effort, we build a
       compound statement which does the setter call (to set the
       property to 'rhs'), but which can also be evaluated returning
-      the 'rhs'.  So, we want to create the following:
+      the 'rhs'.  If the 'rhs' has no side effects, we can simply
+      evaluate it twice, building
+
+      ([object setProperty: rhs]; rhs)
+
+      If it has side effects, we put it in a temporary variable first,
+      so we create the following:
 
       (temp = rhs; [object setProperty: temp]; temp)
+
+      setter_argument is rhs in the first case, and temp in the second
+      case.
       */
-      tree temp_variable_decl, bind;
+      tree setter_argument;
+
       /* s1, s2 and s3 are the tree statements that we need in the
 	 compound expression.  */
       tree s1, s2, s3, compound_expr;
-      
-      /* TODO: If 'rhs' is a constant, we could maybe do without the
-	 'temp' variable ? */
 
-      /* Declare __objc_property_temp in a local bind.  */
-      temp_variable_decl = objc_create_temporary_var (TREE_TYPE (rhs), "__objc_property_temp");
-      DECL_SOURCE_LOCATION (temp_variable_decl) = input_location;
-      bind = build3 (BIND_EXPR, void_type_node, temp_variable_decl, NULL, NULL);
-      SET_EXPR_LOCATION (bind, input_location);
-      TREE_SIDE_EFFECTS (bind) = 1;
-      add_stmt (bind);
+      if (TREE_SIDE_EFFECTS (rhs))
+	{
+	  tree bind;
+      
+	  /* Declare __objc_property_temp in a local bind.  */
+	  setter_argument = objc_create_temporary_var (TREE_TYPE (rhs), "__objc_property_temp");
+	  DECL_SOURCE_LOCATION (setter_argument) = input_location;
+	  bind = build3 (BIND_EXPR, void_type_node, setter_argument, NULL, NULL);
+	  SET_EXPR_LOCATION (bind, input_location);
+	  TREE_SIDE_EFFECTS (bind) = 1;
+	  add_stmt (bind);
+
+	  /* s1: x = rhs */
+	  s1 = build_modify_expr (input_location, setter_argument, NULL_TREE,
+				  NOP_EXPR,
+				  input_location, rhs, NULL_TREE);
+	  SET_EXPR_LOCATION (s1, input_location);
+	}
+      else
+	{
+	  /* No s1.  */
+	  setter_argument = rhs;
+	  s1 = NULL_TREE;
+	}
       
       /* Now build the compound statement.  */
-      
-      /* s1: __objc_property_temp = rhs */
-      s1 = build_modify_expr (input_location, temp_variable_decl, NULL_TREE,
-			      NOP_EXPR,
-			      input_location, rhs, NULL_TREE);
-      SET_EXPR_LOCATION (s1, input_location);
   
-      /* s2: [object setProperty: __objc_property_temp] */
-      s2 = objc_build_setter_call (lhs, temp_variable_decl);
-
-      /* This happens if building the setter failed because the property
-	 is readonly.  */
+      /* s2: [object setProperty: x] */
+      s2 = objc_build_setter_call (lhs, setter_argument);
+      
+      /* This happens if building the setter failed because the
+	 property is readonly.  */
       if (s2 == error_mark_node)
 	return error_mark_node;
 
       SET_EXPR_LOCATION (s2, input_location);
   
-      /* s3: __objc_property_temp */
-      s3 = convert (TREE_TYPE (lhs), temp_variable_decl);
+      /* s3: x */
+      s3 = convert (TREE_TYPE (lhs), setter_argument);
 
-      /* Now build the compound statement (s1, s2, s3) */
-      compound_expr = build_compound_expr (input_location, build_compound_expr (input_location, s1, s2), s3);
+      /* Now build the compound statement (s1, s2, s3) or (s2, s3) as
+	 appropriate.  */
+      if (s1)
+	compound_expr = build_compound_expr (input_location, build_compound_expr (input_location, s1, s2), s3);
+      else
+	compound_expr = build_compound_expr (input_location, s2, s3);	
 
       /* Without this, with -Wall you get a 'valued computed is not
 	 used' every time there is a "object.property = x" where the
