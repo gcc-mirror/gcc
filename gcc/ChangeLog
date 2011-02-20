@@ -1,3 +1,9 @@
+2011-02-20  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47822
+	* tree.c (free_lang_data_in_decl): Clean builtins from
+	the TU decl BLOCK_VARS.
+ 
 2011-02-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/47620
