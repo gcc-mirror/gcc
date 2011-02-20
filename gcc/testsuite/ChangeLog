@@ -1,11 +1,11 @@
-2011-02-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+2011-02-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/layout-2.m: New.
 	* objc.dg/selector-3.m: Adjusted location of error message.
 	* objc.dg/type-size-3.m: Same.
 	* obj-c++.dg/selector-3.mm: Same.
 
-2011-02-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+2011-02-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47784
 	* objc.dg/property/dotsyntax-22.m: New.
