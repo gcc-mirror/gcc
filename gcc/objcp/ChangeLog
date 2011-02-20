@@ -1,3 +1,8 @@
+2011-02-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc++/47711
+	* config-lang.in (gtfiles): Updated list.
+
 2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* Make-lang.in (START_HDRS): New.
