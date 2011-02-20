@@ -1,3 +1,10 @@
+2011-02-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47797
+	* trans-decl.c (gfc_trans_deferred_vars): Use gfc_set_backend_locus and
+	gfc_restore_backend_locus to have better debug locations.
+	* trans-array.c (gfc_trans_deferred_array): Ditto.
+
 2011-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/45077
