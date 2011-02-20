@@ -1,5 +1,11 @@
 2011-02-20  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/46818
+	* gfortran.dg/whole_file_30.f90 : New test.
+	* gfortran.dg/whole_file_31.f90 : New test.
+
+2011-02-20  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/45077
 	PR fortran/44945
 	* gfortran.dg/whole_file_28.f90 : New test.
