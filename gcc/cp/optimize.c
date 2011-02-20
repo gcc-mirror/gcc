@@ -256,6 +256,7 @@ maybe_clone_body (tree fn)
       /* Update CLONE's source position information to match FN's.  */
       DECL_SOURCE_LOCATION (clone) = DECL_SOURCE_LOCATION (fn);
       DECL_DECLARED_INLINE_P (clone) = DECL_DECLARED_INLINE_P (fn);
+      DECL_DECLARED_CONSTEXPR_P (clone) = DECL_DECLARED_CONSTEXPR_P (fn);
       DECL_COMDAT (clone) = DECL_COMDAT (fn);
       DECL_WEAK (clone) = DECL_WEAK (fn);
 

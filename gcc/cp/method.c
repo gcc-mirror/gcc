@@ -941,8 +941,17 @@ process_subob_fn (tree fn, bool move_p, tree *spec_p, bool *trivial_p,
       goto bad;
     }
 
-  if (constexpr_p && !DECL_DECLARED_CONSTEXPR_P (fn))
-    *constexpr_p = false;
+  if (constexpr_p)
+    {
+      /* If this is a specialization of a constexpr template, we need to
+	 force the instantiation now so that we know whether or not it's
+	 really constexpr.  */
+      if (DECL_DECLARED_CONSTEXPR_P (fn) && DECL_TEMPLATE_INSTANTIATION (fn)
+	  && !DECL_TEMPLATE_INSTANTIATED (fn))
+	instantiate_decl (fn, /*defer_ok*/false, /*expl_class*/false);
+      if (!DECL_DECLARED_CONSTEXPR_P (fn))
+	*constexpr_p = false;
+    }
 
   return;
 
