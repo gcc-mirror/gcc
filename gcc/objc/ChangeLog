@@ -1,5 +1,11 @@
 2011-01-19  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc/47784
+	* objc-act.c (objc_maybe_build_modify_expr): If 'rhs' has side
+	effects, do not use a temporary variable.
+
+2011-01-19  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc-next-runtime-abi-01.c: Updated comments.
 	* objc-next-runtime-abi-02.c: Same.
 
