@@ -181,3 +181,6 @@ __quadmath_do_putc (struct __quadmath_printf_file *fp, int wide,
 
 #undef _itoa
 #define _itoa __quadmath_itoa
+
+#undef NAN
+#define NAN __builtin_nanf ("")
