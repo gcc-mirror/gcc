@@ -1,3 +1,17 @@
+2011-02-21  Mike Stump  <mikestump@comcast.net>
+
+	PR target/47822
+	* config/darwin-protos.h (darwin_init_cfstring_builtins): Return a
+	tree so we can get save the type.
+	* config/i386/darwin.h (SUBTARGET_INIT_BUILTINS): Reserve builtin slot
+	for CFString instead of trying to use past the end of the builtins.
+	* config/i386/i386.c (IX86_BUILTIN_CFSTRING): Likewise.
+	* config/rs6000/rs6000-builtin.def (RS6000_BUILTIN_CFSTRING): Likewise.
+	* config/rs6000/darwin.h (SUBTARGET_INIT_BUILTINS): Likewise.
+	* config/darwin.c (DARWIN_BUILTIN_CFSTRINGMAKECONSTANTSTRING):
+	Rename to darwin_builtin_cfstring.
+	(darwin_init_cfstring_builtins): Return the built type.
+
 2011-02-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47840

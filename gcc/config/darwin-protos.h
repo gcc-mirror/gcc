@@ -110,7 +110,7 @@ extern void darwin_asm_output_aligned_decl_common (FILE *, tree, const char *,
 extern bool darwin_binds_local_p (const_tree);
 extern void darwin_cpp_builtins (struct cpp_reader *);
 
-extern void darwin_init_cfstring_builtins (unsigned);
+extern tree darwin_init_cfstring_builtins (unsigned);
 extern tree darwin_fold_builtin (tree, int, tree *, bool);
 extern tree darwin_objc_construct_string (tree);
 extern bool darwin_cfstring_p (tree);
