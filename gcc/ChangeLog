@@ -1,3 +1,9 @@
+2011-02-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/47840
+	* config/i386/avxintrin.h (_mm256_insert_epi32): Use _mm_insert_epi32.
+	(_mm256_insert_epi64): Use _mm_insert_epi64.
+
 2011-02-21  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/stormy16/stormy16.h (GO_IF_MODE_DEPENDENT_ADDRESS): Remove.
@@ -15,7 +21,7 @@
 	Do not stream DECL_INITIAL for TRANSLATION_UNIT_DECLs.
 	(lto_input_ts_block_tree_pointers): Hook a BLOCK into the
 	TUs context.
-	* lto-streamer-out.c (lto_output_ts_decl_common_tree_pointers): 
+	* lto-streamer-out.c (lto_output_ts_decl_common_tree_pointers):
 	Do not stream DECL_INITIAL for TRANSLATION_UNIT_DECLs.
 
 2011-02-20  Richard Guenther  <rguenther@suse.de>
@@ -23,7 +29,7 @@
 	PR lto/47822
 	* tree.c (free_lang_data_in_decl): Clean builtins from
 	the TU decl BLOCK_VARS.
- 
+
 2011-02-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/47620
@@ -131,7 +137,7 @@
 2011-02-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/darwin-c.c (darwin_cpp_builtins): Define __OBJC2__ for
-	objc_abi == 2.	
+	objc_abi == 2.
 	* config/darwin.c (output_objc_section_asm_op): Added support for
 	ABI v1 and v2.
 	(is_objc_metadata): New.
@@ -187,12 +193,10 @@
 	(copy_arguments_for_versioning): Drop redundant get_var_ann.
 	* ipa-inline.c (compute_inline_parameters): Do not compute
 	disregard_inline_limits here.
-	are not available.
 	(compute_inlinable_for_current, pass_inlinable): New.
 	(pass_inline_parameters): Require PROP_referenced_vars.
 	* cgraphunit.c (cgraph_process_new_functions): Don't run
-	compute_inline_parameters explicitly unless function is in
-	SSA form.
+	compute_inline_parameters explicitly unless function is in SSA form.
 	(cgraph_analyze_function): Set .disregard_inline_limits.
 	* tree-sra.c (convert_callers): Compute inliner parameters
 	only for functions already in SSA form.

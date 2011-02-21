@@ -737,7 +737,7 @@ extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __arti
 _mm256_insert_epi32 (__m256i __X, int __D, int const __N)
 {
   __m128i __Y = _mm256_extractf128_si256 (__X, __N >> 2);
-  __Y = _mm_insert_epi16 (__Y, __D, __N % 4);
+  __Y = _mm_insert_epi32 (__Y, __D, __N % 4);
   return _mm256_insertf128_si256 (__X, __Y, __N >> 2);
 }
 
@@ -762,7 +762,7 @@ extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __arti
 _mm256_insert_epi64 (__m256i __X, int __D, int const __N)
 {
   __m128i __Y = _mm256_extractf128_si256 (__X, __N >> 1);
-  __Y = _mm_insert_epi16 (__Y, __D, __N % 2);
+  __Y = _mm_insert_epi64 (__Y, __D, __N % 2);
   return _mm256_insertf128_si256 (__X, __Y, __N >> 1);
 }
 #endif
