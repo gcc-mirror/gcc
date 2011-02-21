@@ -1,5 +1,9 @@
 2011-02-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46831
+	* call.c (convert_class_to_reference): Don't try to set up a
+	second conv sequence for non-viable candidates.
+
 	PR c++/47703
 	* error.c (location_of): Handle non-tagged types.
 
