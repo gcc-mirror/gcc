@@ -6768,7 +6768,10 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 	      tree type = TREE_TYPE (r);
 	      error ("the value of %qD is not usable in a constant "
 		     "expression", r);
-	      if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+	      if (DECL_DECLARED_CONSTEXPR_P (r))
+		inform (DECL_SOURCE_LOCATION (r),
+			"%qD used in its own initializer", r);
+	      else if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
 		{
 		  if (!CP_TYPE_CONST_P (type))
 		    inform (DECL_SOURCE_LOCATION (r),

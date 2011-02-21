@@ -1,3 +1,13 @@
+2011-02-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47207
+	* decl2.c (decl_constant_var_p): A constexpr var needs an
+	initializer to be constant.
+	* semantics.c (cxx_eval_constant_expression): Complain about
+	constexpr var used in its own initializer.
+	* call.c (set_up_extended_ref_temp): Set
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P too.
+
 2011-02-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47199
