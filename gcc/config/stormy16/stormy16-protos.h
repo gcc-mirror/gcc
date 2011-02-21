@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in xstormy16.c
-   Copyright (C) 2000, 2001, 2003, 2004, 2007, 2008, 2010
+   Copyright (C) 2000, 2001, 2003, 2004, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -44,7 +44,6 @@ extern rtx xstormy16_function_value (const_tree, const_tree);
 extern void xstormy16_emit_cbranch (enum rtx_code, rtx, rtx, rtx);
 extern char *xstormy16_output_cbranch_hi (rtx, const char *, int, rtx);
 extern char *xstormy16_output_cbranch_si (rtx, const char *, int, rtx);
-extern int xstormy16_mode_dependent_address_p (rtx);
 
 extern void xstormy16_print_operand (FILE *, rtx, int);
 extern void xstormy16_print_operand_address (FILE *, rtx);
