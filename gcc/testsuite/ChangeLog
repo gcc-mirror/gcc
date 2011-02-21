@@ -1,3 +1,8 @@
+2011-02-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* g++.dg/cpp0x/lambda/lambda-conv.C: Skip scan-assembler check on
+	*-*-hpux10*.
+
 2011-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/47106
