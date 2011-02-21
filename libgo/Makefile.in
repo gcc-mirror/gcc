@@ -1037,11 +1037,16 @@ go_netchan_files = \
 	go/netchan/export.go \
 	go/netchan/import.go
 
+@LIBGO_IS_386_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_os_dir_file = go/os/dir_regfile.go
+@LIBGO_IS_386_TRUE@@LIBGO_IS_SOLARIS_TRUE@go_os_dir_file = go/os/dir_largefile.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_dir_file = go/os/dir_regfile.go
+@LIBGO_IS_LINUX_TRUE@@LIBGO_IS_SOLARIS_FALSE@go_os_dir_file = go/os/dir_largefile.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_FALSE@@LIBGO_IS_SOLARIS_FALSE@go_os_sys_file = go/os/sys_bsd.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_RTEMS_TRUE@@LIBGO_IS_SOLARIS_FALSE@go_os_sys_file = go/os/sys_uname.go
 @LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@go_os_sys_file = go/os/sys_uname.go
 @LIBGO_IS_LINUX_TRUE@go_os_sys_file = go/os/sys_linux.go
 go_os_files = \
+	$(go_os_dir_file) \
 	go/os/dir.go \
 	go/os/env.go \
 	go/os/env_unix.go \
@@ -1513,6 +1518,7 @@ go_testing_script_files = \
 @LIBGO_IS_RTEMS_TRUE@syscall_syscall_file = syscalls/syscall_stubs.go
 # Use lseek on amd64 Solaris.
 @LIBGO_IS_386_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@syscall_filesize_file = syscalls/sysfile_regfile.go
+# FIXME: Same for sparc vs. sparc64.  Introduce new/additional conditional?
 # Use lseek64 on 386 Solaris.
 @LIBGO_IS_386_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@syscall_filesize_file = syscalls/sysfile_largefile.go
 # Use lseek by default.
@@ -1521,6 +1527,10 @@ go_testing_script_files = \
 # Declare libc functions that vary for largefile systems.
 # Always use lseek64 on GNU/Linux.
 @LIBGO_IS_LINUX_TRUE@syscall_filesize_file = syscalls/sysfile_largefile.go
+@LIBGO_IS_386_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@syscall_stat_file = syscalls/sysfile_stat_regfile.go
+@LIBGO_IS_386_TRUE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_TRUE@syscall_stat_file = syscalls/sysfile_stat_largefile.go
+@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_SOLARIS_FALSE@syscall_stat_file = syscalls/sysfile_stat_regfile.go
+@LIBGO_IS_LINUX_TRUE@syscall_stat_file = syscalls/sysfile_stat_largefile.go
 @LIBGO_IS_RTEMS_FALSE@syscall_exec_os_file = syscalls/exec.go
 
 # Define ForkExec, PtraceForkExec, Exec, and Wait4.
@@ -1556,6 +1566,7 @@ go_syscall_files = \
 	syscalls/exec_helpers.go \
 	$(syscall_exec_os_file) \
 	$(syscall_filesize_file) \
+	$(syscall_stat_file) \
 	$(syscall_sleep_file) \
 	syscalls/socket.go \
 	$(syscall_socket_os_file) \

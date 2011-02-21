@@ -26,6 +26,9 @@ cat > sysinfo.c <<EOF
 #include "config.h"
 
 #define _GNU_SOURCE
+#define _LARGEFILE_SOURCE
+#define _FILE_OFFSET_BITS 64
+
 #if defined(__sun__) && defined(__svr4__)
 /* Needed by Solaris header files.  */
 #define _XOPEN_SOURCE 600
@@ -41,6 +44,9 @@ cat > sysinfo.c <<EOF
 #include <signal.h>
 #if defined(HAVE_SYSCALL_H)
 #include <syscall.h>
+#endif
+#if defined(HAVE_SYS_SYSCALL_H)
+#include <sys/syscall.h>
 #endif
 #if defined(HAVE_SYS_EPOLL_H)
 #include <sys/epoll.h>
@@ -306,36 +312,47 @@ if test "$timestruc" != ""; then
 fi
 
 # The stat type.
-grep 'type _stat ' gen-sysinfo.go | \
-  sed -e 's/type _stat/type Stat_t/' \
-      -e 's/st_dev/Dev/' \
-      -e 's/st_ino/Ino/' \
-      -e 's/st_nlink/Nlink/' \
-      -e 's/st_mode/Mode/' \
-      -e 's/st_uid/Uid/' \
-      -e 's/st_gid/Gid/' \
-      -e 's/st_rdev/Rdev/' \
-      -e 's/st_size/Size/' \
-      -e 's/st_blksize/Blksize/' \
-      -e 's/st_blocks/Blocks/' \
-      -e 's/st_atim/Atime/' \
-      -e 's/st_mtim/Mtime/' \
-      -e 's/st_ctim/Ctime/' \
-      -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
-      -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
-      -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
-    >> ${OUT}
+# Prefer largefile variant if available.
+stat=`grep '^type _stat64 ' gen-sysinfo.go || true`
+if test "$stat" != ""; then
+  grep '^type _stat64 ' gen-sysinfo.go
+else
+  grep '^type _stat ' gen-sysinfo.go
+fi | sed -e 's/type _stat\(64\)\?/type Stat_t/' \
+         -e 's/st_dev/Dev/' \
+         -e 's/st_ino/Ino/g' \
+         -e 's/st_nlink/Nlink/' \
+         -e 's/st_mode/Mode/' \
+         -e 's/st_uid/Uid/' \
+         -e 's/st_gid/Gid/' \
+         -e 's/st_rdev/Rdev/' \
+         -e 's/st_size/Size/' \
+         -e 's/st_blksize/Blksize/' \
+         -e 's/st_blocks/Blocks/' \
+         -e 's/st_atim/Atime/' \
+         -e 's/st_mtim/Mtime/' \
+         -e 's/st_ctim/Ctime/' \
+         -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
+         -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
+         -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
+       >> ${OUT}
 
 # The directory searching types.
-grep '^type _dirent ' gen-sysinfo.go | \
-  sed -e 's/type _dirent/type Dirent/' \
-      -e 's/d_name/Name/' \
-      -e 's/]int8/]byte/' \
-      -e 's/d_ino/Ino/' \
-      -e 's/d_off/Off/' \
-      -e 's/d_reclen/Reclen/' \
-      -e 's/d_type/Type/' \
-    >> ${OUT}
+# Prefer largefile variant if available.
+dirent=`grep '^type _dirent64 ' gen-sysinfo.go || true`
+if test "$dirent" != ""; then
+  grep '^type _dirent64 ' gen-sysinfo.go
+else
+  grep '^type _dirent ' gen-sysinfo.go
+fi | sed -e 's/type _dirent\(64\)\?/type Dirent/' \
+         -e 's/d_name \[0+1\]/d_name [0+256]/' \
+         -e 's/d_name/Name/' \
+         -e 's/]int8/]byte/' \
+         -e 's/d_ino/Ino/' \
+         -e 's/d_off/Off/' \
+         -e 's/d_reclen/Reclen/' \
+         -e 's/d_type/Type/' \
+      >> ${OUT}
 echo "type DIR _DIR" >> ${OUT}
 
 # The rusage struct.
