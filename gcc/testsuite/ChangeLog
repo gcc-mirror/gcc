@@ -1,5 +1,7 @@
 2011-02-20  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-ctor7.C: New.
+
 	* g++.dg/cpp0x/fntmpdefarg2.C: New.
 
 	* g++.dg/overload/conv-op1.C: New.
