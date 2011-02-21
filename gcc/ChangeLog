@@ -1,3 +1,13 @@
+2011-02-21  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/47820
+	* lto-streamer-in.c (lto_input_ts_decl_common_tree_pointers):
+	Do not stream DECL_INITIAL for TRANSLATION_UNIT_DECLs.
+	(lto_input_ts_block_tree_pointers): Hook a BLOCK into the
+	TUs context.
+	* lto-streamer-out.c (lto_output_ts_decl_common_tree_pointers): 
+	Do not stream DECL_INITIAL for TRANSLATION_UNIT_DECLs.
+
 2011-02-20  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/47822
