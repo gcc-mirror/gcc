@@ -1,3 +1,11 @@
+2011-02-21  Jeff Law <law@redhat.com>
+
+	PR rtl-optimization/46178
+	* gcc.target/i386/pr46178.c: New test.
+
+	PR rtl-optimization/46002
+	* gcc.c-torture/compile/pr46002.c: New test.
+
 2011-02-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/cpp0x/lambda/lambda-conv.C: Skip scan-assembler check on
