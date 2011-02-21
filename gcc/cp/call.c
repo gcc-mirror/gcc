@@ -8149,6 +8149,7 @@ set_up_extended_ref_temp (tree decl, tree expr, tree *cleanup, tree *initp)
 	     Currently this is only useful for initializer_list temporaries,
 	     since reference vars can't appear in constant expressions.  */
 	  DECL_DECLARED_CONSTEXPR_P (var) = true;
+	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (var) = true;
 	  TREE_CONSTANT (var) = true;
 	}
       DECL_INITIAL (var) = init;
