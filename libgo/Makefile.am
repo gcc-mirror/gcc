@@ -657,6 +657,20 @@ go_netchan_files = \
 	go/netchan/export.go \
 	go/netchan/import.go
 
+if LIBGO_IS_SOLARIS
+if LIBGO_IS_386
+go_os_dir_file = go/os/dir_largefile.go
+else
+go_os_dir_file = go/os/dir_regfile.go
+endif
+else
+if LIBGO_IS_LINUX
+go_os_dir_file = go/os/dir_largefile.go
+else
+go_os_dir_file = go/os/dir_regfile.go
+endif
+endif
+
 if LIBGO_IS_LINUX
 go_os_sys_file = go/os/sys_linux.go
 else
@@ -672,6 +686,7 @@ endif
 endif
 
 go_os_files = \
+	$(go_os_dir_file) \
 	go/os/dir.go \
 	go/os/env.go \
 	go/os/env_unix.go \
@@ -1111,18 +1126,23 @@ endif
 if LIBGO_IS_LINUX
 # Always use lseek64 on GNU/Linux.
 syscall_filesize_file = syscalls/sysfile_largefile.go
+syscall_stat_file = syscalls/sysfile_stat_largefile.go
 else # !LIBGO_IS_LINUX
 if LIBGO_IS_SOLARIS
+# FIXME: Same for sparc vs. sparc64.  Introduce new/additional conditional?
 if LIBGO_IS_386
 # Use lseek64 on 386 Solaris.
 syscall_filesize_file = syscalls/sysfile_largefile.go
+syscall_stat_file = syscalls/sysfile_stat_largefile.go
 else # !LIBGO_IS_LINUX && LIBGO_IS_SOLARIS && !LIBGO_IS_386
 # Use lseek on amd64 Solaris.
 syscall_filesize_file = syscalls/sysfile_regfile.go
+syscall_stat_file = syscalls/sysfile_stat_regfile.go
 endif # !LIBGO_IS_386
 else # !LIBGO_IS_LINUX && !LIBGO_IS_SOLARIS
 # Use lseek by default.
 syscall_filesize_file = syscalls/sysfile_regfile.go
+syscall_stat_file = syscalls/sysfile_stat_regfile.go
 endif # !LIBGO_IS_SOLARIS
 endif # !LIBGO_IS_LINUX
 
@@ -1195,6 +1215,7 @@ go_syscall_files = \
 	syscalls/exec_helpers.go \
 	$(syscall_exec_os_file) \
 	$(syscall_filesize_file) \
+	$(syscall_stat_file) \
 	$(syscall_sleep_file) \
 	syscalls/socket.go \
 	$(syscall_socket_os_file) \
