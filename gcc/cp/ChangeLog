@@ -1,5 +1,9 @@
 2011-02-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47199
+	* semantics.c (cxx_eval_call_expression): Call
+	cxx_eval_constant_expression in trivial shortcut.
+
 	PR c++/46831
 	* call.c (convert_class_to_reference): Don't try to set up a
 	second conv sequence for non-viable candidates.
