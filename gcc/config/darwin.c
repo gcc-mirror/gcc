@@ -3001,7 +3001,7 @@ static GTY(()) tree pccfstring_type_node = NULL_TREE;
 static GTY(()) tree pcint_type_node = NULL_TREE;
 static GTY(()) tree pcchar_type_node = NULL_TREE;
 
-static enum built_in_function DARWIN_BUILTIN_CFSTRINGMAKECONSTANTSTRING;
+static enum built_in_function darwin_builtin_cfstring;
 
 /* Store all constructed constant CFStrings in a hash table so that
    they get uniqued properly.  */
@@ -3031,14 +3031,14 @@ add_builtin_field_decl (tree type, const char *name, tree **chain)
   return field;
 }
 
-void
-darwin_init_cfstring_builtins (unsigned first_avail)
+tree
+darwin_init_cfstring_builtins (unsigned builtin_cfstring)
 {
   tree cfsfun, fields, pccfstring_ftype_pcchar;
   tree *chain = NULL;
 
-  DARWIN_BUILTIN_CFSTRINGMAKECONSTANTSTRING = 
-			(enum built_in_function) first_avail;
+  darwin_builtin_cfstring = 
+    (enum built_in_function) builtin_cfstring;
   
   /* struct __builtin_CFString {
        const int *isa;		(will point at
@@ -3084,7 +3084,7 @@ darwin_init_cfstring_builtins (unsigned first_avail)
   DECL_LANG_SPECIFIC (cfsfun) = NULL;
   (*lang_hooks.dup_lang_specific_decl) (cfsfun);
   DECL_BUILT_IN_CLASS (cfsfun) = BUILT_IN_MD;
-  DECL_FUNCTION_CODE (cfsfun) = DARWIN_BUILTIN_CFSTRINGMAKECONSTANTSTRING;
+  DECL_FUNCTION_CODE (cfsfun) = darwin_builtin_cfstring;
   lang_hooks.builtin_function (cfsfun);
 
   /* extern int __CFConstantStringClassReference[];  */
@@ -3100,6 +3100,8 @@ darwin_init_cfstring_builtins (unsigned first_avail)
   
   /* Initialize the hash table used to hold the constant CFString objects.  */
   cfstring_htab = htab_create_ggc (31, cfstring_hash, cfstring_eq, NULL);
+
+  return cfstring_type_node;
 }
 
 tree
@@ -3108,7 +3110,7 @@ darwin_fold_builtin (tree fndecl, int n_args, tree *argp,
 {
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   
-  if (fcode == DARWIN_BUILTIN_CFSTRINGMAKECONSTANTSTRING)
+  if (fcode == darwin_builtin_cfstring)
     {
       if (!darwin_constant_cfstrings)
 	{

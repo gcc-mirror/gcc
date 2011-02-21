@@ -24337,6 +24337,9 @@ enum ix86_builtins
   IX86_BUILTIN_CVTPS2PH,
   IX86_BUILTIN_CVTPS2PH256,
 
+  /* CFString built-in for darwin */
+  IX86_BUILTIN_CFSTRING,
+
   IX86_BUILTIN_MAX
 };
 

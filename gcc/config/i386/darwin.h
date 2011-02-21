@@ -308,7 +308,8 @@ do {									\
 #undef  SUBTARGET_INIT_BUILTINS
 #define SUBTARGET_INIT_BUILTINS					\
 do {								\
-  darwin_init_cfstring_builtins ((unsigned) (IX86_BUILTIN_MAX));\
+  ix86_builtins[(int) IX86_BUILTIN_CFSTRING]			\
+    = darwin_init_cfstring_builtins ((unsigned) (IX86_BUILTIN_CFSTRING));	\
   darwin_rename_builtins ();					\
 } while(0)
 

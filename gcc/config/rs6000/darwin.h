@@ -433,5 +433,6 @@ extern int darwin_emit_branch_islands;
 #define SUBTARGET_INIT_BUILTINS						\
 do {									\
   darwin_patch_builtins ();						\
-  darwin_init_cfstring_builtins ((unsigned) (RS6000_BUILTIN_COUNT));	\
+  rs6000_builtin_decls[(unsigned) (RS6000_BUILTIN_CFSTRING)]		\
+    = darwin_init_cfstring_builtins ((unsigned) (RS6000_BUILTIN_CFSTRING)); \
 } while(0)
