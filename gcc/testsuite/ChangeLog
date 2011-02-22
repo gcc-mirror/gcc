@@ -1,3 +1,10 @@
+2011-02-22  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47832
+	* objc.dg/type-size-3.m: Updated error message.
+	* objc.dg/type-size-4.m: New test.
+	* objc.dg/type-size-5.m: New test.
+
 2011-02-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/gnat.exp: Fix comments.

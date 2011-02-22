@@ -1,13 +1,22 @@
+2011-02-22  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/47832
+	* objc-act.c (flexible_array_type_p): New.
+	(add_instance_variable): Produce an error if an instance variable
+	uses flexible array members.
+	(encode_array): Do not emit an error if encoding a flexible array
+	type while generating instance variables.
+
 2011-02-21  Mike Stump  <mikestump@comcast.net>
 
 	* Make-lang.in (check_objc_parallelize): Refine for 4 processor machines.
 
 2011-02-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
-       * objc-gnu-runtime-abi-01.c (TARGET_64BIT): Removed.  Removed
-       usage of padding fields.  Do not include tm.h.
-       * objc-act.c (objc_write_global_declaration): Set input_location
-       to BUILTINS_LOCATION while generating runtime metadata.
+	* objc-gnu-runtime-abi-01.c (TARGET_64BIT): Removed.  Removed
+	usage of padding fields.  Do not include tm.h.
+	* objc-act.c (objc_write_global_declaration): Set input_location
+	to BUILTINS_LOCATION while generating runtime metadata.
 
 2011-01-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
