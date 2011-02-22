@@ -21356,6 +21356,9 @@ else
   i[34567]86-*-linux*)
         gcc_cv_as_flags="--32"
     ;;
+  powerpc*-*-darwin*)
+        gcc_cv_as_flags="-arch ppc"
+    ;;
   *)
     gcc_cv_as_flags=" "
     ;;
