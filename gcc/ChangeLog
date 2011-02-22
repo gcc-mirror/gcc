@@ -1,3 +1,8 @@
+2011-02-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR doc/47848
+	* doc/invoke.texi: Do not mention -ftree-loop-if-convert-memory-writes.
+
 2011-02-22  Mike Stump  <mikestump@comcast.net>
 
 	* acinclude.m4 (gcc_cv_gas_vers): Add -arch ppc for probing darwin

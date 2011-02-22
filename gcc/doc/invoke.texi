@@ -392,7 +392,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copy-prop @gol
 -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse @gol
 -ftree-forwprop -ftree-fre -ftree-loop-if-convert @gol
--ftree-loop-if-convert-memory-writes -ftree-loop-im @gol
+-ftree-loop-if-convert-stores -ftree-loop-im @gol
 -ftree-phiprop -ftree-loop-distribution -ftree-loop-distribute-patterns @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-pta -ftree-reassoc @gol
