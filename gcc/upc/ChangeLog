@@ -1,4 +1,4 @@
-2011-11-08  Gary Funck  <gary@intrepid.com>
+2011-02-08  Gary Funck  <gary@intrepid.com>
 
 	* upc-pts-struct.c: Fix bug: (pts + int) fails when int is negative
 	  for struct-pts representation
