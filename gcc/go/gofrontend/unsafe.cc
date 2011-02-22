@@ -24,6 +24,13 @@ Gogo::import_unsafe(const std::string& local_name, bool is_local_name_exported,
 						is_local_name_exported,
 						"libgo_unsafe",
 						location, &add_to_globals);
+
+  if (package == NULL)
+    {
+      gcc_assert(saw_errors());
+      return;
+    }
+
   package->set_is_imported();
 
   Bindings* bindings = package->bindings();
