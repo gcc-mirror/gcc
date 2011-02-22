@@ -128,9 +128,8 @@ lang_checks += check-objc
 
 # The following allows you to do 'make check-objc -j2'.  The
 # execute.exp tests will be run in parallel with all the other ones.
-# This is tuned for '-j2'.
 lang_checks_parallelized += check-objc
-check_objc_parallelize = execute.exp
+check_objc_parallelize = gnu-encoding.exp execute.exp exceptions.exp
 
 #
 # Install hooks:
