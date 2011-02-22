@@ -718,6 +718,7 @@ gfc_trans_if_1 (gfc_code * code)
 {
   gfc_se if_se;
   tree stmt, elsestmt;
+  locus saved_loc;
   location_t loc;
 
   /* Check for an unconditional ELSE clause.  */
@@ -729,7 +730,16 @@ gfc_trans_if_1 (gfc_code * code)
   gfc_start_block (&if_se.pre);
 
   /* Calculate the IF condition expression.  */
+  if (code->expr1->where.lb)
+    {
+      gfc_save_backend_locus (&saved_loc);
+      gfc_set_backend_locus (&code->expr1->where);
+    }
+
   gfc_conv_expr_val (&if_se, code->expr1);
+
+  if (code->expr1->where.lb)
+    gfc_restore_backend_locus (&saved_loc);
 
   /* Translate the THEN clause.  */
   stmt = gfc_trans_code (code->next);

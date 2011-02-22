@@ -1,3 +1,9 @@
+2011-02-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/41359
+	* trans-stmt.c (gfc_trans_if_1): Use correct line for
+	expressions in the if condition.
+
 2011-02-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47797
