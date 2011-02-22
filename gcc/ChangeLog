@@ -1,3 +1,9 @@
+2011-02-21  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	PR rtl-optimization/46002
+	* ira-color.c (update_copy_costs): Change class intersection
+	test to reg_class_contents[] test of 'hard_regno'.
+
 2011-02-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/alpha/osf5.opt (mno-mips-tfile): Mark as Target rather

@@ -292,7 +292,8 @@ update_copy_costs (ira_allocno_t allocno, bool decr_p)
 	    gcc_unreachable ();
 
 	  cover_class = ALLOCNO_COVER_CLASS (another_allocno);
-	  if (! ira_reg_classes_intersect_p[rclass][cover_class]
+	  if (! TEST_HARD_REG_BIT (reg_class_contents[cover_class],
+				   hard_regno)
 	      || ALLOCNO_ASSIGNED_P (another_allocno))
 	    continue;
 
