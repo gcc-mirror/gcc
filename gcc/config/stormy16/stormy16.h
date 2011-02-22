@@ -362,15 +362,6 @@ enum reg_class
 
 #define MAX_REGS_PER_ADDRESS 1
 
-#ifdef REG_OK_STRICT
-#define REG_OK_FOR_BASE_P(X) 						   \
-  (REGNO_OK_FOR_BASE_P (REGNO (X)) && (REGNO (X) < FIRST_PSEUDO_REGISTER))
-#else
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-#endif
-
-#define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
-
 #define LEGITIMATE_CONSTANT_P(X) 1
 
 
