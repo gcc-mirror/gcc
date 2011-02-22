@@ -25,9 +25,9 @@
 ; Please try to keep this file in ASCII collating order.
 
 mno-clearbss
-Driver RejectNegative
+Target RejectNegative
 
 mppcperflib
-Driver RejectNegative
+Target RejectNegative
 
 ; This comment is to ensure we retain the blank line above.
