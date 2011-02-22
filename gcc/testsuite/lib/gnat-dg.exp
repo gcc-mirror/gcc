@@ -1,4 +1,4 @@
-# Copyright (C) 2006, 2007, 2010 Free Software Foundation, Inc.
+# Copyright (C) 2006, 2007, 2010, 2011 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,13 +16,37 @@
 
 load_lib gcc-dg.exp
 
+# Remove VALUE from LIST_VARIABLE.
+proc lremove {list_variable value} {
+    upvar 1 $list_variable var
+    set idx [lsearch -exact $var $value]
+    set var [lreplace $var $idx $idx]
+}
+
 # Define gcc callbacks for dg.exp.
 
 proc gnat-dg-test { prog do_what extra_tool_flags } {
-  if { $do_what == "compile" } {
-    lappend extra_tool_flags "-c"
-  }
-  return [gcc-dg-test-1 gnat_target_compile $prog $do_what $extra_tool_flags]
+    if { $do_what == "compile" } {
+	lappend extra_tool_flags "-c"
+    }
+    set result [gcc-dg-test-1 gnat_target_compile $prog $do_what $extra_tool_flags]
+
+    # Remove additional output files apart from $output_file, which may be
+    # needed by dg-final.
+    set output_file [lindex $result 1]
+    set basename [file rootname $output_file]
+    set clean_result [remote_exec host [find_gnatclean] "-c -q -n $basename"]
+    if { [lindex $clean_result 0] != -1 } {
+	set clean_files [lindex $clean_result 1]
+	# Purge NL from clean_files.
+	regsub -all "\[\r\n\]+" $clean_files " " clean_files
+	# Remove ./ so lremove works.
+	regsub -all "\./" $clean_files "" clean_files
+	lremove clean_files $output_file
+	eval remote_file host delete $clean_files
+    }
+
+    return $result
 }
 
 proc gnat-dg-prune { system text } {
@@ -37,12 +61,6 @@ proc gnat-dg-prune { system text } {
 }
 
 # Utility routines.
-
-# Modified dg-runtest that can cycle through a list of optimization options
-# as c-torture does.
-proc gnat-dg-runtest { testcases default-extra-flags } {
-    return [gcc-dg-runtest $testcases ${default-extra-flags}]
-}
 
 #
 # gnat_load -- wrapper around default gnat_load to declare tasking tests
@@ -64,3 +82,7 @@ if { [info procs gnat_load] != [list] \
 	return $result
     }
 }
+
+# Local Variables:
+# tcl-indent-level:4
+# End:

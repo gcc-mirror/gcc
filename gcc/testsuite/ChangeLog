@@ -1,3 +1,31 @@
+2011-02-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/gnat.exp: Fix comments.
+	Don't load libgloss.exp.
+	(default_gnat_version): Call $compiler with --version.
+	Adapt regexp for gnatmake output, insert version.
+	(gnat_version): New proc.
+	(gnat_init): Remove gnat_libgcc_s_path.
+	(gnat_target_compile): Likewise.
+	Remove ld_library_path.
+	Log ADA_INCLUDE_PATH, ADA_OBJECTS_PATH.
+	(gnat_pass): Remove.
+	(gnat_pass): Remove.
+	(gnat_finish): Remove.
+	(gnat_exit): Remove.
+	(local_find_gnatmake): Reindent.
+	(runtest_file_p): Remove.
+	(prune_warnings): Remove.
+	(find_gnatclean): New proc.
+	* lib/gnat-dg.exp (lremove): New proc.
+	(gnat-dg-test): Reindent.
+	Remove additional output files.
+	(gnat-dg-runtest): Remove.
+
+	* gnat.dg/array7.adb: Use cleanup-tree-dump "optimized".
+	* gnat.dg/loop_optimization6.adb: Likewise.
+	* gnat.dg/atomic1.adb: Use cleanup-tree-dump "gimple".
+
 2011-02-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47835

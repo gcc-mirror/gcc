@@ -23,3 +23,4 @@ package body Loop_Optimization6 is
 end Loop_Optimization6;
 
 -- { dg-final { scan-tree-dump-not "goto" "optimized"} }
+-- { dg-final { cleanup-tree-dump "optimized" } }
