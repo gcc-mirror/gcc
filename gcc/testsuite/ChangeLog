@@ -1,3 +1,8 @@
+2011-02-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/45743
+	* gfortran.dg/whole_file_32.f90 : New test.
+
 2011-02-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47666

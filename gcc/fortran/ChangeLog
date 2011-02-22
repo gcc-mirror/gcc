@@ -1,3 +1,10 @@
+2011-02-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/45743
+	* trans-decl.c (gfc_get_extern_function_decl): Don't use the
+	gsymbol backend_decl if the procedure has a formal argument
+	that is a procedure.
+
 2011-02-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/41359
