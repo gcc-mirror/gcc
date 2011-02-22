@@ -352,6 +352,7 @@ runtime_files = \
 	runtime/go-int-array-to-string.c \
 	runtime/go-int-to-string.c \
 	runtime/go-interface-compare.c \
+	runtime/go-interface-eface-compare.c \
 	runtime/go-interface-val-compare.c \
 	runtime/go-lock-os-thread.c \
 	runtime/go-map-delete.c \
