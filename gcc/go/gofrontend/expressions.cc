@@ -4434,7 +4434,7 @@ Binary_expression::eval_integer(Operator op, Type* left_type, mpz_t left_val,
     case OPERATOR_LSHIFT:
       {
 	unsigned long shift = mpz_get_ui(right_val);
-	if (mpz_cmp_ui(right_val, shift) != 0)
+	if (mpz_cmp_ui(right_val, shift) != 0 || shift > 0x100000)
 	  {
 	    error_at(location, "shift count overflow");
 	    mpz_set_ui(val, 0);
