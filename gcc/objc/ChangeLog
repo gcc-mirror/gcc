@@ -1,3 +1,7 @@
+2011-02-21  Mike Stump  <mikestump@comcast.net>
+
+	* Make-lang.in (check_objc_parallelize): Refine for 4 processor machines.
+
 2011-02-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
        * objc-gnu-runtime-abi-01.c (TARGET_64BIT): Removed.  Removed
