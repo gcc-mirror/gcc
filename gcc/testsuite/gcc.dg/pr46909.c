@@ -1,6 +1,6 @@
 /* PR tree-optimization/46909 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ifcombine" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 extern void abort ();
 
@@ -13,5 +13,8 @@ foo (unsigned int x)
   return -1;
 }
 
-/* { dg-final { scan-tree-dump "optimizing two comparisons to x_\[0-9\]+\\(D\\) != 4" "ifcombine" } } */
-/* { dg-final { cleanup-tree-dump "ifcombine" } } */
+/* { dg-final { scan-tree-dump-times "x_\[0-9\]+\\(D\\) != 4" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "x_\[0-9\]+\\(D\\) != 6" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "x_\[0-9\]+\\(D\\) == 2" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "x_\[0-9\]+\\(D\\) == 6" 0 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

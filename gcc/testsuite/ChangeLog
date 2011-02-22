@@ -1,3 +1,8 @@
+2011-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47835
+	* gcc.dg/pr46909.c: Check optimized dump instead of ifcombine.
+
 2011-02-22  Tobias Burnus  <burnus@net-b.de>
 
 	* abstract_type_1.f90: Fix dg-do syntax.
