@@ -1,3 +1,8 @@
+2011-02-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47666
+	* g++.dg/inherit/virtual7.C: New test.
+
 2011-02-22  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47832
