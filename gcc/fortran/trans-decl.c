@@ -1495,6 +1495,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   tree name;
   tree mangled_name;
   gfc_gsymbol *gsym;
+  bool proc_formal_arg;
 
   if (sym->backend_decl)
     return sym->backend_decl;
@@ -1511,10 +1512,27 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
      return the backend_decl.  */
   gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->name);
 
+  /* Do not use procedures that have a procedure argument because this
+     can result in problems of multiple decls during inlining.  */
+  proc_formal_arg = false;
+  if (gsym && gsym->ns && gsym->ns->proc_name)
+    {
+      gfc_formal_arglist *formal = gsym->ns->proc_name->formal;
+      for (; formal; formal = formal->next)
+	{
+	  if (formal->sym && formal->sym->attr.flavor == FL_PROCEDURE)
+	    {
+	      proc_formal_arg = true;
+	      break;
+	    }
+	}
+    }
+
   if (gfc_option.flag_whole_file
 	&& (!sym->attr.use_assoc || sym->attr.if_source != IFSRC_DECL)
 	&& !sym->backend_decl
 	&& gsym && gsym->ns
+	&& !proc_formal_arg
 	&& ((gsym->type == GSYM_SUBROUTINE) || (gsym->type == GSYM_FUNCTION))
 	&& (gsym->ns->proc_name->backend_decl || !sym->attr.intrinsic))
     {
