@@ -20,3 +20,4 @@ package body Array7 is
 end Array7;
 
 -- { dg-final { scan-tree-dump-not "MAX_EXPR" "optimized" } }
+-- { dg-final { cleanup-tree-dump "optimized" } }
