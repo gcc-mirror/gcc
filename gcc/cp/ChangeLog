@@ -1,3 +1,11 @@
+2011-02-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/47666
+	* class.c (dfs_declare_virt_assop_and_dtor)
+	(declare_virt_assop_and_dtor): New static functions.
+	(add_implicitly_declared_members): Use
+	declare_virt_assop_and_dtor.
+
 2011-02-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47207
