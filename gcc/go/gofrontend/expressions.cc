@@ -9034,6 +9034,11 @@ Index_expression::do_lower(Gogo*, Named_object*, int)
   Type* type = left->type();
   if (type->is_error_type())
     return Expression::make_error(location);
+  else if (left->is_type_expression())
+    {
+      error_at(location, "attempt to index type expression");
+      return Expression::make_error(location);
+    }
   else if (type->array_type() != NULL)
     return Expression::make_array_index(left, start, end, location);
   else if (type->points_to() != NULL
