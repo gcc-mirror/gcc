@@ -600,7 +600,7 @@ roundl (long double x)
   if (x > DBL_MAX || x < -DBL_MAX)
     {
 #ifdef HAVE_NEXTAFTERL
-      static long double prechalf = nexafterl (0.5L, LDBL_MAX);
+      long double prechalf = nextafterl (0.5L, LDBL_MAX);
 #else
       static long double prechalf = 0.5L;
 #endif
