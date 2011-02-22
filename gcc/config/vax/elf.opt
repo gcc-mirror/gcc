@@ -25,6 +25,6 @@
 ; Please try to keep this file in ASCII collating order.
 
 mno-asm-pic
-Driver RejectNegative
+Target RejectNegative
 
 ; This comment is to ensure we retain the blank line above.

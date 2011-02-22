@@ -112,4 +112,4 @@ Target Mask(XL_MODE_NOVECTORS)
 Description for mxl-mode-novectors
 
 mxl-mode-xilkernel
-Driver
+Target

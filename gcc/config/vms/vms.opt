@@ -17,7 +17,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 map
-Driver RejectNegative
+Target RejectNegative
 
 mmalloc64
 Target Report Mask(MALLOC64)
@@ -28,4 +28,4 @@ Target RejectNegative Joined Var(vms_debug_main)
 Set name of main routine for the debugger
 
 mvms-return-codes
-Driver RejectNegative
+Target RejectNegative

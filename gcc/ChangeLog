@@ -1,3 +1,13 @@
+2011-02-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/alpha/osf5.opt (mno-mips-tfile): Mark as Target rather
+	than Driver option.
+	* config/hpux11.opt (mt): Likewise.
+	* config/microblaze/microblaze.opt (mxl-mode-xilkernel): Likewise.
+	* config/rs6000/xilinx.opt (mno-clearbss, mppcperflib): Likewise.
+	* config/vax/elf.opt (mno-asm-pic): Likewise.
+	* config/vms/vms.opt (map, mvms-return-codes): Likewise.
+
 2011-02-21  Mike Stump  <mikestump@comcast.net>
 
 	PR target/47822

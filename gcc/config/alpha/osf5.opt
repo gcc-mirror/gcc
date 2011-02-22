@@ -28,7 +28,7 @@ K
 Driver
 
 mno-mips-tfile
-Driver RejectNegative
+Target RejectNegative
 
 pthread
 Driver
