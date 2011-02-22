@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 !
 ! Example from F2003, sec 13.7.125
 !

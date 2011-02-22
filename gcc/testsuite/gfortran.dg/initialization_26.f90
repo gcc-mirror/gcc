@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 !
 ! Verify that the outer do-loop counter 'j' is accepted as
 ! as end-expression of the inner loop.

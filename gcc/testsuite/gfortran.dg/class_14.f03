@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! Test the final fix for PR42353, in which a compilation error was
 ! occurring because the derived type of the initializer of the vtab
 ! component '$extends' was not the same as that of the component.

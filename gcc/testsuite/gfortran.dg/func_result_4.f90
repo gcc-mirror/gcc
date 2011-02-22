@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-c" }
 !
 ! Do not apply the SAVE attribute to function results.

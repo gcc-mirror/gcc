@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 ! Transformational intrinsic MATMUL as initialization expression.
 
   REAL, PARAMETER :: PI = 3.141592654, theta = PI/6.0

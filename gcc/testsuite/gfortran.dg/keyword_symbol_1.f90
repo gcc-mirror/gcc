@@ -1,4 +1,4 @@
-! ' dg-do compile }
+! { dg-do compile }
 ! This tests the fix for PR28526, in which a public interface named
 ! 'end' would be treated as a variable because the matcher tried
 ! 'END INTERFACE' as an assignment and left the symbol modified in

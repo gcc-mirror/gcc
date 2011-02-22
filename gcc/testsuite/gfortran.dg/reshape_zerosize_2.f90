@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 
   ! Simplifier of RESHAPE was broken when reshaping an empty array.
   INTEGER, PARAMETER :: empty(0,0) = RESHAPE(SHAPE(1), (/0, 0/))

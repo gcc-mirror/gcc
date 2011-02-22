@@ -1,4 +1,4 @@
-! ( dg-do compile }
+! { dg-do compile }
 ! Tests the fix for PR27701, in which two same name procedures
 ! were not diagnosed if they had no arguments.
 !
