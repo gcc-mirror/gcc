@@ -51,6 +51,7 @@ extern struct c_expr upc_localsizeof_type (location_t, struct c_type_name *);
 
 /* UPC-specific routines */
 extern tree upc_num_threads (void);
+extern int upc_diagnose_deprecated_stmt (location_t, tree);
 extern int is_valid_pts_p (tree);
 
 #endif /* !_UPC_ACT_H_ */

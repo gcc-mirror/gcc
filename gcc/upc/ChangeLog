@@ -1,3 +1,10 @@
+2011-02-22  Gary Funck  <gary@intrepid.com>
+
+	* upc-act.c (upc_diagnose_deprecated_stmt): New.
+	  upc-act.h (upc_diagnose_deprecated_stmt): Define.
+	  Check usage of deprecated keywords and issue
+	  error message.
+
 2011-02-08  Gary Funck  <gary@intrepid.com>
 
 	* upc-pts-struct.c: Fix bug: (pts + int) fails when int is negative

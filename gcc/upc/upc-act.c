@@ -1271,6 +1271,36 @@ upc_num_threads (void)
   return n;
 }
 
+int
+upc_diagnose_deprecated_stmt (location_t loc, tree id)
+{
+  const char *name = IDENTIFIER_POINTER (id);
+  struct deprecated_stmt_entry
+    {
+      const char *deprecated_id;
+      const char *correct_id;
+    };
+  static const struct deprecated_stmt_entry deprecated_stmts[] =
+    {{"barrier", "upc_barrier"}, {"barrier_wait", "upc_wait"},
+     {"barrier_notify", "upc_notify"}, {"fence", "upc_fence"},
+     {"forall", "upc_forall"}};
+  const int n_deprecated_stmts = sizeof (deprecated_stmts)
+                                 / sizeof (struct deprecated_stmt_entry);
+  int i;
+  for (i = 0; i < n_deprecated_stmts; ++i)
+    {
+      if (!strcmp (name, deprecated_stmts[i].deprecated_id))
+        {
+          error_at (loc, "%qs was supported in version 1.0 of the UPC"
+	                 " specification, it has been deprecated,"
+			 " use %qs instead", name,
+			 deprecated_stmts[i].correct_id);
+          return 1;
+        }
+    }
+  return 0;
+}
+
 static
 hashval_t
 uid_tree_map_hash (const void *p)

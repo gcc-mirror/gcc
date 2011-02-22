@@ -39,14 +39,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* upc_lock_t is an opaque shared type */
 typedef shared struct upc_lock_struct upc_lock_t;
 
-/* The following pre-processor definitions are required by section 7.1
-   in the UPC specification. */
-#define barrier upc_barrier
-#define barrier_notify upc_notify
-#define barrier_wait upc_wait
-#define forall upc_forall
-#define fence upc_fence
-
 #ifndef upc_fence
 #define upc_fence { static strict shared int x; x = x; }
 #endif

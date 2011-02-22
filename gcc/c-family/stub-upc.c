@@ -207,6 +207,13 @@ upc_num_threads(void)
 }
 
 int
+upc_diagnose_deprecated_stmt (location_t ARG_UNUSED (loc),
+                              tree ARG_UNUSED (id))
+{
+  return 0;
+}
+
+int
 upc_shared_type_p (tree ARG_UNUSED(type))
 {
   return 0;

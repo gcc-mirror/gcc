@@ -1,3 +1,10 @@
+2011-02-22  Gary Funck  <gary@intrepid.com>
+
+	* c-decl.c (undeclared_variable): call upc_diagnose_deprecated_stmt
+	to check for the usage of certain deprecated UPC keywords.
+	* c-family/stub-upc.c (upc_diagnose_deprecated_stmt): New.
+	* c-tree.h (undeclared_variable): Define prototype.
+
 2011-02-12  Gary Funck  <gary@intrepid.com>
 
 	* c-typeck.c: (build_c_cast, convert_for_assignment)

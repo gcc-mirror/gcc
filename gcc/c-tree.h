@@ -152,6 +152,7 @@ extern tree upc_instrument_forall (location_t, int);
 extern int upc_is_null_pts_p (tree);
 extern struct c_expr upc_localsizeof_expr (location_t, struct c_expr);
 extern tree upc_num_threads (void);
+extern int upc_diagnose_deprecated_stmt (location_t, tree);
 extern int upc_pts_cvt_op_p (tree);
 extern tree upc_pts_diff (tree, tree);
 extern tree upc_pts_increment (location_t, enum tree_code, tree);

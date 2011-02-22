@@ -1,3 +1,10 @@
+2011-02-22  Gary Funck  <gary@intrepid.com>
+
+	* include/gcc-upc.h (barrier, barrier_notify, barrier_wait,
+	  forall, fence): Remove #define's that renamed these deprecated
+	UPC keywords into their equivalents in the current UPC
+	language specification.
+
 2011-02-08  Gary Funck  <gary@intrepid.com>
 
 	* acinclude.m4, configure.ac, include/gasp.h,
