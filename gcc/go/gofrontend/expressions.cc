@@ -6270,9 +6270,9 @@ Expression::comparison_tree(Translate_context* context, Operator op,
   else if (left_type->interface_type() != NULL
 	   && right_type->interface_type() != NULL)
     {
-      if (left_type->interface_type()->is_empty())
+      if (left_type->interface_type()->is_empty()
+	  && right_type->interface_type()->is_empty())
 	{
-	  gcc_assert(right_type->interface_type()->is_empty());
 	  static tree empty_interface_compare_decl;
 	  left_tree = Gogo::call_builtin(&empty_interface_compare_decl,
 					 location,
@@ -6288,9 +6288,9 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 	  // This can panic if the type is uncomparable.
 	  TREE_NOTHROW(empty_interface_compare_decl) = 0;
 	}
-      else
+      else if (!left_type->interface_type()->is_empty()
+	       && !right_type->interface_type()->is_empty())
 	{
-	  gcc_assert(!right_type->interface_type()->is_empty());
 	  static tree interface_compare_decl;
 	  left_tree = Gogo::call_builtin(&interface_compare_decl,
 					 location,
@@ -6306,6 +6306,32 @@ Expression::comparison_tree(Translate_context* context, Operator op,
 	  // This can panic if the type is uncomparable.
 	  TREE_NOTHROW(interface_compare_decl) = 0;
 	}
+      else
+	{
+	  if (left_type->interface_type()->is_empty())
+	    {
+	      gcc_assert(op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ);
+	      std::swap(left_type, right_type);
+	      std::swap(left_tree, right_tree);
+	    }
+	  gcc_assert(!left_type->interface_type()->is_empty());
+	  gcc_assert(right_type->interface_type()->is_empty());
+	  static tree interface_empty_compare_decl;
+	  left_tree = Gogo::call_builtin(&interface_empty_compare_decl,
+					 location,
+					 "__go_interface_empty_compare",
+					 2,
+					 integer_type_node,
+					 TREE_TYPE(left_tree),
+					 left_tree,
+					 TREE_TYPE(right_tree),
+					 right_tree);
+	  if (left_tree == error_mark_node)
+	    return error_mark_node;
+	  // This can panic if the type is uncomparable.
+	  TREE_NOTHROW(interface_empty_compare_decl) = 0;
+	}
+
       right_tree = build_int_cst_type(integer_type_node, 0);
     }
 
