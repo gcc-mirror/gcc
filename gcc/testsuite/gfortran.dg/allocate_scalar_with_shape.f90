@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! PR fortran/41940
 
 integer, allocatable :: a

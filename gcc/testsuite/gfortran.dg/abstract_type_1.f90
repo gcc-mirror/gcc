@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-std=f95" }
 
 ! Abstract Types.

@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-std=f95 -fmax-errors=0" }
 !
 ! Testcases from PR fortran/24978

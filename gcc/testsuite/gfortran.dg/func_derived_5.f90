@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! PR fortran/41369 - rejected empty type in function return values
 
 module m

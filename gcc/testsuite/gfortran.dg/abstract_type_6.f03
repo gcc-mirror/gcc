@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! Test the fix for PR43266, in which an ICE followed correct error messages.
 !
 ! Contributed by Tobias Burnus <burnus@gcc.gnu.org>

@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 
   INTEGER, PARAMETER :: n = 5
   INTEGER, PARAMETER :: a1(n) = SPREAD(1, 1, n)

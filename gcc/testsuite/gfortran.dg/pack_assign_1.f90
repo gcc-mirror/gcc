@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! PR32890 - compile-time checks for assigments
 
 INTEGER :: it, neighbrs(42)  ! anything but 30

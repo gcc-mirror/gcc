@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 !
 ! PR fortran/44457 - no array-subscript actual argument
 !                    for an asynchronous dummy

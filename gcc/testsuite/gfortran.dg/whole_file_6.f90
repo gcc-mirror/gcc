@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-O3 -fwhole-file -fdump-tree-optimized" }
 ! { dg-add-options bind_pic_locally }
 !

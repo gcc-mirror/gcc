@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-Wall -Wno-unused-dummy-argument" }
 !
 ! PR fortran/38407

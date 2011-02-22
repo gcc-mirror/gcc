@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 ! { dg-options "-fno-inline" }
 !
 ! PRODUCT as initialization expression.
