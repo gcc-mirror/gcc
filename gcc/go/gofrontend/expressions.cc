@@ -362,6 +362,8 @@ Expression::convert_type_to_interface(Translate_context* context,
       first_field_value = fold_convert_loc(location, const_ptr_type_node,
 					   method_table);
     }
+  if (first_field_value == error_mark_node)
+    return error_mark_node;
 
   // Start building a constructor for the value we will return.
 
