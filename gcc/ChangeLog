@@ -1,3 +1,8 @@
+2011-02-23  Jie Zhang  <jie@codesourcery.com>
+
+	PR rtl-optimization/47763
+	* web.c (web_main): Ignore naked clobber when replacing register.
+
 2011-02-22  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/stormy16/stormy16.h (REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P):
