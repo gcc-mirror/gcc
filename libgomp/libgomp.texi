@@ -7,7 +7,7 @@
 
 
 @copying
-Copyright @copyright{} 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
+Copyright @copyright{} 2006, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -1032,8 +1032,8 @@ successive clock ticks.
 @item @emph{Description}:
 Elapsed wall clock time in seconds. The time is measured per thread, no 
 guarantee can be made that two distinct threads measure the same time.
-Time is measured from some "time in the past". On POSIX compliant systems 
-the seconds since the Epoch (00:00:00 UTC, January 1, 1970) are returned.
+Time is measured from some "time in the past", which is an arbitrary time
+guaranteed not to change during the execution of the program.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
