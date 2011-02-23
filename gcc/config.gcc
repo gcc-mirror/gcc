@@ -237,6 +237,7 @@ case ${target} in
  | alpha*-*-gnu*			\
  | arm*-*-netbsd*			\
  | arm-*-pe*				\
+ | crx-*				\
  | i[34567]86-*-interix3*		\
  | i[34567]86-*-netbsd*			\
  | i[34567]86-*-pe			\
@@ -247,6 +248,7 @@ case ${target} in
  | m68k-*-uclinuxoldabi*		\
  | mcore-*-pe*				\
  | powerpc*-*-gnu*			\
+ | score-*				\
  | sh*-*-symbianelf*			\
  | vax-*-netbsd*			\
  )
