@@ -1,3 +1,12 @@
+2011-02-23  Kai Tietz  <kai.tietz@onevision.com>
+
+	* dwarf2.h (_ELF_DWARF2_H): Renamed to
+	_DWARF2_H.
+	(DWARF2_External_LineInfo, DWARF2_Internal_LineInfo,
+	DWARF2_External_PubNames, DWARF2_Internal_PubNames,
+	DWARF2_External_CompUnit, DWARF2_Internal_CompUnit,
+	DWARF2_External_ARange, DWARF2_Internal_ARange): Removed.
+
 2011-01-12  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* dwarf2.h: Update value for DW_AT_hi_user.
