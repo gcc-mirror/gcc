@@ -1,3 +1,8 @@
+2011-02-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47838
+	* gcc.dg/tree-ssa/foldconst-2.c: Scan tree-ch dump.
+
 2011-02-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/other/pr47218.C: Fix dg-options.  Cleanup saved temps.
