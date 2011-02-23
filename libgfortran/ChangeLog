@@ -1,3 +1,11 @@
+2011-02-23  Janne Blomqvist  <jb@gcc.gnu.org>
+	    Jerry DeLisle    <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/47694
+	* io/fbuf.h (fbuf_getptr): New inline function.
+	* io/transfer.c (read_sf): Use fbuf_getptr and fbuf_getc to scan
+	through the string instead of fbuf_read.
+
 2011-02-22  Tobias Burnus  <burnus@net-b.de>
 	    Kai-Uwe Eckhardt  <kuehro@gmx.de>
 

@@ -284,7 +284,8 @@ static char *
 read_sf (st_parameter_dt *dtp, int * length)
 {
   static char *empty_string[0];
-  char *base, *p, q;
+  char *base;
+  int q, q2;
   int n, lorig, seen_comma;
 
   /* If we have seen an eor previously, return a length of 0.  The
@@ -301,18 +302,18 @@ read_sf (st_parameter_dt *dtp, int * length)
 
   /* Read data into format buffer and scan through it.  */
   lorig = *length;
-  base = p = fbuf_read (dtp->u.p.current_unit, length);
+  base = fbuf_getptr (dtp->u.p.current_unit);
   if (base == NULL)
     return NULL;
 
   while (n < *length)
     {
-      q = *p;
-
-      if (q == '\n' || q == '\r')
+      q = fbuf_getc (dtp->u.p.current_unit);
+      if (q == EOF)
+	break;
+      else if (q == '\n' || q == '\r')
 	{
 	  /* Unexpected end of line. Set the position.  */
-	  fbuf_seek (dtp->u.p.current_unit, n + 1 ,SEEK_CUR);
 	  dtp->u.p.sf_seen_eor = 1;
 
 	  /* If we see an EOR during non-advancing I/O, we need to skip
@@ -323,15 +324,12 @@ read_sf (st_parameter_dt *dtp, int * length)
 	  /* If we encounter a CR, it might be a CRLF.  */
 	  if (q == '\r') /* Probably a CRLF */
 	    {
-	      /* See if there is an LF. Use fbuf_read rather then fbuf_getc so
-		 the position is not advanced unless it really is an LF.  */
-	      int readlen = 1;
-	      p = fbuf_read (dtp->u.p.current_unit, &readlen);
-	      if (*p == '\n' && readlen == 1)
-	        {
-		  dtp->u.p.sf_seen_eor = 2;
-		  fbuf_seek (dtp->u.p.current_unit, 1 ,SEEK_CUR);
-		}
+	      /* See if there is an LF.  */
+	      q2 = fbuf_getc (dtp->u.p.current_unit);
+	      if (q2 == '\n')
+		dtp->u.p.sf_seen_eor = 2;
+	      else if (q2 != EOF) /* Oops, seek back.  */
+		fbuf_seek (dtp->u.p.current_unit, -1, SEEK_CUR);
 	    }
 
 	  /* Without padding, terminate the I/O statement without assigning
@@ -349,20 +347,18 @@ read_sf (st_parameter_dt *dtp, int * length)
       /*  Short circuit the read if a comma is found during numeric input.
 	  The flag is set to zero during character reads so that commas in
 	  strings are not ignored  */
-      if (q == ',')
+      else if (q == ',')
 	if (dtp->u.p.sf_read_comma == 1)
 	  {
             seen_comma = 1;
 	    notify_std (&dtp->common, GFC_STD_GNU,
 			"Comma in formatted numeric read.");
-	    *length = n;
 	    break;
 	  }
       n++;
-      p++;
-    } 
+    }
 
-  fbuf_seek (dtp->u.p.current_unit, n + seen_comma, SEEK_CUR);
+  *length = n;
 
   /* A short read implies we hit EOF, unless we hit EOR, a comma, or
      some other stuff. Set the relevant flags.  */
