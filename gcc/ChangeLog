@@ -1,3 +1,11 @@
+2011-02-23  Jie Zhang  <jie@codesourcery.com>
+
+	* opts-common.c (decode_cmdline_option): Print empty string
+	argument as "" in decoded->orig_option_with_args_text.
+	* gcc.c (execute): Print empty string argument as ""
+	in the verbose output.
+	(do_spec_1): Keep empty string argument.
+
 2011-02-23  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config.gcc: Declare score-* and crx-* obsolete.
