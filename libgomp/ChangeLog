@@ -1,3 +1,9 @@
+2011-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/47854
+	* libgomp.texi (omp_get_wtime): Don't say time in the past
+	must be Unix Epoch.
+
 2011-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/47804
