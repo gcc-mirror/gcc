@@ -1,3 +1,7 @@
+2011-02-23  Jie Zhang  <jie@codesourcery.com>
+
+	* gcc.dg/cpp/include7.c: New test.
+
 2011-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/47242
