@@ -7795,6 +7795,12 @@ build_lambda_object (tree lambda_expr)
       tree field = TREE_PURPOSE (node);
       tree val = TREE_VALUE (node);
 
+      if (field == error_mark_node)
+	{
+	  expr = error_mark_node;
+	  goto out;
+	}
+
       if (DECL_P (val))
 	mark_used (val);
 
@@ -7830,6 +7836,7 @@ build_lambda_object (tree lambda_expr)
   expr = finish_compound_literal (type, expr);
   CLASSTYPE_NON_AGGREGATE (type) = 1;
 
+ out:
   input_location = saved_loc;
   return expr;
 }

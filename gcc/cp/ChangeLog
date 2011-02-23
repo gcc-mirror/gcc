@@ -1,3 +1,9 @@
+2011-02-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47242
+	* semantics.c (build_lambda_object): Bail out if a field is
+	error_mark_node.
+
 2011-02-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47666
