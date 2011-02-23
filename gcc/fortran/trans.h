@@ -396,6 +396,8 @@ void gfc_trans_vla_type_sizes (gfc_symbol *, stmtblock_t *);
 
 /* Add an expression to the end of a block.  */
 void gfc_add_expr_to_block (stmtblock_t *, tree);
+/* Add an expression to the beginning of a block.  */
+void gfc_prepend_expr_to_block (stmtblock_t *, tree);
 /* Add a block to the end of a block.  */
 void gfc_add_block_to_block (stmtblock_t *, stmtblock_t *);
 /* Add a MODIFY_EXPR to a block.  */

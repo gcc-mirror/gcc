@@ -6097,10 +6097,11 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
 	&& expr->ts.u.derived->attr.alloc_comp
 	&& expr->expr_type != EXPR_VARIABLE)
     {
-      tmp = build_fold_indirect_ref_loc (input_location,
-				     se->expr);
+      tmp = build_fold_indirect_ref_loc (input_location, se->expr);
       tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, tmp, expr->rank);
-      gfc_add_expr_to_block (&se->post, tmp);
+
+      /* The components shall be deallocated before their containing entity.  */
+      gfc_prepend_expr_to_block (&se->post, tmp);
     }
 
   if (g77 || (fsym && fsym->attr.contiguous
