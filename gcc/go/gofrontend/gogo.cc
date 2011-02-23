@@ -682,10 +682,15 @@ Gogo::start_function(const std::string& name, Function_type* type,
   else if (!type->is_method())
     {
       ret = this->package_->bindings()->add_function(*pname, NULL, function);
-      if (!ret->is_function())
+      if (!ret->is_function() || ret->func_value() != function)
 	{
-	  // Redefinition error.
-	  ret = Named_object::make_function(name, NULL, function);
+	  // Redefinition error.  Invent a name to avoid knockon
+	  // errors.
+	  static int redefinition_count;
+	  char buf[30];
+	  snprintf(buf, sizeof buf, ".$redefined%d", redefinition_count);
+	  ++redefinition_count;
+	  ret = this->package_->bindings()->add_function(buf, NULL, function);
 	}
     }
   else
