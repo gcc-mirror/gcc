@@ -456,6 +456,7 @@ powerpc*-*-freebsd*)
 powerpc-*-netbsd*)
 	;;
 powerpc-*-eabispe*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-eabisimaltivec*)
 	;;
@@ -466,6 +467,7 @@ powerpc-*-elf*)
 powerpc-*-eabialtivec*)
 	;;
 powerpc-*-eabi*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm"
 	;;
 powerpc-*-rtems*)
 	;;

@@ -1,3 +1,15 @@
+2011-02-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR target/43810
+
+	Backport from mainline:
+	2010-07-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config.host (powerpc*-eabispe*): Set tmake_file.
+	(powerpc*-eabi*): Likewise.
+	* config/rs6000/t-ppccomm (EXTRA_PARTS): Add crtbegin, crtend,
+	crtbeginS, crtendS, crtbeginT.
+
 2010-12-16  Release Manager
 
 	* GCC 4.5.2 released.
