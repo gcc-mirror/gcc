@@ -16874,6 +16874,7 @@ cp_parser_class_specifier (cp_parser* parser)
   tree old_scope = NULL_TREE;
   tree scope = NULL_TREE;
   tree bases;
+  cp_token *closing_brace;
 
   push_deferring_access_checks (dk_no_deferred);
 
@@ -16943,7 +16944,7 @@ cp_parser_class_specifier (cp_parser* parser)
     cp_parser_member_specification_opt (parser);
 
   /* Look for the trailing `}'.  */
-  cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+  closing_brace = cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
   /* Look for trailing attributes to apply to this class.  */
   if (cp_parser_allow_gnu_extensions_p (parser))
     attributes = cp_parser_attributes_opt (parser);
@@ -17018,8 +17019,9 @@ cp_parser_class_specifier (cp_parser* parser)
       }
 
     /* If we don't have a type, then something is very wrong and we
-       shouldn't try to do anything clever.  */
-    if (TYPE_P (type) && want_semicolon)
+       shouldn't try to do anything clever.  Likewise for not seeing the
+       closing brace.  */
+    if (closing_brace && TYPE_P (type) && want_semicolon)
       {
 	cp_token_position prev
 	  = cp_lexer_previous_token_position (parser->lexer);
