@@ -4203,9 +4203,6 @@ build_private_template (tree klass)
       /* Copy the attributes from the class to the type.  */
       if (TREE_DEPRECATED (klass))
 	TREE_DEPRECATED (record) = 1;
-
-      if (CLASS_HAS_EXCEPTION_ATTR (klass))
-	CLASS_HAS_EXCEPTION_ATTR (record) = 1;
     }
 }
 

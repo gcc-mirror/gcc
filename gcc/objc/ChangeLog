@@ -1,3 +1,10 @@
+2011-02-23  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (build_private_template): Do not copy the
+	CLASS_HAS_EXCEPTION_ATTR from the class to the struct.
+	* objc-act.h (CLASS_HAS_EXCEPTION_ATTR): Define using
+	TYPE_LANG_SLOT_0.
+
 2011-02-22  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/47832
