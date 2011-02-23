@@ -318,6 +318,9 @@ Temporary_statement::get_decl() const
 int
 Temporary_statement::do_traverse(Traverse* traverse)
 {
+  if (this->type_ != NULL
+      && this->traverse_type(traverse, this->type_) == TRAVERSE_EXIT)
+    return TRAVERSE_EXIT;
   if (this->init_ == NULL)
     return TRAVERSE_CONTINUE;
   else

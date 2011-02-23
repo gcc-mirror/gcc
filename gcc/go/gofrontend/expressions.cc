@@ -2357,6 +2357,9 @@ class Const_expression : public Expression
   check_for_init_loop();
 
  protected:
+  int
+  do_traverse(Traverse*);
+
   Expression*
   do_lower(Gogo*, Named_object*, int);
 
@@ -2411,6 +2414,16 @@ class Const_expression : public Expression
   // refers to itself.
   mutable bool seen_;
 };
+
+// Traversal.
+
+int
+Const_expression::do_traverse(Traverse* traverse)
+{
+  if (this->type_ != NULL)
+    return Type::traverse(this->type_, traverse);
+  return TRAVERSE_CONTINUE;
+}
 
 // Lower a constant expression.  This is where we convert the
 // predeclared constant iota into an integer value.
