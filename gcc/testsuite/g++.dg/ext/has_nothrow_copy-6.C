@@ -1,4 +1,4 @@
-// { dg-do "run" }
+// { dg-do run }
 #include <cassert>
 
 struct S {

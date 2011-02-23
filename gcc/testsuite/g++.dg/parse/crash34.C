@@ -1,5 +1,5 @@
 /* PR c++/31745 */
-/* { dg-do "compile" }  */
+/* { dg-do compile }  */
 
 void foo()
 {

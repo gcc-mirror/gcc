@@ -1,7 +1,7 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR c++/40866
 // { dg-options "-std=gnu++98" }
-// { dg-do "compile" }
+// { dg-do compile }
 
 template <typename T> class QForeachContainer {
 public:

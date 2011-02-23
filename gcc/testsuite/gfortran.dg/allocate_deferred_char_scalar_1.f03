@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 !
 ! Automatic reallocate on assignment, deferred length parameter for char
 !

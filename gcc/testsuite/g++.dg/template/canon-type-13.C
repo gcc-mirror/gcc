@@ -1,5 +1,5 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
-// { dg-do "compile" }
+// { dg-do compile }
 
 template<class T>
 struct S0

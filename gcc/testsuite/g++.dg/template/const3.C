@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR c++/42251
-// { dg-do "compile" }
+// { dg-do compile }
 
 struct foo
 {

@@ -1,5 +1,5 @@
 // PR c++/36871
-// { dg-do "run" }
+// { dg-do run }
 #include <cassert>
 
 struct A { template <class T> A (T) throw (int); };

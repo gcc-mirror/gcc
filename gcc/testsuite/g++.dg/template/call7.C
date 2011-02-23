@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin: PR c++/17395
-// { dg-do "compile" }
+// { dg-do compile }
 
 template<int> struct X { };
 

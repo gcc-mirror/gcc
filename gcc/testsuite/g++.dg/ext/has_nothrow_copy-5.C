@@ -1,5 +1,5 @@
 // PR c++/36872
-// { dg-do "run" }
+// { dg-do run }
 #include <cassert>
 
 struct S {

@@ -1,4 +1,4 @@
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 /* { dg-options "-fdump-tree-original" } */
 
 typedef int ssize_t __attribute__((mode(pointer)));

@@ -1,4 +1,4 @@
-// { dg-do "run" }
+// { dg-do run }
 // { dg-options "-std=c++0x" }
 // PR c++/32597
 #include <assert.h>

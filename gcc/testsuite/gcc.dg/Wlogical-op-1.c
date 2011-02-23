@@ -1,5 +1,5 @@
 /*
-   { dg-do compile}
+   { dg-do compile }
    { dg-options "-Wlogical-op" }
 */
 

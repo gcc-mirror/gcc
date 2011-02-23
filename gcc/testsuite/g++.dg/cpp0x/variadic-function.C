@@ -1,5 +1,5 @@
+// { dg-do run }
 // { dg-options "-std=gnu++0x" }
-// { dg-do "run" }
 // A basic implementation of TR1's function using variadic teplates
 // Contributed by Douglas Gregor <doug.gregor@gmail.com>
 #include <cassert>

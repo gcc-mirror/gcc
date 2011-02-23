@@ -1,5 +1,5 @@
 /* PR c++/14622. The invalid explicit instantiation was not reported. */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 template<class T>
 class A
 {

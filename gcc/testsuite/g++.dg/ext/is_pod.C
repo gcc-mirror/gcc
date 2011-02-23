@@ -1,5 +1,5 @@
+// { dg-do run }
 // { dg-options "-std=c++0x" }
-// { dg-do "run" }
 #include <cassert>
 
 struct A

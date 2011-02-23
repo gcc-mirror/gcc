@@ -1,5 +1,5 @@
 /* PR c++/29727 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 template<int> struct A
 {

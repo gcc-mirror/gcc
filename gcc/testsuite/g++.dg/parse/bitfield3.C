@@ -1,5 +1,5 @@
 /* PR c++/35320 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 typedef void (func_type)();
 
