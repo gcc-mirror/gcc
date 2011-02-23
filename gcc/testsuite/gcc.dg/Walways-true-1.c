@@ -1,7 +1,7 @@
 /* Test -Waddress for testing an address against NULL.
    Origin: Ian Lance Taylor <iant@google.com>.  */
 
-/* { dg-do compile} */
+/* { dg-do compile } */
 /* { dg-options "-Waddress -fshow-column" } */
 
 extern int foo (int);

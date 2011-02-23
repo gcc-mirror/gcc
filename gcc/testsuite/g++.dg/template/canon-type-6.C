@@ -1,6 +1,6 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR c++/39754
-// { dg-do "compile" }
+// { dg-do compile }
 
 struct Foo {};
 template<typename> struct A ;

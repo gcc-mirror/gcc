@@ -1,5 +1,5 @@
 // Origin: PR c++/47666
-// { dg-do "compile" }
+// { dg-do compile }
 
 template <typename T>
 struct A

@@ -1,5 +1,5 @@
 /* PR c/35437 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 struct A
 {

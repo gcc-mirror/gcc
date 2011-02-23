@@ -1,6 +1,6 @@
 // Origin: PR c++/46394
 // { dg-options "-std=c++0x" }
-// { dg-do "compile" }
+// { dg-do compile }
 
 template<class T>
 struct S0

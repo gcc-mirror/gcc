@@ -1,5 +1,5 @@
 /* PR c++/31517. This used to ICE.  */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 template<typename> struct A
 {

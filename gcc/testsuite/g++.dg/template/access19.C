@@ -1,5 +1,5 @@
 /* PR c++/29475 The error diagnostic contained "U = U" instead of "U = char" */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 template< class T >
 class explicit_t

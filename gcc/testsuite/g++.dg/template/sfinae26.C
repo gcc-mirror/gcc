@@ -1,5 +1,5 @@
 // Origin: PR c++/46170
-// { dg-do "compile" }
+// { dg-do compile }
 
 namespace util {
   struct option_value {

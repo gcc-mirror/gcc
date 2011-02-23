@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "--save-temps" } */
+/* { dg-options "-save-temps" } */
 /* { dg-additional-sources "pr47218-1.C" } */
 
 #include "pr47218.h"
@@ -17,3 +17,5 @@ int main ()
 {
   return 0;
 }
+
+// { dg-final cleanup-saved-temps }

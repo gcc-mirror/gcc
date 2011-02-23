@@ -1,4 +1,4 @@
-! { dg-do "compile" }
+! { dg-do compile }
 ! { dg-options "-fopenmp" }
 !
 ! PR fortran/43711 uninformative error message for two 'nowait' in omp statement

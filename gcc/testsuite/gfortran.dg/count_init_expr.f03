@@ -1,4 +1,4 @@
-! { dg-do "run" }
+! { dg-do run }
 
   INTEGER            :: i
   INTEGER, PARAMETER :: m(4,4) = RESHAPE([ (i, i=1, 16) ], [4, 4] )

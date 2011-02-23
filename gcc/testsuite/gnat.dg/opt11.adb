@@ -1,4 +1,4 @@
--- { dg-compile }
+-- { dg-do compile }
 -- { dg-options "-O" }
 
 package body Opt11 is

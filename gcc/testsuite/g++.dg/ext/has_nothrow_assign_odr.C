@@ -1,5 +1,5 @@
 // PR c++/36870
-// { dg-do "run" }
+// { dg-do run }
 #include <cassert>
 
 struct S { const S& operator= (const S&); };

@@ -1,5 +1,5 @@
 /* PR c++/34059 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 struct A
 {

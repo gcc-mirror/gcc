@@ -1,5 +1,5 @@
 /* PR c++/40749 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 /* { dg-options "-Wreturn-type" } */
 
 struct A {};

@@ -1,5 +1,5 @@
 /* PR c++/38646 */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 /* { dg-options "-std=c++0x" } */
 
 template<int...> struct A;

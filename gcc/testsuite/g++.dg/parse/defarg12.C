@@ -1,5 +1,5 @@
 /* PR28266 This used to ICE in gimple_add_tmp_var */
-/* { dg-do "compile" } */
+/* { dg-do compile } */
 
 struct A
 {
