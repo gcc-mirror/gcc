@@ -1,3 +1,8 @@
+2011-02-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47849
+	* tree-if-conv.c (main_tree_if_conversion): Free postdom info.
+
 2011-02-23  Jie Zhang  <jie@codesourcery.com>
 
 	* opts-common.c (decode_cmdline_option): Print empty string

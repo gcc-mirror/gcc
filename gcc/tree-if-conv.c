@@ -1741,6 +1741,8 @@ main_tree_if_conversion (void)
   if (changed && flag_tree_loop_if_convert_stores)
     todo |= TODO_update_ssa_only_virtuals;
 
+  free_dominance_info (CDI_POST_DOMINATORS);
+
   return todo;
 }
 
