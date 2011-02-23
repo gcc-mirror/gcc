@@ -7799,6 +7799,8 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
     {
       expr = Expression::make_unary(OPERATOR_MULT, expr, location);
       type = type->points_to();
+      if (type->deref()->is_error_type())
+	return Expression::make_error(location);
       nt = type->points_to()->named_type();
       st = type->points_to()->struct_type();
       it = type->points_to()->interface_type();
