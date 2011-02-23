@@ -1,3 +1,8 @@
+2011-02-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/40850
+	* gfortran.dg/nested_allocatables_1.f90: New.
+
 2011-02-23  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/46868

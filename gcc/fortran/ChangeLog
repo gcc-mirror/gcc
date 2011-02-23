@@ -1,3 +1,11 @@
+2011-02-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/40850
+	* trans.c (gfc_prepend_expr_to_block): New function.
+	* trans.h (gfc_prepend_expr_to_block): Declare.
+	* trans-array.c (gfc_conv_array_parameter): Replace
+	gfc_add_expr_to_block with gfc_prepend_expr_to_block.
+
 2011-02-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/45743
