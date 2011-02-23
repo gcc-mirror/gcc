@@ -7980,7 +7980,11 @@ Builtin_call_expression::do_get_tree(Translate_context* context)
 	mpz_init(val);
 	Type* dummy;
 	bool b = this->integer_constant_value(true, val, &dummy);
-	gcc_assert(b);
+	if (!b)
+	  {
+	    gcc_assert(saw_errors());
+	    return error_mark_node;
+	  }
 	tree type = Type::lookup_integer_type("int")->get_tree(gogo);
 	tree ret = Expression::integer_constant_tree(val, type);
 	mpz_clear(val);
