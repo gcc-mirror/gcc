@@ -1,3 +1,10 @@
+2011-02-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/46868
+	* g++.dg/pr46868.C: New test.
+	* g++.dg/parse/parameter-declaration-1.C: Adjust.
+	* g++.dg/parse/error14.C: Adjust.
+
 2011-02-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47838
