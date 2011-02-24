@@ -1,3 +1,9 @@
+2011-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/47878
+	* io/transfer.c (read_sf): Call fbuf_getptr only at the end,
+	and subtract n, dtp->u.p.sf_seen_eor and seen_comma from it.
+
 2011-02-24  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47802
