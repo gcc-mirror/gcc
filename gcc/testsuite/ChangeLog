@@ -1,3 +1,8 @@
+2011-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47567
+	* gfortran.dg/fmt_f0_1.f90: Update test.
+
 2011-02-23  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/mangle39.C: Adjust parm mangling.
