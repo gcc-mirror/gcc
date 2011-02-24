@@ -12264,7 +12264,11 @@ tree
 Receive_expression::do_get_tree(Translate_context* context)
 {
   Channel_type* channel_type = this->channel_->type()->channel_type();
-  gcc_assert(channel_type != NULL);
+  if (channel_type == NULL)
+    {
+      gcc_assert(this->channel_->type()->is_error_type());
+      return error_mark_node;
+    }
   Type* element_type = channel_type->element_type();
   tree element_type_tree = element_type->get_tree(context->gogo());
 
