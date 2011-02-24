@@ -2050,9 +2050,13 @@ class Array_type : public Type
   static Array_type*
   do_import(Import*);
 
+  // Fill in the fields for a named array type.
+  tree
+  fill_in_array_tree(Gogo*, tree);
+
   // Fill in the fields for a named slice type.
   tree
-  fill_in_tree(Gogo*, tree);
+  fill_in_slice_tree(Gogo*, tree);
 
  protected:
   int
