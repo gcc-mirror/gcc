@@ -1,3 +1,9 @@
+2011-02-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/47872
+	* intrinsic.texi (ALLOCATED, ATAN, BESSEL_JN, BESSEL_YN): Add
+	multitable for linebreak between different syntax variants.
+
 2011-02-24  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/47839

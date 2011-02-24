@@ -992,7 +992,10 @@ scalar entities are available in Fortran 2003 and later.
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = ALLOCATED(ARRAY)} or @code{RESULT = ALLOCATED(SCALAR)} 
+@multitable @columnfractions .80
+@item @code{RESULT = ALLOCATED(ARRAY)}
+@item @code{RESULT = ALLOCATED(SCALAR)} 
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1395,8 +1398,10 @@ Fortran 2008 or later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = ATAN(X)}
-@code{RESULT = ATAN(Y, X)}
+@multitable @columnfractions .80
+@item @code{RESULT = ATAN(X)}
+@item @code{RESULT = ATAN(Y, X)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1666,8 +1671,10 @@ Elemental function, except for the transformational function
 @code{BESSEL_JN(N1, N2, X)}
 
 @item @emph{Syntax}:
-@code{RESULT = BESSEL_JN(N, X)}
-@code{RESULT = BESSEL_JN(N1, N2, X)}
+@multitable @columnfractions .80
+@item @code{RESULT = BESSEL_JN(N, X)}
+@item @code{RESULT = BESSEL_JN(N1, N2, X)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1826,8 +1833,10 @@ Elemental function, except for the transformational function
 @code{BESSEL_YN(N1, N2, X)}
 
 @item @emph{Syntax}:
-@code{RESULT = BESSEL_YN(N, X)}
-@code{RESULT = BESSEL_YN(N1, N2, X)}
+@multitable @columnfractions .80
+@item @code{RESULT = BESSEL_YN(N, X)}
+@item @code{RESULT = BESSEL_YN(N1, N2, X)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
