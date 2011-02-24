@@ -3583,7 +3583,8 @@ Struct_type::field_reference(Expression* struct_expr, const std::string& name,
 			     source_location location) const
 {
   unsigned int depth;
-  return this->field_reference_depth(struct_expr, name, location, &depth);
+  return this->field_reference_depth(struct_expr, name, location, NULL,
+				     &depth);
 }
 
 // Return an expression for a field, along with the depth at which it
@@ -3593,6 +3594,7 @@ Field_reference_expression*
 Struct_type::field_reference_depth(Expression* struct_expr,
 				   const std::string& name,
 				   source_location location,
+				   Saw_named_type* saw,
 				   unsigned int* depth) const
 {
   const Struct_field_list* fields = this->fields_;
@@ -3628,13 +3630,41 @@ Struct_type::field_reference_depth(Expression* struct_expr,
       if (st == NULL)
 	continue;
 
+      Saw_named_type* hold_saw = saw;
+      Saw_named_type saw_here;
+      Named_type* nt = pf->type()->named_type();
+      if (nt == NULL)
+	nt = pf->type()->deref()->named_type();
+      if (nt != NULL)
+	{
+	  Saw_named_type* q;
+	  for (q = saw; q != NULL; q = q->next)
+	    {
+	      if (q->nt == nt)
+		{
+		  // If this is an error, it will be reported
+		  // elsewhere.
+		  break;
+		}
+	    }
+	  if (q != NULL)
+	    continue;
+	  saw_here.next = saw;
+	  saw_here.nt = nt;
+	  saw = &saw_here;
+	}
+
       // Look for a reference using a NULL struct expression.  If we
       // find one, fill in the struct expression with a reference to
       // this field.
       unsigned int subdepth;
       Field_reference_expression* sub = st->field_reference_depth(NULL, name,
 								  location,
+								  saw,
 								  &subdepth);
+
+      saw = hold_saw;
+
       if (sub == NULL)
 	continue;
 

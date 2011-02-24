@@ -1980,9 +1980,17 @@ class Struct_type : public Type
   do_export(Export*) const;
 
  private:
+  // Used to avoid infinite loops in field_reference_depth.
+  struct Saw_named_type
+  {
+    Saw_named_type* next;
+    Named_type* nt;
+  };
+
   Field_reference_expression*
   field_reference_depth(Expression* struct_expr, const std::string& name,
-			source_location, unsigned int* depth) const;
+			source_location, Saw_named_type*,
+			unsigned int* depth) const;
 
   static Type*
   make_struct_type_descriptor_type();
