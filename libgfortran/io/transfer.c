@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist transfer functions contributed by Paul Thomas
@@ -284,7 +284,6 @@ static char *
 read_sf (st_parameter_dt *dtp, int * length)
 {
   static char *empty_string[0];
-  char *base;
   int q, q2;
   int n, lorig, seen_comma;
 
@@ -302,9 +301,6 @@ read_sf (st_parameter_dt *dtp, int * length)
 
   /* Read data into format buffer and scan through it.  */
   lorig = *length;
-  base = fbuf_getptr (dtp->u.p.current_unit);
-  if (base == NULL)
-    return NULL;
 
   while (n < *length)
     {
@@ -396,7 +392,12 @@ read_sf (st_parameter_dt *dtp, int * length)
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
     dtp->u.p.size_used += (GFC_IO_INT) n;
 
-  return base;
+  /* We can't call fbuf_getptr before the loop doing fbuf_getc, because
+     fbuf_getc might reallocate the buffer.  So return current pointer
+     minus all the advances, which is n plus up to two characters
+     of newline or comma.  */
+  return fbuf_getptr (dtp->u.p.current_unit)
+	 - n - dtp->u.p.sf_seen_eor - seen_comma;
 }
 
 
