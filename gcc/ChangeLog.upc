@@ -1,3 +1,8 @@
+2011-02-23  Gary Funck  <gary@intrepid.com>
+
+	* c-decl.c (undeclared_variable): fix typo. Inadvertenly
+	removed nagation on following 'if'.
+
 2011-02-22  Gary Funck  <gary@intrepid.com>
 
 	* c-decl.c (undeclared_variable): call upc_diagnose_deprecated_stmt

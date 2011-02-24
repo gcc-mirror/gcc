@@ -2973,7 +2973,7 @@ undeclared_variable (location_t loc, tree id)
     {
       if (upc_diagnose_deprecated_stmt (loc, id))
         return;
-      if (objc_diagnose_private_ivar (id))
+      if (!objc_diagnose_private_ivar (id))
         error_at (loc, "%qE undeclared (first use in this function)", id);
       if (!already)
 	{
