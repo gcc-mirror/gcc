@@ -3905,10 +3905,13 @@ Type_switch_statement::do_lower(Gogo*, Block* enclosing)
     {
       // Doing a type switch on a non-interface type.  Should we issue
       // a warning for this case?
-      // descriptor_temp = DESCRIPTOR
       Expression* lhs = Expression::make_temporary_reference(descriptor_temp,
 							     loc);
-      Expression* rhs = Expression::make_type_descriptor(val_type, loc);
+      Expression* rhs;
+      if (val_type->is_nil_type())
+	rhs = Expression::make_nil(loc);
+      else
+	rhs = Expression::make_type_descriptor(val_type, loc);
       Statement* s = Statement::make_assignment(lhs, rhs, loc);
       b->add_statement(s);
     }
