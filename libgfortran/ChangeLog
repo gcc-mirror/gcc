@@ -1,3 +1,9 @@
+2011-02-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47567
+	* io/write_float.def (output_float): Remove special case handling of
+	zero with width 1.
+
 2011-02-23  Janne Blomqvist  <jb@gcc.gnu.org>
 	    Jerry DeLisle    <jvdelisle@gcc.gnu.org>
 
