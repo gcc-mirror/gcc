@@ -624,6 +624,9 @@
 /* Define to 1 if you have the `pipe' function. */
 #undef HAVE_PIPE
 
+/* Define to 1 if we have POSIX getpwuid_r which takes 5 arguments. */
+#undef HAVE_POSIX_GETPWUID_R
+
 /* libm includes pow */
 #undef HAVE_POW
 
