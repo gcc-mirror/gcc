@@ -1,3 +1,21 @@
+2011-02-24  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47802
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Remove checks for ctime and ctime_r, add check for
+	strftime.
+	* intrinsics/date_and_time.c (localtime_r): Move fallback
+	implementation to time_1.h.
+	* intrinsics/time_1.h (localtime_r): Fallback implementation.
+	* intrinsics/ctime.c: Include time_1.h.
+	(ctime_r): Remove fallback implementation.
+	(strctime): New function.
+	(fdate): Use strctime instead of ctime_r.
+	(fdate_sub): Likewise.
+	(ctime): Likewise.
+	(ctime_sub): Likewise.
+
 2011-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/47878

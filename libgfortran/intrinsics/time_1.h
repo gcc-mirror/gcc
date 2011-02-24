@@ -84,6 +84,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif  /* !HAVE_GETRUSAGE || !HAVE_SYS_RESOURCE_H  */
 
 
+/* If the re-entrant version of localtime is not available, provide a
+   fallback implementation.  On some targets where the _r version is
+   not available, localtime uses thread-local storage so it's
+   threadsafe.  */
+
+#ifndef HAVE_LOCALTIME_R
+/* If _POSIX is defined localtime_r gets defined by mingw-w64 headers.  */
+#ifdef localtime_r
+#undef localtime_r
+#endif
+
+static inline struct tm *
+localtime_r (const time_t * timep, struct tm * result)
+{
+  *result = *localtime (timep);
+  return result;
+}
+#endif
+
+
 #if defined (__GNUC__) && (__GNUC__ >= 3)
 #  define ATTRIBUTE_ALWAYS_INLINE __attribute__ ((__always_inline__))
 #else
