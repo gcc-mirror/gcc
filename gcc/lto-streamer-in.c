@@ -1097,8 +1097,8 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
   while (tag)
     {
       gimple stmt = input_gimple_stmt (ib, data_in, fn, tag);
-
-      find_referenced_vars_in (stmt);
+      if (!is_gimple_debug (stmt))
+	find_referenced_vars_in (stmt);
       gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 
       /* After the statement, expect a 0 delimiter or the EH region

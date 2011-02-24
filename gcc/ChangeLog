@@ -1,3 +1,8 @@
+2011-02-24  Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer-in.c (input_bb): Do not find referenced vars
+	in debug statements.
+
 2011-02-23  Jason Merrill  <jason@redhat.com>
 
 	* common.opt (fabi-version): Document v5 and v6.
