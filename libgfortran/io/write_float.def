@@ -117,25 +117,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
       /* Handle special cases.  */
       if (w == 0)
 	w = d + (sign != S_NONE ? 2 : 1) + (d == 0 ? 1 : 0);
-
-      /* For this one we choose to not output a decimal point.
-	 F95 10.5.1.2.1  */
-      if (w == 1 && ft == FMT_F)
-	{
-	  out = write_block (dtp, w);
-	  if (out == NULL)
-	    return FAILURE;
-
-	  if (unlikely (is_char4_unit (dtp)))
-	    {
-	      gfc_char4_t *out4 = (gfc_char4_t *) out;
-	      *out4 = '0';
-	      return SUCCESS;
-	    }
-
-	  *out = '0';
-	  return SUCCESS;
-	}
     }
 
   /* Normalize the fractional component.  */
