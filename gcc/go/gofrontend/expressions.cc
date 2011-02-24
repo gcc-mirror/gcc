@@ -8281,8 +8281,9 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function, int)
 	  for (size_t i = 0; i < rc; ++i)
 	    args->push_back(Expression::make_call_result(call, i));
 	  // We can't return a new call expression here, because this
-	  // one may be referenced by Call_result expressions.  FIXME.
-	  delete this->args_;
+	  // one may be referenced by Call_result expressions.  We
+	  // also can't delete the old arguments, because we may still
+	  // traverse them somewhere up the call stack.  FIXME.
 	  this->args_ = args;
 	}
     }
