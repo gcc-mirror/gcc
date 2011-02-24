@@ -1635,6 +1635,22 @@ getdecls (void)
   return current_binding_level->names;
 }
 
+/* Return how many function prototypes we are currently nested inside.  */
+
+int
+function_parm_depth (void)
+{
+  int level = 0;
+  struct cp_binding_level *b;
+
+  for (b = current_binding_level;
+       b->kind == sk_function_parms;
+       b = b->level_chain)
+    ++level;
+
+  return level;
+}
+
 /* For debugging.  */
 static int no_print_functions = 0;
 static int no_print_builtins = 0;

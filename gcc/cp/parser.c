@@ -15942,6 +15942,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 	{
 	  retrofit_lang_decl (decl);
 	  DECL_PARM_INDEX (decl) = ++index;
+	  DECL_PARM_LEVEL (decl) = function_parm_depth ();
 	}
 
       /* Add the new parameter to the list.  */

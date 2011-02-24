@@ -1,3 +1,7 @@
+2011-02-23  Jason Merrill  <jason@redhat.com>
+
+	* common.opt (fabi-version): Document v5 and v6.
+
 2011-02-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47849

@@ -11,7 +11,7 @@ struct S
 };
 
 template<class T, T *u>
-T* S<T, u>::foo(T)
+decltype(u) S<T, u>::foo(T)
 {
   T t;
   return t;

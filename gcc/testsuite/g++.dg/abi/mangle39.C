@@ -1,7 +1,7 @@
 // PR c++/42338
 // { dg-options "-std=c++0x" }
 // { dg-final { scan-assembler "_Z1fIPiEDTcmppfp_Li0EET_" } }
-// { dg-final { scan-assembler "_Z1gIiEvRK1AIT_EDTixfp_Li0EE" } }
+// { dg-final { scan-assembler "_Z1gIiEvRK1AIT_EDTixfL0p_Li0EE" } }
 
 template<typename T>
 auto f(T t) -> decltype(++t, 0)

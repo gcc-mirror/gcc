@@ -1,3 +1,13 @@
+2011-02-23  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle39.C: Adjust parm mangling.
+	* g++.dg/abi/mangle45.C: New.
+
+	* g++.dg/cpp0x/trailing1.C: Mangle decltype.
+	* g++.dg/template/canon-type-9.C: Match use of decltype
+	between declaration and definition.
+	* g++.dg/template/canon-type-12.C: Likewise.
+
 2011-02-23  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/40850

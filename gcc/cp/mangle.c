@@ -96,6 +96,9 @@ typedef struct GTY(()) globals {
   /* The entity that is being mangled.  */
   tree GTY ((skip)) entity;
 
+  /* How many parameter scopes we are inside.  */
+  int parm_depth;
+
   /* True if the mangling will be different in a future version of the
      ABI.  */
   bool need_abi_warning;
@@ -1931,6 +1934,35 @@ write_type (tree type)
 	      gcc_assert (!DECLTYPE_FOR_LAMBDA_CAPTURE (type)
 			  && !DECLTYPE_FOR_LAMBDA_RETURN (type));
 
+	      /* In ABI <6, we stripped decltype of a plain decl.  */
+	      if (!abi_version_at_least (6)
+		  && DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type))
+		{
+		  tree expr = DECLTYPE_TYPE_EXPR (type);
+		  tree etype = NULL_TREE;
+		  switch (TREE_CODE (expr))
+		    {
+		    case VAR_DECL:
+		    case PARM_DECL:
+		    case RESULT_DECL:
+		    case FUNCTION_DECL:
+		    case CONST_DECL:
+		    case TEMPLATE_PARM_INDEX:
+		      etype = TREE_TYPE (expr);
+		      break;
+
+		    default:
+		      break;
+		    }
+
+		  if (etype && !type_uses_auto (etype))
+		    {
+		      G.need_abi_warning = 1;
+		      write_type (etype);
+		      return;
+		    }
+		}
+
               write_char ('D');
               if (DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type))
                 write_char ('t');
@@ -2270,9 +2302,11 @@ write_bare_function_type (const tree type, const int include_return_type_p,
     write_type (TREE_TYPE (type));
 
   /* Now mangle the types of the arguments.  */
+  ++G.parm_depth;
   write_method_parms (TYPE_ARG_TYPES (type),
 		      TREE_CODE (type) == METHOD_TYPE,
 		      decl);
+  --G.parm_depth;
 }
 
 /* Write the mangled representation of a method parameter list of
@@ -2458,8 +2492,28 @@ write_expression (tree expr)
     {
       /* A function parameter used in a late-specified return type.  */
       int index = DECL_PARM_INDEX (expr);
+      int level = DECL_PARM_LEVEL (expr);
+      int delta = G.parm_depth - level + 1;
       gcc_assert (index >= 1);
-      write_string ("fp");
+      write_char ('f');
+      if (delta != 0)
+	{
+	  if (abi_version_at_least (6))
+	    {
+	      /* Let L be the number of function prototype scopes from the
+		 innermost one (in which the parameter reference occurs) up
+		 to (and including) the one containing the declaration of
+		 the referenced parameter.  If the parameter declaration
+		 clause of the innermost function prototype scope has been
+		 completely seen, it is not counted (in that case -- which
+		 is perhaps the most common -- L can be zero).  */
+	      write_char ('L');
+	      write_unsigned_number (delta - 1);
+	    }
+	  else
+	    G.need_abi_warning = true;
+	}
+      write_char ('p');
       write_compact_number (index - 1);
     }
   else if (DECL_P (expr))

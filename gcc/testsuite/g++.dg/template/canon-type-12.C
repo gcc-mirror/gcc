@@ -9,7 +9,7 @@ struct S
 
 template<class T, T t>
 void
-S<T, t>::foo(T)
+S<T, t>::foo(decltype(t))
 {
 }
 

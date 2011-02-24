@@ -1914,6 +1914,7 @@ struct GTY(()) lang_decl_ns {
 
 struct GTY(()) lang_decl_parm {
   struct lang_decl_base base;
+  int level;
   int index;
 };
 
@@ -2107,6 +2108,13 @@ struct GTY((variable_size)) lang_decl {
    All artificial parameters will have index 0.  */
 #define DECL_PARM_INDEX(NODE) \
   (LANG_DECL_PARM_CHECK (NODE)->index)
+
+/* The level of a user-declared parameter in its function, starting at 1.
+   A parameter of the function will have level 1; a parameter of the first
+   nested function declarator (i.e. t in void f (void (*p)(T t))) will have
+   level 2.  */
+#define DECL_PARM_LEVEL(NODE) \
+  (LANG_DECL_PARM_CHECK (NODE)->level)
 
 /* Nonzero if the VTT parm has been added to NODE.  */
 #define DECL_HAS_VTT_PARM_P(NODE) \

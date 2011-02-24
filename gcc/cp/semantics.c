@@ -4772,6 +4772,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
       return error_mark_node;
     }
 
+  /* FIXME instantiation-dependent  */
   if (type_dependent_expression_p (expr)
       /* In a template, a COMPONENT_REF has an IDENTIFIER_NODE for op1 even
 	 if it isn't dependent, so that we can check access control at
@@ -4780,27 +4781,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
 	  && processing_template_decl
 	  && TREE_CODE (expr) == COMPONENT_REF))
     {
-      if (id_expression_or_member_access_p)
-	{
-	  switch (TREE_CODE (expr))
-	    {
-	    case VAR_DECL:
-	    case PARM_DECL:
-	    case RESULT_DECL:
-	    case FUNCTION_DECL:
-	    case CONST_DECL:
-	    case TEMPLATE_PARM_INDEX:
-	      type = TREE_TYPE (expr);
-	      break;
-
-	    default:
-	      break;
-	    }
-	}
-
-      if (type && !type_uses_auto (type))
-	return type;
-
     treat_as_dependent:
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
