@@ -2205,10 +2205,14 @@ Build_recover_thunks::function(Named_object* orig_no)
 
       const std::string& new_receiver_name(orig_fntype->receiver()->name());
       Named_object* new_rec_no = new_bindings->lookup_local(new_receiver_name);
-      gcc_assert(new_rec_no != NULL
-		 && new_rec_no->is_variable()
-		 && new_rec_no->var_value()->is_receiver());
-      new_rec_no->var_value()->set_is_not_receiver();
+      if (new_rec_no == NULL)
+	gcc_assert(saw_errors());
+      else
+	{
+	  gcc_assert(new_rec_no->is_variable()
+		     && new_rec_no->var_value()->is_receiver());
+	  new_rec_no->var_value()->set_is_not_receiver();
+	}
     }
 
   // Because we flipped blocks but not types, the can_recover
