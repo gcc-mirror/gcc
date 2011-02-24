@@ -229,12 +229,6 @@ enum reg_class
 
 #define REGNO_OK_FOR_INDEX_P(NUM) REGNO_OK_FOR_BASE_P (NUM)
 
-#define PREFERRED_RELOAD_CLASS(X, CLASS) \
-  xstormy16_preferred_reload_class (X, CLASS)
-
-#define PREFERRED_OUTPUT_RELOAD_CLASS(X, CLASS) \
-  xstormy16_preferred_reload_class (X, CLASS)
-
 /* This chip has the interesting property that only the first eight
    registers can be moved to/from memory.  */
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X)			\
