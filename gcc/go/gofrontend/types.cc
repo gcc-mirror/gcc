@@ -4287,6 +4287,10 @@ Array_type::verify_length()
 {
   if (this->length_ == NULL)
     return true;
+
+  Type_context context(Type::lookup_integer_type("int"), false);
+  this->length_->determine_type(&context);
+
   if (!this->length_->is_constant())
     {
       error_at(this->length_->location(), "array bound is not constant");
@@ -4294,30 +4298,23 @@ Array_type::verify_length()
     }
 
   mpz_t val;
-
-  Type* t = this->length_->type();
-  if (t->integer_type() != NULL)
+  mpz_init(val);
+  Type* vt;
+  if (!this->length_->integer_constant_value(true, val, &vt))
     {
-      Type* vt;
-      mpz_init(val);
-      if (!this->length_->integer_constant_value(true, val, &vt))
-	{
-	  error_at(this->length_->location(),
-		   "array bound is not constant");
-	  mpz_clear(val);
-	  return false;
-	}
-    }
-  else if (t->float_type() != NULL)
-    {
-      Type* vt;
       mpfr_t fval;
       mpfr_init(fval);
       if (!this->length_->float_constant_value(fval, &vt))
 	{
-	  error_at(this->length_->location(),
-		   "array bound is not constant");
+	  if (this->length_->type()->integer_type() != NULL
+	      || this->length_->type()->float_type() != NULL)
+	    error_at(this->length_->location(),
+		     "array bound is not constant");
+	  else
+	    error_at(this->length_->location(),
+		     "array bound is not numeric");
 	  mpfr_clear(fval);
+	  mpz_clear(val);
 	  return false;
 	}
       if (!mpfr_integer_p(fval))
@@ -4325,17 +4322,12 @@ Array_type::verify_length()
 	  error_at(this->length_->location(),
 		   "array bound truncated to integer");
 	  mpfr_clear(fval);
+	  mpz_clear(val);
 	  return false;
 	}
       mpz_init(val);
       mpfr_get_z(val, fval, GMP_RNDN);
       mpfr_clear(fval);
-    }
-  else
-    {
-      if (!t->is_error_type())
-	error_at(this->length_->location(), "array bound is not numeric");
-      return false;
     }
 
   if (mpz_sgn(val) < 0)
