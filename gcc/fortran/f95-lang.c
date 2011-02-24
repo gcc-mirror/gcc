@@ -498,13 +498,20 @@ poplevel (int keep, int reverse, int functionbody)
 tree
 pushdecl (tree decl)
 {
-  /* External objects aren't nested, other objects may be.  */
-  if (DECL_EXTERNAL (decl))
-    DECL_CONTEXT (decl) = NULL_TREE;
-  else if (global_bindings_p ())
+  if (global_bindings_p ())
     DECL_CONTEXT (decl) = current_translation_unit;
   else
-    DECL_CONTEXT (decl) = current_function_decl;
+    {
+      /* External objects aren't nested.  For debug info insert a copy
+         of the decl into the binding level.  */
+      if (DECL_EXTERNAL (decl))
+	{
+	  tree orig = decl;
+	  decl = copy_node (decl);
+	  DECL_CONTEXT (orig) = NULL_TREE;
+	}
+      DECL_CONTEXT (decl) = current_function_decl;
+    }
 
   /* Put the declaration on the list.  The list of declarations is in reverse
      order. The list will be reversed later if necessary.  This needs to be
