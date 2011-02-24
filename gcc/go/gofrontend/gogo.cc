@@ -2558,7 +2558,8 @@ Function::create_named_result_variables(Gogo* gogo)
 	}
       Result_variable* result = new Result_variable(p->type(), this, index);
       Named_object* no = block->bindings()->add_result_variable(name, result);
-      this->named_results_->push_back(no);
+      if (no->is_result_variable())
+	this->named_results_->push_back(no);
     }
 }
 
