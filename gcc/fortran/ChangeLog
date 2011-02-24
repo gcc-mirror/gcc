@@ -1,3 +1,9 @@
+2011-02-24  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/47839
+	* f95-lang.c (pushdecl): For externs in non-global scope push
+	a copy of the decl into the BLOCK.
+
 2011-02-23  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/40850
