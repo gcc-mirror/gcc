@@ -36,24 +36,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 
-/* If the re-entrant versions of localtime and gmtime are not
-   available, provide fallback implementations.  On some targets where
-   the _r versions are not available, localtime and gmtime use
-   thread-local storage so they are threadsafe.  */
-
-#ifndef HAVE_LOCALTIME_R
-/* If _POSIX is defined localtime_r gets defined by mingw-w64 headers.  */
-#ifdef localtime_r
-#undef localtime_r
-#endif
-
-static struct tm *
-localtime_r (const time_t * timep, struct tm * result)
-{
-  *result = *localtime (timep);
-  return result;
-}
-#endif
+/* If the re-entrant version of gmtime is not available, provide a
+   fallback implementation.  On some targets where the _r version is
+   not available, gmtime uses thread-local storage so it's
+   threadsafe.  */
 
 #ifndef HAVE_GMTIME_R
 /* If _POSIX is defined gmtime_r gets defined by mingw-w64 headers.  */

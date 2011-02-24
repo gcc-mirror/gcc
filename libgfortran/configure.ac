@@ -248,11 +248,11 @@ AC_CHECK_MEMBERS([struct stat.st_rdev])
 # Check for library functions.
 AC_CHECK_FUNCS(getrusage times mkstemp strtof strtold snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
-AC_CHECK_FUNCS(sleep time ttyname signal alarm ctime clock access fork execl)
+AC_CHECK_FUNCS(sleep time ttyname signal alarm clock access fork execl)
 AC_CHECK_FUNCS(wait setmode execvp pipe dup2 close fdopen strcasestr getrlimit)
 AC_CHECK_FUNCS(gettimeofday stat fstat lstat getpwuid vsnprintf dup getcwd)
-AC_CHECK_FUNCS(localtime_r gmtime_r strerror_r getpwuid_r ttyname_r ctime_r)
-AC_CHECK_FUNCS(clock_gettime)
+AC_CHECK_FUNCS(localtime_r gmtime_r strerror_r getpwuid_r ttyname_r)
+AC_CHECK_FUNCS(clock_gettime strftime)
 
 # Check for glibc backtrace functions
 AC_CHECK_FUNCS(backtrace backtrace_symbols)

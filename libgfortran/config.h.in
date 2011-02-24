@@ -318,12 +318,6 @@
 /* libm includes ctanl */
 #undef HAVE_CTANL
 
-/* Define to 1 if you have the `ctime' function. */
-#undef HAVE_CTIME
-
-/* Define to 1 if you have the `ctime_r' function. */
-#undef HAVE_CTIME_R
-
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -722,6 +716,9 @@
 
 /* Define to 1 if you have the `strerror_r' function. */
 #undef HAVE_STRERROR_R
+
+/* Define to 1 if you have the `strftime' function. */
+#undef HAVE_STRFTIME
 
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
