@@ -1,3 +1,7 @@
+2011-02-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* MAINTAINERS (CPU Port maintainers): Add self.
+
 2011-02-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* MAINTAINERS: Add myself as testsuite maintainer.
