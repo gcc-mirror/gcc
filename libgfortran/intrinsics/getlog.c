@@ -75,7 +75,7 @@ PREFIX(getlog) (char * login, gfc_charlen_type login_len)
 
   memset (login, ' ', login_len); /* Blank the string.  */
 
-#if defined(HAVE_GETPWUID_R) && defined(HAVE_GETEUID)
+#if defined(HAVE_POSIX_GETPWUID_R) && defined(HAVE_GETEUID)
   struct passwd pwd;
   struct passwd *result;
   char *buf;
@@ -113,7 +113,7 @@ PREFIX(getlog) (char * login, gfc_charlen_type login_len)
   memcpy (login, p, p_len);
 
  cleanup:
-#ifdef HAVE_GETPWUID_R
+#if defined (HAVE_POSIX_GETPWUID_R) && defined(HAVE_GETEUID)
   free (buf);
 #else
   ;
