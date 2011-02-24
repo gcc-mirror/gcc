@@ -4203,6 +4203,12 @@ Parse::comm_clause(Select_clauses* clauses, bool* saw_default)
 
   if (got_case)
     clauses->add(is_send, channel, val, var, is_default, statements, location);
+  else if (statements != NULL)
+    {
+      // Add the statements to make sure that any names they define
+      // are traversed.
+      this->gogo_->add_block(statements, location);
+    }
 }
 
 // CommCase = ( "default" | ( "case" ( SendExpr | RecvExpr) ) ) ":" .
