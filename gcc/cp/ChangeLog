@@ -1,3 +1,19 @@
+2011-02-23  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (DECL_PARM_LEVEL): New.
+	(struct lang_decl_parm): Add level field.
+	* name-lookup.c (function_parm_depth): New fn.
+	* name-lookup.h: Declare it.
+	* parser.c (cp_parser_parameter_declaration_list): Use it.
+	* mangle.c (struct globals): Add parm_depth field.
+	(write_bare_function_type): Adjust it.
+	(write_expression): Include the level delta in PARM_DECL mangling
+	for abi >= 6.
+
+	* semantics.c (finish_decltype_type): Remove shortcut for decltype
+	of id-expression.
+	* mangle.c (write_type) [DECLTYPE_TYPE]: Strip it here for abi < 6.
+
 2011-02-23  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/46868

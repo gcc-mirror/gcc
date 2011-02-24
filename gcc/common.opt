@@ -741,6 +741,12 @@ Driver Undocumented
 ; 4: The version of the ABI that introduces unambiguous mangling of
 ;    vector types.
 ;
+; 5: The version of the ABI that ignores attribute const/noreturn
+;    in function pointer mangling.
+;
+; 6: The version of the ABI that corrects mangling of decltype and
+;    function parameters used in other parameters and the return type.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
