@@ -3,7 +3,7 @@
 /* { dg-options "-g" } */
 
 int varh;
-int vari = 17, varj;
+int vari __attribute__((used)) = 17, varj;
 
 __attribute__((noinline)) int
 f1 (void)
