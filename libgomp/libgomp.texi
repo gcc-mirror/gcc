@@ -1275,7 +1275,7 @@ error is reported and the initial stacksize is left unchanged. If undefined,
 the stack size is system dependent.
 
 @item @emph{See also}:
-@ref{GOMP_STACKSIZE}
+@ref{OMP_STACKSIZE}
 
 @item @emph{Reference}: 
 @uref{http://gcc.gnu.org/ml/gcc-patches/2006-06/msg00493.html, 

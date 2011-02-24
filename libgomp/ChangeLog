@@ -1,3 +1,7 @@
+2011-02-24  Tobias Burnus  <burnus@net-b.de>
+
+	* libgomp.texi (GOMP_STACKSIZE): Fix @ref to OMP_STACKSIZE.
+
 2011-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/47854
