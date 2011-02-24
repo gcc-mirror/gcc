@@ -4442,33 +4442,59 @@ Array_type::do_get_tree(Gogo* gogo)
   if (this->length_ == NULL)
     {
       tree struct_type = gogo->slice_type_tree(void_type_node);
-      return this->fill_in_tree(gogo, struct_type);
+      return this->fill_in_slice_tree(gogo, struct_type);
     }
   else
     {
-      tree element_type_tree = this->element_type_->get_tree(gogo);
-      tree length_tree = this->get_length_tree(gogo);
-      if (element_type_tree == error_mark_node
-	  || length_tree == error_mark_node)
-	return error_mark_node;
-
-      length_tree = fold_convert(sizetype, length_tree);
-
-      // build_index_type takes the maximum index, which is one less
-      // than the length.
-      tree index_type = build_index_type(fold_build2(MINUS_EXPR, sizetype,
-						     length_tree,
-						     size_one_node));
-
-      return build_array_type(element_type_tree, index_type);
+      tree array_type = make_node(ARRAY_TYPE);
+      return this->fill_in_array_tree(gogo, array_type);
     }
+}
+
+// Fill in the fields for an array type.  This is used for named array
+// types.
+
+tree
+Array_type::fill_in_array_tree(Gogo* gogo, tree array_type)
+{
+  gcc_assert(this->length_ != NULL);
+
+  tree element_type_tree = this->element_type_->get_tree(gogo);
+  tree length_tree = this->get_length_tree(gogo);
+  if (element_type_tree == error_mark_node
+      || length_tree == error_mark_node)
+    return error_mark_node;
+
+  length_tree = fold_convert(sizetype, length_tree);
+
+  // build_index_type takes the maximum index, which is one less than
+  // the length.
+  tree index_type = build_index_type(fold_build2(MINUS_EXPR, sizetype,
+						 length_tree,
+						 size_one_node));
+
+  TREE_TYPE(array_type) = element_type_tree;
+  TYPE_DOMAIN(array_type) = index_type;
+  TYPE_ADDR_SPACE(array_type) = TYPE_ADDR_SPACE(element_type_tree);
+  layout_type(array_type);
+
+  if (TYPE_STRUCTURAL_EQUALITY_P(element_type_tree)
+      || TYPE_STRUCTURAL_EQUALITY_P(index_type))
+    SET_TYPE_STRUCTURAL_EQUALITY(array_type);
+  else if (TYPE_CANONICAL(element_type_tree) != element_type_tree
+	   || TYPE_CANONICAL(index_type) != index_type)
+    TYPE_CANONICAL(array_type) =
+      build_array_type(TYPE_CANONICAL(element_type_tree),
+		       TYPE_CANONICAL(index_type));
+
+  return array_type;
 }
 
 // Fill in the fields for a slice type.  This is used for named slice
 // types.
 
 tree
-Array_type::fill_in_tree(Gogo* gogo, tree struct_type)
+Array_type::fill_in_slice_tree(Gogo* gogo, tree struct_type)
 {
   gcc_assert(this->length_ == NULL);
 
@@ -7129,15 +7155,19 @@ Named_type::do_get_tree(Gogo* gogo)
       break;
 
     case TYPE_ARRAY:
+      if (this->named_tree_ != NULL_TREE)
+	return this->named_tree_;
       if (!this->is_open_array_type())
-	t = Type::get_named_type_tree(gogo, this->type_);
+	{
+	  t = make_node(ARRAY_TYPE);
+	  this->named_tree_ = t;
+	  t = this->type_->array_type()->fill_in_array_tree(gogo, t);
+	}
       else
 	{
-	  if (this->named_tree_ != NULL_TREE)
-	    return this->named_tree_;
 	  t = gogo->slice_type_tree(void_type_node);
 	  this->named_tree_ = t;
-	  t = this->type_->array_type()->fill_in_tree(gogo, t);
+	  t = this->type_->array_type()->fill_in_slice_tree(gogo, t);
 	}
       if (t == error_mark_node)
 	return error_mark_node;
