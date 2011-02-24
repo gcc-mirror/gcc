@@ -3911,7 +3911,11 @@ Type_switch_statement::do_lower(Gogo*, Block* enclosing)
       if (val_type->is_nil_type())
 	rhs = Expression::make_nil(loc);
       else
-	rhs = Expression::make_type_descriptor(val_type, loc);
+	{
+	  if (val_type->is_abstract())
+	    val_type = val_type->make_non_abstract_type();
+	  rhs = Expression::make_type_descriptor(val_type, loc);
+	}
       Statement* s = Statement::make_assignment(lhs, rhs, loc);
       b->add_statement(s);
     }
