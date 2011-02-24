@@ -1,3 +1,14 @@
+2011-02-24  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/stormy16/stormy16.h (PREFERRED_RELOAD_CLASS,
+	PREFERRED_OUTPUT_RELOAD_CLASS): Remove.
+	* config/stormy16/stormy16-protos.h
+	(xstormy16_preferred_reload_class): Remove.
+	* config/stormy16/stormy16.c (xstormy16_preferred_reload_class): Make
+	static. Change 'rclass' argument and return type to reg_class_t.
+	(TARGET_PREFERRED_RELOAD_CLASS,
+	TARGET_PREFERRED_OUTPUT_RELOAD_CLASS): Define.
+
 2011-02-24  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-in.c (input_bb): Do not find referenced vars
