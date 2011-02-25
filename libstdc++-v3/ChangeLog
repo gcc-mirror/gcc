@@ -1,3 +1,10 @@
+2011-02-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/18_support/type_info/required.cc: New.
+
+	* testsuite/Makefile.am: Make clean fixups.
+	* testsuite/Makefile.in: Regenerate.
+
 2011-02-19  François Dumont  <francois.cppdevs@free.fr>
 
 	* include/debug/string (basic_string::insert): Add iterator check and
