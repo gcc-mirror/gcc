@@ -1,3 +1,19 @@
+2011-02-25  Sebastien Bourdeauducq <sebastien@milkymist.org>
+
+	PR gcc/46898
+	* config/lm32/lm32.md (ashrsi3): Added needed variable.
+
+2011-02-25  Jon Beniston <jon@beniston.com>
+
+	PR gcc/46898
+	* config/lm32/lm32.h (INCOMING_RETURN_ADDR_RTX): New.
+	* config/lm32/lm32.md (ashlsi3): Remove unused variable.
+	* config/lm32/lm32.c (TARGET_EXCEPT_UNWIND_INFO): New.
+	(lm32_block_move_inline): Add type cast to remove warning.
+	(lm32_expand_prologue): Generate fp in a way compatible with
+	dwarf2out.
+	(gen_int_relational): Move declarations to start of function.
+
 2011-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/45470
