@@ -1,3 +1,8 @@
+2011-02-25  Jie Zhang  <jie@codesourcery.com>
+
+	* gcc.target/arm/neon-thumb2-move.c: Add
+	dg-require-effective-target arm_thumb2_ok.
+
 2011-02-24  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/parse/constant1.C: Specify C++98 mode.
