@@ -1,5 +1,18 @@
 2011-02-24  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/parse/constant1.C: Specify C++98 mode.
+	* g++.dg/parse/constant5.C: Likewise.
+	* g++.dg/parse/error2.C: Likewise.
+	* g++.dg/parse/semicolon3.C: Likewise.
+	* g++.dg/template/crash14.C: Likewise.
+	* g++.dg/template/local4.C: Likewise.
+	* g++.dg/template/nontype3.C: Likewise.
+	* g++.dg/parse/crash31.C: Adjust expected errors.
+	* g++.dg/template/function1.C: Likewise.
+	* g++.dg/template/ref3.C: Likewise.
+	* g++.dg/template/static9.C: Likewise.
+	* g++.old-deja/g++.pt/crash41.C: Instantiate template.
+
 	* g++.dg/cpp0x/constexpr-array-tparm.C: New.
 	* g++.dg/cpp0x/regress/parse-ambig5.C: Copy from parse/ambig5.C.
 	* g++.dg/cpp0x/regress/debug-debug7.C: Copy from debug/debug7.C.

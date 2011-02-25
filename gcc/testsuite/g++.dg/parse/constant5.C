@@ -1,3 +1,5 @@
+// { dg-options "-std=c++98 -pedantic-errors" }
+
 enum E { 
   a = 24.2, // { dg-error "constant" }
   b = (int)3.7, 

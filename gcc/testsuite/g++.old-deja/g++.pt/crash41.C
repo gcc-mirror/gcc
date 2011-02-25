@@ -9,3 +9,5 @@ template <class T>
 void f(S2 s2) {
   S1<s2.i> s1; // { dg-error "" }
 }
+
+template void f<int>(S2);
