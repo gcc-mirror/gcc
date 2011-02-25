@@ -1,3 +1,5 @@
+// { dg-options -std=c++98 }
+
 void f () {
   switch (0) {
   case (3, 0): // { dg-error "" }

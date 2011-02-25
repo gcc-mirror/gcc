@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options -std=c++98 }
 // Origin: <drow at gcc dot gnu dot org>,
 //         <giovannibajo at gcc dot gnu dot org>
 // c++/13243: Template parameters of non integral or enumeration type can't be

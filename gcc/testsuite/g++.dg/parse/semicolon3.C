@@ -1,5 +1,6 @@
 // PR c++/45331
 // { dg-do compile }
+// { dg-options -std=c++98 }
 
 struct OK1
 {

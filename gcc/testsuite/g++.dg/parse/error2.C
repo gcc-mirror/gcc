@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fshow-column" }
+// { dg-options "-fshow-column -std=c++98" }
 // Properly print CALL_EXPRs while dumping expressions
 
 double g;
