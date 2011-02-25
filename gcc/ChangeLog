@@ -1,3 +1,10 @@
+2011-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/45470
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Fail if a statement
+	can throw internally only.
+	* tree-vect-stmts.c (vectorizable_call): Likewise.
+
 2011-02-24  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/stormy16/stormy16.h (PREFERRED_RELOAD_CLASS,
