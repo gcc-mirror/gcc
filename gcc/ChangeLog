@@ -1,3 +1,7 @@
+2011-02-25  Gerald Pfeifer  <gerald@pfeifer.com>
+ 
+	* doc/cpp.texi: Update copyright years.
+
 2011-02-25  Sebastien Bourdeauducq <sebastien@milkymist.org>
 
 	PR gcc/46898
