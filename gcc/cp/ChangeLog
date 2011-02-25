@@ -1,3 +1,15 @@
+2011-02-24  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_constant_expression): Set
+	non_integral_constant_expression correctly for C++0x too.
+	(cp_parser_static_assert): Allow non-constant expression.
+	(cp_parser_direct_declarator): Expect non_constant_p to be set
+	properly for C++0x.
+	* pt.c (value_dependent_expression_p): Handle TYPEID_EXPR.
+	* semantics.c (maybe_constant_value): Check type_unknown_p too.
+	(potential_rvalue_constant_expression): New.
+	(require_potential_rvalue_constant_expression): New.
+
 2011-02-23  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (DECL_PARM_LEVEL): New.

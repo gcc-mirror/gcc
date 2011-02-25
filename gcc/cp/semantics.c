@@ -7138,6 +7138,7 @@ maybe_constant_value (tree t)
   tree r;
 
   if (type_dependent_expression_p (t)
+      || type_unknown_p (t)
       || !potential_constant_expression (t)
       || value_dependent_expression_p (t))
     return t;
@@ -7727,12 +7728,28 @@ potential_constant_expression (tree t)
   return potential_constant_expression_1 (t, false, tf_none);
 }
 
+/* As above, but require a constant rvalue.  */
+
+bool
+potential_rvalue_constant_expression (tree t)
+{
+  return potential_constant_expression_1 (t, true, tf_none);
+}
+
 /* Like above, but complain about non-constant expressions.  */
 
 bool
 require_potential_constant_expression (tree t)
 {
   return potential_constant_expression_1 (t, false, tf_warning_or_error);
+}
+
+/* Cross product of the above.  */
+
+bool
+require_potential_rvalue_constant_expression (tree t)
+{
+  return potential_constant_expression_1 (t, true, tf_warning_or_error);
 }
 
 /* Constructor for a lambda expression.  */

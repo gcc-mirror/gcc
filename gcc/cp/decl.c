@@ -5824,12 +5824,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (init && TREE_CODE (decl) == VAR_DECL)
     {
       DECL_NONTRIVIALLY_INITIALIZED_P (decl) = 1;
-      /* FIXME we rely on TREE_CONSTANT below; basing that on
-	 init_const_expr_p is probably wrong for C++0x.  */
       if (init_const_expr_p)
 	{
-	  /* Set these flags now for C++98 templates.  We'll update the
-	     flags in store_init_value for instantiations and C++0x.  */
+	  /* Set these flags now for templates.  We'll update the flags in
+	     store_init_value for instantiations.  */
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = 1;
 	  if (decl_maybe_constant_var_p (decl))
 	    TREE_CONSTANT (decl) = 1;
