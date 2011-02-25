@@ -7266,10 +7266,19 @@ cp_parser_constant_expression (cp_parser* parser,
     = saved_integral_constant_expression_p;
   parser->allow_non_integral_constant_expression_p
     = saved_allow_non_integral_constant_expression_p;
+  if (cxx_dialect >= cxx0x)
+    {
+      /* Require an rvalue constant expression here; that's what our
+	 callers expect.  Reference constant expressions are handled
+	 separately in e.g. cp_parser_template_argument.  */
+      bool is_const = potential_rvalue_constant_expression (expression);
+      parser->non_integral_constant_expression_p = !is_const;
+      if (!is_const && !allow_non_constant_p)
+	require_potential_rvalue_constant_expression (expression);
+    }
   if (allow_non_constant_p)
     *non_constant_p = parser->non_integral_constant_expression_p;
-  else if (parser->non_integral_constant_expression_p
-	   && cxx_dialect < cxx0x)
+  else if (parser->non_integral_constant_expression_p)
     expression = error_mark_node;
   parser->non_integral_constant_expression_p
     = saved_non_integral_constant_expression_p;
@@ -10212,6 +10221,7 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
   tree message;
   cp_token *token;
   location_t saved_loc;
+  bool dummy;
 
   /* Peek at the `static_assert' token so we can keep track of exactly
      where the static assertion started.  */
@@ -10231,11 +10241,12 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
   /* Parse the `(' starting the static assertion condition.  */
   cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 
-  /* Parse the constant-expression.  */
+  /* Parse the constant-expression.  Allow a non-constant expression
+     here in order to give better diagnostics in finish_static_assert.  */
   condition = 
     cp_parser_constant_expression (parser,
-                                   /*allow_non_constant_p=*/false,
-                                   /*non_constant_p=*/NULL);
+                                   /*allow_non_constant_p=*/true,
+                                   /*non_constant_p=*/&dummy);
 
   /* Parse the separating `,'.  */
   cp_parser_require (parser, CPP_COMMA, RT_COMMA);
@@ -15115,7 +15126,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		= cp_parser_constant_expression (parser,
 						 /*allow_non_constant=*/true,
 						 &non_constant_p);
-	      if (!non_constant_p || cxx_dialect >= cxx0x)
+	      if (!non_constant_p)
 		/* OK */;
 	      /* Normally, the array bound must be an integral constant
 		 expression.  However, as an extension, we allow VLAs

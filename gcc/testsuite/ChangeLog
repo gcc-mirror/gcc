@@ -1,3 +1,11 @@
+2011-02-24  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-array-tparm.C: New.
+	* g++.dg/cpp0x/regress/parse-ambig5.C: Copy from parse/ambig5.C.
+	* g++.dg/cpp0x/regress/debug-debug7.C: Copy from debug/debug7.C.
+	* g++.dg/cpp0x/variadic20.C: Adjust expected errors.
+	* g++.dg/cpp0x/regress/template-function1.C: Likewise.
+
 2011-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/47878
