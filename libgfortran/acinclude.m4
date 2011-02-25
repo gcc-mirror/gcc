@@ -244,6 +244,7 @@ AC_DEFUN([LIBGFOR_CHECK_FPSETMASK], [
     eval "libgfor_cv_have_fpsetmask=yes", eval "libgfor_cv_have_fpsetmask=no")
   ])
   if test x"$libgfor_cv_have_fpsetmask" = xyes; then
+    have_fpsetmask=yes
     AC_DEFINE(HAVE_FPSETMASK, 1, [Define if you have fpsetmask.])
   fi
 ])
