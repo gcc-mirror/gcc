@@ -239,6 +239,8 @@ enum reg_class
 
 #define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
 
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (SImode, RA_REGNUM)
+
 #define RETURN_ADDR_RTX(count, frame)                                   \
   lm32_return_addr_rtx (count, frame)
 
