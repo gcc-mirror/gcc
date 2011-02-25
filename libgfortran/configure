@@ -25395,6 +25395,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_have_fpsetmask" >&5
 $as_echo "$libgfor_cv_have_fpsetmask" >&6; }
   if test x"$libgfor_cv_have_fpsetmask" = xyes; then
+    have_fpsetmask=yes
 
 $as_echo "#define HAVE_FPSETMASK 1" >>confdefs.h
 

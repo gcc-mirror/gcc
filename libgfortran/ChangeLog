@@ -1,3 +1,9 @@
+2011-02-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* acinclude.m4 (LIBGFOR_CHECK_FPSETMASK): Set shell variable
+	tested in configure.host.
+	* configure: Regenerate.
+
 2011-02-24  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47802
