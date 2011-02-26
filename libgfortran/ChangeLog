@@ -1,3 +1,8 @@
+2011-02-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/45165
+	* unix.c (fallback_access): Fix file descriptor leaks.
+
 2011-02-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* acinclude.m4 (LIBGFOR_CHECK_FPSETMASK): Set shell variable

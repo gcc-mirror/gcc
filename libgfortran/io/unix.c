@@ -144,11 +144,15 @@ typedef struct stat gfstat_t;
 static int
 fallback_access (const char *path, int mode)
 {
-  if ((mode & R_OK) && open (path, O_RDONLY) < 0)
-    return -1;
+  int fd;
 
-  if ((mode & W_OK) && open (path, O_WRONLY) < 0)
+  if ((mode & R_OK) && (fd = open (path, O_RDONLY)) < 0)
     return -1;
+  close (fd);
+
+  if ((mode & W_OK) && (fd = open (path, O_WRONLY)) < 0)
+    return -1;
+  close (fd);
 
   if (mode == F_OK)
     {
