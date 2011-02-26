@@ -2797,6 +2797,16 @@ cpu=
 arch_without_sse2=no
 arch_without_64bit=no
 case ${target} in
+  i386-*-freebsd*)
+    if test $fbsd_major -ge 6; then
+      arch=i486
+    else
+      arch=i386
+    fi
+    cpu=generic
+    arch_without_sse2=yes
+    arch_without_64bit=yes
+    ;;
   i386-*-*)
     arch=i386
     cpu=i386
