@@ -2,14 +2,14 @@
  
 	* doc/cpp.texi: Update copyright years.
 
-2011-02-25  Sebastien Bourdeauducq <sebastien@milkymist.org>
+2011-02-25  Sebastien Bourdeauducq  <sebastien@milkymist.org>
 
-	PR gcc/46898
+	PR target/46898
 	* config/lm32/lm32.md (ashrsi3): Added needed variable.
 
-2011-02-25  Jon Beniston <jon@beniston.com>
+2011-02-25  Jon Beniston  <jon@beniston.com>
 
-	PR gcc/46898
+	PR target/46898
 	* config/lm32/lm32.h (INCOMING_RETURN_ADDR_RTX): New.
 	* config/lm32/lm32.md (ashlsi3): Remove unused variable.
 	* config/lm32/lm32.c (TARGET_EXCEPT_UNWIND_INFO): New.
@@ -1201,7 +1201,7 @@
 	(decl_readonly_section): Use it.
 
 	Revert:
-	2010-11-17  Dinar Temirbulatov <dtemirbulatov@gmail.com>
+	2010-11-17  Dinar Temirbulatov  <dtemirbulatov@gmail.com>
 		    Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/31490
@@ -1663,7 +1663,7 @@
 	* config.gcc (hppa*64*-*-hpux11*, hppa[12]*-*-hpux11*,
 	ia64*-*-hpux*): Use hpux11.opt.
 
-2011-01-30  Jonathan Yong <jon_y@users.sourceforge.net>
+2011-01-30  Jonathan Yong  <jon_y@users.sourceforge.net>
 
 	* config.gcc (i[34567]86-*-pe | i[34567]86-*-cygwin*): Add t-dfprules
 	to tmake_file.
@@ -1752,7 +1752,7 @@
 
 	* config/spu/spu-elf.h (ASM_SPEC): Remove.
 
-2011-01-26  Mikael Pettersson <mikpe@it.uu.se>
+2011-01-26  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR rtl-optimization/46856
 	* postreload.c (reload_combine_recognize_const_pattern): Do not
@@ -2030,7 +2030,7 @@
 	* gimple-fold.c (gimple_fold_obj_type_ref_call): Removed.
 	(gimple_fold_call): Do not call gimple_fold_obj_type_ref_call.
 
-2011-01-25  Joel Sherrill <joel.sherrill@oarcorp.com>
+2011-01-25  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config/m32r/m32r.c: Define TARGET_EXCEPT_UNWIND_INFO to
 	sjlj_except_unwind_info.
@@ -3259,7 +3259,7 @@
 	* configure: Regenerate.
 
 2011-01-14  Jan Hubicka  <jh@suse.cz>
-	Jack Howarth <howarth@bromo.med.uc.edu>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/46037
 	* config/darwin.c (darwin_override_options): Honor flag_gtoggle
@@ -3948,7 +3948,7 @@
 	PR bootstrap/47055
 	* libgcov.c (gcov_exit): Check for HAS_DRIVE_SPEC.
 
-2011-01-04  Philipp Thomas <pth@suse.de>
+2011-01-04  Philipp Thomas  <pth@suse.de>
 
 	* config/microblaze/microbalse.opt (mxl-float-convert): Fix
 	obvious typo.
