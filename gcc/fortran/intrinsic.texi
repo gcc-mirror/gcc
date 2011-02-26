@@ -12602,19 +12602,20 @@ END PROGRAM
 
 
 @node VERIFY
-@section @code{VERIFY} --- Scan a string for the absence of a set of characters
+@section @code{VERIFY} --- Scan a string for characters not a given set
 @fnindex VERIFY
 @cindex string, find missing set
 
 @table @asis
 @item @emph{Description}:
-Verifies that all the characters in a @var{SET} are present in a @var{STRING}.
+Verifies that all the characters in @var{STRING} belong the set of
+characters in @var{SET}.
 
 If @var{BACK} is either absent or equals @code{FALSE}, this function
 returns the position of the leftmost character of @var{STRING} that is
-not in @var{SET}. If @var{BACK} equals @code{TRUE}, the rightmost position
-is returned. If all characters of @var{SET} are found in @var{STRING}, the 
-result is zero.
+not in @var{SET}. If @var{BACK} equals @code{TRUE}, the rightmost
+position is returned. If all characters of @var{STRING} are found in
+@var{SET}, the result is zero.
 
 @item @emph{Standard}:
 Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
