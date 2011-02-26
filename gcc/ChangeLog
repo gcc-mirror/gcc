@@ -1,3 +1,8 @@
+2011-02-26  Tijl Coosemans  <tijl@coosemans.org>
+
+	* config.gcc (i386-*-freebsd*): Make i486 the default arch on
+	FreeBSD 6 and later.  Generally use cpu generic.
+
 2011-02-25  Gerald Pfeifer  <gerald@pfeifer.com>
  
 	* doc/cpp.texi: Update copyright years.
