@@ -1,3 +1,7 @@
+2011-02-26  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc-act.c (objc_v2_encode_prop_attr): Rewritten.
+	
 2011-02-23  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (build_private_template): Do not copy the
@@ -16,7 +20,8 @@
 
 2011-02-21  Mike Stump  <mikestump@comcast.net>
 
-	* Make-lang.in (check_objc_parallelize): Refine for 4 processor machines.
+	* Make-lang.in (check_objc_parallelize): Refine for 4 processor
+	machines.
 
 2011-02-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
