@@ -1573,6 +1573,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SINGLE:
+    case EXEC_OMP_TASK:
       if (code->ext.omp_clauses)
 	resolve_omp_clauses (code);
       break;
