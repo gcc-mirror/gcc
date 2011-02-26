@@ -10495,47 +10495,79 @@ encode_field_decl (tree field_decl, int curtype, int format)
      kPropertyGetter = 'G',
      kPropertySetter = 'S',
      kPropertyInstanceVariable = 'V',
-     kPropertyType = 't',
+     kPropertyType = 'T',
      kPropertyWeak = 'W',
-     kPropertyStrong = 'S',
+     kPropertyStrong = 'P',
      kPropertyNonAtomic = 'N'
-   };
-
-   FIXME: Update the implementation to match.  */
+   };  */
 tree
 objc_v2_encode_prop_attr (tree property)
 {
   const char *string;
   tree type = TREE_TYPE (property);
-  obstack_1grow (&util_obstack, 't');
+
+  obstack_1grow (&util_obstack, 'T');
   encode_type (type, obstack_object_size (&util_obstack),
 	       OBJC_ENCODE_INLINE_DEFS);
+
   if (PROPERTY_READONLY (property))
-    obstack_grow (&util_obstack, ",r", 2);
+    obstack_grow (&util_obstack, ",R", 2);
 
-  if (PROPERTY_ASSIGN_SEMANTICS (property) == OBJC_PROPERTY_COPY)
-    obstack_grow (&util_obstack, ",c", 2);
-
-  if (PROPERTY_GETTER_NAME (property))
+  switch (PROPERTY_ASSIGN_SEMANTICS (property))
     {
-      obstack_grow (&util_obstack, ",g", 2);
+    case OBJC_PROPERTY_COPY:
+      obstack_grow (&util_obstack, ",C", 2);
+      break;
+    case OBJC_PROPERTY_RETAIN:
+      obstack_grow (&util_obstack, ",&", 2);
+      break;
+    case OBJC_PROPERTY_ASSIGN:
+    default:
+      break;
+    }
+
+  if (PROPERTY_DYNAMIC (property))
+    obstack_grow (&util_obstack, ",D", 2);    
+
+  if (PROPERTY_NONATOMIC (property))
+    obstack_grow (&util_obstack, ",N", 2);
+
+  /* Here we want to encode the getter name, but only if it's not the
+     standard one.  */
+  if (PROPERTY_GETTER_NAME (property) != PROPERTY_NAME (property))
+    {
+      obstack_grow (&util_obstack, ",G", 2);
       string = IDENTIFIER_POINTER (PROPERTY_GETTER_NAME (property));
       obstack_grow (&util_obstack, string, strlen (string));
     }
-  if (PROPERTY_SETTER_NAME (property))
+
+  if (!PROPERTY_READONLY (property))
     {
-      obstack_grow (&util_obstack, ",s", 2);
-      string = IDENTIFIER_POINTER (PROPERTY_SETTER_NAME (property));
+      /* Here we want to encode the setter name, but only if it's not
+	 the standard one.  */
+      tree standard_setter = get_identifier (objc_build_property_setter_name (PROPERTY_NAME (property)));
+      if (PROPERTY_SETTER_NAME (property) != standard_setter)
+	{
+	  obstack_grow (&util_obstack, ",S", 2);
+	  string = IDENTIFIER_POINTER (PROPERTY_SETTER_NAME (property));
+	  obstack_grow (&util_obstack, string, strlen (string));
+	}
+    }
+
+  /* TODO: Encode strong ('P'), weak ('W') for garbage collection.  */
+
+  if (!PROPERTY_DYNAMIC (property))
+    {
+      obstack_grow (&util_obstack, ",V", 2);
+      if (PROPERTY_IVAR_NAME (property))
+	string = IDENTIFIER_POINTER (PROPERTY_IVAR_NAME (property));
+      else
+	string = IDENTIFIER_POINTER (PROPERTY_NAME (property));
       obstack_grow (&util_obstack, string, strlen (string));
     }
-  if (PROPERTY_IVAR_NAME (property))
-    {
-      obstack_grow (&util_obstack, ",i", 2);
-      string = IDENTIFIER_POINTER (PROPERTY_IVAR_NAME (property));
-      obstack_grow (&util_obstack, string, strlen (string));
-    }
-    
-  obstack_1grow (&util_obstack, 0);    /* null terminate string */
+
+  /* NULL-terminate string.  */
+  obstack_1grow (&util_obstack, 0);
   string = XOBFINISH (&util_obstack, char *);
   obstack_free (&util_obstack, util_firstobj);
   return get_identifier (string);
