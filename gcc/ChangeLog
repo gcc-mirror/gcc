@@ -1,3 +1,11 @@
+2011-02-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (ARC Options): Use CPU instead of cpu.
+	(ARM Options): Ditto.
+	(i386 and x86-64 Options): Ditto.
+	(RX Options): Ditto.
+	(SPARC Options): Ditto.
+
 2011-02-26  Tijl Coosemans  <tijl@coosemans.org>
 
 	* config.gcc (i386-*-freebsd*): Make i486 the default arch on
