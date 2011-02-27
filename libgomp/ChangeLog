@@ -1,4 +1,8 @@
-2011-01-27  Tobias Burnus  <burnus@net-b.de>
+2011-02-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* testsuite/libgomp.fortran/task3.f90: Remove duplicated code.
+
+2011-02-27  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline
 	2011-02-27  Jakub Jelinek  <jakub@redhat.com>
