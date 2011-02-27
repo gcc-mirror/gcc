@@ -1,3 +1,10 @@
+2011-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47778
+	* io/list_read.c (namelist_read): Intialize the error string buffere.
+	If pprev_nl was used during the previous namelist read and the rank
+	was zero, reset the pointer to NULL for the next namelist read.
+
 2011-02-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/45165
