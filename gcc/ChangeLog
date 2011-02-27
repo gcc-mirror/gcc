@@ -1,3 +1,16 @@
+2011-02-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline:
+	2010-08-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR boehm-gc/34544
+	* gthr-posix.h (__gthread_active_init): Delete.
+	(__gthread_active_p): Do activity check here.
+	Don't include errno.h on hppa-hpux.  Update comment.
+	* gthr-posix95.h (__gthread_active_init): Delete.
+	(__gthread_active_p): Do activity check here.
+	Don't include errno.h on hppa-hpux.  Update comment.
+
 2011-02-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config.gcc (hppa[12]*-*-hpux11*): Set extra_parts.
