@@ -1,5 +1,11 @@
 2011-02-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/47846
+	* trans-stmt.c (gfc_trans_allocate): Fix allocation with
+	type-spec of deferred-length strings.
+
+2011-02-26  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/47886
 	* openmp.c (gfc_resolve_omp_directive): Resolve if()
 	condition of OpenMP's task.
