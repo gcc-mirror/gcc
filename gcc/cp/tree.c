@@ -2154,12 +2154,19 @@ cp_tree_equal (tree t1, tree t2)
 
     case PARM_DECL:
       /* For comparing uses of parameters in late-specified return types
-	 with an out-of-class definition of the function.  */
-      if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
-	  && DECL_PARM_INDEX (t1) == DECL_PARM_INDEX (t2))
-	return true;
-      else
-	return false;
+	 with an out-of-class definition of the function, but can also come
+	 up for expressions that involve 'this' in a member function
+	 template.  */
+      if (same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	{
+	  if (DECL_ARTIFICIAL (t1) ^ DECL_ARTIFICIAL (t2))
+	    return false;
+	  if (DECL_ARTIFICIAL (t1)
+	      || (DECL_PARM_LEVEL (t1) == DECL_PARM_LEVEL (t2)
+		  && DECL_PARM_INDEX (t1) == DECL_PARM_INDEX (t2)))
+	    return true;
+	}
+      return false;
 
     case VAR_DECL:
     case CONST_DECL:

@@ -1,5 +1,7 @@
 2011-02-26  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/this-targ1.C: New.
+
 	* g++.dg/cpp0x/regress/template-const1.C: New.
 	* g++.dg/cpp0x/regress/template-function1.C: Adjust.
 	* g++.dg/template/function1.C: Adjust.
