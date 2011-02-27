@@ -1,3 +1,10 @@
+2011-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/47903
+	* real.c (real_arithmetic) <case PLUS_EXPR, MINUS_EXPR,
+	MULT_EXPR, RDIV_EXPR>: Clear padding bits in *r first if
+	r isn't op0 nor op1.
+
 2011-02-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md: Remove magic comment for emacs.
