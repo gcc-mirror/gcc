@@ -1,3 +1,8 @@
+2011-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/47886
+	* gfortran.dg/gomp/task-1.f90: Removed.
+
 2011-02-26  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/this-targ1.C: New.
