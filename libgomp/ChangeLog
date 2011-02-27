@@ -1,3 +1,8 @@
+2011-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/47886
+	* testsuite/libgomp.fortran/task3.f90: New test.
+
 2011-02-24  Tobias Burnus  <burnus@net-b.de>
 
 	* libgomp.texi (GOMP_STACKSIZE): Fix @ref to OMP_STACKSIZE.
