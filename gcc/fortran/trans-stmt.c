@@ -4581,6 +4581,25 @@ gfc_trans_allocate (gfc_code * code)
 				       TREE_TYPE (tmp), tmp,
 				       fold_convert (TREE_TYPE (tmp), memsz));
 	    }
+          else if (al->expr->ts.type == BT_CHARACTER && al->expr->ts.deferred)
+	    {
+	      gcc_assert (code->ext.alloc.ts.u.cl && code->ext.alloc.ts.u.cl->length);
+	      gfc_init_se (&se_sz, NULL);
+	      gfc_conv_expr (&se_sz, code->ext.alloc.ts.u.cl->length);
+	      gfc_add_block_to_block (&se.pre, &se_sz.pre);
+	      se_sz.expr = gfc_evaluate_now (se_sz.expr, &se.pre);
+	      gfc_add_block_to_block (&se.pre, &se_sz.post);
+	      /* Store the string length.  */
+	      tmp = al->expr->ts.u.cl->backend_decl;
+	      gfc_add_modify (&se.pre, tmp, fold_convert (TREE_TYPE (tmp),
+			      se_sz.expr));
+              tmp = TREE_TYPE (gfc_typenode_for_spec (&code->ext.alloc.ts));
+              tmp = TYPE_SIZE_UNIT (tmp);
+	      memsz = fold_build2_loc (input_location, MULT_EXPR,
+				       TREE_TYPE (tmp), tmp,
+				       fold_convert (TREE_TYPE (se_sz.expr),
+						     se_sz.expr));
+	    }
 	  else if (code->ext.alloc.ts.type != BT_UNKNOWN)
 	    memsz = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->ext.alloc.ts));
 	  else
