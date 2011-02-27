@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-prune-output "note" }
 
 void f (int);
 

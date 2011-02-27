@@ -7,8 +7,8 @@ int
 main() {
 
   int a = 4;
-  int b = 5;
-  int (*x)[b] = new int[a][b]; // { dg-error "" }
+  int b = 5;			// { dg-message "not const" }
+  int (*x)[b] = new int[a][b];	// { dg-error "not usable" }
 
   x[2][1] = 7;
 

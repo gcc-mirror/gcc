@@ -1,3 +1,11 @@
+2011-02-26  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/regress/template-const1.C: New.
+	* g++.dg/cpp0x/regress/template-function1.C: Adjust.
+	* g++.dg/template/function1.C: Adjust.
+	* g++.dg/cpp0x/regress/debug-debug7.C: Adjust.
+	* g++.dg/debug/debug7.C: Adjust.
+
 2011-02-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47886
