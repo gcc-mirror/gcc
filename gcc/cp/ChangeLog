@@ -1,5 +1,9 @@
 2011-02-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47904
+	* tree.c (cp_tree_equal): Compare DECL_PARM_LEVEL.
+	* pt.c (iterative_hash_template_arg): And hash it.
+
 	PR c++/47897
 	* semantics.c (non_const_var_error): Split out from...
 	(cxx_eval_constant_expression): ...here.
