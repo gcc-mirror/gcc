@@ -1,5 +1,5 @@
 // PR c++/42338
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++0x -fabi-version=6" }
 // { dg-final { scan-assembler "_Z1fIPiEDTcmppfp_Li0EET_" } }
 // { dg-final { scan-assembler "_Z1gIiEvRK1AIT_EDTixfL0p_Li0EE" } }
 

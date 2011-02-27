@@ -1,3 +1,9 @@
+2011-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47906
+	* g++.dg/abi/mangle39.C: Specify -fabi-version=6.
+	* g++.dg/abi/mangle45.C: Specify -fabi-version=6.
+
 2011-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/46466

@@ -1,5 +1,5 @@
 // Testcase for mangling of parameters used other than in a trailing return type
-// { dg-options -std=c++0x }
+// { dg-options "-std=c++0x -fabi-version=6" }
 
 template<class T> void f(T p, decltype(p)) { }                // L = 1
 template<class T> void g(T p, decltype(p) (*)()) { }          // L = 1
