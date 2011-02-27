@@ -1,3 +1,11 @@
+2011-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47897
+	* semantics.c (non_const_var_error): Split out from...
+	(cxx_eval_constant_expression): ...here.
+	(potential_constant_expression_1) [VAR_DECL]: Use it.
+	Allow dependent variables.
+
 2011-02-24  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_constant_expression): Set
