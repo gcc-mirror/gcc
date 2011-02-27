@@ -1,3 +1,8 @@
+2011-02-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/46466
+	* g++.dg/cpp0x/constexpr-ctor8.C: New.
+
 2011-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/47886
