@@ -73,6 +73,7 @@ static void avr_file_end (void);
 static bool avr_legitimate_address_p (enum machine_mode, rtx, bool);
 static void avr_asm_function_end_prologue (FILE *);
 static void avr_asm_function_begin_epilogue (FILE *);
+static bool avr_cannot_modify_jumps_p (void);
 static rtx avr_function_value (const_tree, const_tree, bool);
 static void avr_insert_attributes (tree, tree *);
 static void avr_asm_init_sections (void);
@@ -216,6 +217,9 @@ static const struct default_options avr_option_optimization_table[] =
 
 #undef TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE avr_option_optimization_table
+
+#undef TARGET_CANNOT_MODIFY_JUMPS_P
+#define TARGET_CANNOT_MODIFY_JUMPS_P avr_cannot_modify_jumps_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -979,6 +983,27 @@ avr_asm_function_begin_epilogue (FILE *file)
 {
   fprintf (file, "/* epilogue start */\n");
 }
+
+
+/* Implement TARGET_CANNOT_MODITY_JUMPS_P */
+
+static bool
+avr_cannot_modify_jumps_p (void)
+{
+
+  /* Naked Functions must not have any instructions after
+     their epilogue, see PR42240 */
+     
+  if (reload_completed
+      && cfun->machine
+      && cfun->machine->is_naked)
+    {
+      return true;
+    }
+
+  return false;
+}
+
 
 /* Return nonzero if X (an RTX) is a legitimate memory address on the target
    machine for a memory operand of mode MODE.  */
