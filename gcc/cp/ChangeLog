@@ -1,3 +1,9 @@
+2011-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47904
+	* tree.c (cp_tree_equal) [PARM_DECL]: Don't crash on
+	DECL_ARTIFICIAL parms.
+
 2010-12-16  Release Manager
 
 	* GCC 4.5.2 released.
