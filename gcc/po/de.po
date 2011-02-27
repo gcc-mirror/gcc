@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.6-b20101218\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2010-12-18 20:02+0000\n"
-"PO-Revision-Date: 2011-02-26 18:15+0100\n"
+"PO-Revision-Date: 2011-02-28 14:34+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -4687,14 +4687,14 @@ msgstr "Statische Bindung wird nicht unterstützt"
 #: config/pa/pa-hpux11.h:111 config/pa/pa64-hpux.h:30 config/pa/pa64-hpux.h:33
 #: config/pa/pa64-hpux.h:42 config/pa/pa64-hpux.h:45
 msgid "warning: consider linking with '-static' as system libraries with"
-msgstr "Warnung: Evtl. mit »-static« als Systembibliotheken binden mit"
+msgstr "Warnung: Evtl. mit »-static« linken, da Systembibliotheken mit"
 
 #: config/pa/pa-hpux10.h:88 config/pa/pa-hpux10.h:91 config/pa/pa-hpux10.h:99
 #: config/pa/pa-hpux10.h:102 config/pa/pa-hpux11.h:109
 #: config/pa/pa-hpux11.h:112 config/pa/pa64-hpux.h:31 config/pa/pa64-hpux.h:34
 #: config/pa/pa64-hpux.h:43 config/pa/pa64-hpux.h:46
 msgid "  profiling support are only provided in archive format"
-msgstr "  Profiling-Unterstützung wird nur im Archivformat unterstützt"
+msgstr "  Profiling-Unterstützung nur im Archivformat unterstützt werden"
 
 #: config/rs6000/darwin.h:99
 msgid " conflicting code gen style switches are used"
@@ -10323,27 +10323,24 @@ msgid "Partition functions and vars at linktime into approximately same sized bu
 msgstr ""
 
 #: common.opt:1323
-#, fuzzy
 msgid "Disable partioning and streaming"
-msgstr "Gesondertes Datensegment ausschalten"
+msgstr "Partitionierung und Streaming ausschalten"
 
 #: common.opt:1328
 msgid "-flto-compression-level=<number>\tUse zlib compression level <number> for IL"
-msgstr ""
+msgstr "-flto-compression-level=<Stufe>\tZlib Kompressionsstufe <Stufe> für IL verwenden"
 
 #: common.opt:1332
-#, fuzzy
 msgid "Report various link-time optimization statistics"
-msgstr "Einen Optimierungsdurchgang zur Registerumbenennung durchführen"
+msgstr "Verschiedene Statistiken über Linkzeit-Optimierung ausgeben"
 
 #: common.opt:1336
 msgid "Set errno after built-in math functions"
 msgstr "Nach eingebauten Mathematikfunktionen errno setzen"
 
 #: common.opt:1340
-#, fuzzy
 msgid "-fmax-errors=<number>\tMaximum number of errors to report"
-msgstr "Höchstzahl der zu meldenden Fehler"
+msgstr "-fmax-errors=<Anzahl>\tHöchstzahl der zu meldenden Fehler"
 
 #: common.opt:1344
 msgid "Report on permanent memory allocation"
@@ -10362,9 +10359,8 @@ msgid "Attempt to merge identical debug strings across compilation units"
 msgstr "Versuchen, identische Zeichenketten zur Fehlersuche über Übersetzungseinheiten hinweg zu verschmelzen"
 
 #: common.opt:1363
-#, fuzzy
 msgid "-fmessage-length=<number>\tLimit diagnostics to <number> characters per line.  0 suppresses line-wrapping"
-msgstr "Diagnosemeldungen auf <Anzahl> Zeichen pro Zeile beschränken. 0 unterdrückt Zeilenumbruch"
+msgstr "-fmessage-length=<Anzahl>\tDiagnosemeldungen auf <Anzahl> Zeichen pro Zeile beschränken. 0 unterdrückt Zeilenumbruch"
 
 #: common.opt:1367
 msgid "Perform SMS based modulo scheduling before the first scheduling pass"
@@ -10419,9 +10415,8 @@ msgid "Optimize sibling and tail recursive calls"
 msgstr "Geschwister- und endrekursive Aufrufe optimieren"
 
 #: common.opt:1419
-#, fuzzy
 msgid "Perform partial inlining"
-msgstr "Frühes Inlining durchführen"
+msgstr "Teilweises Inlining durchführen"
 
 #: common.opt:1423 common.opt:1427
 msgid "Report on memory allocation before interprocedural optimization"
@@ -10432,9 +10427,8 @@ msgid "Pack structure members together without holes"
 msgstr "Strukturelemente ohne Lücken zusammenpacken"
 
 #: common.opt:1435
-#, fuzzy
 msgid "-fpack-struct=<number>\tSet initial maximum structure member alignment"
-msgstr "Anfängliche größte Ausrichtung für Strukturelemente festlegen"
+msgstr "-fpack-struct=<Zahl>\tAnfängliche größte Ausrichtung für Strukturelemente festlegen"
 
 #: common.opt:1439
 msgid "Return small aggregates in memory, not registers"
@@ -10469,13 +10463,12 @@ msgid "Generate position-independent code for executables if possible (small mod
 msgstr "Wenn möglich, positionsunabhängigen Code für ausführbare Dateien erzeugen (small mode)"
 
 #: common.opt:1471
-#, fuzzy
 msgid "Specify a plugin to load"
-msgstr "Optionen für GNAT angeben"
+msgstr "Zu ladendes Plugin angeben"
 
 #: common.opt:1475
 msgid "-fplugin-arg-<name>-<key>[=<value>]\tSpecify argument <key>=<value> for plugin <name>"
-msgstr ""
+msgstr "-fplugin-arg-<Name>-<Schlüssel>[=<Wert>]\tArgument <Schlüssel>=<Wert> für Plugin <Name> angeben"
 
 #: common.opt:1479
 msgid "Run predictive commoning optimization."
@@ -10506,27 +10499,24 @@ msgid "Enable common options for generating profile info for profile feedback di
 msgstr "Allgemeine Optionen zum Erzeugen von Profil-Info für Profil-Feedback-gerichtete Optimierungen einschalten"
 
 #: common.opt:1508
-#, fuzzy
 msgid "Enable common options for generating profile info for profile feedback directed optimizations, and set -fprofile-dir="
-msgstr "Allgemeine Optionen zum Erzeugen von Profil-Info für Profil-Feedback-gerichtete Optimierungen einschalten"
+msgstr "Allgemeine Optionen zum Erzeugen von Profil-Info für Profil-Feedback-gerichtete Optimierungen einschalten, und -fprofile-dir= setzen"
 
 #: common.opt:1512
 msgid "Enable common options for performing profile feedback directed optimizations"
 msgstr "Allgemeine Optionen zum Durchführen von Profil-Feedback-gerichteten Optimierungen einschalten"
 
 #: common.opt:1516
-#, fuzzy
 msgid "Enable common options for performing profile feedback directed optimizations, and set -fprofile-dir="
-msgstr "Allgemeine Optionen zum Durchführen von Profil-Feedback-gerichteten Optimierungen einschalten"
+msgstr "Allgemeine Optionen zum Durchführen von Profil-Feedback-gerichteten Optimierungen einschalten, und -fprofile-dir= setzen"
 
 #: common.opt:1520
 msgid "Insert code to profile values of expressions"
 msgstr "Code in Profilwerte von Ausdrücken einfügen"
 
 #: common.opt:1527
-#, fuzzy
 msgid "-frandom-seed=<string>\tMake compile reproducible using <string>"
-msgstr "Übersetzung mit <Zeichenkette> reproduzierbar machen"
+msgstr "-frandom-seed=<Zeichenkette>\tÜbersetzung mit <Zeichenkette> reproduzierbar machen"
 
 #: common.opt:1537
 msgid "Record gcc command line switches in the object file."
@@ -10585,9 +10575,8 @@ msgid "Allow speculative motion of more loads"
 msgstr "Spekulative Bewegung bei mehr Ladeoperationen erlauben"
 
 #: common.opt:1597
-#, fuzzy
 msgid "-fsched-verbose=<number>\tSet the verbosity level of the scheduler"
-msgstr "Stufe der Wortfülle des Planers angeben"
+msgstr "-fsched-verbose=<Stufe>\tStufe der Wortfülle des Planers angeben"
 
 #: common.opt:1601
 msgid "If scheduling post reload, do superblock scheduling"
@@ -10606,9 +10595,8 @@ msgid "Schedule instructions using selective scheduling algorithm"
 msgstr ""
 
 #: common.opt:1624
-#, fuzzy
 msgid "Run selective scheduling after reload"
-msgstr "Datenspekulation nach Neuladen verwenden"
+msgstr "Ausgewählte Planung nach Neuladen laufen lassen"
 
 #: common.opt:1628
 msgid "Perform software pipelining of inner loops during selective scheduling"
@@ -10627,9 +10615,8 @@ msgid "Allow premature scheduling of queued insns"
 msgstr "Nicht ausgereifte Planung von eingereihten Befehlen erlauben"
 
 #: common.opt:1646
-#, fuzzy
 msgid "-fsched-stalled-insns=<number>\tSet number of queued insns that can be prematurely scheduled"
-msgstr "Anzahl der eingereihten Befehle setzen, die unausgereift geplant werden können"
+msgstr "-fsched-stalled-insns=<Anzahl>\tAnzahl der eingereihten Befehle setzen, die unausgereift geplant werden können"
 
 #: common.opt:1654
 msgid "Set dependence distance checking in premature scheduling of queued insns"
@@ -10640,26 +10627,24 @@ msgid "-fsched-stalled-insns-dep=<number>\tSet dependence distance checking in p
 msgstr "-fsched-stalled-insns-dep=<Zahl>\tPrüfung der Abhängigkeitsentfernung in nicht ausgereifter Planung von eingereihten Befehlen setzen"
 
 #: common.opt:1662
-#, fuzzy
 msgid "Enable the group heuristic in the scheduler"
-msgstr "Stufe der Wortfülle des Planers angeben"
+msgstr "Gruppenheuristik im Planer einschalten"
 
 #: common.opt:1666
 msgid "Enable the critical path heuristic in the scheduler"
-msgstr ""
+msgstr "Critical-Path-Heuristik im Planer einschalten"
 
 #: common.opt:1670
 msgid "Enable the speculative instruction heuristic in the scheduler"
-msgstr ""
+msgstr "Heuristik für spekulative Befehle im Planer einschalten"
 
 #: common.opt:1674
-#, fuzzy
 msgid "Enable the rank heuristic in the scheduler"
-msgstr "Stufe der Wortfülle des Planers angeben"
+msgstr "Rang-Heuristik im Planer einschalten"
 
 #: common.opt:1678
 msgid "Enable the last instruction heuristic in the scheduler"
-msgstr ""
+msgstr "Heuristik für letzte Befehle im Planer einschalten"
 
 #: common.opt:1682
 msgid "Enable the dependent count heuristic in the scheduler"
@@ -10674,9 +10659,8 @@ msgid "Eliminate redundant zero extensions on targets that support implicit exte
 msgstr ""
 
 #: common.opt:1698
-#, fuzzy
 msgid "Show column numbers in diagnostics, when available.  Default on"
-msgstr "Spaltenzahlen in Diagnose zeigen, wenn verfügbar. Standard: Aus"
+msgstr "Spaltenzahlen in Diagnose zeigen, wenn verfügbar. Standard: Ein"
 
 #: common.opt:1702
 msgid "Disable optimizations observable by IEEE signaling NaNs"
@@ -10695,9 +10679,8 @@ msgid "Split lifetimes of induction variables when loops are unrolled"
 msgstr "Lebensdauer von Induktionsvariablen aufteilen, wenn Schleifen abgerollt werden"
 
 #: common.opt:1718
-#, fuzzy
 msgid "Generate discontiguous stack frames"
-msgstr "APCS-konforme Stapelrahmen erzeugen"
+msgstr "Nicht zusammenhängende Stack-Rahmen erzeugen"
 
 #: common.opt:1722
 msgid "Split wide types into independent registers"
@@ -10708,24 +10691,20 @@ msgid "Apply variable expansion when loops are unrolled"
 msgstr "Variablenerweiterung anwenden, wenn Schleifen abgerollt werden"
 
 #: common.opt:1730
-#, fuzzy
 msgid "-fstack-check=[no|generic|specific]\tInsert stack checking code into the program"
-msgstr "Stapelprüfung in das Programm einfügen"
+msgstr "-fstack-check=[no|generic|specific]\tStapelprüfung in das Programm einfügen"
 
 #: common.opt:1734
-#, fuzzy
 msgid "Insert stack checking code into the program.  Same as -fstack-check=specific"
-msgstr "Stapelprüfung in das Programm einfügen"
+msgstr "Stapelprüfung in das Programm einfügen. Dasselbe wie -fstack-check=specific"
 
 #: common.opt:1741
-#, fuzzy
 msgid "-fstack-limit-register=<register>\tTrap if the stack goes past <register>"
-msgstr "Wenn der Stapel über das <Register> hinausgeht, abfangen (»trap«)"
+msgstr "-fstack-limit-register=<Register>\tWenn der Stapel über <Register> hinausgeht, abfangen (»trap«)"
 
 #: common.opt:1745
-#, fuzzy
 msgid "-fstack-limit-symbol=<name>\tTrap if the stack goes past symbol <name>"
-msgstr "Wenn der Stapel über das Symbol <Name> hinausgeht, abfangen (»trap«)"
+msgstr "-fstack-limit-symbol=<Name>\tWenn der Stapel über das Symbol <Name> hinausgeht, abfangen (»trap«)"
 
 #: common.opt:1749
 msgid "Use propolice as a stack protection method"
@@ -10736,9 +10715,8 @@ msgid "Use a stack protection method for every function"
 msgstr "Eine Stapelschutzmethode für jede Funktion verwenden"
 
 #: common.opt:1757
-#, fuzzy
 msgid "Output stack usage information on a per-function basis"
-msgstr "r30 auf Funktionsbasis wiederverwenden"
+msgstr "Information über Stapelbenutzung auf Funktionsbasis ausgeben"
 
 #: common.opt:1769
 msgid "Assume strict aliasing rules apply"
@@ -10765,14 +10743,13 @@ msgid "Report the time taken by each compiler pass"
 msgstr "Benötigte Zeit für jeden Compilerdurchlauf ausgeben"
 
 #: common.opt:1793
-#, fuzzy
 msgid "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tSet the default thread-local storage code generation model"
-msgstr "Das standardmäßige Codeerzeugungsmodell für Thread-lokalen Speicher angeben"
+msgstr "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tDas standardmäßige Codeerzeugungsmodell für Thread-lokalen Speicher angeben"
 
 #: common.opt:1796
-#, fuzzy, c-format
+#, c-format
 msgid "unknown TLS model %qs"
-msgstr "unbekanntes tls-Modell »%s«"
+msgstr "unbekanntes TLS-Modell %qs"
 
 #: common.opt:1812
 msgid "Reorder top level functions, variables, and asms"
@@ -10795,9 +10772,8 @@ msgid "Enable SSA-CCP optimization on trees"
 msgstr "SSA-CCP-Optimierungen auf Bäumen einschalten"
 
 #: common.opt:1835
-#, fuzzy
 msgid "Enable SSA-BIT-CCP optimization on trees"
-msgstr "SSA-CCP-Optimierungen auf Bäumen einschalten"
+msgstr "SSA-BIT-CCP-Optimierungen auf Bäumen einschalten"
 
 #: common.opt:1843
 msgid "Enable loop header copying on trees"
@@ -10816,9 +10792,8 @@ msgid "Transform condition stores into unconditional ones"
 msgstr "Bedingte Speicherbefehle in unbedingte umwandeln"
 
 #: common.opt:1863
-#, fuzzy
 msgid "Perform conversions of switch initializations."
-msgstr "Umwandlung bedingter Sprünge in bedingte Ausführung durchführen"
+msgstr "Umwandlungen von »switch«-Initialisierungen durchführen."
 
 #: common.opt:1867
 msgid "Enable SSA dead code elimination optimization on trees"
@@ -10833,22 +10808,20 @@ msgid "Enable dead store elimination"
 msgstr "Entfernung toter Speicherbereiche einschalten"
 
 #: common.opt:1879
-#, fuzzy
 msgid "Enable forward propagation on trees"
-msgstr "Kopieweitergabe auf Bäumen einschalten"
+msgstr "Vorwärts-Übertragung auf Bäumen einschalten"
 
 #: common.opt:1883
 msgid "Enable Full Redundancy Elimination (FRE) on trees"
 msgstr "Vollständige Redundanzentfernung (FRE) auf Bäumen einschalten"
 
 #: common.opt:1887
-#, fuzzy
 msgid "Enable loop distribution on trees"
-msgstr "Schleifenvektorisierung auf Bäumen einschalten"
+msgstr "Schleifenverteilung auf Bäumen einschalten"
 
 #: common.opt:1891
 msgid "Enable loop distribution for patterns transformed into a library call"
-msgstr ""
+msgstr "Schleifenverteilung für in Bibliotheksaufruf umgewandelte Muster einschalten"
 
 #: common.opt:1895
 msgid "Enable loop invariant motion on trees"
@@ -10871,18 +10844,16 @@ msgid "Enable automatic parallelization of loops"
 msgstr "Automatische Parallelisierung von Schleifen einschalten"
 
 #: common.opt:1915
-#, fuzzy
 msgid "Enable hoisting loads from conditional pointers."
-msgstr "Bedingte Kopierbefehle einschalten"
+msgstr "Herausziehen von Ladeoperationen aus bedingten Zeigern einschalten"
 
 #: common.opt:1919
 msgid "Enable SSA-PRE optimization on trees"
 msgstr "SSA-PRE-Optimierungen auf Bäumen einschalten"
 
 #: common.opt:1923
-#, fuzzy
 msgid "Perform function-local points-to analysis on trees."
-msgstr "Zwischenprozedurale Zeigeranalyse durchführen"
+msgstr "Funktionslokale Analyse von Zeigerzielen auf Bäumen durchführen."
 
 #: common.opt:1927
 msgid "Enable reassociation on tree level"
@@ -10949,13 +10920,12 @@ msgid "Perform variable tracking"
 msgstr "Variablenverfolgung durchführen"
 
 #: common.opt:2015
-#, fuzzy
 msgid "Perform variable tracking by annotating assignments"
-msgstr "Variablenverfolgung durchführen"
+msgstr "Variablenverfolgung durch Zuweisungsanmerkungen durchführen"
 
 #: common.opt:2021
 msgid "Toggle -fvar-tracking-assignments"
-msgstr ""
+msgstr "-fvar-tracking-assignments umschalten"
 
 #: common.opt:2025
 msgid "Perform variable tracking and also tag variables that are uninitialized"
@@ -10966,9 +10936,8 @@ msgid "Enable loop vectorization on trees"
 msgstr "Schleifenvektorisierung auf Bäumen einschalten"
 
 #: common.opt:2033
-#, fuzzy
 msgid "Enable basic block vectorization (SLP) on trees"
-msgstr "Schleifenvektorisierung auf Bäumen einschalten"
+msgstr "Vektorisierung von Basisblöcken (SLP) auf Bäumen einschalten"
 
 #: common.opt:2037
 msgid "Enable use of cost model in vectorization"
@@ -10979,9 +10948,8 @@ msgid "Enable loop versioning when doing loop vectorization on trees"
 msgstr "Schleifenversionierung bei Schleifenvektorisierung auf Bäumen einschalten"
 
 #: common.opt:2045
-#, fuzzy
 msgid "-ftree-vectorizer-verbose=<number>\tSet the verbosity level of the vectorizer"
-msgstr "Stufe der Wortfülle des Vektorisierers setzen"
+msgstr "-ftree-vectorizer-verbose=<Zahl>\tStufe der Wortfülle des Vektorisierers setzen"
 
 #: common.opt:2049
 msgid "Enable copy propagation of scalar-evolution information."
@@ -10996,9 +10964,9 @@ msgid "-fvisibility=[default|internal|hidden|protected]\tSet the default symbol 
 msgstr "-fvisibility=[default|internal|hidden|protected]\tStandard-Symbolsichtbarkeit setzen"
 
 #: common.opt:2066
-#, fuzzy, c-format
+#, c-format
 msgid "unrecognized visibility value %qs"
-msgstr "unbekannter Sichtbarkeitswert \"%s\""
+msgstr "unbekannter Sichtbarkeitswert %qs"
 
 #: common.opt:2082
 msgid "Use expression value profiles in optimizations"
@@ -11009,9 +10977,8 @@ msgid "Construct webs and split unrelated uses of single variable"
 msgstr "Netze konstruieren und nicht zusammenhängende Verwendungen einzelner Variablen aufteilen"
 
 #: common.opt:2090
-#, fuzzy
 msgid "Enable conditional dead code elimination for builtin calls"
-msgstr "Beseitigungsoptimierung für toten SSA-Code auf Bäumen einschalten"
+msgstr "Beseitigung von bedingt totem Code für Aufrufe eingebauter Funktionen einschalten"
 
 #: common.opt:2094
 msgid "Perform whole program optimizations"
@@ -11122,334 +11089,281 @@ msgid "Create a position independent executable"
 msgstr "Eine lageunabhängige ausführbare Datei erzeugen"
 
 #: go/gofrontend/expressions.cc:876
-#, fuzzy
 msgid "invalid use of type"
-msgstr "ungültige Verwendung von %qD"
+msgstr "ungültige Typ-Verwendung"
 
 #: go/gofrontend/expressions.cc:1974 go/gofrontend/expressions.cc:2628
-#, fuzzy
 msgid "floating point constant truncated to integer"
-msgstr "Gleitkommakonstante auf Null abgeschnitten"
+msgstr "Gleitkommakonstante auf Ganzzahl abgeschnitten"
 
 #: go/gofrontend/expressions.cc:2533 go/gofrontend/expressions.cc:2606
-#, fuzzy
 msgid "constant refers to itself"
-msgstr "Iilined_to-Zeiger verweist auf sich selbst"
+msgstr "Konstante verweist auf sich selbst"
 
 #: go/gofrontend/expressions.cc:3962
-#, fuzzy
 msgid "expected numeric type"
-msgstr "%<{%> erwartet"
+msgstr "numerischer Typ erwartet"
 
 #: go/gofrontend/expressions.cc:3969
-#, fuzzy
 msgid "expected integer or boolean type"
-msgstr "Ganzzahlausdruck erwartet"
+msgstr "Ganzzahlausdruck oder boolscher Typ erwartet"
 
 #: go/gofrontend/expressions.cc:3974
-#, fuzzy
 msgid "invalid operand for unary %<&%>"
-msgstr "ungültiger Operand für %%R"
+msgstr "ungültiger Operand für unäres %<&%>"
 
 #: go/gofrontend/expressions.cc:3982
-#, fuzzy
 msgid "expected pointer"
-msgstr "Ganzzahl erwartet"
+msgstr "Zeiger erwartet"
 
 #: go/gofrontend/expressions.cc:5608 go/gofrontend/expressions.cc:5624
-#, fuzzy
 msgid "incompatible types in binary expression"
-msgstr "inkompatible Typen in return"
+msgstr "inkompatible Typen in binärem Ausdruck"
 
 #: go/gofrontend/expressions.cc:5637
-#, fuzzy
 msgid "shift of non-integer operand"
-msgstr "Feldgröße von %qs hat Nicht-Ganzzahltyp"
+msgstr "Schiebeoperation eines Nicht-Ganzzahloperanden"
 
 #: go/gofrontend/expressions.cc:5642
-#, fuzzy
 msgid "shift count not unsigned integer"
-msgstr "switch-Größe ist keine Ganzzahl"
+msgstr "Schiebeweite ist keine vorzeichenlose Ganzzahl"
 
 #: go/gofrontend/expressions.cc:5651
-#, fuzzy
 msgid "negative shift count"
-msgstr "negative Befehlslänge"
+msgstr "negative Schiebeweite"
 
 #: go/gofrontend/expressions.cc:6299
-#, fuzzy
 msgid "object is not a method"
-msgstr "gerufenes Objekt %qE ist keine Funktion"
+msgstr "Objekt ist keine Methode"
 
 #: go/gofrontend/expressions.cc:6308
-#, fuzzy
 msgid "method type does not match object type"
-msgstr "Argument des Typs %qT passt nicht zu %qT"
+msgstr "Methodentyp passt nicht zum Objekttyp"
 
 #: go/gofrontend/expressions.cc:6552 go/gofrontend/expressions.cc:6571
 #: go/gofrontend/expressions.cc:7192 go/gofrontend/expressions.cc:7331
 #: go/gofrontend/expressions.cc:7374 go/gofrontend/expressions.cc:7409
 #: go/gofrontend/expressions.cc:8468 go/gofrontend/expressions.cc:8489
-#, fuzzy
 msgid "not enough arguments"
-msgstr "Keine Argumente"
+msgstr "Nicht genug Argumente"
 
 #: go/gofrontend/expressions.cc:6554 go/gofrontend/expressions.cc:7197
 #: go/gofrontend/expressions.cc:7314 go/gofrontend/expressions.cc:7336
 #: go/gofrontend/expressions.cc:7411 go/gofrontend/expressions.cc:8157
 #: go/gofrontend/expressions.cc:8471 go/gofrontend/expressions.cc:8482
-#, fuzzy
 msgid "too many arguments"
-msgstr "zu viele Argumente für %s %q+#D"
+msgstr "zu viele Argumente"
 
 #: go/gofrontend/expressions.cc:7239
-#, fuzzy
 msgid "argument must be array or slice or channel"
-msgstr "Argument muss eine Konstante sein"
+msgstr "Argument muss Feld oder Scheibe oder Kanal sein"
 
 #: go/gofrontend/expressions.cc:7249
 msgid "argument must be string or array or slice or map or channel"
-msgstr ""
+msgstr "Argument muss Zeichenkette oder Feld oder Scheibe oder Abbildung oder Kanal sein"
 
 #: go/gofrontend/expressions.cc:7290
-#, fuzzy
 msgid "unsupported argument type to builtin function"
-msgstr "ungültiges Argument für eingebaute Funktion"
+msgstr "nicht unterstützter Argumenttyp für eingebaute Funktion"
 
 #: go/gofrontend/expressions.cc:7302
-#, fuzzy
 msgid "argument must be channel"
-msgstr "Argument muss eine Konstante sein"
+msgstr "Argument muss ein Kanal sein"
 
 #: go/gofrontend/expressions.cc:7322
-#, fuzzy
 msgid "argument must be a field reference"
-msgstr "Qualifizierer muss eine Referenz sein"
+msgstr "Argument muss eine Feldreferenz sein"
 
 #: go/gofrontend/expressions.cc:7349
-#, fuzzy
 msgid "left argument must be a slice"
-msgstr "das letzte Argument muss ein Immediate sein"
+msgstr "linkes Argument muss eine Scheibe sein"
 
 #: go/gofrontend/expressions.cc:7360
-#, fuzzy
 msgid "right argument must be a slice or a string"
-msgstr "Argument muss eine Konstante sein"
+msgstr "rechtes Argument muss eine Scheibe oder Zeichenkette sein"
 
 #: go/gofrontend/expressions.cc:7365
 msgid "element types must be the same"
-msgstr ""
+msgstr "Elementtypen müssen dieselben sein"
 
 #: go/gofrontend/expressions.cc:7384
-#, fuzzy
 msgid "arguments 1 and 2 have different types"
-msgstr "Verschiedene Typen für die Argumente des »?«-Operators erlauben"
+msgstr "Argumente 1 und 2 haben verschiedene Typen"
 
 #: go/gofrontend/expressions.cc:7401
-#, fuzzy
 msgid "argument must have complex type"
-msgstr "%JParameter %u hat unvollständigen Typen"
+msgstr "Argument muss komplexen Typen haben"
 
 #: go/gofrontend/expressions.cc:7419
-#, fuzzy
 msgid "cmplx arguments must have identical types"
-msgstr "das letzte Argument muss ein Immediate sein"
+msgstr "cmplx-Argumente müssen identische Typen haben"
 
 #: go/gofrontend/expressions.cc:7421
-#, fuzzy
 msgid "cmplx arguments must have floating-point type"
-msgstr "Hardware-Gleitkomma nicht verwenden"
+msgstr "cmplx-Argumente müssen Gleitkommatypen haben"
 
 #: go/gofrontend/expressions.cc:8425
-#, fuzzy
 msgid "expected function"
-msgstr "Leere Deklaration"
+msgstr "Funktion erwartet"
 
 #: go/gofrontend/expressions.cc:8436
 msgid "method call without object"
-msgstr ""
+msgstr "Methodenaufruf ohne Objekt"
 
 #: go/gofrontend/expressions.cc:8449
-#, fuzzy
 msgid "incompatible type for receiver"
-msgstr "inkompatible Typen in return"
+msgstr "inkompatible Typen für Empfänger"
 
 #: go/gofrontend/expressions.cc:8827
-#, fuzzy
 msgid "number of results does not match number of values"
-msgstr "Eingehende Kantenzahl passt nicht zur Anzahl der PHI-Argumente"
+msgstr "Anzahl der Ergebnisse passt nicht zur Anzahl der Werte"
 
 #: go/gofrontend/expressions.cc:9071 go/gofrontend/expressions.cc:9443
-#, fuzzy
 msgid "index must be integer"
-msgstr "Cray-Zeiger bei %C muss eine Ganzzahl sein"
+msgstr "Index muss eine Ganzzahl sein"
 
 #: go/gofrontend/expressions.cc:9075 go/gofrontend/expressions.cc:9447
-#, fuzzy
 msgid "slice end must be integer"
-msgstr "int als 8-Bit-Ganzzahl annehmen"
+msgstr "Scheibenende muss eine Ganzzahl sein"
 
 #: go/gofrontend/expressions.cc:9126
-#, fuzzy
 msgid "array is not addressable"
-msgstr "Speichereingabe %d ist nicht direkt adressierbar"
+msgstr "Feld ist nicht adressierbar"
 
 #: go/gofrontend/expressions.cc:9654
-#, fuzzy
 msgid "incompatible type for map index"
-msgstr "inkompatible Typen in return"
+msgstr "inkompatible Typen für Abbildungsindex"
 
 #: go/gofrontend/expressions.cc:9933
 msgid "expected interface or pointer to interface"
-msgstr ""
+msgstr "Schnittstelle oder Zeiger auf Schnittstelle erwartet"
 
 #: go/gofrontend/expressions.cc:10231
-#, fuzzy
 msgid "invalid new of function type"
-msgstr "ungültige Umwandlung in Funktionstyp %qT"
+msgstr "ungültiges »new« von Funktionstyp"
 
 #: go/gofrontend/expressions.cc:10332
-#, fuzzy
 msgid "invalid type for make function"
-msgstr "ungültige Speicherklasse für Funktion %qs"
+msgstr "ungültiger Typ für »make«-Funktion"
 
 #: go/gofrontend/expressions.cc:10487
-#, fuzzy
 msgid "too many expressions for struct"
-msgstr "zu viele Argumente für Format"
+msgstr "zu viele Ausdrücke für Struktur"
 
 #: go/gofrontend/expressions.cc:10500
-#, fuzzy
 msgid "too few expressions for struct"
-msgstr "zu wenig Argumente für Format"
+msgstr "zu wenig Ausdrücke für Struktur"
 
 #: go/gofrontend/expressions.cc:10764
 msgid "too many elements in composite literal"
-msgstr ""
+msgstr "zu viele Elemente in zusammengesetztem Literal"
 
 #: go/gofrontend/expressions.cc:11828 go/gofrontend/expressions.cc:11836
-#, fuzzy
 msgid "invalid unsafe.Pointer conversion"
-msgstr "ungültige Typen in NOP-Umwandlung"
+msgstr "ungültige »unsafe.Pointer«-Umwandlung"
 
 #: go/gofrontend/expressions.cc:11841 go/gofrontend/statements.cc:1312
-#, fuzzy
 msgid "type assertion only valid for interface types"
-msgstr "Ungültiger Schnittstellentyp"
+msgstr "Typbehauptung nur gültig für Schnittstellentypen"
 
 #: go/gofrontend/expressions.cc:11853
 msgid "impossible type assertion: type does not implement interface"
-msgstr ""
+msgstr "unmögliche Typenbehauptung: Typ implementiert nicht Schnittstelle"
 
 #: go/gofrontend/expressions.cc:12009 go/gofrontend/statements.cc:1163
-#, fuzzy
 msgid "expected channel"
-msgstr "Klassenname erwartet"
+msgstr "Kanal erwartet"
 
 #: go/gofrontend/expressions.cc:12014 go/gofrontend/statements.cc:1168
 msgid "invalid receive on send-only channel"
-msgstr ""
+msgstr "ungültiges Empfangen auf Nur-Sende-Kanal"
 
 #: go/gofrontend/expressions.cc:12101
-#, fuzzy
 msgid "incompatible types in send"
-msgstr "inkompatible Typen in return"
+msgstr "inkompatible Typen in »send«"
 
 #: go/gofrontend/expressions.cc:12106
-#, fuzzy
 msgid "invalid send on receive-only channel"
-msgstr "ungültiger Operand in indirekter Referenz"
+msgstr "ungültiges »send« auf Nur-Empfangs-Kanal"
 
 #: go/gofrontend/statements.cc:488
-#, fuzzy
 msgid "invalid left hand side of assignment"
-msgstr "Als linker Operand einer Zuweisung wird L-Wert erfordert"
+msgstr "ungültige linke Seite einer Zuweisung"
 
 #: go/gofrontend/statements.cc:897
 msgid "expected map index on right hand side"
-msgstr ""
+msgstr "Abbildungsindex auf rechter Seite erwartet"
 
 #: go/gofrontend/statements.cc:1041
-#, fuzzy
 msgid "expected map index on left hand side"
-msgstr "Zeilenende erwartet"
+msgstr "Abbildungsindex auf linker Seite erwartet"
 
 #: go/gofrontend/statements.cc:1765
 msgid "no object for method call"
-msgstr ""
+msgstr "kein Objekt für Methodenaufruf"
 
 #: go/gofrontend/statements.cc:2518
-#, fuzzy
 msgid "return with value in function with no return type"
-msgstr "%<return%> mit Wert in void zurückgebender Funktion"
+msgstr "Rückgabe eines Wertes in Funktion ohne Rückgabetyp"
 
 #: go/gofrontend/statements.cc:2531
-#, fuzzy
 msgid "too many values in return statement"
-msgstr "ungültiger Operand für switch-Anweisung"
+msgstr "zu viele Werte in Rückgabeanweisung"
 
 #: go/gofrontend/statements.cc:2560
-#, fuzzy
 msgid "not enough values in return statement"
-msgstr "ungültiger Operand für switch-Anweisung"
+msgstr "nicht genügend Werte in Rückgabeanweisung"
 
 #: go/gofrontend/statements.cc:2932
-#, fuzzy
 msgid "expected boolean expression"
-msgstr "Ausdruck erwartet"
+msgstr "boolscher Ausdruck erwartet"
 
 #: go/gofrontend/statements.cc:4517
 msgid "too many variables for range clause with channel"
-msgstr ""
+msgstr "zu viele Variablen in Bereichsklausel mit Kanal"
 
 #: go/gofrontend/statements.cc:4524
 msgid "range clause must have array, slice, setring, map, or channel type"
-msgstr ""
+msgstr "Bereichsklausel muss Feld, Scheibe, Setring, Abbildung oder Kanaltyp haben"
 
 #: go/gofrontend/types.cc:559
-#, fuzzy
 msgid "need explicit conversion"
-msgstr "Bei impliziten Umwandlungen warnen"
+msgstr "ausdrückliche Umwandlungen erforderlich"
 
 #: go/gofrontend/types.cc:561
 msgid "multiple value function call in single value context"
-msgstr ""
+msgstr "Funktionsaufruf mit mehreren Werten in Kontext mit einem Wert"
 
 #: go/gofrontend/types.cc:569
-#, fuzzy, c-format
+#, c-format
 msgid "cannot use type %s as type %s"
-msgstr "Typ %qT kann nicht in den Typ %qT umgewandelt werden"
+msgstr "Typ %s kann nicht als Typ %s verwendet werden"
 
 #: go/gofrontend/types.cc:2432
-#, fuzzy
 msgid "different receiver types"
-msgstr "anderer Typ"
+msgstr "unterschiedliche Empfängertypen"
 
 #: go/gofrontend/types.cc:2452 go/gofrontend/types.cc:2465
 #: go/gofrontend/types.cc:2480
-#, fuzzy
 msgid "different number of parameters"
-msgstr "maximaler Wert des Parameters %qs ist %u"
+msgstr "unterschiedliche Parameteranzahl"
 
 #: go/gofrontend/types.cc:2473
-#, fuzzy
 msgid "different parameter types"
-msgstr "anderer Typ"
+msgstr "unterschiedliche Parametertypen"
 
 #: go/gofrontend/types.cc:2488
-#, fuzzy
 msgid "different varargs"
-msgstr "anderer Typ"
+msgstr "unterschiedliche variable Argumente"
 
 #: go/gofrontend/types.cc:2497 go/gofrontend/types.cc:2510
 #: go/gofrontend/types.cc:2525
 msgid "different number of results"
-msgstr ""
+msgstr "unterschiedliche Ergebnisanzahl"
 
 #: go/gofrontend/types.cc:2518
-#, fuzzy
 msgid "different result types"
-msgstr "anderer Typ"
+msgstr "unterschiedliche Ergebnistypen"
 
 #: go/gofrontend/types.cc:3500
 #, c-format
@@ -15451,7 +15365,7 @@ msgstr "inlined_to-Zeiger gesetzt, aber keine Vorgänger gefunden"
 #: cgraphunit.c:542
 #, gcc-internal-format
 msgid "inlined_to pointer refers to itself"
-msgstr "Iilined_to-Zeiger verweist auf sich selbst"
+msgstr "Inlined_to-Zeiger verweist auf sich selbst"
 
 #: cgraphunit.c:548
 #, gcc-internal-format
