@@ -1,5 +1,9 @@
 2011-02-23  Georg-Johann Lay  <avr@gjlay.de>
 
+	* config/avr/avr.md: Remove magic comment for emacs.
+
+2011-02-23  Georg-Johann Lay  <avr@gjlay.de>
+
 	PR target/45261
 	* config/avr/avr.c (avr_option_override): Use error on bad options.
 	(avr_help): New function.
