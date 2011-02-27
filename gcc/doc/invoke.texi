@@ -10019,10 +10019,10 @@ Compile code for big endian mode.
 
 @item -mmangle-cpu
 @opindex mmangle-cpu
-Prepend the name of the cpu to all public symbol names.
+Prepend the name of the CPU to all public symbol names.
 In multiple-processor systems, there are many ARC variants with different
 instruction and register set characteristics.  This flag prevents code
-compiled for one cpu to be linked with code compiled for another.
+compiled for one CPU to be linked with code compiled for another.
 No facility exists for handling variants that are ``almost identical''.
 This is an all or nothing option.
 
@@ -10195,7 +10195,7 @@ instead of specifying the actual target processor type, and hence
 restricting which instructions can be used, it specifies that GCC should
 tune the performance of the code as if the target were of the type
 specified in this option, but still choosing the instructions that it
-will generate based on the cpu specified by a @option{-mcpu=} option.
+will generate based on the CPU specified by a @option{-mcpu=} option.
 For some ARM implementations better performance can be obtained by using
 this option.
 
@@ -12298,7 +12298,7 @@ Some 387 emulators do not support the @code{sin}, @code{cos} and
 @code{sqrt} instructions for the 387.  Specify this option to avoid
 generating those instructions.  This option is the default on FreeBSD,
 OpenBSD and NetBSD@.  This option is overridden when @option{-march}
-indicates that the target cpu will always have an FPU and so the
+indicates that the target CPU will always have an FPU and so the
 instruction will not need emulation.  As of revision 2.6.1, these
 instructions are not generated unless you also use the
 @option{-funsafe-math-optimizations} switch.
@@ -16245,7 +16245,7 @@ This is because the RX FPU instructions are themselves unsafe.
 @opindex -mcpu
 Selects the type of RX CPU to be targeted.  Currently three types are
 supported, the generic @var{RX600} and @var{RX200} series hardware and
-the specific @var{RX610} cpu.  The default is @var{RX600}.
+the specific @var{RX610} CPU.  The default is @var{RX600}.
 
 The only difference between @var{RX600} and @var{RX610} is that the
 @var{RX610} does not support the @code{MVTIPL} instruction.
@@ -17098,7 +17098,7 @@ option @option{-mcpu=@var{cpu_type}} would.
 
 The same values for @option{-mcpu=@var{cpu_type}} can be used for
 @option{-mtune=@var{cpu_type}}, but the only useful values are those
-that select a particular cpu implementation.  Those are @samp{cypress},
+that select a particular CPU implementation.  Those are @samp{cypress},
 @samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{f930}, @samp{f934},
 @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc}, @samp{ultrasparc3},
 @samp{niagara}, and @samp{niagara2}.
