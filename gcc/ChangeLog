@@ -1,3 +1,8 @@
+2011-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-inline.c (cgraph_decide_inlining_of_small_functions): Fix
+	the description to match the printed values.
+
 2011-02-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree-inline.c (tree_function_versioning): Set BLOCK_SUPERCONTEXT

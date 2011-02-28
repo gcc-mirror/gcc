@@ -1243,7 +1243,7 @@ cgraph_decide_inlining_of_small_functions (void)
       if (dump_file)
 	{
 	  fprintf (dump_file,
-		   " Inlined into %s which now has size %i and self time %i,"
+		   " Inlined into %s which now has time %i and size %i,"
 		   "net change of %+i.\n",
 		   cgraph_node_name (edge->caller),
 		   edge->caller->global.time,
