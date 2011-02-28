@@ -1,5 +1,15 @@
 2011-02-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/47283
+	* cfgexpand.c (convert_debug_memory_address): Add AS parameter.
+	Use target address_mode and pointer_mode hooks instead of hardcoded
+	Pmode and ptr_mode.  Handle some simple cases of extending if
+	POINTERS_EXTEND_UNSIGNED < 0.
+	(expand_debug_expr) <case MEM_REF, INDIRECT_REF, TARGET_MEM_REF>:
+	Call convert_debug_memory_address.
+	(expand_debug_expr) <case ADDR_EXPR>: Pass as to
+	convert_debug_memory_address.
+
 	PR middle-end/46790
 	* configure.ac (HAVE_LD_EH_GC_SECTIONS_BUG): New test.
 	* configure: Regenerated.
