@@ -369,6 +369,7 @@ sel_getTypedSelector (const char *name)
   if (i != 0)
     {
       struct objc_list *l;
+      SEL returnValue = NULL;
 
       for (l = (struct objc_list *) sarray_get_safe (__objc_selector_array, i);
 	   l; l = l->tail)
@@ -376,9 +377,39 @@ sel_getTypedSelector (const char *name)
 	  SEL s = (SEL) l->head;
 	  if (s->sel_types)
 	    {
-	      objc_mutex_unlock (__objc_runtime_mutex);
-	      return s;
+	      if (returnValue == NULL)
+		{
+		  /* First typed selector that we find.  Keep it in
+		     returnValue, but keep checking as we want to
+		     detect conflicts.  */
+		  returnValue = s;
+		}
+	      else
+		{
+		  /* We had already found a typed selectors, so we
+		     have multiple ones.  Double-check that they have
+		     different types, just in case for some reason we
+		     got duplicates with the same types.  If so, it's
+		     OK, we'll ignore the duplicate.  */
+		  if (returnValue->sel_types == s->sel_types)
+		    continue;
+		  else if (sel_types_match (returnValue->sel_types, s->sel_types))
+		    continue;
+		  else
+		    {
+		      /* The types of the two selectors are different;
+			 it's a conflict.  Too bad.  Return NULL.  */
+		      objc_mutex_unlock (__objc_runtime_mutex);
+		      return NULL;
+		    }
+		}
 	    }
+	}
+
+      if (returnValue != NULL)
+	{
+	  objc_mutex_unlock (__objc_runtime_mutex);
+	  return returnValue;
 	}
     }
 

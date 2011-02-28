@@ -1,3 +1,9 @@
+2011-02-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-sel.m: Test that sel_getTypedSelector return
+	NULL in case of a selector with conflicting types.
+	* obj-c++.dg/gnu-api-2-sel.mm: Same change.
+	
 2011-02-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.target/arm/vfp-ldmdbd.c, gcc.target/arm/vfp-ldmdbs.c,

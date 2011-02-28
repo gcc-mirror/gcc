@@ -46,6 +46,21 @@
 - (void) method { return; }
 @end
 
+@interface ClassA : MyRootClass
+- (id) conflictingSelectorMethod;
+@end
+
+@implementation ClassA
+- (id) conflictingSelectorMethod { return nil; }
+@end
+
+@interface ClassB : MyRootClass
+- (void) conflictingSelectorMethod;
+@end
+
+@implementation ClassB
+- (void) conflictingSelectorMethod { return; }
+@end
 
 int main(int argc, void **args)
 {
@@ -131,6 +146,13 @@ int main(int argc, void **args)
     /* Try getting it.  Nothing should be returned because it is
        untyped.  */
     selector = sel_getTypedSelector ("registered_with_no_types");
+
+    if (selector != NULL)
+      abort ();
+
+    /* Now try a selector with multiple, conflicting types.  NULL
+       should be returned.  */
+    selector = sel_getTypedSelector ("conflictingSelectorMethod");
 
     if (selector != NULL)
       abort ();
