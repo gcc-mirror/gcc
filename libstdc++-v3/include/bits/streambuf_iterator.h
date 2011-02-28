@@ -1,7 +1,7 @@
 // Streambuf iterators
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009, 2010
+// 2006, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -339,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (__n > 1)
 		{
 		  traits_type::copy(__result, __sb->gptr(), __n);
-		  __sb->gbump(__n);
+		  __sb->__safe_gbump(__n);
 		  __result += __n;
 		  __c = __sb->underflow();
 		}
@@ -379,7 +379,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 							__n, __val);
 		  if (__p)
 		    __n = __p - __sb->gptr();
-		  __sb->gbump(__n);
+		  __sb->__safe_gbump(__n);
 		  __c = __sb->sgetc();
 		}
 	      else

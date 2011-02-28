@@ -769,6 +769,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif
 
+      // Also used by specializations for char and wchar_t in src.
+      void 
+      __safe_gbump(streamsize __n) { _M_in_cur += __n; }
+
+      void
+      __safe_pbump(streamsize __n) { _M_out_cur += __n; }
+
     private:
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // Side effect of DR 50. 

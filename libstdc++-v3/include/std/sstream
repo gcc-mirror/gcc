@@ -241,6 +241,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      this->setg(this->pptr(), this->pptr(), this->pptr());
 	  }
       }
+
+      // Works around the issue with pbump, part of the protected
+      // interface of basic_streambuf, taking just an int.
+      void
+      _M_pbump(char_type* __pbeg, char_type* __pend, off_type __off);
     };
 
 

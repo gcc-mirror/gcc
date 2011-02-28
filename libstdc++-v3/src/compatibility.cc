@@ -86,7 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					          streamsize(__n - _M_gcount));
 		      if (__size > 1)
 			{
-			  __sb->gbump(__size);
+			  __sb->__safe_gbump(__size);
 			  _M_gcount += __size;
 			  __c = __sb->sgetc();
 			}
@@ -157,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						  streamsize(__n - _M_gcount));
 		      if (__size > 1)
 			{
-			  __sb->gbump(__size);
+			  __sb->__safe_gbump(__size);
 			  _M_gcount += __size;
 			  __c = __sb->sgetc();
 			}
