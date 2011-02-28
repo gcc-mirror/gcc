@@ -1,3 +1,9 @@
+2011-02-28  Richard Frith-Macdonald <rfm@gnu.org>
+
+	PR libobjc/47922
+	* gc.c (class_ivar_set_gcinvisible): Use _C_GCINVISIBLE instead of
+	a hardcoded "!".
+
 2011-02-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
