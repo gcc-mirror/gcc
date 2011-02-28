@@ -1,3 +1,8 @@
+2011-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* printf/quadmath-printf.c (quadmath_snprintf): Make sure
+	that for size > 0 str is always zero terminated.
+
 2011-02-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/47827
