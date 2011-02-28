@@ -422,11 +422,15 @@ class_ivar_set_gcinvisible (Class class, const char *ivarname,
 
 	  /* The variable is gc visible so we make it gc_invisible.  */
 	  new_type = objc_malloc (strlen(ivar->ivar_type) + 2);
+
+	  /* Copy the variable name.  */
 	  len = (type - ivar->ivar_type);
 	  memcpy (new_type, ivar->ivar_type, len);
-	  new_type[len] = 0;
-	  strcat (new_type, "!");
-	  strcat (new_type, type);
+	  /* Add '!'.  */
+	  new_type[len++] = _C_GCINVISIBLE;
+	  /* Copy the original types.  */
+	  strcpy (new_type + len, type);
+
 	  ivar->ivar_type = new_type;
 	}
 
