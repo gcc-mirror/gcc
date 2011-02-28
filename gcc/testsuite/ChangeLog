@@ -1,3 +1,8 @@
+2011-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/47893
+	* gcc.dg/pr47893.c: New test.
+
 2011-02-28  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/gnu-api-2-sel.m: Test that sel_getTypedSelector return

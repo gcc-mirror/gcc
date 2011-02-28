@@ -647,7 +647,8 @@ setup_save_areas (void)
 		  saved_reg->slot
 		    = assign_stack_local_1
 		      (regno_save_mode[regno][1],
-		       GET_MODE_SIZE (regno_save_mode[regno][1]), 0, true);
+		       GET_MODE_SIZE (regno_save_mode[regno][1]), 0,
+		       ASLK_REDUCE_ALIGN);
 		  if (dump_file != NULL)
 		    fprintf (dump_file, "%d uses a new slot\n", regno);
 		}
@@ -705,7 +706,7 @@ setup_save_areas (void)
 	    regno_save_mem[i][j]
 	      = assign_stack_local_1 (regno_save_mode[i][j],
 				      GET_MODE_SIZE (regno_save_mode[i][j]),
-				      0, true);
+				      0, ASLK_REDUCE_ALIGN);
 
 	    /* Setup single word save area just in case...  */
 	    for (k = 0; k < j; k++)
