@@ -554,6 +554,15 @@ section *
 default_function_section (tree decl, enum node_frequency freq,
 			  bool startup, bool exit)
 {
+#if defined HAVE_LD_EH_GC_SECTIONS && defined HAVE_LD_EH_GC_SECTIONS_BUG
+  /* Old GNU linkers have buggy --gc-section support, which sometimes
+     results in .gcc_except_table* sections being garbage collected.  */
+  if (decl
+      && DECL_SECTION_NAME (decl)
+      && DECL_HAS_IMPLICIT_SECTION_NAME_P (decl))
+    return NULL;
+#endif
+
   if (!flag_reorder_functions
       || !targetm.have_named_sections)
     return NULL;
