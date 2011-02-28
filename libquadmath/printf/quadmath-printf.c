@@ -256,7 +256,7 @@ quadmath_snprintf (char *str, size_t size, const char *format, ...)
 
   qfp.fp = NULL;
   qfp.str = str;
-  qfp.size = size;
+  qfp.size = size ? size - 1 : 0;
   qfp.len = 0;
   qfp.file_p = 0;
 
@@ -265,7 +265,7 @@ quadmath_snprintf (char *str, size_t size, const char *format, ...)
   else
     __quadmath_printf_fp (&qfp, &info, (const void *const *)&fpnum_addr2);
 
-  if (qfp.size)
+  if (size)
     *qfp.str = '\0';
 
   return qfp.len;
