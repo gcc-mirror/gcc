@@ -1,3 +1,8 @@
+2011-02-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/47894
+	* intrinsic.texi: Fix doc of the VERIFY intrinsic.
+
 2011-02-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/47846

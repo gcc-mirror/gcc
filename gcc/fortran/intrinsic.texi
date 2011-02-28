@@ -12608,7 +12608,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-Verifies that all the characters in @var{STRING} belong the set of
+Verifies that all the characters in @var{STRING} belong to the set of
 characters in @var{SET}.
 
 If @var{BACK} is either absent or equals @code{FALSE}, this function
