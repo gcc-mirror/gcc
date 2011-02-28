@@ -729,10 +729,6 @@
 	Define nframes, mctx.  Use IS_SIGHANDLER, handler_args, mctx, walk
 	stack instead of hardcoded offsets.
 
-2011-02-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
-
-	* go/gccgo.texi (Top, Import and Export): Fix a typo and a markup nit.
-
 2011-02-14  Andriy Gapon  <avg@freebsd.org>
 
 	PR target/45808

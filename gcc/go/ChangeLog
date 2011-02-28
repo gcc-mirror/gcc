@@ -1,3 +1,7 @@
+2011-02-14  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gccgo.texi (Top, Import and Export): Fix a typo and a markup nit.
+
 2011-02-08  Ian Lance Taylor  <iant@google.com>
 
 	* go-lang.c (go_langhook_init_options_struct): Set
