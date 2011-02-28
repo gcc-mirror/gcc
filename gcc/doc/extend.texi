@@ -3291,8 +3291,6 @@ int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
 int sse3_func (void) __attribute__ ((__target__ ("sse3")));
 @end smallexample
 
-@table @samp
-@item i386 target attributes
 On the 386, the following options are allowed:
 
 @table @samp
@@ -3435,8 +3433,8 @@ Specify which floating point unit to use.  The
 @code{target("fpmath=sse,387")} option must be specified as
 @code{target("fpmath=sse+387")} because the comma would separate
 different options.
+@end table
 
-@item PowerPC target attributes
 On the PowerPC, the following options are allowed:
 
 @table @samp
@@ -3607,8 +3605,6 @@ you do not specify the @code{target("tune=@var{TUNE}")} attribute and
 you do specify the @code{target("cpu=@var{CPU}")} attribute,
 compilation will tune for the @var{CPU} architecture, and not the
 default tuning specified on the command line.
-@end table
-@end table
 @end table
 
 On the 386/x86_64 and PowerPC backends, you can use either multiple
