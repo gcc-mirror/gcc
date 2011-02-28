@@ -1,7 +1,7 @@
 /* Expands front end tree to back end RTL for GCC.
    Copyright (C) 1987, 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
    1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010  Free Software Foundation, Inc.
+   2010, 2011  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -355,14 +355,17 @@ add_frame_space (HOST_WIDE_INT start, HOST_WIDE_INT end)
    -2 means use BITS_PER_UNIT,
    positive specifies alignment boundary in bits.
 
-   If REDUCE_ALIGNMENT_OK is true, it is OK to reduce alignment.
+   KIND has ASLK_REDUCE_ALIGN bit set if it is OK to reduce
+   alignment and ASLK_RECORD_PAD bit set if we should remember
+   extra space we allocated for alignment purposes.  When we are
+   called from assign_stack_temp_for_type, it is not set so we don't
+   track the same stack slot in two independent lists.
 
    We do not round to stack_boundary here.  */
 
 rtx
 assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
-		      int align,
-		      bool reduce_alignment_ok ATTRIBUTE_UNUSED)
+		      int align, int kind)
 {
   rtx x, addr;
   int bigend_correction = 0;
@@ -412,7 +415,7 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
 		  /* It is OK to reduce the alignment as long as the
 		     requested size is 0 or the estimated stack
 		     alignment >= mode alignment.  */
-		  gcc_assert (reduce_alignment_ok
+		  gcc_assert ((kind & ASLK_REDUCE_ALIGN)
 		              || size == 0
 			      || (crtl->stack_alignment_estimated
 				  >= GET_MODE_ALIGNMENT (mode)));
@@ -430,21 +433,24 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
 
   if (mode != BLKmode || size != 0)
     {
-      struct frame_space **psp;
-
-      for (psp = &crtl->frame_space_list; *psp; psp = &(*psp)->next)
+      if (kind & ASLK_RECORD_PAD)
 	{
-	  struct frame_space *space = *psp;
-	  if (!try_fit_stack_local (space->start, space->length, size,
-				    alignment, &slot_offset))
-	    continue;
-	  *psp = space->next;
-	  if (slot_offset > space->start)
-	    add_frame_space (space->start, slot_offset);
-	  if (slot_offset + size < space->start + space->length)
-	    add_frame_space (slot_offset + size,
-			     space->start + space->length);
-	  goto found_space;
+	  struct frame_space **psp;
+
+	  for (psp = &crtl->frame_space_list; *psp; psp = &(*psp)->next)
+	    {
+	      struct frame_space *space = *psp;
+	      if (!try_fit_stack_local (space->start, space->length, size,
+					alignment, &slot_offset))
+		continue;
+	      *psp = space->next;
+	      if (slot_offset > space->start)
+		add_frame_space (space->start, slot_offset);
+	      if (slot_offset + size < space->start + space->length)
+		add_frame_space (slot_offset + size,
+				 space->start + space->length);
+	      goto found_space;
+	    }
 	}
     }
   else if (!STACK_ALIGNMENT_NEEDED)
@@ -460,20 +466,26 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
       frame_offset -= size;
       try_fit_stack_local (frame_offset, size, size, alignment, &slot_offset);
 
-      if (slot_offset > frame_offset)
-	add_frame_space (frame_offset, slot_offset);
-      if (slot_offset + size < old_frame_offset)
-	add_frame_space (slot_offset + size, old_frame_offset);
+      if (kind & ASLK_RECORD_PAD)
+	{
+	  if (slot_offset > frame_offset)
+	    add_frame_space (frame_offset, slot_offset);
+	  if (slot_offset + size < old_frame_offset)
+	    add_frame_space (slot_offset + size, old_frame_offset);
+	}
     }
   else
     {
       frame_offset += size;
       try_fit_stack_local (old_frame_offset, size, size, alignment, &slot_offset);
 
-      if (slot_offset > old_frame_offset)
-	add_frame_space (old_frame_offset, slot_offset);
-      if (slot_offset + size < frame_offset)
-	add_frame_space (slot_offset + size, frame_offset);
+      if (kind & ASLK_RECORD_PAD)
+	{
+	  if (slot_offset > old_frame_offset)
+	    add_frame_space (old_frame_offset, slot_offset);
+	  if (slot_offset + size < frame_offset)
+	    add_frame_space (slot_offset + size, frame_offset);
+	}
     }
 
  found_space:
@@ -513,7 +525,7 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size,
 rtx
 assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
 {
-  return assign_stack_local_1 (mode, size, align, false);
+  return assign_stack_local_1 (mode, size, align, ASLK_RECORD_PAD);
 }
 
 
@@ -868,11 +880,13 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 	 and round it now.  We also make sure ALIGNMENT is at least
 	 BIGGEST_ALIGNMENT.  */
       gcc_assert (mode != BLKmode || align == BIGGEST_ALIGNMENT);
-      p->slot = assign_stack_local (mode,
-				    (mode == BLKmode
-				     ? CEIL_ROUND (size, (int) align / BITS_PER_UNIT)
-				     : size),
-				    align);
+      p->slot = assign_stack_local_1 (mode,
+				      (mode == BLKmode
+				       ? CEIL_ROUND (size,
+						     (int) align
+						     / BITS_PER_UNIT)
+				       : size),
+				      align, 0);
 
       p->align = align;
 

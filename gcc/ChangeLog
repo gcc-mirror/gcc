@@ -1,3 +1,19 @@
+2011-02-28  Bernd Schmidt  <bernds@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/47893
+	* rtl.h (ASLK_REDUCE_ALIGN, ASLK_RECORD_PAD): Define.
+	(assign_stack_local_1): Change last argument type to int.
+	* function.c (assign_stack_local_1): Replace reduce_alignment_ok
+	argument with kind.  If bit ASLK_RECORD_PAD is not set in it,
+	don't record padding space into frame_space_list nor
+	use those areas.
+	(assign_stack_local): Adjust caller.
+	(assign_stack_temp_for_type): Call assign_stack_local_1 instead
+	of assign_stack_local, pass 0 as last argument.
+	* caller-save.c (setup_save_areas): Adjust assign_stack_local_1
+	callers.
+
 2011-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/47283
