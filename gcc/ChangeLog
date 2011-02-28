@@ -1,3 +1,8 @@
+2011-02-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (tree_function_versioning): Set BLOCK_SUPERCONTEXT
+	of the copied scope tree.
+
 2011-02-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/extend.texi (Function Attributes): Avoid deeply (and

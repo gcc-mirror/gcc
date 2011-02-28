@@ -5156,6 +5156,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
       				     args_to_skip, &vars);
 
   DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (new_decl)) = new_decl;
 
   declare_inline_vars (DECL_INITIAL (new_decl), vars);
 
