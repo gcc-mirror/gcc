@@ -1,3 +1,8 @@
+2011-02-28  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/extend.texi (Function Attributes): Avoid deeply (and
+	wrongly) nested tables.
+
 2011-02-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/47903
