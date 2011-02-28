@@ -1,5 +1,5 @@
 // Tests for late-specified return type.
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=c++0x -fabi-version=6" }
 
 auto f() -> int
 {
