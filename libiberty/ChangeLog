@@ -1,3 +1,8 @@
+2011-02-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	* filename_cmp.c (filename_ncmp): New function.
+	* functions.texi: Regenerated.
+
 2011-02-03  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* splay-tree.c: Escape wrapping newlines in texinfo markup
