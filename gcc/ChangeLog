@@ -1,3 +1,11 @@
+2011-02-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR debug/28047
+	* dwarf2out.c (file_table_eq): Use filename_cmp instead of strcmp.
+	(lookup_filename): Likewise.
+	* final.c (remap_debug_filename): Use filename_ncmp instead of
+	strncmp.
+
 2011-02-28  Bernd Schmidt  <bernds@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

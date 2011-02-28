@@ -296,6 +296,24 @@ and backward slashes are equal.
 
 @end deftypefn
 
+@c filename_cmp.c:81
+@deftypefn Extension int filename_ncmp (const char *@var{s1}, const char *@var{s2}, size_t @var{n})
+
+Return zero if the two file names @var{s1} and @var{s2} are equivalent
+in range @var{n}.
+If not equivalent, the returned value is similar to what @code{strncmp}
+would return.  In other words, it returns a negative value if @var{s1}
+is less than @var{s2}, or a positive value if @var{s2} is greater than
+@var{s2}.
+
+This function does not normalize file names.  As a result, this function
+will treat filenames that are spelled differently as different even in
+the case when the two filenames point to the same underlying file.
+However, it does handle the fact that on DOS-like file systems, forward
+and backward slashes are equal.
+
+@end deftypefn
+
 @c fnmatch.txh:1
 @deftypefn Replacement int fnmatch (const char *@var{pattern}, @
   const char *@var{string}, int @var{flags})

@@ -1,3 +1,7 @@
+2011-02-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	* filenames.h (filename_ncmp): New prototype.
+
 2011-02-23  Kai Tietz  <kai.tietz@onevision.com>
 
 	* dwarf2.h (_ELF_DWARF2_H): Renamed to

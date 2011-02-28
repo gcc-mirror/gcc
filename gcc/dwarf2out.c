@@ -21560,7 +21560,7 @@ file_table_eq (const void *p1_p, const void *p2_p)
   const struct dwarf_file_data *const p1 =
     (const struct dwarf_file_data *) p1_p;
   const char *const p2 = (const char *) p2_p;
-  return strcmp (p1->filename, p2) == 0;
+  return filename_cmp (p1->filename, p2) == 0;
 }
 
 static hashval_t
@@ -21591,7 +21591,7 @@ lookup_filename (const char *file_name)
      call matches this file name.  If so, return the index.  */
   if (file_table_last_lookup
       && (file_name == file_table_last_lookup->filename
-	  || strcmp (file_table_last_lookup->filename, file_name) == 0))
+	  || filename_cmp (file_table_last_lookup->filename, file_name) == 0))
     return file_table_last_lookup;
 
   /* Didn't match the previous lookup, search the table.  */

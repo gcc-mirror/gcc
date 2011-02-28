@@ -1492,7 +1492,7 @@ remap_debug_filename (const char *filename)
   size_t name_len;
 
   for (map = debug_prefix_maps; map; map = map->next)
-    if (strncmp (filename, map->old_prefix, map->old_len) == 0)
+    if (filename_ncmp (filename, map->old_prefix, map->old_len) == 0)
       break;
   if (!map)
     return filename;
