@@ -2292,15 +2292,21 @@ round_udiv_adjust (enum machine_mode mode, rtx mod, rtx op1)
    any rtl.  */
 
 static rtx
-convert_debug_memory_address (enum machine_mode mode, rtx x)
+convert_debug_memory_address (enum machine_mode mode, rtx x,
+			      addr_space_t as)
 {
   enum machine_mode xmode = GET_MODE (x);
 
 #ifndef POINTERS_EXTEND_UNSIGNED
-  gcc_assert (mode == Pmode);
+  gcc_assert (mode == Pmode
+	      || mode == targetm.addr_space.address_mode (as));
   gcc_assert (xmode == mode || xmode == VOIDmode);
 #else
-  gcc_assert (mode == Pmode || mode == ptr_mode);
+  rtx temp;
+  enum machine_mode address_mode = targetm.addr_space.address_mode (as);
+  enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
+
+  gcc_assert (mode == address_mode || mode == pointer_mode);
 
   if (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode)
     return x;
@@ -2314,7 +2320,47 @@ convert_debug_memory_address (enum machine_mode mode, rtx x)
   else if (!POINTERS_EXTEND_UNSIGNED)
     x = gen_rtx_SIGN_EXTEND (mode, x);
   else
-    gcc_unreachable ();
+    {
+      switch (GET_CODE (x))
+	{
+	case SUBREG:
+	  if ((SUBREG_PROMOTED_VAR_P (x)
+	       || (REG_P (SUBREG_REG (x)) && REG_POINTER (SUBREG_REG (x)))
+	       || (GET_CODE (SUBREG_REG (x)) == PLUS
+		   && REG_P (XEXP (SUBREG_REG (x), 0))
+		   && REG_POINTER (XEXP (SUBREG_REG (x), 0))
+		   && CONST_INT_P (XEXP (SUBREG_REG (x), 1))))
+	      && GET_MODE (SUBREG_REG (x)) == mode)
+	    return SUBREG_REG (x);
+	  break;
+	case LABEL_REF:
+	  temp = gen_rtx_LABEL_REF (mode, XEXP (x, 0));
+	  LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
+	  return temp;
+	case SYMBOL_REF:
+	  temp = shallow_copy_rtx (x);
+	  PUT_MODE (temp, mode);
+	  return temp;
+	case CONST:
+	  temp = convert_debug_memory_address (mode, XEXP (x, 0), as);
+	  if (temp)
+	    temp = gen_rtx_CONST (mode, temp);
+	  return temp;
+	case PLUS:
+	case MINUS:
+	  if (CONST_INT_P (XEXP (x, 1)))
+	    {
+	      temp = convert_debug_memory_address (mode, XEXP (x, 0), as);
+	      if (temp)
+		return gen_rtx_fmt_ee (GET_CODE (x), mode, temp, XEXP (x, 1));
+	    }
+	  break;
+	default:
+	  break;
+	}
+      /* Don't know how to express ptr_extend as operation in debug info.  */
+      return NULL;
+    }
 #endif /* POINTERS_EXTEND_UNSIGNED */
 
   return x;
@@ -2558,8 +2604,12 @@ expand_debug_expr (tree exp)
       else
 	as = ADDR_SPACE_GENERIC;
 
-      op0 = gen_rtx_MEM (mode, op0);
+      op0 = convert_debug_memory_address (targetm.addr_space.address_mode (as),
+					  op0, as);
+      if (op0 == NULL_RTX)
+	return NULL;
 
+      op0 = gen_rtx_MEM (mode, op0);
       set_mem_attributes (op0, exp, 0);
       set_mem_addr_space (op0, as);
 
@@ -2575,7 +2625,15 @@ expand_debug_expr (tree exp)
       if (!op0)
 	return NULL;
 
-      as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
+      if (POINTER_TYPE_P (TREE_TYPE (exp)))
+	as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
+      else
+	as = ADDR_SPACE_GENERIC;
+
+      op0 = convert_debug_memory_address (targetm.addr_space.address_mode (as),
+					  op0, as);
+      if (op0 == NULL_RTX)
+	return NULL;
 
       op0 = gen_rtx_MEM (mode, op0);
 
@@ -3039,7 +3097,8 @@ expand_debug_expr (tree exp)
 	  return NULL;
 	}
 
-      op0 = convert_debug_memory_address (mode, XEXP (op0, 0));
+      as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
+      op0 = convert_debug_memory_address (mode, XEXP (op0, 0), as);
 
       return op0;
 
