@@ -2250,10 +2250,10 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 	{
 	  tree main_binfo = TYPE_BINFO (BINFO_TYPE (b));
 	  tree bv = chain_index (ix, BINFO_VIRTUALS (main_binfo));
-	  if (BINFO_LOST_PRIMARY_P (b))
-	    lost = true;
 	  if (!DECL_THUNK_P (TREE_VALUE (bv)))
 	    break;
+	  if (BINFO_LOST_PRIMARY_P (b))
+	    lost = true;
 	}
       first_defn = b;
     }
