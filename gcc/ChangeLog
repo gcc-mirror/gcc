@@ -1,3 +1,13 @@
+2011-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/46790
+	* configure.ac (HAVE_LD_EH_GC_SECTIONS_BUG): New test.
+	* configure: Regenerated.
+	* config.in: Regenerated.
+	* varasm.c (default_function_section): Return NULL
+	if HAVE_LD_EH_GC_SECTIONS_BUG and decl has implicit
+	section name.
+
 2011-02-28  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-inline.c (cgraph_decide_inlining_of_small_functions): Fix

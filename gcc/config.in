@@ -1171,6 +1171,13 @@
 #endif
 
 
+/* Define if your linker has buggy garbage collection of sections support when
+   .text.startup.foo like sections are used. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_EH_GC_SECTIONS_BUG
+#endif
+
+
 /* Define if your PowerPC64 linker supports a large TOC. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_LARGE_TOC
