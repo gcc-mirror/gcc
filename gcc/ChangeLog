@@ -1,3 +1,16 @@
+2011-02-28  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/stormy16/stormy16.h (FUNCTION_VALUE, LIBCALL_VALUE,
+	FUNCTION_VALUE_REGNO_P): Remove.
+	* config/stormy16/stormy16-protos.h (xstormy16_function_value):
+	Remove.
+	* config/stormy16/stormy16.c (xstormy16_function_value): Make static.
+	Add 'outgoing' argument.
+	(xstormy16_libcall_value, xstormy16_function_value_regno_p): New
+	function.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE,
+	TARGET_FUNCTION_VALUE_REGNO_P): Define.
+
 2011-02-28  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR debug/28047
