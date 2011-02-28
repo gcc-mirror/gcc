@@ -319,13 +319,6 @@ enum reg_class
 /* The number of the hard register that is used to return a scalar value from a
    function call.  */
 #define RETURN_VALUE_REGNUM	FIRST_ARGUMENT_REGISTER
-     
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  xstormy16_function_value (VALTYPE, FUNC)
-
-#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, RETURN_VALUE_REGNUM)
-
-#define FUNCTION_VALUE_REGNO_P(REGNO) ((REGNO) == RETURN_VALUE_REGNUM)
 
 
 /* Function Entry and Exit.  */
