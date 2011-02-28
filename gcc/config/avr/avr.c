@@ -91,6 +91,7 @@ static bool avr_hard_regno_scratch_ok (unsigned int);
 static unsigned int avr_case_values_threshold (void);
 static bool avr_frame_pointer_required_p (void);
 static bool avr_can_eliminate (const int, const int);
+static void avr_help (void);
 
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
@@ -192,6 +193,9 @@ static const struct attribute_spec avr_attribute_table[] =
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE avr_can_eliminate
 
+#undef TARGET_HELP
+#define TARGET_HELP avr_help
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 void
@@ -207,10 +211,8 @@ avr_override_options (void)
 
   if (!t->name)
     {
-      fprintf (stderr, "unknown MCU '%s' specified\nKnown MCU names:\n",
-	       avr_mcu_name);
-      for (t = avr_mcu_types; t->name; t++)
-	fprintf (stderr,"   %s\n", t->name);
+      error ("unrecognized argument to -mmcu= option: %qs", avr_mcu_name);
+      inform (input_location,  "See --target-help for supported MCUs");
     }
 
   avr_current_device = t;
@@ -221,6 +223,42 @@ avr_override_options (void)
   zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
 
   init_machine_status = avr_init_machine_status;
+}
+
+/* Implement TARGET_HELP */
+/* Report extra information for --target-help */
+
+static void
+avr_help (void)
+{
+  const struct mcu_type_s *t;
+  const char * const indent = "  ";
+  int len;
+
+  /* Give a list of MCUs that are accepted by -mmcu=* .
+     Note that MCUs supported by the compiler might differ from
+     MCUs supported by binutils. */
+
+  len = strlen (indent);
+  printf ("Known MCU names:\n%s", indent);
+
+  /* Print a blank-separated list of all supported MCUs */
+
+  for (t = avr_mcu_types; t->name; t++)
+    {
+      printf ("%s ", t->name);
+      len += 1 + strlen (t->name);
+
+      /* Break long lines */
+      
+      if (len > 66 && (t+1)->name)
+        {
+          printf ("\n%s", indent);
+          len = strlen (indent);
+        }
+    }
+
+  printf ("\n\n");
 }
 
 /*  return register class from register number.  */
