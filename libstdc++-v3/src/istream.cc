@@ -67,7 +67,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			__size = __p - __sb->gptr();
 		      traits_type::copy(__s, __sb->gptr(), __size);
 		      __s += __size;
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      _M_gcount += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 								   __cdelim);
 			  if (__p)
 			    __size = __p - __sb->gptr();
-			  __sb->gbump(__size);
+			  __sb->__safe_gbump(__size);
 			  _M_gcount += __size;
 			  __c = __sb->sgetc();
 			}
@@ -239,7 +239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				- __sb->gptr());
 		      __traits_type::copy(__s, __sb->gptr(), __size);
 		      __s += __size;
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      __extracted += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -318,7 +318,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					     __sb->gptr() + __size)
 				- __sb->gptr());
 		      __str.append(__sb->gptr(), __size);
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      __extracted += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -397,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      if (__p)
 			__size = __p - __sb->gptr();
 		      __str.append(__sb->gptr(), __size);
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      __extracted += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -474,7 +474,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			__size = __p - __sb->gptr();
 		      traits_type::copy(__s, __sb->gptr(), __size);
 		      __s += __size;
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      _M_gcount += __size;
 		      __c = __sb->sgetc();
 		    }
@@ -552,7 +552,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 								   __cdelim);
 			  if (__p)
 			    __size = __p - __sb->gptr();
-			  __sb->gbump(__size);
+			  __sb->__safe_gbump(__size);
 			  _M_gcount += __size;
 			  __c = __sb->sgetc();
 			}
@@ -643,7 +643,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      if (__p)
 			__size = __p - __sb->gptr();
 		      __str.append(__sb->gptr(), __size);
-		      __sb->gbump(__size);
+		      __sb->__safe_gbump(__size);
 		      __extracted += __size;
 		      __c = __sb->sgetc();
 		    }

@@ -1,6 +1,7 @@
 // strstream definitions -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2005, 2009 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2005, 2009, 2010, 2011
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -161,7 +162,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	    
 	    setp(buf, buf + new_size);
-	    pbump(old_size);
+	    __safe_pbump(old_size);
 
 	    if (reposition_get)
 	      setg(buf, buf + old_get_offset, buf + 
@@ -271,12 +272,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (seeklow + off < pbase()) 
 	  {
 	    setp(seeklow, epptr());
-	    pbump(off);
+	    __safe_pbump(off);
 	  }
 	else 
 	  {
 	    setp(pbase(), epptr());
-	    pbump(off - (pbase() - seeklow));
+	    __safe_pbump(off - (pbase() - seeklow));
 	  }
       }
     if (do_get) 

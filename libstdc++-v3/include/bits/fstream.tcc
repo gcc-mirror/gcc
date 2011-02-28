@@ -584,14 +584,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
  	   const streamsize __avail = this->egptr() - this->gptr();
  	   if (__avail != 0)
  	     {
- 	       if (__avail == 1)
- 		 *__s = *this->gptr();
- 	       else
- 		 traits_type::copy(__s, this->gptr(), __avail);
+	       traits_type::copy(__s, this->gptr(), __avail);
  	       __s += __avail;
- 	       this->gbump(__avail);
- 	       __ret += __avail;
- 	       __n -= __avail;
+	       this->setg(this->eback(), this->gptr() + __avail,
+			  this->egptr());
+	       __ret += __avail;
+	       __n -= __avail;
  	     }
  
  	   // Need to loop in case of short reads (relatively common
