@@ -1,3 +1,9 @@
+2011-02-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47873
+	* class.c (update_vtable_entry_for_fn): Check BINFO_LOST_PRIMARY_P
+	after checking for a non-thunk.
+
 2011-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47904

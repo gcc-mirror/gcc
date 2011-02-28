@@ -1,3 +1,7 @@
+2011-02-28  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/inherit/covariant18.C: New.
+
 2011-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/47893
