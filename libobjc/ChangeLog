@@ -1,3 +1,9 @@
+2011-02-28  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	* selector.c (sel_getTypedSelector): Return NULL if there are
+	multiple selectors with conflicting types.
+	* objc/runtime.h (sel_getTypedSelector): Updated documentation.
+	
 2011-02-28  Richard Frith-Macdonald <rfm@gnu.org>
 
 	PR libobjc/47922
