@@ -1,6 +1,9 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Use smaller statistics when running on simulators, so it takes less time.
+// { dg-options "-std=gnu++0x -DSAMPLES=10000" { target simulator } }
+
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,8 +51,6 @@
 #include <vector>
 #include <testsuite_hooks.h>
 
-// Use smaller statistics when running on simulators, so it takes less time.
-// { dg-options "-DSAMPLES=10000" { target simulator } }
 #ifndef SAMPLES
 #define SAMPLES 300000
 #endif

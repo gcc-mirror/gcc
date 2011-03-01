@@ -1,3 +1,8 @@
+2011-02-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/20_util/hash/chi2_quality.cc: Use C++0x mode on simulators.
+	* testsuite/20_util/hash/quality.cc: Same.
+
 2011-02-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/47921
