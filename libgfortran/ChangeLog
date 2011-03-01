@@ -1,3 +1,10 @@
+2011-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/47567
+	* io/write_float.def (output_float): Move handling of w = 0 to after
+	output rounding. Check for zero and set zero_flag accordingly. Set
+	width according to zero_flag. Add better comments.
+
 2011-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/47778

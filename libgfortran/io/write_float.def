@@ -109,15 +109,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 
   /* Make sure zero comes out as 0.0e0.   */
   if (zero_flag)
-    {
-      e = 0;
-      if (compile_options.sign_zero != 1)
-	sign = calculate_sign (dtp, 0);
-
-      /* Handle special cases.  */
-      if (w == 0)
-	w = d + (sign != S_NONE ? 2 : 1) + (d == 0 ? 1 : 0);
-    }
+    e = 0;
 
   /* Normalize the fractional component.  */
   buffer[2] = buffer[1];
@@ -376,15 +368,21 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   else
     edigits = 0;
 
-  /* Zero values always output as positive, even if the value was negative
-     before rounding.  */
+  /* Scan the digits string and count the number of zeros.  If we make it
+     all the way through the loop, we know the value is zero after the
+     rounding completed above.  */
   for (i = 0; i < ndigits; i++)
     {
       if (digits[i] != '0')
 	break;
     }
+
+  /* To format properly, we need to know if the rounded result is zero and if
+     so, we set the zero_flag which may have been already set for
+     actual zero.  */
   if (i == ndigits)
     {
+      zero_flag = true;
       /* The output is zero, so set the sign according to the sign bit unless
 	 -fno-sign-zero was specified.  */
       if (compile_options.sign_zero == 1)
@@ -393,11 +391,17 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	sign = calculate_sign (dtp, 0);
     }
 
-  /* Pick a field size if none was specified.  */
+  /* Pick a field size if none was specified, taking into account small
+     values that may have been rounded to zero.  */
   if (w <= 0)
     {
-      w = nbefore + nzero + nafter + (sign != S_NONE ? 2 : 1);
-      w = w == 1 ? 2 : w;
+      if (zero_flag)
+	w = d + (sign != S_NONE ? 2 : 1) + (d == 0 ? 1 : 0);
+      else
+	{
+	  w = nbefore + nzero + nafter + (sign != S_NONE ? 2 : 1);
+	  w = w == 1 ? 2 : w;
+	}
     }
   
   /* Work out how much padding is needed.  */
