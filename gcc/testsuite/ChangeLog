@@ -1,5 +1,7 @@
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/decltype25.C: New.
+
 	* g++.dg/cpp0x/regress/bitfield-err1.C: New.
 
 2011-03-01  Richard Guenther  <rguenther@suse.de>
