@@ -1980,7 +1980,9 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
     DECL_INITIAL (expr) = lto_input_tree (ib, data_in);
 
   DECL_ATTRIBUTES (expr) = lto_input_tree (ib, data_in);
-  DECL_ABSTRACT_ORIGIN (expr) = lto_input_tree (ib, data_in);
+  /* Do not stream DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
+     for early inlining so drop it on the floor instead of ICEing in
+     dwarf2out.c.  */
 
   if (TREE_CODE (expr) == PARM_DECL)
     TREE_CHAIN (expr) = lto_input_chain (ib, data_in);
@@ -2179,24 +2181,19 @@ static void
 lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
 				  struct data_in *data_in, tree expr)
 {
-  unsigned i, len;
-
-  BLOCK_SOURCE_LOCATION (expr) = lto_input_location (ib, data_in);
+  /* Do not stream BLOCK_SOURCE_LOCATION.  We cannot handle debug information
+     for early inlining so drop it on the floor instead of ICEing in
+     dwarf2out.c.  */
   BLOCK_VARS (expr) = lto_input_chain (ib, data_in);
 
-  len = lto_input_uleb128 (ib);
-  if (len > 0)
-    {
-      VEC_reserve_exact (tree, gc, BLOCK_NONLOCALIZED_VARS (expr), len);
-      for (i = 0; i < len; i++)
-	{
-	  tree t = lto_input_tree (ib, data_in);
-	  VEC_quick_push (tree, BLOCK_NONLOCALIZED_VARS (expr), t);
-	}
-    }
+  /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
+     for early inlining so drop it on the floor instead of ICEing in
+     dwarf2out.c.  */
 
   BLOCK_SUPERCONTEXT (expr) = lto_input_tree (ib, data_in);
-  BLOCK_ABSTRACT_ORIGIN (expr) = lto_input_tree (ib, data_in);
+  /* Do not stream BLOCK_ABSTRACT_ORIGIN.  We cannot handle debug information
+     for early inlining so drop it on the floor instead of ICEing in
+     dwarf2out.c.  */
   BLOCK_FRAGMENT_ORIGIN (expr) = lto_input_tree (ib, data_in);
   BLOCK_FRAGMENT_CHAIN (expr) = lto_input_tree (ib, data_in);
   /* We re-compute BLOCK_SUBBLOCKS of our parent here instead
