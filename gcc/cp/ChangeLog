@@ -1,5 +1,9 @@
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47851
+	* call.c (standard_conversion): Provide requested cv-quals on
+	class rvalue conversion.
+
 	PR c++/46282
 	* decl2.c (grokbitfield): Handle type-dependent width.
 

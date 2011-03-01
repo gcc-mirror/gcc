@@ -850,6 +850,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
   enum tree_code fcode, tcode;
   conversion *conv;
   bool fromref = false;
+  tree qualified_to;
 
   to = non_reference (to);
   if (TREE_CODE (from) == REFERENCE_TYPE)
@@ -857,6 +858,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
       fromref = true;
       from = TREE_TYPE (from);
     }
+  qualified_to = to;
   to = strip_top_quals (to);
   from = strip_top_quals (from);
 
@@ -918,7 +920,11 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
     }
 
   if (same_type_p (from, to))
-    return conv;
+    {
+      if (CLASS_TYPE_P (to) && conv->kind == ck_rvalue)
+	conv->type = qualified_to;
+      return conv;
+    }
 
   /* [conv.ptr]
      A null pointer constant can be converted to a pointer type; ... A
