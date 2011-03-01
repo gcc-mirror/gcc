@@ -1,5 +1,11 @@
 2011-03-01  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/47924
+	* lto-streamer.c (lto_record_common_node): Also register
+	the canonical type.
+
+2011-03-01  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/46911
 	* lto-streamer-in.c (lto_input_ts_decl_common_tree_pointers):
 	Do not stream DECL_ABSTRACT_ORIGIN.

@@ -527,7 +527,9 @@ lto_record_common_node (tree *nodep, VEC(tree, heap) **common_nodes,
 	 are set by the middle-end.  */
       if (in_lto_p)
 	TYPE_CANONICAL (node) = NULL_TREE;
-      *nodep = node = gimple_register_type (node);
+      node = gimple_register_type (node);
+      TYPE_CANONICAL (node) = gimple_register_canonical_type (node);
+      *nodep = node;
     }
 
   /* Return if node is already seen.  */
