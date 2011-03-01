@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=gnu" }
 ! PR47567 Wrong output for small absolute values with F editing
 ! Test case provided by Thomas Henlich 
 call verify_fmt(1.2)
