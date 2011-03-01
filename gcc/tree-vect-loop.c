@@ -2886,6 +2886,10 @@ get_initial_def_for_induction (gimple iv_phi)
       gimple_assign_set_lhs (new_stmt, induc_def);
       si = gsi_start_bb (bb);
       gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+      set_vinfo_for_stmt (new_stmt,
+			  new_stmt_vec_info (new_stmt, loop_vinfo, NULL));
+      STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_stmt))
+	= STMT_VINFO_RELATED_STMT (vinfo_for_stmt (induction_phi));
     }
 
   return induc_def;

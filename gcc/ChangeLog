@@ -1,5 +1,11 @@
 2011-03-01  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/47890
+	* tree-vect-loop.c (get_initial_def_for_induction): Set
+	related stmt properly.
+
+2011-03-01  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/47924
 	* lto-streamer.c (lto_record_common_node): Also register
 	the canonical type.
