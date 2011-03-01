@@ -1,3 +1,16 @@
+2011-03-01  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-03-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47890
+	* gcc.dg/torture/pr47890.c: New testcase.
+
+	2010-12-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46723
+	* gcc.dg/torture/pr46723.c: New testcase.
+
 2011-02-26  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/this-targ1.C: New.

@@ -1014,8 +1014,10 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
         /* Get the def from the vectorized stmt.  */
         def_stmt_info = vinfo_for_stmt (def_stmt);
         vec_stmt = STMT_VINFO_VEC_STMT (def_stmt_info);
-	gcc_assert (vec_stmt && gimple_code (vec_stmt) == GIMPLE_PHI);
-        vec_oprnd = PHI_RESULT (vec_stmt);
+	if (gimple_code (vec_stmt) == GIMPLE_PHI)
+	  vec_oprnd = PHI_RESULT (vec_stmt);
+	else
+	  vec_oprnd = gimple_get_lhs (vec_stmt);
         return vec_oprnd;
       }
 

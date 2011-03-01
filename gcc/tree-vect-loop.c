@@ -2363,7 +2363,7 @@ get_initial_def_for_induction (gimple iv_phi)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (iv_phi);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree scalar_type = TREE_TYPE (gimple_phi_result (iv_phi));
+  tree scalar_type;
   tree vectype;
   int nunits;
   edge pe = loop_preheader_edge (loop);
@@ -2392,24 +2392,7 @@ get_initial_def_for_induction (gimple iv_phi)
   gimple_stmt_iterator si;
   basic_block bb = gimple_bb (iv_phi);
   tree stepvectype;
-
-  vectype = get_vectype_for_scalar_type (scalar_type);
-  gcc_assert (vectype);
-  nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  ncopies = vf / nunits;
-
-  gcc_assert (phi_info);
-  gcc_assert (ncopies >= 1);
-
-  /* Find the first insertion point in the BB.  */
-  si = gsi_after_labels (bb);
-
-  if (INTEGRAL_TYPE_P (scalar_type))
-    step_expr = build_int_cst (scalar_type, 0);
-  else if (POINTER_TYPE_P (scalar_type))
-    step_expr = build_int_cst (sizetype, 0);
-  else
-    step_expr = build_real (scalar_type, dconst0);
+  tree resvectype;
 
   /* Is phi in an inner-loop, while vectorizing an enclosing outer-loop?  */
   if (nested_in_vect_loop_p (loop, iv_phi))
@@ -2426,10 +2409,24 @@ get_initial_def_for_induction (gimple iv_phi)
 
   access_fn = analyze_scalar_evolution (iv_loop, PHI_RESULT (iv_phi));
   gcc_assert (access_fn);
+  STRIP_NOPS (access_fn);
   ok = vect_is_simple_iv_evolution (iv_loop->num, access_fn,
                                     &init_expr, &step_expr);
   gcc_assert (ok);
   pe = loop_preheader_edge (iv_loop);
+
+  scalar_type = TREE_TYPE (init_expr);
+  vectype = get_vectype_for_scalar_type (scalar_type);
+  resvectype = get_vectype_for_scalar_type (TREE_TYPE (PHI_RESULT (iv_phi)));
+  gcc_assert (vectype);
+  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  ncopies = vf / nunits;
+
+  gcc_assert (phi_info);
+  gcc_assert (ncopies >= 1);
+
+  /* Find the first insertion point in the BB.  */
+  si = gsi_after_labels (bb);
 
   /* Create the vector that holds the initial_value of the induction.  */
   if (nested_in_vect_loop)
@@ -2456,7 +2453,7 @@ get_initial_def_for_induction (gimple iv_phi)
 	}
 
       t = NULL_TREE;
-      t = tree_cons (NULL_TREE, init_expr, t);
+      t = tree_cons (NULL_TREE, new_name, t);
       for (i = 1; i < nunits; i++)
 	{
 	  /* Create: new_name_i = new_name + step_expr  */
@@ -2575,6 +2572,19 @@ get_initial_def_for_induction (gimple iv_phi)
 	  gimple_assign_set_lhs (new_stmt, vec_def);
 
 	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+	  if (!useless_type_conversion_p (resvectype, vectype))
+	    {
+	      new_stmt = gimple_build_assign_with_ops
+		  (VIEW_CONVERT_EXPR,
+		   vect_get_new_vect_var (resvectype, vect_simple_var,
+					  "vec_iv_"),
+		   build1 (VIEW_CONVERT_EXPR, resvectype,
+			   gimple_assign_lhs (new_stmt)), NULL_TREE);
+	      gimple_assign_set_lhs (new_stmt,
+				     make_ssa_name
+				       (gimple_assign_lhs (new_stmt), new_stmt));
+	      gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+	    }
 	  set_vinfo_for_stmt (new_stmt,
 			      new_stmt_vec_info (new_stmt, loop_vinfo, NULL));
 	  STMT_VINFO_RELATED_STMT (prev_stmt_vinfo) = new_stmt;
@@ -2622,6 +2632,22 @@ get_initial_def_for_induction (gimple iv_phi)
     }
 
   STMT_VINFO_VEC_STMT (phi_info) = induction_phi;
+  if (!useless_type_conversion_p (resvectype, vectype))
+    {
+      new_stmt = gimple_build_assign_with_ops
+	 (VIEW_CONVERT_EXPR,
+	  vect_get_new_vect_var (resvectype, vect_simple_var, "vec_iv_"),
+	  build1 (VIEW_CONVERT_EXPR, resvectype, induc_def), NULL_TREE);
+      induc_def = make_ssa_name (gimple_assign_lhs (new_stmt), new_stmt);
+      gimple_assign_set_lhs (new_stmt, induc_def);
+      si = gsi_start_bb (bb);
+      gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
+      set_vinfo_for_stmt (new_stmt,
+			  new_stmt_vec_info (new_stmt, loop_vinfo, NULL));
+      STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_stmt))
+	= STMT_VINFO_RELATED_STMT (vinfo_for_stmt (induction_phi));
+    }
+
   return induc_def;
 }
 

@@ -1,3 +1,21 @@
+2011-03-01  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2011-03-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47890
+	* tree-vect-loop.c (get_initial_def_for_induction): Set
+	related stmt properly.
+
+	2010-12-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/46723
+	* tree-vect-loop.c (get_initial_def_for_induction): Strip
+	conversions from the induction evolution and apply it to
+	the result instead.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Handle
+	assigns for induction defs.
+
 2011-02-28  Georg-Johann Lay  <avr@gjlay.de>
 
        PR target/45261
