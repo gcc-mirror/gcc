@@ -870,7 +870,9 @@ lto_output_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
     }
 
   lto_output_tree_or_ref (ob, DECL_ATTRIBUTES (expr), ref_p);
-  lto_output_tree_or_ref (ob, DECL_ABSTRACT_ORIGIN (expr), ref_p);
+  /* Do not stream DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
+     for early inlining so drop it on the floor instead of ICEing in
+     dwarf2out.c.  */
 
   if (TREE_CODE (expr) == PARM_DECL)
     lto_output_chain (ob, TREE_CHAIN (expr), ref_p);
@@ -1054,21 +1056,19 @@ static void
 lto_output_ts_block_tree_pointers (struct output_block *ob, tree expr,
 				   bool ref_p)
 {
-  unsigned i;
-  tree t;
-
-  lto_output_location (ob, BLOCK_SOURCE_LOCATION (expr));
+  /* Do not stream BLOCK_SOURCE_LOCATION.  We cannot handle debug information
+     for early inlining so drop it on the floor instead of ICEing in
+     dwarf2out.c.  */
   lto_output_chain (ob, BLOCK_VARS (expr), ref_p);
 
-  output_uleb128 (ob, VEC_length (tree, BLOCK_NONLOCALIZED_VARS (expr)));
-  FOR_EACH_VEC_ELT (tree, BLOCK_NONLOCALIZED_VARS (expr), i, t)
-    {
-      gcc_assert (DECL_CONTEXT (t) != expr);
-      lto_output_tree_or_ref (ob, t, ref_p);
-    }
+  /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
+     for early inlining so drop it on the floor instead of ICEing in
+     dwarf2out.c.  */
 
   lto_output_tree_or_ref (ob, BLOCK_SUPERCONTEXT (expr), ref_p);
-  lto_output_tree_or_ref (ob, BLOCK_ABSTRACT_ORIGIN (expr), ref_p);
+  /* Do not stream BLOCK_ABSTRACT_ORIGIN.  We cannot handle debug information
+     for early inlining so drop it on the floor instead of ICEing in
+     dwarf2out.c.  */
   lto_output_tree_or_ref (ob, BLOCK_FRAGMENT_ORIGIN (expr), ref_p);
   lto_output_tree_or_ref (ob, BLOCK_FRAGMENT_CHAIN (expr), ref_p);
   /* Do not output BLOCK_SUBBLOCKS.  Instead on streaming-in this
