@@ -32,8 +32,7 @@
 
 	* config/stormy16/stormy16.h (FUNCTION_VALUE, LIBCALL_VALUE,
 	FUNCTION_VALUE_REGNO_P): Remove.
-	* config/stormy16/stormy16-protos.h (xstormy16_function_value):
-	Remove.
+	* config/stormy16/stormy16-protos.h (xstormy16_function_value): Remove.
 	* config/stormy16/stormy16.c (xstormy16_function_value): Make static.
 	Add 'outgoing' argument.
 	(xstormy16_libcall_value, xstormy16_function_value_regno_p): New
@@ -46,8 +45,7 @@
 	PR debug/28047
 	* dwarf2out.c (file_table_eq): Use filename_cmp instead of strcmp.
 	(lookup_filename): Likewise.
-	* final.c (remap_debug_filename): Use filename_ncmp instead of
-	strncmp.
+	* final.c (remap_debug_filename): Use filename_ncmp instead of strncmp.
 
 2011-02-28  Bernd Schmidt  <bernds@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
@@ -57,8 +55,7 @@
 	(assign_stack_local_1): Change last argument type to int.
 	* function.c (assign_stack_local_1): Replace reduce_alignment_ok
 	argument with kind.  If bit ASLK_RECORD_PAD is not set in it,
-	don't record padding space into frame_space_list nor
-	use those areas.
+	don't record padding space into frame_space_list nor use those areas.
 	(assign_stack_local): Adjust caller.
 	(assign_stack_temp_for_type): Call assign_stack_local_1 instead
 	of assign_stack_local, pass 0 as last argument.
@@ -82,8 +79,7 @@
 	* configure: Regenerated.
 	* config.in: Regenerated.
 	* varasm.c (default_function_section): Return NULL
-	if HAVE_LD_EH_GC_SECTIONS_BUG and decl has implicit
-	section name.
+	if HAVE_LD_EH_GC_SECTIONS_BUG and decl has implicit section name.
 
 2011-02-28  Martin Jambor  <mjambor@suse.cz>
 
@@ -138,7 +134,7 @@
 	FreeBSD 6 and later.  Generally use cpu generic.
 
 2011-02-25  Gerald Pfeifer  <gerald@pfeifer.com>
- 
+
 	* doc/cpp.texi: Update copyright years.
 
 2011-02-25  Sebastien Bourdeauducq  <sebastien@milkymist.org>
@@ -153,8 +149,7 @@
 	* config/lm32/lm32.md (ashlsi3): Remove unused variable.
 	* config/lm32/lm32.c (TARGET_EXCEPT_UNWIND_INFO): New.
 	(lm32_block_move_inline): Add type cast to remove warning.
-	(lm32_expand_prologue): Generate fp in a way compatible with
-	dwarf2out.
+	(lm32_expand_prologue): Generate fp in a way compatible with dwarf2out.
 	(gen_int_relational): Move declarations to start of function.
 
 2011-02-25  Eric Botcazou  <ebotcazou@adacore.com>
