@@ -1675,7 +1675,7 @@ if test x"$with_ppl$with_ppl_include$with_ppl_lib" = x && test -d ${srcdir}/ppl;
   with_ppl=yes
 fi
 
-if test "x$with_ppl" = xyes; then
+if test "x$with_ppl" != xno; then
   if test "x$pwllib" = x; then
     saved_LDFLAGS="$LDFLAGS"
     LDFLAGS="$LDFLAGS $ppllibs"
