@@ -1,5 +1,9 @@
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47200
+	* semantics.c (cxx_bind_parameters_in_call): Don't call
+	adjust_temp_type on non-constant args.
+
 	PR c++/47851
 	* call.c (standard_conversion): Provide requested cv-quals on
 	class rvalue conversion.
