@@ -1,3 +1,8 @@
+2011-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* configure.ac: Adjust test of with_ppl.
+	* configure: Regenerated.
+
 2011-03-02  Kai Tietz  <ktietz@redhat.com>
 
 	* MAINTAINERS: Adjust my e-mail address.
