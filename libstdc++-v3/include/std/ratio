@@ -279,10 +279,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   // 0 <= _Ri < 1
+  // If one is 0, conclude
+  // Otherwise, x < y iff 1/y < 1/x
   template<typename _R1, typename _R2>
     struct __ratio_less_impl_2;
 
   // _Ri > 0
+  // Compare the integral parts, and remove them if they are equal
   template<typename _R1, typename _R2, intmax_t __q1 = _R1::num / _R1::den,
            intmax_t __q2 = _R2::num / _R2::den, bool __eq = (__q1 == __q2)>
     struct __ratio_less_impl_1
@@ -338,6 +341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// ratio_less
+  // using a continued fraction expansion
   template<typename _R1, typename _R2>
     struct ratio_less
     : __ratio_less_impl<_R1, _R2>::type
