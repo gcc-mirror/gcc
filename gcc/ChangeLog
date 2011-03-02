@@ -1,3 +1,9 @@
+2011-03-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/i386/freebsd64.h (CC1_SPEC): Define.
+	* config/i386/linux64.h (CC1_SPEC): Define.
+	* config/i386/x86-64.h (CC1_SPEC): Don't define.
+
 2011-03-02  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/stormy16/stormy16.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST):

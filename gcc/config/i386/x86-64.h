@@ -1,5 +1,6 @@
 /* OS independent definitions for AMD x86-64.
-   Copyright (C) 2001, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005, 2007, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Bo Thorsen <bo@suse.de>.
 
 This file is part of GCC.
@@ -47,9 +48,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
-
-#undef CC1_SPEC
-#define CC1_SPEC "%(cc1_cpu) %{profile:-p}"
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{m32:--32} %{m64:--64}"
