@@ -1,5 +1,9 @@
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46159
+	* parser.c (cp_parser_primary_expression): Don't warn about a
+	failed tentative parse.
+
 	PR c++/47200
 	* semantics.c (cxx_bind_parameters_in_call): Don't call
 	adjust_temp_type on non-constant args.

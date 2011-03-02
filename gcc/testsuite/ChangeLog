@@ -1,5 +1,7 @@
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/lambda/lambda-98.C: New.
+
 	* g++.dg/cpp0x/constexpr-non-const-arg2.C: New.
 
 2011-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
