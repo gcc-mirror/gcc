@@ -177,15 +177,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct ratio_add
     {
     private:
-      static const intmax_t __gcd =
+      static constexpr intmax_t __gcd =
         __static_gcd<_R1::den, _R2::den>::value;
+      static constexpr intmax_t __n = __safe_add<
+        __safe_multiply<_R1::num, (_R2::den / __gcd)>::value,
+        __safe_multiply<_R2::num, (_R1::den / __gcd)>::value>::value;
+
+      // The new numerator may have common factors with the denominator,
+      // but they have to also be factors of __gcd.
+      static constexpr intmax_t __gcd2 = __static_gcd<__n, __gcd>::value;
       
     public:
-      typedef ratio<
-        __safe_add<
-          __safe_multiply<_R1::num, (_R2::den / __gcd)>::value,
-          __safe_multiply<_R2::num, (_R1::den / __gcd)>::value>::value,
-        __safe_multiply<_R1::den, (_R2::den / __gcd)>::value> type;
+      typedef ratio<__n / __gcd2,
+        __safe_multiply<_R1::den / __gcd2, _R2::den / __gcd>::value> type;
 
       static constexpr intmax_t num = type::num;
       static constexpr intmax_t den = type::den;
