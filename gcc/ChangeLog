@@ -1,3 +1,9 @@
+2011-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/47925
+	* cse.c (count_reg_usage): Don't ignore the SET_DEST of instructions
+	with side effects.  Remove the more-specific check for volatile asms.
+
 2011-03-02  Alan Modra  <amodra@gmail.com>
 
 	PR target/47935
