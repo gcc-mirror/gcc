@@ -1,3 +1,8 @@
+2011-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/47925
+	* gcc.c-torture/execute/pr47925.c: New test.
+
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/decltype25.C: New.
