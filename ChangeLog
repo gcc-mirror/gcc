@@ -1,5 +1,10 @@
 2011-03-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* configure.ac: Add -lpwl to ppllibs.
+	* configure: Regenerated.
+
+2011-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* config/cloog.m4: Add -lisl to clooglibs.
 	* configure: Regenerated.
 
