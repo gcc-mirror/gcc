@@ -46,6 +46,7 @@
 #include "langhooks.h"
 #include "gimple.h"
 #include "df.h"
+#include "reload.h"
 #include "ggc.h"
 
 static rtx emit_addhi3_postreload (rtx, rtx, rtx);
@@ -106,6 +107,15 @@ xstormy16_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
   return (CONST_INT_P (x) ? 2
 	  : GET_CODE (x) == PLUS ? 7
 	  : 5);
+}
+
+/* Worker function for TARGET_MEMORY_MOVE_COST.  */
+
+static int
+xstormy16_memory_move_cost (enum machine_mode mode, reg_class_t rclass,
+			    bool in)
+{
+  return (5 + memory_move_secondary_cost (mode, rclass, in));
 }
 
 /* Branches are handled as follows:
@@ -2598,6 +2608,8 @@ static const struct default_options xstorym16_option_optimization_table[] =
 #undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
+#undef  TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST xstormy16_memory_move_cost
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS xstormy16_rtx_costs
 #undef  TARGET_ADDRESS_COST

@@ -354,10 +354,6 @@ enum reg_class
 
 /* Describing Relative Costs of Operations.  */
 
-#define REGISTER_MOVE_COST(MODE, FROM, TO) 2
-
-#define MEMORY_MOVE_COST(M,C,I) (5 + memory_move_secondary_cost (M, C, I))
-
 #define BRANCH_COST(speed_p, predictable_p) 5
 
 #define SLOW_BYTE_ACCESS 0

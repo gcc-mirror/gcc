@@ -1,3 +1,11 @@
+2011-03-02  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/stormy16/stormy16.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST):
+	Remove.
+	* config/stormy16/stormy16.c: Include reload.h.
+	(xstormy16_memory_move_cost): New function.
+	(TARGET_MEMORY_MOVE_COST): Define.
+
 2011-03-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR rtl-optimization/47925
