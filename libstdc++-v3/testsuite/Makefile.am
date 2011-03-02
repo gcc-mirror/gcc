@@ -247,8 +247,8 @@ check-profile: site.exp
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
 	     testsuite_* site.exp abi_check baseline_symbols *TEST* *.dat \
-	     *.ii *.s *.o *.cc *.x *.a *.so *.xml 
+	     *.ii *.s *.o *.cc *.x *.a *.so *.xml *.raw *.out
 
 # To remove directories.
 clean-local:
-	rm -rf de fr debug parallel profile binaries 
+	rm -rf de fr debug parallel profile binaries normal*
