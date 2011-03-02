@@ -1,3 +1,9 @@
+2011-03-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46159
+	* parser.c (cp_parser_primary_expression): Don't warn about a
+	failed tentative parse.
+
 2011-02-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47904
