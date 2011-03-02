@@ -1,5 +1,9 @@
 2011-03-02  Marc Glisse  <marc.glisse@normalesup.org>
 
+	* include/std/ratio (ratio_less): Add comments.
+
+2011-03-02  Marc Glisse  <marc.glisse@normalesup.org>
+
 	PR libstdc++/47913
 	* include/std/ratio (ratio_add): Avoid denominator overflow.
 	* testsuite/20_util/ratio/operations/47913.cc: New.
