@@ -1,3 +1,9 @@
+2011-03-02  Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++/47913
+	* include/std/ratio (ratio_add): Avoid denominator overflow.
+	* testsuite/20_util/ratio/operations/47913.cc: New.
+
 2011-02-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/20_util/hash/chi2_quality.cc: Use C++0x mode on simulators.
