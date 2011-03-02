@@ -44,7 +44,7 @@
 	* objc.dg/gnu-api-2-sel.m: Test that sel_getTypedSelector return
 	NULL in case of a selector with conflicting types.
 	* obj-c++.dg/gnu-api-2-sel.mm: Same change.
-	
+
 2011-02-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.target/arm/vfp-ldmdbd.c, gcc.target/arm/vfp-ldmdbs.c,
@@ -316,12 +316,10 @@
 	* g++.dg/ext/is_empty.C: Ditto.
 	* g++.dg/ext/is_enum.C: Ditto.
 	* g++.dg/ext/has_nothrow_constructor_odr.C: Ditto.
-	* g++.dg/ext/.C: Ditto.
-	* g++.dg/ext/.C: Ditto.
 	* gnat.dg/opt11.adb: Ditto.
 	* obj-c++.dg/pr45735.mm: Ditto.
 	* obj-c++.dg/pr24393.mm: Ditto.
-	* obj-c++.dg/exceptions-2.cc: Ditto.
+	* obj-c++.dg/exceptions-2.mm: Ditto.
 	* objc.dg/pr45735.m: Ditto.
 	* objc.dg/pr24393.m: Ditto.
 
