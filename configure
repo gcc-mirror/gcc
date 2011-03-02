@@ -5963,7 +5963,7 @@ $as_echo "$gcc_cv_cloog_type" >&6; }
       ;;
     "ISL")
       clooginc="${clooginc} ${_cloogorginc}"
-      clooglibs="${clooglibs} -lcloog-isl"
+      clooglibs="${clooglibs} -lcloog-isl -lisl"
       cloog_org=yes
       ;;
     "PPL")

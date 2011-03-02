@@ -1,3 +1,8 @@
+2011-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* config/cloog.m4: Add -lisl to clooglibs.
+	* configure: Regenerated.
+
 2011-02-24  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* MAINTAINERS (CPU Port maintainers): Add self.

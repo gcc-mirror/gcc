@@ -179,7 +179,7 @@ AC_DEFUN([CLOOG_FIND_FLAGS],
       ;;
     "ISL")
       clooginc="${clooginc} ${_cloogorginc}"
-      clooglibs="${clooglibs} -lcloog-isl"
+      clooglibs="${clooglibs} -lcloog-isl -lisl"
       cloog_org=yes
       ;;
     "PPL")
