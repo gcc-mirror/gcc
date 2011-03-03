@@ -12321,7 +12321,10 @@ Send_expression::do_traverse(Traverse* traverse)
 Type*
 Send_expression::do_type()
 {
-  return Type::lookup_bool_type();
+  if (this->is_value_discarded_)
+    return Type::make_void_type();
+  else
+    return Type::lookup_bool_type();
 }
 
 // Set types.
