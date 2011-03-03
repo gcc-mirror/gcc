@@ -1,3 +1,8 @@
+2011-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47950
+	* pt.c (tsubst_copy_and_build) [TARGET_EXPR]: Retain TREE_CONSTANT.
+
 2011-03-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47950
