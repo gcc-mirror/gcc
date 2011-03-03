@@ -688,14 +688,6 @@ CUMULATIVE_ARGS;
   (N) == 16 || (N) == 17 || (TARGET_64BIT && ((N) == 18 || (N) == 19)))
 
 
-/* Scalar return values.  */
-
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  s390_function_value ((VALTYPE), (FUNC), VOIDmode)
-
-#define LIBCALL_VALUE(MODE) \
-  s390_function_value (NULL, NULL, (MODE))
-
 /* Only gpr 2 and fpr 0 are ever used as return registers.  */
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 2 || (N) == 16)
 

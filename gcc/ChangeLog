@@ -1,3 +1,15 @@
+2011-03-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_function_value): Rename to ...
+	(s390_function_and_libcall_value): ... this.
+	(s390_function_value): New function.
+	(s390_libcall_value): New function.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE): Define target
+	hooks.
+	* config/s390/s390.h (FUNCTION_VALUE, LIBCALL_VALUE): Remove
+	target macro definitions.
+	* config/s390/s390-protos.h (s390_function_value): Remove prototype.
+
 2011-03-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/i386/freebsd64.h (CC1_SPEC): Define.
