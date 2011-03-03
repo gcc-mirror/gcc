@@ -769,7 +769,7 @@ Type::check_int_value(Expression* e, const char* errmsg,
   mpfr_init(fval);
 
   Type* dummy;
-  if (e->float_constant_value(fval, &dummy))
+  if (e->float_constant_value(fval, &dummy) && mpfr_integer_p(fval))
     {
       mpz_t ival;
       mpz_init(ival);
