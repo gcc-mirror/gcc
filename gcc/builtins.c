@@ -784,7 +784,7 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
 			    plus_constant (buf_addr,
 					   2 * GET_MODE_SIZE (Pmode)));
   set_mem_alias_set (stack_save, setjmp_alias_set);
-  emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
+  emit_stack_save (SAVE_NONLOCAL, &stack_save);
 
   /* If there is further processing to do, do it.  */
 #ifdef HAVE_builtin_setjmp_setup
@@ -932,7 +932,7 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 	  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
 	  emit_move_insn (hard_frame_pointer_rtx, fp);
-	  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+	  emit_stack_restore (SAVE_NONLOCAL, stack);
 
 	  emit_use (hard_frame_pointer_rtx);
 	  emit_use (stack_pointer_rtx);
@@ -1005,7 +1005,7 @@ expand_builtin_nonlocal_goto (tree exp)
 	 The non-local goto handler will then adjust it to contain the
 	 proper value and reload the argument pointer, if needed.  */
       emit_move_insn (hard_frame_pointer_rtx, r_fp);
-      emit_stack_restore (SAVE_NONLOCAL, r_sp, NULL_RTX);
+      emit_stack_restore (SAVE_NONLOCAL, r_sp);
 
       /* USE of hard_frame_pointer_rtx added for consistency;
 	 not clear if really needed.  */
@@ -1075,7 +1075,7 @@ expand_builtin_update_setjmp_buf (rtx buf_addr)
     emit_insn (gen_setjmp ());
 #endif
 
-  emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
+  emit_stack_save (SAVE_NONLOCAL, &stack_save);
 }
 
 /* Expand a call to __builtin_prefetch.  For a target that does not support
@@ -1558,10 +1558,10 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   /* Save the stack with nonlocal if available.  */
 #ifdef HAVE_save_stack_nonlocal
   if (HAVE_save_stack_nonlocal)
-    emit_stack_save (SAVE_NONLOCAL, &old_stack_level, NULL_RTX);
+    emit_stack_save (SAVE_NONLOCAL, &old_stack_level);
   else
 #endif
-    emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+    emit_stack_save (SAVE_BLOCK, &old_stack_level);
 
   /* Allocate a block of memory onto the stack and copy the memory
      arguments to the outgoing arguments address.  We can pass TRUE
@@ -1677,10 +1677,10 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   /* Restore the stack.  */
 #ifdef HAVE_save_stack_nonlocal
   if (HAVE_save_stack_nonlocal)
-    emit_stack_restore (SAVE_NONLOCAL, old_stack_level, NULL_RTX);
+    emit_stack_restore (SAVE_NONLOCAL, old_stack_level);
   else
 #endif
-    emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+    emit_stack_restore (SAVE_BLOCK, old_stack_level);
 
   OK_DEFER_POP;
 

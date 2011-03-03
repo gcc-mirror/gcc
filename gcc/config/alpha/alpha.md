@@ -6765,7 +6765,7 @@
   /* This bit is the same as expand_builtin_longjmp.  */
   emit_move_insn (hard_frame_pointer_rtx, fp);
   emit_move_insn (pv, lab);
-  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+  emit_stack_restore (SAVE_NONLOCAL, stack);
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
 

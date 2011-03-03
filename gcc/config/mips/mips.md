@@ -5649,7 +5649,7 @@
      restores $gp as well.  */
   mips_emit_move (hard_frame_pointer_rtx, fp);
   mips_emit_move (pv, lab);
-  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+  emit_stack_restore (SAVE_NONLOCAL, stack);
   mips_emit_move (gp, gpv);
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);

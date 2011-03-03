@@ -6865,7 +6865,7 @@
     fp = force_reg (Pmode, fp);
   emit_move_insn (hard_frame_pointer_rtx, plus_constant (fp, -8));
 
-  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+  emit_stack_restore (SAVE_NONLOCAL, stack);
 
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
@@ -8310,7 +8310,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   emit_move_insn (hard_frame_pointer_rtx, plus_constant (fp, -8));
 
   /* This bit is the same as expand_builtin_longjmp.  */
-  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+  emit_stack_restore (SAVE_NONLOCAL, stack);
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
 

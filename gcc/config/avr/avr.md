@@ -169,7 +169,7 @@
   emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
 
   emit_move_insn (hard_frame_pointer_rtx, r_fp);
-  emit_stack_restore (SAVE_NONLOCAL, r_sp, NULL_RTX);
+  emit_stack_restore (SAVE_NONLOCAL, r_sp);
 
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
