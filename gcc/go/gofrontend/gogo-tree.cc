@@ -926,7 +926,16 @@ Named_object::get_tree(Gogo* gogo, Named_object* function)
 	  {
 	    Type* type = named_constant->type();
 	    if (type != NULL && !type->is_abstract())
-	      expr_tree = fold_convert(type->get_tree(gogo), expr_tree);
+	      {
+		if (!type->is_undefined())
+		  expr_tree = fold_convert(type->get_tree(gogo), expr_tree);
+		else
+		  {
+		    // Make sure we report the error.
+		    type->base();
+		    expr_tree = error_mark_node;
+		  }
+	      }
 	    if (expr_tree == error_mark_node)
 	      decl = error_mark_node;
 	    else if (INTEGRAL_TYPE_P(TREE_TYPE(expr_tree)))
