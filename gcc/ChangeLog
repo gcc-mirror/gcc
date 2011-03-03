@@ -1,3 +1,9 @@
+2011-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*avx_pmaddubsw128): Fix mode of VEC_SELECT RTX.
+	(ssse3_pmaddubsw128): Ditto.
+	(ssse3_pmaddubsw): Ditto.
+
 2011-02-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/47840
