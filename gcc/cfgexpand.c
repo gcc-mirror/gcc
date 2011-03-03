@@ -2578,6 +2578,15 @@ expand_debug_expr (tree exp)
       }
 
     case MEM_REF:
+      if (!is_gimple_mem_ref_addr (TREE_OPERAND (exp, 0)))
+	{
+	  tree newexp = fold_binary (MEM_REF, TREE_TYPE (exp),
+				     TREE_OPERAND (exp, 0),
+				     TREE_OPERAND (exp, 1));
+	  if (newexp)
+	    return expand_debug_expr (newexp);
+	}
+      /* FALLTHROUGH */
     case INDIRECT_REF:
       op0 = expand_debug_expr (TREE_OPERAND (exp, 0));
       if (!op0)
@@ -2611,6 +2620,9 @@ expand_debug_expr (tree exp)
 
       op0 = gen_rtx_MEM (mode, op0);
       set_mem_attributes (op0, exp, 0);
+      if (TREE_CODE (exp) == MEM_REF
+	  && !is_gimple_mem_ref_addr (TREE_OPERAND (exp, 0)))
+	set_mem_expr (op0, NULL_TREE);
       set_mem_addr_space (op0, as);
 
       return op0;
