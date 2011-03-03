@@ -1,3 +1,12 @@
+2011-03-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47774
+	* tree.c (build_vec_init_elt): Split out from...
+	(build_vec_init_expr): ...here.
+	(diagnose_non_constexpr_vec_init): New fn.
+	* semantics.c (potential_constant_expression_1): Use it.
+	* cp-tree.h: Declare it.
+
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46159
