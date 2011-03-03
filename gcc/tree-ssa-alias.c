@@ -178,7 +178,7 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
       || (TREE_CODE (decl) != VAR_DECL
 	  && TREE_CODE (decl) != PARM_DECL
 	  && TREE_CODE (decl) != RESULT_DECL))
-    return false;
+    return true;
 
   /* Disregard pointer offsetting.  */
   if (TREE_CODE (ptr) == POINTER_PLUS_EXPR)
@@ -1080,7 +1080,12 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 				      ao_ref_alias_set (ref2), -1,
 				      tbaa_p);
 
+  /* We really do not want to end up here, but returning true is safe.  */
+#ifdef ENABLE_CHECKING
   gcc_unreachable ();
+#else
+  return true;
+#endif
 }
 
 bool
