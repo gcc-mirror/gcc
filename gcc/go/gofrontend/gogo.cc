@@ -34,7 +34,8 @@ Gogo::Gogo(int int_type_size, int pointer_size)
     imported_init_fns_(),
     unique_prefix_(),
     unique_prefix_specified_(false),
-    interface_types_()
+    interface_types_(),
+    named_types_are_converted_(false)
 {
   const source_location loc = BUILTINS_LOCATION;
 
@@ -1119,11 +1120,6 @@ class Verify_types : public Traverse
 int
 Verify_types::type(Type* t)
 {
-  // Don't verify types defined in other packages.
-  Named_type* nt = t->named_type();
-  if (nt != NULL && nt->named_object()->package() != NULL)
-    return TRAVERSE_SKIP_COMPONENTS;
-
   if (!t->verify())
     return TRAVERSE_SKIP_COMPONENTS;
   return TRAVERSE_CONTINUE;
@@ -2518,6 +2514,83 @@ Gogo::do_exports()
 		      : ""),
 		     this->imported_init_fns_,
 		     this->package_->bindings());
+}
+
+// Find the blocks in order to convert named types defined in blocks.
+
+class Convert_named_types : public Traverse
+{
+ public:
+  Convert_named_types(Gogo* gogo)
+    : Traverse(traverse_blocks),
+      gogo_(gogo)
+  { }
+
+ protected:
+  int
+  block(Block* block);
+
+ private:
+  Gogo* gogo_;
+};
+
+int
+Convert_named_types::block(Block* block)
+{
+  this->gogo_->convert_named_types_in_bindings(block->bindings());
+  return TRAVERSE_CONTINUE;
+}
+
+// Convert all named types to the backend representation.  Since named
+// types can refer to other types, this needs to be done in the right
+// sequence, which is handled by Named_type::convert.  Here we arrange
+// to call that for each named type.
+
+void
+Gogo::convert_named_types()
+{
+  this->convert_named_types_in_bindings(this->globals_);
+  for (Packages::iterator p = this->packages_.begin();
+       p != this->packages_.end();
+       ++p)
+    {
+      Package* package = p->second;
+      this->convert_named_types_in_bindings(package->bindings());
+    }
+
+  Convert_named_types cnt(this);
+  this->traverse(&cnt);
+
+  // Make all the builtin named types used for type descriptors, and
+  // then convert them.  They will only be written out if they are
+  // needed.
+  Type::make_type_descriptor_type();
+  Type::make_type_descriptor_ptr_type();
+  Function_type::make_function_type_descriptor_type();
+  Pointer_type::make_pointer_type_descriptor_type();
+  Struct_type::make_struct_type_descriptor_type();
+  Array_type::make_array_type_descriptor_type();
+  Array_type::make_slice_type_descriptor_type();
+  Map_type::make_map_type_descriptor_type();
+  Channel_type::make_chan_type_descriptor_type();
+  Interface_type::make_interface_type_descriptor_type();
+  Type::convert_builtin_named_types(this);
+
+  this->named_types_are_converted_ = true;
+}
+
+// Convert all names types in a set of bindings.
+
+void
+Gogo::convert_named_types_in_bindings(Bindings* bindings)
+{
+  for (Bindings::const_definitions_iterator p = bindings->begin_definitions();
+       p != bindings->end_definitions();
+       ++p)
+    {
+      if ((*p)->is_type())
+	(*p)->type_value()->convert(this);
+    }
 }
 
 // Class Function.

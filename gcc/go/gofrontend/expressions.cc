@@ -7013,6 +7013,8 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
 	return false;
       if (arg_type->is_abstract())
 	return false;
+      if (arg_type->named_type() != NULL)
+	arg_type->named_type()->convert(this->gogo_);
       tree arg_type_tree = arg_type->get_tree(this->gogo_);
       if (arg_type_tree == error_mark_node)
 	return false;
@@ -7057,6 +7059,8 @@ Builtin_call_expression::do_integer_constant_value(bool iota_is_constant,
       Type* st = struct_expr->type();
       if (st->struct_type() == NULL)
 	return false;
+      if (st->named_type() != NULL)
+	st->named_type()->convert(this->gogo_);
       tree struct_tree = st->get_tree(this->gogo_);
       gcc_assert(TREE_CODE(struct_tree) == RECORD_TYPE);
       tree field = TYPE_FIELDS(struct_tree);
@@ -8793,10 +8797,21 @@ Call_expression::do_get_tree(Translate_context* context)
       return error_mark_node;
     }
 
-  // This is to support builtin math functions when using 80387 math.
   tree fndecl = fn;
   if (TREE_CODE(fndecl) == ADDR_EXPR)
     fndecl = TREE_OPERAND(fndecl, 0);
+
+  // Add a type cast in case the type of the function is a recursive
+  // type which refers to itself.
+  if (!DECL_P(fndecl) || !DECL_IS_BUILTIN(fndecl))
+    {
+      tree fnt = fntype->get_tree(gogo);
+      if (fnt == error_mark_node)
+	return error_mark_node;
+      fn = fold_convert_loc(location, fnt, fn);
+    }
+
+  // This is to support builtin math functions when using 80387 math.
   tree excess_type = NULL_TREE;
   if (DECL_P(fndecl)
       && DECL_IS_BUILTIN(fndecl)
@@ -8842,7 +8857,7 @@ Call_expression::do_get_tree(Translate_context* context)
   // to the correct type.
   if (TREE_TYPE(ret) == ptr_type_node)
     {
-      tree t = this->type()->get_tree(gogo);
+      tree t = this->type()->base()->get_tree(gogo);
       ret = fold_convert_loc(location, t, ret);
     }
 

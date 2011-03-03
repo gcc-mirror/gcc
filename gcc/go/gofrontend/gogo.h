@@ -405,6 +405,20 @@ class Gogo
   void
   simplify_thunk_statements();
 
+  // Convert named types to the backend representation.
+  void
+  convert_named_types();
+
+  // Convert named types in a list of bindings.
+  void
+  convert_named_types_in_bindings(Bindings*);
+
+  // True if named types have been converted to the backend
+  // representation.
+  bool
+  named_types_are_converted() const
+  { return this->named_types_are_converted_; }
+
   // Write out the global values.
   void
   write_globals();
@@ -661,6 +675,8 @@ class Gogo
   bool unique_prefix_specified_;
   // A list of interface types defined while parsing.
   std::vector<Interface_type*> interface_types_;
+  // Whether named types have been converted.
+  bool named_types_are_converted_;
 };
 
 // A block of statements.
