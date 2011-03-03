@@ -8966,9 +8966,14 @@ static tree
 tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
   tree orig_t = t;
-  int len = TREE_VEC_LENGTH (t);
-  int need_new = 0, i, expanded_len_adjust = 0, out;
-  tree *elts = XALLOCAVEC (tree, len);
+  int len, need_new = 0, i, expanded_len_adjust = 0, out;
+  tree *elts;
+
+  if (t == error_mark_node)
+    return error_mark_node;
+
+  len = TREE_VEC_LENGTH (t);
+  elts = XALLOCAVEC (tree, len);
 
   for (i = 0; i < len; i++)
     {

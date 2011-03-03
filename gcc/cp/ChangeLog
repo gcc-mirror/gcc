@@ -1,3 +1,8 @@
+2011-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47974
+	* pt.c (tsubst_template_args): Check argument t for error_mark_node.
+
 2011-03-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47950
