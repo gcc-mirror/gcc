@@ -7300,7 +7300,12 @@ Named_type::do_get_tree(Gogo* gogo)
 
   // We are not converting types.  This should only be called if the
   // type has already been converted.
-  gcc_assert(this->is_converted_);
+  if (!this->is_converted_)
+    {
+      gcc_assert(saw_errors());
+      return error_mark_node;
+    }
+
   gcc_assert(t != NULL_TREE && TYPE_SIZE(t) != NULL_TREE);
 
   // Complete the tree.
