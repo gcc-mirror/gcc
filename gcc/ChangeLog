@@ -1,5 +1,9 @@
 2011-03-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/47963
+	* gimplify.c (omp_add_variable): Only call omp_notice_variable
+	on TYPE_SIZE_UNIT if it is a DECL.
+
 	PR debug/47283
 	* cfgexpand.c (expand_debug_expr) <case MEM_REF>: If MEM_REF
 	first operand is not is_gimple_mem_ref_addr, try to fold it.
