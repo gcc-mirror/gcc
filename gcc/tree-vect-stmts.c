@@ -2238,7 +2238,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   int op_type;
   optab optab;
   int icode;
-  enum machine_mode optab_op2_mode;
   tree def;
   gimple def_stmt;
   enum vect_def_type dt[2] = {vect_unknown_def_type, vect_unknown_def_type};
@@ -2251,8 +2250,6 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   int j, i;
   VEC(tree,heap) *vec_oprnds0 = NULL, *vec_oprnds1 = NULL;
   tree vop0, vop1;
-  unsigned int k;
-  bool scalar_shift_arg = false;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   int vf;
 
