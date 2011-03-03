@@ -1161,7 +1161,7 @@ class Call_expression : public Expression
 		  source_location location)
     : Expression(EXPRESSION_CALL, location),
       fn_(fn), args_(args), type_(NULL), tree_(NULL), is_varargs_(is_varargs),
-      is_value_discarded_(false), varargs_are_lowered_(false),
+      varargs_are_lowered_(false), types_are_determined_(false),
       is_deferred_(false)
   { }
 
@@ -1220,7 +1220,7 @@ class Call_expression : public Expression
 
   void
   do_discarding_value()
-  { this->is_value_discarded_ = true; }
+  { }
 
   virtual Type*
   do_type();
@@ -1263,6 +1263,11 @@ class Call_expression : public Expression
   lower_varargs(Gogo*, Named_object* function, Type* varargs_type,
 		size_t param_count);
 
+  // Let a builtin expression check whether types have been
+  // determined.
+  bool
+  determining_types();
+
  private:
   bool
   check_argument_type(int, const Type*, const Type*, source_location, bool);
@@ -1286,10 +1291,10 @@ class Call_expression : public Expression
   tree tree_;
   // True if the last argument is a varargs argument (f(a...)).
   bool is_varargs_;
-  // True if the value is being discarded.
-  bool is_value_discarded_;
   // True if varargs have already been lowered.
   bool varargs_are_lowered_;
+  // True if types have been determined.
+  bool types_are_determined_;
   // True if the call is an argument to a defer statement.
   bool is_deferred_;
 };
