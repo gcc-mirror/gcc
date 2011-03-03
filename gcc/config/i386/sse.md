@@ -8885,7 +8885,7 @@
 	(ss_plus:V8HI
 	  (mult:V8HI
 	    (zero_extend:V8HI
-	      (vec_select:V4QI
+	      (vec_select:V8QI
 		(match_operand:V16QI 1 "register_operand" "x")
 		(parallel [(const_int 0)
 			   (const_int 2)
@@ -8908,7 +8908,7 @@
 			   (const_int 14)]))))
 	  (mult:V8HI
 	    (zero_extend:V8HI
-	      (vec_select:V16QI (match_dup 1)
+	      (vec_select:V8QI (match_dup 1)
 		(parallel [(const_int 1)
 			   (const_int 3)
 			   (const_int 5)
@@ -8918,7 +8918,7 @@
 			   (const_int 13)
 			   (const_int 15)])))
 	    (sign_extend:V8HI
-	      (vec_select:V16QI (match_dup 2)
+	      (vec_select:V8QI (match_dup 2)
 		(parallel [(const_int 1)
 			   (const_int 3)
 			   (const_int 5)
@@ -8939,7 +8939,7 @@
 	(ss_plus:V8HI
 	  (mult:V8HI
 	    (zero_extend:V8HI
-	      (vec_select:V4QI
+	      (vec_select:V8QI
 		(match_operand:V16QI 1 "register_operand" "0")
 		(parallel [(const_int 0)
 			   (const_int 2)
@@ -8962,7 +8962,7 @@
 			   (const_int 14)]))))
 	  (mult:V8HI
 	    (zero_extend:V8HI
-	      (vec_select:V16QI (match_dup 1)
+	      (vec_select:V8QI (match_dup 1)
 		(parallel [(const_int 1)
 			   (const_int 3)
 			   (const_int 5)
@@ -8972,7 +8972,7 @@
 			   (const_int 13)
 			   (const_int 15)])))
 	    (sign_extend:V8HI
-	      (vec_select:V16QI (match_dup 2)
+	      (vec_select:V8QI (match_dup 2)
 		(parallel [(const_int 1)
 			   (const_int 3)
 			   (const_int 5)
@@ -9009,13 +9009,13 @@
 			   (const_int 6)]))))
 	  (mult:V4HI
 	    (zero_extend:V4HI
-	      (vec_select:V8QI (match_dup 1)
+	      (vec_select:V4QI (match_dup 1)
 		(parallel [(const_int 1)
 			   (const_int 3)
 			   (const_int 5)
 			   (const_int 7)])))
 	    (sign_extend:V4HI
-	      (vec_select:V8QI (match_dup 2)
+	      (vec_select:V4QI (match_dup 2)
 		(parallel [(const_int 1)
 			   (const_int 3)
 			   (const_int 5)
