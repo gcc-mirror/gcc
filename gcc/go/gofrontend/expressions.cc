@@ -7250,6 +7250,9 @@ Builtin_call_expression::do_type()
 void
 Builtin_call_expression::do_determine_type(const Type_context* context)
 {
+  if (!this->determining_types())
+    return;
+
   this->fn()->determine_type_no_context();
 
   const Expression_list* args = this->args();
@@ -8486,6 +8489,9 @@ Call_expression::do_type()
 void
 Call_expression::do_determine_type(const Type_context*)
 {
+  if (!this->determining_types())
+    return;
+
   this->fn_->determine_type_no_context();
   Function_type* fntype = this->get_function_type();
   const Typed_identifier_list* parameters = NULL;
@@ -8509,6 +8515,21 @@ Call_expression::do_determine_type(const Type_context*)
 	  else
 	    (*pa)->determine_type_no_context();
 	}
+    }
+}
+
+// Called when determining types for a Call_expression.  Return true
+// if we should go ahead, false if they have already been determined.
+
+bool
+Call_expression::determining_types()
+{
+  if (this->types_are_determined_)
+    return false;
+  else
+    {
+      this->types_are_determined_ = true;
+      return true;
     }
 }
 
@@ -9004,8 +9025,7 @@ Call_result_expression::do_check_types(Gogo*)
 void
 Call_result_expression::do_determine_type(const Type_context*)
 {
-  if (this->index_ == 0)
-    this->call_->determine_type_no_context();
+  this->call_->determine_type_no_context();
 }
 
 // Return the tree.
