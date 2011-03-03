@@ -7963,9 +7963,7 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
   if (type->deref()->is_error_type())
     return Expression::make_error(location);
 
-  const Named_type* nt = type->named_type();
-  if (nt == NULL)
-    nt = type->deref()->named_type();
+  const Named_type* nt = type->deref()->named_type();
   const Struct_type* st = type->deref()->struct_type();
   const Interface_type* it = type->deref()->interface_type();
 
