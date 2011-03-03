@@ -1,6 +1,6 @@
 /* Tree lowering pass.  This pass converts the GENERIC functions-as-trees
    tree representation into the GIMPLE form.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Major work done by Sebastian Pop <s.pop@laposte.net>,
    Diego Novillo <dnovillo@redhat.com> and Jason Merrill <jason@redhat.com>.
@@ -5511,7 +5511,8 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	 For local variables TYPE_SIZE_UNIT might not be gimplified yet,
 	 in this case omp_notice_variable will be called later
 	 on when it is gimplified.  */
-      else if (! (flags & GOVD_LOCAL))
+      else if (! (flags & GOVD_LOCAL)
+	       && DECL_P (TYPE_SIZE_UNIT (TREE_TYPE (decl))))
 	omp_notice_variable (ctx, TYPE_SIZE_UNIT (TREE_TYPE (decl)), true);
     }
   else if (lang_hooks.decls.omp_privatize_by_reference (decl))

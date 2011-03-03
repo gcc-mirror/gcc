@@ -1,3 +1,9 @@
+2011-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/47963
+	* gcc.dg/gomp/pr47963.c: New test.
+	* g++.dg/gomp/pr47963.C: New test.
+
 2011-03-02  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/regress/condition1.C: New.
