@@ -2063,9 +2063,12 @@ Parse::function_decl()
 	  return;
 	}
       this->advance_token();
-      named_object = this->gogo_->declare_function(name, fntype, location);
-      if (named_object->is_function_declaration())
-	named_object->func_declaration_value()->set_asm_name(asm_name);
+      if (!Gogo::is_sink_name(name))
+	{
+	  named_object = this->gogo_->declare_function(name, fntype, location);
+	  if (named_object->is_function_declaration())
+	    named_object->func_declaration_value()->set_asm_name(asm_name);
+	}
     }
 
   // Check for the easy error of a newline before the opening brace.
@@ -2082,8 +2085,8 @@ Parse::function_decl()
 
   if (!this->peek_token()->is_op(OPERATOR_LCURLY))
     {
-      if (named_object == NULL)
-	named_object = this->gogo_->declare_function(name, fntype, location);
+      if (named_object == NULL && !Gogo::is_sink_name(name))
+	this->gogo_->declare_function(name, fntype, location);
     }
   else
     {
