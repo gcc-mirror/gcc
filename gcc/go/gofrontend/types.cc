@@ -1764,7 +1764,12 @@ Integer_type::do_hash_for_method(Gogo*) const
 tree
 Integer_type::do_get_tree(Gogo*)
 {
-  gcc_assert(!this->is_abstract_);
+  if (this->is_abstract_)
+    {
+      gcc_assert(saw_errors());
+      return error_mark_node;
+    }
+
   if (this->is_unsigned_)
     {
       if (this->bits_ == INT_TYPE_SIZE)
@@ -1818,7 +1823,7 @@ Integer_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 void
 Integer_type::do_reflection(Gogo*, std::string*) const
 {
-  gcc_unreachable();
+  gcc_assert(saw_errors());
 }
 
 // Mangled name.
@@ -1974,7 +1979,7 @@ Float_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 void
 Float_type::do_reflection(Gogo*, std::string*) const
 {
-  gcc_unreachable();
+  gcc_assert(saw_errors());
 }
 
 // Mangled name.
@@ -2134,7 +2139,7 @@ Complex_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 void
 Complex_type::do_reflection(Gogo*, std::string*) const
 {
-  gcc_unreachable();
+  gcc_assert(saw_errors());
 }
 
 // Mangled name.
