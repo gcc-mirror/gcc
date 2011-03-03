@@ -1,3 +1,12 @@
+2011-03-03  Denis Chertykov <chertykov@gmail.com>
+
+	Backport from mainline
+	2011-02-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/42240
+	* config/avr/avr.c (avr_cannot_modify_jumps_p): New function.
+	(TARGET_CANNOT_MODIFY_JUMPS_P): Define.
+
 2011-03-03  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-stmt.c (vectorizable_operation): Remove unused vars.
