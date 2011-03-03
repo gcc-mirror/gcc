@@ -970,7 +970,7 @@ Tuple_map_assignment_statement::do_lower(Gogo*, Block* enclosing)
   param_types->push_back(Typed_identifier("val", pval_type, bloc));
 
   Typed_identifier_list* ret_types = new Typed_identifier_list();
-  ret_types->push_back(Typed_identifier("", Type::make_boolean_type(), bloc));
+  ret_types->push_back(Typed_identifier("", Type::lookup_bool_type(), bloc));
 
   Function_type* fntype = Type::make_function_type(NULL, param_types,
 						   ret_types, bloc);
@@ -2026,7 +2026,7 @@ Thunk_statement::build_struct(Function_type* fntype)
       // we add an argument when building recover thunks.  Handle that
       // here.
       fields->push_back(Struct_field(Typed_identifier("can_recover",
-						      Type::make_boolean_type(),
+						      Type::lookup_bool_type(),
 						      location)));
     }
 
@@ -2103,7 +2103,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
       // return value, to disable tail call optimizations which will
       // break the way we check whether recover is permitted.
       thunk_results = new Typed_identifier_list();
-      thunk_results->push_back(Typed_identifier("", Type::make_boolean_type(),
+      thunk_results->push_back(Typed_identifier("", Type::lookup_bool_type(),
 						location));
     }
 
@@ -2135,7 +2135,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name,
 
 	  Typed_identifier_list* result_types = new Typed_identifier_list();
 	  result_types->push_back(Typed_identifier("",
-						   Type::make_boolean_type(),
+						   Type::lookup_bool_type(),
 						   bloc));
 
 	  Function_type* t = Type::make_function_type(NULL, param_types,

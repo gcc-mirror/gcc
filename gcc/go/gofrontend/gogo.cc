@@ -1730,7 +1730,7 @@ Shortcuts::convert_shortcut(Block* enclosing, Expression** pshortcut)
   Block* retblock = new Block(enclosing, loc);
   retblock->set_end_location(loc);
 
-  Temporary_statement* ts = Statement::make_temporary(Type::make_boolean_type(),
+  Temporary_statement* ts = Statement::make_temporary(Type::lookup_bool_type(),
 						      left, loc);
   retblock->add_statement(ts);
 
@@ -2086,7 +2086,7 @@ Build_recover_thunks::function(Named_object* orig_no)
   ++count;
   std::string can_recover_name = buf;
   new_params->push_back(Typed_identifier(can_recover_name,
-					 Type::make_boolean_type(),
+					 Type::lookup_bool_type(),
 					 orig_fntype->location()));
 
   const Typed_identifier_list* orig_results = orig_fntype->results();
@@ -2222,7 +2222,7 @@ Build_recover_thunks::function(Named_object* orig_no)
 
   // Add the can_recover argument to the (now) new bindings, and
   // attach it to any recover statements.
-  Variable* can_recover_var = new Variable(Type::make_boolean_type(), NULL,
+  Variable* can_recover_var = new Variable(Type::lookup_bool_type(), NULL,
 					   false, true, false, location);
   can_recover_no = new_bindings->add_variable(can_recover_name, NULL,
 					      can_recover_var);
@@ -2273,7 +2273,7 @@ Build_recover_thunks::can_recover_arg(source_location location)
       Typed_identifier_list* param_types = new Typed_identifier_list();
       Type* voidptr_type = Type::make_pointer_type(Type::make_void_type());
       param_types->push_back(Typed_identifier("a", voidptr_type, bloc));
-      Type* boolean_type = Type::make_boolean_type();
+      Type* boolean_type = Type::lookup_bool_type();
       Typed_identifier_list* results = new Typed_identifier_list();
       results->push_back(Typed_identifier("", boolean_type, bloc));
       Function_type* fntype = Type::make_function_type(NULL, param_types,
@@ -3216,7 +3216,7 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
     is_address_taken_(false), seen_(false), init_is_lowered_(false),
     type_from_init_tuple_(false), type_from_range_index_(false),
     type_from_range_value_(false), type_from_chan_element_(false),
-    is_type_switch_var_(false)
+    is_type_switch_var_(false), determined_type_(false)
 {
   gcc_assert(type != NULL || init != NULL);
   gcc_assert(!is_parameter || init == NULL);
@@ -3456,6 +3456,10 @@ Variable::type() const
 void
 Variable::determine_type()
 {
+  if (this->determined_type_)
+    return;
+  this->determined_type_ = true;
+
   if (this->preinit_ != NULL)
     this->preinit_->determine_types();
 

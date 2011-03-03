@@ -957,6 +957,15 @@ Var_expression::do_type()
     gcc_unreachable();
 }
 
+// Determine the type of a reference to a variable.
+
+void
+Var_expression::do_determine_type(const Type_context*)
+{
+  if (this->variable_->is_variable())
+    this->variable_->var_value()->determine_type();
+}
+
 // Something takes the address of this variable.  This means that we
 // may want to move the variable onto the heap.
 
