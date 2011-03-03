@@ -7722,7 +7722,10 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       if (VEC_INIT_EXPR_IS_CONSTEXPR (t))
 	return true;
       if (flags & tf_error)
-        error ("non-constant array initialization");
+	{
+	  error ("non-constant array initialization");
+	  diagnose_non_constexpr_vec_init (t);
+	}
       return false;
 
     default:

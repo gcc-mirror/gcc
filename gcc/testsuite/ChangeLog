@@ -1,3 +1,7 @@
+2011-03-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-ctor9.C: New.
+
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-98.C: New.

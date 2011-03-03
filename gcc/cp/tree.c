@@ -456,6 +456,47 @@ build_cplus_new (tree type, tree init)
   return rval;
 }
 
+/* Subroutine of build_vec_init_expr: Build up a single element
+   intialization as a proxy for the full array initialization to get things
+   marked as used and any appropriate diagnostics.
+
+   Since we're deferring building the actual constructor calls until
+   gimplification time, we need to build one now and throw it away so
+   that the relevant constructor gets mark_used before cgraph decides
+   what functions are needed.  Here we assume that init is either
+   NULL_TREE, void_type_node (indicating value-initialization), or
+   another array to copy.  */
+
+static tree
+build_vec_init_elt (tree type, tree init)
+{
+  tree inner_type = strip_array_types (type);
+  VEC(tree,gc) *argvec;
+
+  if (integer_zerop (array_type_nelts_total (type))
+      || !CLASS_TYPE_P (inner_type))
+    /* No interesting initialization to do.  */
+    return integer_zero_node;
+  else if (init == void_type_node)
+    return build_value_init (inner_type, tf_warning_or_error);
+
+  gcc_assert (init == NULL_TREE
+	      || (same_type_ignoring_top_level_qualifiers_p
+		  (type, TREE_TYPE (init))));
+
+  argvec = make_tree_vector ();
+  if (init)
+    {
+      tree dummy = build_dummy_object (inner_type);
+      if (!real_lvalue_p (init))
+	dummy = move (dummy);
+      VEC_quick_push (tree, argvec, dummy);
+    }
+  return build_special_member_call (NULL_TREE, complete_ctor_identifier,
+				    &argvec, inner_type, LOOKUP_NORMAL,
+				    tf_warning_or_error);
+}
+
 /* Return a TARGET_EXPR which expresses the initialization of an array to
    be named later, either default-initialization or copy-initialization
    from another array of the same type.  */
@@ -464,68 +505,45 @@ tree
 build_vec_init_expr (tree type, tree init)
 {
   tree slot;
-  tree inner_type = strip_array_types (type);
-  tree elt_init = integer_zero_node;
   bool value_init = false;
+  tree elt_init = build_vec_init_elt (type, init);
 
-  /* Since we're deferring building the actual constructor calls until
-     gimplification time, we need to build one now and throw it away so
-     that the relevant constructor gets mark_used before cgraph decides
-     what functions are needed.  Here we assume that init is either
-     NULL_TREE, void_type_node (indicating value-initialization), or
-     another array to copy.  */
-  if (integer_zerop (array_type_nelts_total (type)))
+  if (init == void_type_node)
     {
-      /* No actual initialization to do.  */;
-      init = NULL_TREE;
-    }
-  else if (init == void_type_node)
-    {
-      elt_init = build_value_init (inner_type, tf_warning_or_error);
       value_init = true;
       init = NULL_TREE;
-    }
-  else
-    {
-      gcc_assert (init == NULL_TREE
-		  || (same_type_ignoring_top_level_qualifiers_p
-		      (type, TREE_TYPE (init))));
-
-      if (CLASS_TYPE_P (inner_type))
-	{
-	  VEC(tree,gc) *argvec = make_tree_vector ();
-	  if (init)
-	    {
-	      tree dummy = build_dummy_object (inner_type);
-	      if (!real_lvalue_p (init))
-		dummy = move (dummy);
-	      VEC_quick_push (tree, argvec, dummy);
-	    }
-	  elt_init
-	    = build_special_member_call (NULL_TREE, complete_ctor_identifier,
-					 &argvec, inner_type, LOOKUP_NORMAL,
-					 tf_warning_or_error);
-	}
     }
 
   slot = build_local_temp (type);
   init = build2 (VEC_INIT_EXPR, type, slot, init);
   SET_EXPR_LOCATION (init, input_location);
 
-  if (current_function_decl
-      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
-    {
-      if (potential_constant_expression (elt_init))
-	VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
-      else if (!processing_template_decl)
-	require_potential_constant_expression (elt_init);
-    }
+  if (cxx_dialect >= cxx0x
+      && potential_constant_expression (elt_init))
+    VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
 
   init = build_target_expr (slot, init);
   TARGET_EXPR_IMPLICIT_P (init) = 1;
 
   return init;
+}
+
+/* Give a helpful diagnostic for a non-constexpr VEC_INIT_EXPR in a context
+   that requires a constant expression.  */
+
+void
+diagnose_non_constexpr_vec_init (tree expr)
+{
+  tree type = TREE_TYPE (VEC_INIT_EXPR_SLOT (expr));
+  tree init, elt_init;
+  if (VEC_INIT_EXPR_VALUE_INIT (expr))
+    init = void_zero_node;
+  else
+    init = VEC_INIT_EXPR_INIT (expr);
+
+  elt_init = build_vec_init_elt (type, init);
+  require_potential_constant_expression (elt_init);
 }
 
 tree
