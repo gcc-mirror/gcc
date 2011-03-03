@@ -1307,6 +1307,8 @@ class Variable
   bool type_from_chan_element_ : 1;
   // True if this is a variable created for a type switch case.
   bool is_type_switch_var_ : 1;
+  // True if we have determined types.
+  bool determined_type_ : 1;
 };
 
 // A variable which is really the name for a function return value, or
