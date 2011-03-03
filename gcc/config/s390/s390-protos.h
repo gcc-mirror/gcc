@@ -111,9 +111,3 @@ extern int s390_branch_condition_mask (rtx);
 extern int s390_compare_and_branch_condition_mask (rtx);
 
 #endif /* RTX_CODE */
-
-#ifdef TREE_CODE
-#ifdef RTX_CODE
-extern rtx s390_function_value (const_tree, const_tree, enum machine_mode);
-#endif /* RTX_CODE */
-#endif /* TREE_CODE */
