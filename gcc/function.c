@@ -5121,10 +5121,15 @@ expand_function_end (void)
   if (! EXIT_IGNORE_STACK
       && cfun->calls_alloca)
     {
-      rtx tem = 0;
+      rtx tem = 0, seq;
 
-      emit_stack_save (SAVE_FUNCTION, &tem, parm_birth_insn);
-      emit_stack_restore (SAVE_FUNCTION, tem, NULL_RTX);
+      start_sequence ();
+      emit_stack_save (SAVE_FUNCTION, &tem);
+      seq = get_insns ();
+      end_sequence ();
+      emit_insn_before (seq, parm_birth_insn);
+
+      emit_stack_restore (SAVE_FUNCTION, tem);
     }
 
   /* ??? This should no longer be necessary since stupid is no longer with

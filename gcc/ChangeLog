@@ -1,3 +1,14 @@
+2011-03-04  Richard Henderson  <rth@redhat.com>
+
+	* explow.c (emit_stack_save): Remove 'after' parameter.
+	(emit_stack_restore): Likewise.
+	* expr.h: Update to match.
+	* builtins.c, calls.c, stmt.c: Likewise.
+	* config/alpha/alpha.md, config/avr/avr.md: Likewise.
+	* config/mips/mips.md, config/pa/pa.md, config/vax/vax.md: Likewise.
+	* function.c (expand_function_end): Insert the emit_stack_save
+	sequence before parm_birth_insn instead of after.
+
 2011-03-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*avx_pmaddubsw128): Fix mode of VEC_SELECT RTX.
