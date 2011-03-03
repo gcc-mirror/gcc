@@ -391,7 +391,10 @@ Temporary_statement::do_get_tree(Translate_context* context)
 {
   gcc_assert(this->decl_ == NULL_TREE);
   tree type_tree = this->type()->get_tree(context->gogo());
-  if (type_tree == error_mark_node)
+  tree init_tree = (this->init_ == NULL
+		    ? NULL_TREE
+		    : this->init_->get_tree(context));
+  if (type_tree == error_mark_node || init_tree == error_mark_node)
     {
       this->decl_ = error_mark_node;
       return error_mark_node;
@@ -423,11 +426,10 @@ Temporary_statement::do_get_tree(Translate_context* context)
 
       this->decl_ = decl;
     }
-  if (this->init_ != NULL)
+  if (init_tree != NULL_TREE)
     DECL_INITIAL(this->decl_) =
       Expression::convert_for_assignment(context, this->type(),
-					 this->init_->type(),
-					 this->init_->get_tree(context),
+					 this->init_->type(), init_tree,
 					 this->location());
   if (this->is_address_taken_)
     TREE_ADDRESSABLE(this->decl_) = 1;
