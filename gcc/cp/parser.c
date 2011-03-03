@@ -8687,9 +8687,6 @@ cp_parser_condition (cp_parser* parser)
 	  if (BRACE_ENCLOSED_INITIALIZER_P (initializer))
 	    maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
 
-	  if (!non_constant_p)
-	    initializer = fold_non_dependent_expr (initializer);
-
 	  /* Process the initializer.  */
 	  cp_finish_decl (decl,
 			  initializer, !non_constant_p,

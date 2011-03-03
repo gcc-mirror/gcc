@@ -1,5 +1,8 @@
 2011-03-02  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47950
+	* parser.c (cp_parser_condition): Don't fold_non_dependent_expr here.
+
 	PR c++/47774
 	* tree.c (build_vec_init_elt): Split out from...
 	(build_vec_init_expr): ...here.
