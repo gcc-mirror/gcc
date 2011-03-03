@@ -139,7 +139,7 @@ and warnings}.
 -Wall  -Waliasing  -Wampersand  -Warray-bounds -Wcharacter-truncation @gol
 -Wconversion -Wimplicit-interface  -Wimplicit-procedure  -Wline-truncation @gol
 -Wintrinsics-std  -Wsurprising  -Wno-tabs  -Wunderflow  -Wunused-parameter @gol
--Wintrinsics-shadow  -Wno-align-commons}
+-Wintrinsic-shadow  -Wno-align-commons}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
@@ -198,7 +198,7 @@ accepted by the compiler:
 
 @table @gcctabopt
 @item -ffree-form
-@item -ffixed-form
+@itemx -ffixed-form
 @opindex @code{ffree-form}
 @opindex @code{fno-fixed-form}
 @cindex options, fortran dialect
@@ -219,7 +219,7 @@ will be ignored and no user-defined procedure with the same name as any
 intrinsic will be called except when it is explicitly declared @code{EXTERNAL}.
 
 @item -fd-lines-as-code
-@item -fd-lines-as-comments
+@itemx -fd-lines-as-comments
 @opindex @code{fd-lines-as-code}
 @opindex @code{fd-lines-as-comments}
 Enable special treatment for lines beginning with @code{d} or @code{D}
@@ -381,7 +381,7 @@ information on preprocessing in @command{gfortran}.
 
 @table @gcctabopt
 @item -cpp
-@item -nocpp
+@itemx -nocpp
 @opindex @code{cpp}
 @opindex @code{fpp}
 @cindex preprocessor, enable
@@ -521,14 +521,14 @@ The standard predefined macros remain defined.
 
 @item -A@var{predicate}=@var{answer}
 @opindex @code{A@var{predicate}=@var{answer}}
-@cindex preprocessing, assertation
+@cindex preprocessing, assertion
 Make an assertion with the predicate @var{predicate} and answer @var{answer}.
 This form is preferred to the older form -A predicate(answer), which is still
 supported, because it does not use shell special characters.
 
 @item -A-@var{predicate}=@var{answer}
 @opindex @code{A-@var{predicate}=@var{answer}}
-@cindex preprocessing, assertation
+@cindex preprocessing, assertion
 Cancel an assertion with the predicate @var{predicate} and answer @var{answer}.
 
 @item -C
@@ -1019,6 +1019,7 @@ configured, this option has no effect.
 @cindex options, runtime
 
 These options affect the runtime behavior of programs compiled with GNU Fortran.
+
 @table @gcctabopt
 @item -fconvert=@var{conversion}
 @opindex @code{fconvert=}@var{conversion}
@@ -1409,10 +1410,10 @@ on the stack. This flag cannot be used together with
 @option{-fmax-stack-var-size=} or @option{-fno-automatic}.
 
 @item -finit-local-zero
-@item -finit-integer=@var{n}
-@item -finit-real=@var{<zero|inf|-inf|nan|snan>} 
-@item -finit-logical=@var{<true|false>}
-@item -finit-character=@var{n}
+@itemx -finit-integer=@var{n}
+@itemx -finit-real=@var{<zero|inf|-inf|nan|snan>}
+@itemx -finit-logical=@var{<true|false>}
+@itemx -finit-character=@var{n}
 @opindex @code{finit-local-zero}
 @opindex @code{finit-integer}
 @opindex @code{finit-real}
@@ -1449,11 +1450,11 @@ consistent data types everywhere, this padding can cause trouble, and
 @option{-fno-align-commons} can be used to disable automatic alignment. The
 same form of this option should be used for all files that share a @code{COMMON} block.
 To avoid potential alignment issues in @code{COMMON} blocks, it is recommended to order
-objects from largests to smallest.
+objects from largest to smallest.
 
 @item -fno-protect-parens
 @opindex @code{fno-protect-parens}
-@cindex re-association of parenthesed expressions
+@cindex re-association of parenthesized expressions
 By default the parentheses in expression are honored for all optimization
 levels such that the compiler does not do any re-association. Using
 @option{-fno-protect-parens} allows the compiler to reorder @code{REAL} and

@@ -1,3 +1,10 @@
+2011-03-03  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* invoke.texi (Option Summary, Fortran Dialect Options)
+	(Preprocessing Options, Runtime Options, Code Gen Options):
+	Fix vertical list spacing by using @itemx for additinoal
+	items, empty line before @table.  Fix typos.
+
 2011-02-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/47894
