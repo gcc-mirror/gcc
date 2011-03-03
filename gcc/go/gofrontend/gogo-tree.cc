@@ -1786,8 +1786,14 @@ Function::return_value(Gogo* gogo, Named_object* named_function,
   // defer statements, the result variables may be unnamed.
   bool is_named = !results->front().name().empty();
   if (is_named)
-    gcc_assert(this->named_results_ != NULL
-	       && this->named_results_->size() == results->size());
+    {
+      gcc_assert(this->named_results_ != NULL);
+      if (this->named_results_->size() != results->size())
+	{
+	  gcc_assert(saw_errors());
+	  return error_mark_node;
+	}
+    }
 
   tree retval;
   if (results->size() == 1)
