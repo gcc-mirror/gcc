@@ -11885,6 +11885,7 @@ Composite_literal_expression::lower_array(Type* type)
 	{
 	  mpz_t ival;
 	  mpz_init(ival);
+
 	  Type* dummy;
 	  if (!index_expr->integer_constant_value(true, ival, &dummy))
 	    {
@@ -11893,12 +11894,14 @@ Composite_literal_expression::lower_array(Type* type)
 		       "index expression is not integer constant");
 	      return Expression::make_error(location);
 	    }
+
 	  if (mpz_sgn(ival) < 0)
 	    {
 	      mpz_clear(ival);
 	      error_at(index_expr->location(), "index expression is negative");
 	      return Expression::make_error(location);
 	    }
+
 	  index = mpz_get_ui(ival);
 	  if (mpz_cmp_ui(ival, index) != 0)
 	    {
@@ -11906,7 +11909,30 @@ Composite_literal_expression::lower_array(Type* type)
 	      error_at(index_expr->location(), "index value overflow");
 	      return Expression::make_error(location);
 	    }
+
+	  Named_type* ntype = Type::lookup_integer_type("int");
+	  Integer_type* inttype = ntype->integer_type();
+	  mpz_t max;
+	  mpz_init_set_ui(max, 1);
+	  mpz_mul_2exp(max, max, inttype->bits() - 1);
+	  bool ok = mpz_cmp(ival, max) < 0;
+	  mpz_clear(max);
+	  if (!ok)
+	    {
+	      mpz_clear(ival);
+	      error_at(index_expr->location(), "index value overflow");
+	      return Expression::make_error(location);
+	    }
+
 	  mpz_clear(ival);
+
+	  // FIXME: Our representation isn't very good; this avoids
+	  // thrashing.
+	  if (index > 0x1000000)
+	    {
+	      error_at(index_expr->location(), "index too large for compiler");
+	      return Expression::make_error(location);
+	    }
 	}
 
       if (index == vals.size())
