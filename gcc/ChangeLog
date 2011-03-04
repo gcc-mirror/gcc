@@ -1,3 +1,8 @@
+2011-03-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/47975
+	* optabs.c (optab_for_tree_code): Do not use VECTOR_MODE_P.
+
 2011-03-04  Richard Henderson  <rth@redhat.com>
 
 	* explow.c (emit_stack_save): Remove 'after' parameter.
