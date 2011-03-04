@@ -536,16 +536,16 @@ cgraph_node (tree decl)
   return node;
 }
 
-/* Mark ALIAS as an alias to DECL.  */
+/* Mark ALIAS as an alias to DECL.  DECL_NODE is cgraph node representing
+   the function body is associated with (not neccesarily cgraph_node (DECL).  */
 
 static struct cgraph_node *
-cgraph_same_body_alias_1 (tree alias, tree decl)
+cgraph_same_body_alias_1 (struct cgraph_node *decl_node, tree alias, tree decl)
 {
-  struct cgraph_node key, *alias_node, *decl_node, **slot;
+  struct cgraph_node key, *alias_node, **slot;
 
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   gcc_assert (TREE_CODE (alias) == FUNCTION_DECL);
-  decl_node = cgraph_node (decl);
 
   key.decl = alias;
 
@@ -575,7 +575,7 @@ cgraph_same_body_alias_1 (tree alias, tree decl)
    and cgraph_node (ALIAS) transparently returns cgraph_node (DECL).   */
 
 struct cgraph_node *
-cgraph_same_body_alias (tree alias, tree decl)
+cgraph_same_body_alias (struct cgraph_node *decl_node, tree alias, tree decl)
 {
 #ifndef ASM_OUTPUT_DEF
   /* If aliases aren't supported by the assembler, fail.  */
@@ -584,7 +584,7 @@ cgraph_same_body_alias (tree alias, tree decl)
 
   /*gcc_assert (!assembler_name_hash);*/
 
-  return cgraph_same_body_alias_1 (alias, decl);
+  return cgraph_same_body_alias_1 (decl_node, alias, decl);
 }
 
 /* Add thunk alias into callgraph.  The alias declaration is ALIAS and it
@@ -592,7 +592,8 @@ cgraph_same_body_alias (tree alias, tree decl)
    See comments in thunk_adjust for detail on the parameters.  */
 
 struct cgraph_node *
-cgraph_add_thunk (tree alias, tree decl, bool this_adjusting,
+cgraph_add_thunk (struct cgraph_node *decl_node, tree alias, tree decl,
+		  bool this_adjusting,
 		  HOST_WIDE_INT fixed_offset, HOST_WIDE_INT virtual_value,
 		  tree virtual_offset,
 		  tree real_alias)
@@ -606,7 +607,7 @@ cgraph_add_thunk (tree alias, tree decl, bool this_adjusting,
       cgraph_remove_node (node);
     }
   
-  node = cgraph_same_body_alias_1 (alias, decl);
+  node = cgraph_same_body_alias_1 (decl_node, alias, decl);
   gcc_assert (node);
   gcc_checking_assert (!virtual_offset
 		       || tree_int_cst_equal (virtual_offset,
@@ -2722,7 +2723,7 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 	case NODE_FREQUENCY_EXECUTED_ONCE:
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Called by %s that is executed once\n",
-		     cgraph_node_name (node));
+		     cgraph_node_name (edge->caller));
 	  maybe_unlikely_executed = false;
 	  if (edge->loop_nest)
 	    {
@@ -2735,7 +2736,7 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 	case NODE_FREQUENCY_NORMAL:
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Called by %s that is normal or hot\n",
-		     cgraph_node_name (node));
+		     cgraph_node_name (edge->caller));
 	  maybe_unlikely_executed = false;
 	  maybe_executed_once = false;
 	  break;

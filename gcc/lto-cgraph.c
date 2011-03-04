@@ -551,6 +551,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 	      lto_output_fn_decl_index (ob->decl_state, ob->main_stream,
 					alias->thunk.alias);
 	    }
+	  gcc_assert (cgraph_get_node (alias->thunk.alias) == node);
 	  lto_output_uleb128_stream (ob->main_stream, alias->resolution);
 	  alias = alias->previous;
 	}
@@ -1094,7 +1095,7 @@ input_node (struct lto_file_decl_data *file_data,
 	  tree real_alias;
 	  decl_index = lto_input_uleb128 (ib);
 	  real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-	  alias = cgraph_same_body_alias (alias_decl, real_alias);
+	  alias = cgraph_same_body_alias (node, alias_decl, real_alias);
 	}
       else
         {
@@ -1103,12 +1104,13 @@ input_node (struct lto_file_decl_data *file_data,
 	  tree real_alias;
 	  decl_index = lto_input_uleb128 (ib);
 	  real_alias = lto_file_decl_data_get_fn_decl (file_data, decl_index);
-	  alias = cgraph_add_thunk (alias_decl, fn_decl, type & 2, fixed_offset,
+	  alias = cgraph_add_thunk (node, alias_decl, fn_decl, type & 2, fixed_offset,
 				    virtual_value,
 				    (type & 4) ? size_int (virtual_value) : NULL_TREE,
 				    real_alias);
 	}
-       alias->resolution = (enum ld_plugin_symbol_resolution)lto_input_uleb128 (ib);
+      gcc_assert (alias);
+      alias->resolution = (enum ld_plugin_symbol_resolution)lto_input_uleb128 (ib);
     }
   return node;
 }

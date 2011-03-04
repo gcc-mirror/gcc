@@ -3163,7 +3163,7 @@ mangle_decl (const tree decl)
       if (vague_linkage_p (decl))
 	DECL_WEAK (alias) = 1;
       if (TREE_CODE (decl) == FUNCTION_DECL)
-	cgraph_same_body_alias (alias, decl);
+	cgraph_same_body_alias (cgraph_node (decl), alias, decl);
       else
 	varpool_extra_name_alias (alias, decl);
 #endif
