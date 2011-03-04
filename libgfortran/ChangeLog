@@ -1,6 +1,12 @@
 2011-03-04  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/47802
+	* intrinsics/ctime.c (strctime): Use builtins to check localtime_r
+	return type.
+
+2011-03-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47802
 	* intrinsics/ctime.c (strctime): Don't use return value of
 	localtime_r.
 
