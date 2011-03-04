@@ -1,5 +1,7 @@
 2011-03-04  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/pseudodtor6.C: New.
+
 	* g++.dg/inherit/covariant19.C: New.
 
 2011-03-04  Richard Guenther  <rguenther@suse.de>
