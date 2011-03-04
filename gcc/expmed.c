@@ -1205,7 +1205,6 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && GET_MODE_INNER (GET_MODE (op0)) != tmode)
     {
       enum machine_mode new_mode;
-      int nunits = GET_MODE_NUNITS (GET_MODE (op0));
 
       if (GET_MODE_CLASS (tmode) == MODE_FLOAT)
 	new_mode = MIN_MODE_VECTOR_FLOAT;
@@ -1221,8 +1220,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	new_mode = MIN_MODE_VECTOR_INT;
 
       for (; new_mode != VOIDmode ; new_mode = GET_MODE_WIDER_MODE (new_mode))
-	if (GET_MODE_NUNITS (new_mode) == nunits
-	    && GET_MODE_SIZE (new_mode) == GET_MODE_SIZE (GET_MODE (op0))
+	if (GET_MODE_SIZE (new_mode) == GET_MODE_SIZE (GET_MODE (op0))
 	    && targetm.vector_mode_supported_p (new_mode))
 	  break;
       if (new_mode != VOIDmode)

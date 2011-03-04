@@ -1,5 +1,11 @@
 2011-03-04  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/47968
+	* expmed.c (extract_bit_field_1): Prefer vector modes that
+	vec_extract patterns can handle.
+
+2011-03-04  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/47975
 	* optabs.c (optab_for_tree_code): Do not use VECTOR_MODE_P.
 
