@@ -89,22 +89,21 @@ void error (objc_property_t p)
 }
 
 /* Concatenate 3 strings and return the result.  */
-char *concat (char *a, char *b, char *c)
+char *concat (const char *a, const char *b, const char *c)
 {
   /* We happily leak memory here.  This is a test.  */
-  char *x = malloc (sizeof (char) * 128);
+  char *x = (char *)malloc (sizeof (char) * 128);
   snprintf (x, 128, "%s%s%s", a, b, c);
   return x;
 }
 
 #endif
 
-int main(int argc, char **args)
+int main (void)
 {
 #ifdef __OBJC2__
   Class c = objc_getClass ("MySubClass");
   objc_property_t p;
-  const char *expected_result;
 
   p = class_getProperty (c, "char_property");
   /* Usually we expect "Tc,Vchar_property", but if a char is of
