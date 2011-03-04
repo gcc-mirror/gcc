@@ -1,3 +1,9 @@
+2011-03-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47802
+	* intrinsics/ctime.c (strctime): Don't use return value of
+	localtime_r.
+
 2011-02-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/47567

@@ -39,9 +39,13 @@ static size_t
 strctime (char *s, size_t max, const time_t *timep)
 {
 #ifdef HAVE_STRFTIME
-  struct tm res;
-  struct tm *ltm = localtime_r (timep, &res);
-  return strftime (s, max, "%c", ltm);
+  struct tm ltm;
+  /* Note: We can't use the return value of localtime_r, as some
+     targets provide localtime_r based on a draft of the POSIX
+     standard where the return type is int rather than the
+     standardized struct tm*.  */
+  localtime_r (timep, &ltm);
+  return strftime (s, max, "%c", &ltm);
 #else
   return 0;
 #endif
