@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com>
 
@@ -587,8 +587,9 @@ ipcp_initialize_node_lattices (struct cgraph_node *node)
     }
 }
 
-/* build INTEGER_CST tree with type TREE_TYPE and value according to LAT.
-   Return the tree.  */
+/* Build a constant tree with type TREE_TYPE and value according to LAT.
+   Return the tree, or, if it is not possible to convert such value
+   to TREE_TYPE, NULL.  */
 static tree
 build_const_val (struct ipcp_lattice *lat, tree tree_type)
 {
@@ -601,8 +602,10 @@ build_const_val (struct ipcp_lattice *lat, tree tree_type)
     {
       if (fold_convertible_p (tree_type, val))
 	return fold_build1 (NOP_EXPR, tree_type, val);
-      else
+      else if (TYPE_SIZE (tree_type) == TYPE_SIZE (TREE_TYPE (val)))
 	return fold_build1 (VIEW_CONVERT_EXPR, tree_type, val);
+      else
+	return NULL;
     }
   return val;
 }
@@ -976,8 +979,20 @@ ipcp_create_replace_map (tree parm_tree, struct ipcp_lattice *lat)
   struct ipa_replace_map *replace_map;
   tree const_val;
 
-  replace_map = ggc_alloc_ipa_replace_map ();
   const_val = build_const_val (lat, TREE_TYPE (parm_tree));
+  if (const_val == NULL_TREE)
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "  const ");
+	  print_generic_expr (dump_file, lat->constant, 0);
+	  fprintf (dump_file, "  can't be converted to param ");
+	  print_generic_expr (dump_file, parm_tree, 0);
+	  fprintf (dump_file, "\n");
+	}
+      return NULL;
+    }
+  replace_map = ggc_alloc_ipa_replace_map ();
   if (dump_file)
     {
       fprintf (dump_file, "  replacing param ");
@@ -1378,15 +1393,6 @@ ipcp_insert_stage (void)
 	  continue;
 	}
 
-      new_size += growth;
-
-      /* Look if original function becomes dead after cloning.  */
-      for (cs = node->callers; cs != NULL; cs = cs->next_caller)
-	if (cs->caller == node || ipcp_need_redirect_p (cs))
-	  break;
-      if (!cs && cgraph_will_be_removed_from_program_if_no_direct_calls (node))
-	bitmap_set_bit (dead_nodes, node->uid);
-
       info = IPA_NODE_REF (node);
       count = ipa_get_param_count (info);
 
@@ -1413,11 +1419,28 @@ ipcp_insert_stage (void)
 	    {
 	      replace_param =
 		ipcp_create_replace_map (parm_tree, lat);
+	      if (replace_param == NULL)
+		break;
 	      VEC_safe_push (ipa_replace_map_p, gc, replace_trees, replace_param);
 	      if (args_to_skip)
 	        bitmap_set_bit (args_to_skip, i);
 	    }
 	}
+      if (i < count)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Not versioning, some parameters couldn't be replaced");
+	  continue;
+	}
+
+      new_size += growth;
+
+      /* Look if original function becomes dead after cloning.  */
+      for (cs = node->callers; cs != NULL; cs = cs->next_caller)
+	if (cs->caller == node || ipcp_need_redirect_p (cs))
+	  break;
+      if (!cs && cgraph_will_be_removed_from_program_if_no_direct_calls (node))
+	bitmap_set_bit (dead_nodes, node->uid);
 
       /* Compute how many callers node has.  */
       node_callers = 0;

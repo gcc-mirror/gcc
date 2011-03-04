@@ -1,3 +1,8 @@
+2011-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47967
+	* gcc.c-torture/compile/pr47967.c: New test.
+
 2011-03-04  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc.dg/property/property-encoding-1.m: Tidied up testcase.
