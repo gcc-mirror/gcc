@@ -1835,11 +1835,17 @@ check_final_overrider (tree overrider, tree basefn)
 
       if (CLASS_TYPE_P (base_return) && CLASS_TYPE_P (over_return))
 	{
-	  tree binfo = lookup_base (over_return, base_return,
-				    ba_check | ba_quiet, NULL);
+	  /* Strictly speaking, the standard requires the return type to be
+	     complete even if it only differs in cv-quals, but that seems
+	     like a bug in the wording.  */
+	  if (!same_type_ignoring_top_level_qualifiers_p (base_return, over_return))
+	    {
+	      tree binfo = lookup_base (over_return, base_return,
+					ba_check | ba_quiet, NULL);
 
-	  if (!binfo)
-	    fail = 1;
+	      if (!binfo)
+		fail = 1;
+	    }
 	}
       else if (!pedantic
 	       && can_convert (TREE_TYPE (base_type), TREE_TYPE (over_type)))
