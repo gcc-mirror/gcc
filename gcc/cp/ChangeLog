@@ -1,5 +1,9 @@
 2011-03-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47971
+	* pt.c (tsubst_copy_and_build) [PSEUDO_DTOR_EXPR]: Use tsubst for type.
+	(tsubst_copy) [default]: Just return t if !ENABLE_CHECKING.
+
 	PR c++/46220
 	* search.c (check_final_overrider): Allow pointer to same incomplete
 	class type with different cv-quals.
