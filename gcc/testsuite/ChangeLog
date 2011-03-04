@@ -1,3 +1,11 @@
+2011-03-04  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/gnu-api-2-property.m: Added tests for property_getName()
+	and property_getAttributes() if __OBJC2__.
+	* obj-c++.dg/gnu-api-2-property.mm: Likewise.
+	* objc.dg/property/property-encoding-1.m: New.
+	* obj-c++.dg/property/property-encoding-1.mm: New.
+
 2011-03-04  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/pseudodtor6.C: New.
