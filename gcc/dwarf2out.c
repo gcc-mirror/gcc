@@ -23178,7 +23178,7 @@ compare_loc_operands (dw_loc_descr_ref x, dw_loc_descr_ref y)
 	     && valx2->v.val_int == valy2->v.val_int;
     case DW_OP_addr:
     hash_addr:
-      return rtx_equal_p (valx1->v.val_addr, valx2->v.val_addr);
+      return rtx_equal_p (valx1->v.val_addr, valy1->v.val_addr);
     case DW_OP_GNU_implicit_pointer:
       return valx1->val_class == dw_val_class_die_ref
 	     && valx1->val_class == valy1->val_class

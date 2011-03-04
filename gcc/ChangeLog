@@ -1,3 +1,7 @@
+2011-03-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* dwarf2out.c (compare_loc_operands): Fix address handling.
+
 2011-03-04  Alan Modra  <amodra@gmail.com>
 
 	* tree.h (TREE_ADDRESSABLE): Update FUNCTION_DECL comment.
