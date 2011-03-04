@@ -1,3 +1,16 @@
+2011-03-04  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/47497
+	* lto-symtab.c (lto_cgraph_replace_node): Do not set thunk.alias.
+	(lto_symtab_merge_cgraph_nodes_1): Update thunk.alias pointers here.
+	* cgraph.h (cgraph_same_body_alias, cgraph_add_thunk): Add node pointers.
+	* cgraph.c (cgraph_same_body_alias_1, cgraph_same_body_alias,
+	cgraph_add_thunk): Add node pointers.
+	* lto-cgraph.c (lto_output_node): Verify that thunks&aliases are
+	associated to right node.
+	(input_node): Update use of cgraph_same_body_alias
+	and cgraph_add_thunk.
+
 2011-03-04  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* config/i386/i386.opt (mprefer-avx128): New flag.

@@ -309,7 +309,7 @@ maybe_clone_body (tree fn)
 	  && (!DECL_ONE_ONLY (fns[0])
 	      || (HAVE_COMDAT_GROUP
 		  && DECL_WEAK (fns[0])))
-	  && cgraph_same_body_alias (clone, fns[0]))
+	  && cgraph_same_body_alias (cgraph_node (fns[0]), clone, fns[0]))
 	{
 	  alias = true;
 	  if (DECL_ONE_ONLY (fns[0]))

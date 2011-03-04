@@ -559,8 +559,8 @@ struct cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 struct cgraph_node * cgraph_get_node (const_tree);
 struct cgraph_node * cgraph_get_node_or_alias (const_tree);
 struct cgraph_node * cgraph_node (tree);
-struct cgraph_node * cgraph_same_body_alias (tree, tree);
-struct cgraph_node * cgraph_add_thunk (tree, tree, bool, HOST_WIDE_INT,
+struct cgraph_node * cgraph_same_body_alias (struct cgraph_node *, tree, tree);
+struct cgraph_node * cgraph_add_thunk (struct cgraph_node *, tree, tree, bool, HOST_WIDE_INT,
 				       HOST_WIDE_INT, tree, tree);
 void cgraph_remove_same_body_alias (struct cgraph_node *);
 struct cgraph_node *cgraph_node_for_asm (tree);

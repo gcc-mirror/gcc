@@ -1,3 +1,11 @@
+2011-03-04  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/47497
+	* optimize.c (maybe_clone_body): Update call of cgraph_same_body_alias
+	and cgraph_add_thunk.
+	* method.c (make_alias_for_thunk, use_thunk): Likewise.
+	* mangle.c (mangle_decl): Likewise.
+
 2011-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47971

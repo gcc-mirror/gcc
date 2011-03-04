@@ -273,7 +273,6 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 	  last = alias;
 	  gcc_assert (alias->same_body_alias);
 	  alias->same_body = prevailing_node;
-	  alias->thunk.alias = prevailing_node->decl;
 	}
       last->next = prevailing_node->same_body;
       /* Node with aliases is prevailed by alias.
@@ -828,8 +827,16 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 void
 lto_symtab_merge_cgraph_nodes (void)
 {
+  struct cgraph_node *node, *alias, *next;
   lto_symtab_maybe_init_hash_table ();
   htab_traverse (lto_symtab_identifiers, lto_symtab_merge_cgraph_nodes_1, NULL);
+
+  for (node = cgraph_nodes; node; node = node->next)
+    for (alias = node->same_body; alias; alias = next)
+      {
+	next = alias->next;
+	alias->thunk.alias = lto_symtab_prevailing_decl (alias->thunk.alias);
+      }
 }
 
 /* Given the decl DECL, return the prevailing decl with the same name. */
