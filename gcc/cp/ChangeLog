@@ -1,3 +1,9 @@
+2011-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46220
+	* search.c (check_final_overrider): Allow pointer to same incomplete
+	class type with different cv-quals.
+
 2011-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/47974
