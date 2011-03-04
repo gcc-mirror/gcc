@@ -1,3 +1,9 @@
+2011-03-04  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* config/i386/i386.opt (mprefer-avx128): New flag.
+	* config/i386/i386.c (ix86_preferred_simd_mode): Prefer 128-bit mode
+	when the flag -mprefer-avx128 is on.
+
 2011-03-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* dwarf2out.c (compare_loc_operands): Fix address handling.

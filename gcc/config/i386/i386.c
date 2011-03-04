@@ -34747,9 +34747,9 @@ ix86_preferred_simd_mode (enum machine_mode mode)
   switch (mode)
     {
     case SFmode:
-      return TARGET_AVX ? V8SFmode : V4SFmode;
+      return (TARGET_AVX && !flag_prefer_avx128) ? V8SFmode : V4SFmode;
     case DFmode:
-      return TARGET_AVX ? V4DFmode : V2DFmode;
+      return (TARGET_AVX && !flag_prefer_avx128) ? V4DFmode : V2DFmode;
     case DImode:
       return V2DImode;
     case SImode:
