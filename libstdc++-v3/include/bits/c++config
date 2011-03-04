@@ -109,9 +109,7 @@
 // Special case: _GLIBCXX_EXTERN_TEMPLATE == -1 disallows extern
 // templates only in basic_string, thus activating its debug-mode
 // checks even at -O0.
-#ifndef _GLIBCXX_EXTERN_TEMPLATE
-# define _GLIBCXX_EXTERN_TEMPLATE 1
-#endif
+#define _GLIBCXX_EXTERN_TEMPLATE
 
 /*
   Outline of libstdc++ namespaces.

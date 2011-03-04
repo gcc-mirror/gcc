@@ -1993,6 +1993,25 @@ AC_DEFUN([GLIBCXX_ENABLE_CONCEPT_CHECKS], [
 ])
 
 dnl
+dnl Use extern templates.
+dnl
+dnl --enable-extern-template defines _GLIBCXX_EXTERN_TEMPLATE to 1
+dnl --disable-extern-template defines _GLIBCXX_EXTERN_TEMPLATE to 0
+
+dnl  +  Usage:  GLIBCXX_ENABLE_TEMPLATE[(DEFAULT)]
+dnl       Where DEFAULT is `yes' or `no'.
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_EXTERN_TEMPLATE], [
+
+  GLIBCXX_ENABLE(extern-template,$1,,[enable extern template])
+
+  AC_MSG_CHECKING([for extern template support])
+  AC_MSG_RESULT([$enable_extern_template])
+
+  GLIBCXX_CONDITIONAL(ENABLE_EXTERN_TEMPLATE, test $enable_extern_template = yes)
+])
+
+dnl
 dnl Check for parallel mode pre-requisites, including OpenMP support.
 dnl
 dnl  +  Usage:  GLIBCXX_ENABLE_PARALLEL

@@ -91,13 +91,21 @@ am__DEPENDENCIES_1 =
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	ctype_members.lo messages_members.lo monetary_members.lo \
 	numeric_members.lo time_members.lo
-@GLIBCXX_LDBL_COMPAT_TRUE@am__objects_2 = compatibility-ldbl.lo
-@ENABLE_PARALLEL_TRUE@am__objects_3 = parallel_settings.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = allocator-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.lo ext-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.lo ios-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.lo istream-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.lo misc-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.lo sstream-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.lo string-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.lo wstring-inst.lo
+@GLIBCXX_LDBL_COMPAT_TRUE@am__objects_3 = compatibility-ldbl.lo
+@ENABLE_PARALLEL_TRUE@am__objects_4 = parallel_settings.lo \
 @ENABLE_PARALLEL_TRUE@	compatibility-parallel_list.lo \
 @ENABLE_PARALLEL_TRUE@	compatibility-parallel_list-2.lo
-am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
-	$(am__objects_3)
-am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
+am__objects_5 = basic_file.lo c++locale.lo $(am__objects_2) \
+	$(am__objects_3) $(am__objects_4)
+am__objects_6 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	mt_allocator.lo codecvt.lo compatibility.lo \
 	compatibility-c++0x.lo compatibility-debug_list.lo \
 	compatibility-debug_list-2.lo compatibility-list.lo \
@@ -107,15 +115,11 @@ am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	ios_init.lo ios_locale.lo limits.lo list.lo locale.lo \
 	locale_init.lo locale_facets.lo localename.lo \
 	math_stubs_float.lo math_stubs_long_double.lo stdexcept.lo \
-	strstream.lo system_error.lo tree.lo allocator-inst.lo \
-	concept-inst.lo fstream-inst.lo ext-inst.lo ios-inst.lo \
-	iostream-inst.lo istream-inst.lo istream.lo locale-inst.lo \
-	misc-inst.lo ostream-inst.lo placeholders.lo regex.lo \
-	sstream-inst.lo streambuf-inst.lo streambuf.lo string-inst.lo \
-	valarray-inst.lo wlocale-inst.lo wstring-inst.lo mutex.lo \
+	strstream.lo system_error.lo tree.lo istream.lo \
+	placeholders.lo regex.lo streambuf.lo mutex.lo \
 	condition_variable.lo chrono.lo thread.lo future.lo \
-	$(am__objects_1) $(am__objects_4)
-am_libstdc___la_OBJECTS = $(am__objects_5)
+	valarray.lo $(am__objects_1) $(am__objects_5)
+am_libstdc___la_OBJECTS = $(am__objects_6)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp =
@@ -360,24 +364,45 @@ host_sources = \
 	messages_members.cc \
 	monetary_members.cc \
 	numeric_members.cc \
-	time_members.cc 
+	time_members.cc
 
 atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
 host_sources_extra = \
-	basic_file.cc c++locale.cc ${ldbl_compat_sources} ${parallel_sources}
+	basic_file.cc c++locale.cc \
+	${inst_sources} ${ldbl_compat_sources} ${parallel_sources}
 
 @ENABLE_PARALLEL_FALSE@parallel_sources = 
 @ENABLE_PARALLEL_TRUE@parallel_sources = parallel_settings.cc \
-@ENABLE_PARALLEL_TRUE@	           compatibility-parallel_list.cc \
-@ENABLE_PARALLEL_TRUE@	           compatibility-parallel_list-2.cc 
+@ENABLE_PARALLEL_TRUE@		   compatibility-parallel_list.cc \
+@ENABLE_PARALLEL_TRUE@		   compatibility-parallel_list-2.cc
 
 @GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
 @GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
+@ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
+@ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
+@ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
+@ENABLE_EXTERN_TEMPLATE_TRUE@inst_sources = \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	allocator-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ext-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	fstream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	iostream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	locale-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	misc-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.cc
 
-# Sources present in the src directory.
+
+# Sources present in the src directory, always present.
 sources = \
 	atomic.cc \
 	bitmap_allocator.cc \
@@ -415,33 +440,18 @@ sources = \
 	strstream.cc \
 	system_error.cc \
 	tree.cc \
-	allocator-inst.cc \
-	concept-inst.cc \
-	fstream-inst.cc \
-	ext-inst.cc \
-	ios-inst.cc \
-	iostream-inst.cc \
-	istream-inst.cc \
 	istream.cc \
-	locale-inst.cc \
-	misc-inst.cc \
-	ostream-inst.cc \
 	placeholders.cc \
 	regex.cc \
-	sstream-inst.cc \
-	streambuf-inst.cc \
 	streambuf.cc \
-	string-inst.cc \
-	valarray-inst.cc \
-	wlocale-inst.cc \
-	wstring-inst.cc \
 	mutex.cc \
 	condition_variable.cc \
 	chrono.cc \
 	thread.cc \
 	future.cc \
+	valarray.cc \
 	${host_sources} \
-	${host_sources_extra} 
+	${host_sources_extra}
 
 libstdc___la_SOURCES = $(sources)
 libstdc___la_LIBADD = \
@@ -453,7 +463,7 @@ libstdc___la_DEPENDENCIES = \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 libstdc___la_LDFLAGS = \
-	-version-info $(libtool_VERSION) ${version_arg} -lm 
+	-version-info $(libtool_VERSION) ${version_arg} -lm
 
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
 
@@ -470,7 +480,7 @@ PARALLEL_FLAGS = -fopenmp -D_GLIBCXX_PARALLEL -I$(glibcxx_builddir)/../libgomp
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion calls for it.
 AM_CXXFLAGS = \
-	-fno-implicit-templates \
+	$(XTEMPLATE_FLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
 	$(CONFIG_CXXFLAGS)
@@ -494,8 +504,10 @@ AM_CXXFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
-	       $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX \
+	       $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+	       $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	       $(AM_CXXFLAGS) $(CXXFLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 

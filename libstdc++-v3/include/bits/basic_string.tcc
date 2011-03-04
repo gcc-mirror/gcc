@@ -1130,7 +1130,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
-  // NB: This syntax is a GNU extension.
 #if _GLIBCXX_EXTERN_TEMPLATE > 0
   extern template class basic_string<char>;
   extern template
@@ -1164,6 +1163,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif
