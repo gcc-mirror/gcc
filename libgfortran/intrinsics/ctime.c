@@ -40,11 +40,16 @@ strctime (char *s, size_t max, const time_t *timep)
 {
 #ifdef HAVE_STRFTIME
   struct tm ltm;
-  /* Note: We can't use the return value of localtime_r, as some
-     targets provide localtime_r based on a draft of the POSIX
+  int failed;
+  /* Some targets provide a localtime_r based on a draft of the POSIX
      standard where the return type is int rather than the
      standardized struct tm*.  */
-  localtime_r (timep, &ltm);
+  __builtin_choose_expr (__builtin_classify_type (localtime_r (timep, &ltm)) 
+			 == 5,
+			 failed = localtime_r (timep, &ltm) == NULL,
+			 failed = localtime_r (timep, &ltm) != 0);
+  if (failed)
+    return 0;
   return strftime (s, max, "%c", &ltm);
 #else
   return 0;
