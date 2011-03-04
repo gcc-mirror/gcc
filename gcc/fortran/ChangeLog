@@ -1,3 +1,8 @@
+2011-03-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/47802
+	* intrinsic.texi: Update CTIME and FDATE documentation.
+
 2011-03-03  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* invoke.texi (Option Summary, Fortran Dialect Options)
