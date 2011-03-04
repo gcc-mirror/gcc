@@ -1,3 +1,12 @@
+2011-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/47967
+	* ipa-cp.c (build_const_val): Return NULL instead of creating
+	VIEW_CONVERT_EXPR for mismatching sizes.
+	(ipcp_create_replace_map): Return NULL if build_const_val failed.
+	(ipcp_insert_stage): If ipcp_create_replace_map returns NULL,
+	give up on versioning.
+
 2011-03-05  Alan Modra  <amodra@gmail.com>
 
 	PR target/47986
