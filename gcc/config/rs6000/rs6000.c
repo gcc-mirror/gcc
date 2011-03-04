@@ -6248,17 +6248,23 @@ rs6000_delegitimize_address (rtx orig_x)
   if (MEM_P (x))
     x = XEXP (x, 0);
 
-  if ((GET_CODE (x) == PLUS
-       || GET_CODE (x) == LO_SUM)
-      && GET_CODE (XEXP (x, 0)) == REG
-      && (REGNO (XEXP (x, 0)) == TOC_REGISTER
-	  || TARGET_MINIMAL_TOC
-	  || TARGET_CMODEL != CMODEL_SMALL)
+  if (GET_CODE (x) == (TARGET_CMODEL != CMODEL_SMALL ? LO_SUM : PLUS)
       && GET_CODE (XEXP (x, 1)) == CONST)
     {
       y = XEXP (XEXP (x, 1), 0);
       if (GET_CODE (y) == UNSPEC
-          && XINT (y, 1) == UNSPEC_TOCREL)
+          && XINT (y, 1) == UNSPEC_TOCREL
+	  && ((GET_CODE (XEXP (x, 0)) == REG
+	       && (REGNO (XEXP (x, 0)) == TOC_REGISTER
+		   || TARGET_MINIMAL_TOC
+		   || TARGET_CMODEL != CMODEL_SMALL))
+	      || (TARGET_CMODEL != CMODEL_SMALL
+		  && GET_CODE (XEXP (x, 0)) == PLUS
+		  && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
+		  && REGNO (XEXP (XEXP (x, 0), 0)) == TOC_REGISTER
+		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == HIGH
+		  && rtx_equal_p (XEXP (x, 1),
+				  XEXP (XEXP (XEXP (x, 0), 1), 0)))))
 	{
 	  y = XVECEXP (y, 0, 0);
 	  if (!MEM_P (orig_x))

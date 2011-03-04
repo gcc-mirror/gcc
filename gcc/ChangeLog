@@ -1,3 +1,9 @@
+2011-03-05  Alan Modra  <amodra@gmail.com>
+
+	PR target/47986
+	* config/rs6000/rs6000.c (rs6000_delegitimize_address): Handle
+	full cmodel medium/large lo_sum + high addresses.
+
 2011-03-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_decompose_address): Reject non-literal
