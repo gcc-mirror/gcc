@@ -3218,7 +3218,10 @@ end program test_cshift
 @table @asis
 @item @emph{Description}:
 @code{CTIME} converts a system time value, such as returned by
-@code{TIME8}, to a string of the form @samp{Sat Aug 19 18:13:14 1995}.
+@code{TIME8}, to a string. Unless the application has called
+@code{setlocale}, the output will be in the default locale, of length
+24 and of the form @samp{Sat Aug 19 18:13:14 1995}. In other locales,
+a longer string may result.
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
@@ -3232,18 +3235,20 @@ Subroutine, function
 @item @emph{Syntax}:
 @multitable @columnfractions .80
 @item @code{CALL CTIME(TIME, RESULT)}.
-@item @code{RESULT = CTIME(TIME)}, (not recommended).
+@item @code{RESULT = CTIME(TIME)}.
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{TIME}    @tab The type shall be of type @code{INTEGER(KIND=8)}.
+@item @var{TIME}    @tab The type shall be of type @code{INTEGER}.
 @item @var{RESULT}  @tab The type shall be of type @code{CHARACTER} and
-of default kind.
+of default kind. It is an @code{INTENT(OUT)} argument. If the length
+of this variable is too short for the time and date string to fit
+completely, it will be blank on procedure return.
 @end multitable
 
 @item @emph{Return value}:
-The converted date and time as a string.
+The converted date and time as a string. 
 
 @item @emph{Example}:
 @smallexample
@@ -3260,7 +3265,7 @@ end program test_ctime
 @end smallexample
 
 @item @emph{See Also}:
-@ref{GMTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
+@ref{DATE_AND_TIME}, @ref{GMTIME}, @ref{LTIME}, @ref{TIME}, @ref{TIME8}
 @end table
 
 
@@ -4420,9 +4425,6 @@ TIME())}.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@var{DATE} is an @code{INTENT(OUT)} @code{CHARACTER} variable of the
-default kind.
-
 @item @emph{Standard}:
 GNU extension
 
@@ -4432,17 +4434,19 @@ Subroutine, function
 @item @emph{Syntax}:
 @multitable @columnfractions .80
 @item @code{CALL FDATE(DATE)}.
-@item @code{DATE = FDATE()}, (not recommended).
+@item @code{DATE = FDATE()}.
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{DATE}@tab The type shall be of type @code{CHARACTER} of the
-default kind
+default kind. It is an @code{INTENT(OUT)} argument.  If the length of
+this variable is too short for the date and time string to fit
+completely, it will be blank on procedure return.
 @end multitable
 
 @item @emph{Return value}:
-The current date as a string.
+The current date and time as a string.
 
 @item @emph{Example}:
 @smallexample
@@ -4458,8 +4462,10 @@ program test_fdate
     print *, 'Program ended on ', date
 end program test_fdate
 @end smallexample
-@end table
 
+@item @emph{See also}:
+@ref{DATE_AND_TIME}, @ref{CTIME}
+@end table
 
 
 @node FGET
