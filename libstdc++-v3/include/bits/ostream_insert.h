@@ -114,7 +114,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
-  // NB:  This syntax is a GNU extension.
 #if _GLIBCXX_EXTERN_TEMPLATE
   extern template ostream& __ostream_insert(ostream&, const char*, streamsize);
 
@@ -125,6 +124,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif /* _OSTREAM_INSERT_H */

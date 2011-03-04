@@ -22,4 +22,4 @@
 
 #include <vector>
 
-// { dg-error "multiple inlined namespaces" "" { target *-*-* } 243 }
+// { dg-error "multiple inlined namespaces" "" { target *-*-* } 241 }

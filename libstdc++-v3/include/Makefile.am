@@ -1067,6 +1067,14 @@ stamp-namespace-version:
 	echo 0 > stamp-namespace-version
 endif
 
+if ENABLE_EXTERN_TEMPLATE
+stamp-extern-template:
+	echo 1 > stamp-extern-template
+else
+stamp-extern-template:
+	echo 0 > stamp-extern-template
+endif
+
 if ENABLE_VISIBILITY
 stamp-visibility:
 	echo 1 > stamp-visibility
@@ -1082,10 +1090,12 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 			      stamp-${host_alias} \
 			      ${toplevel_srcdir}/gcc/DATESTAMP \
 			      stamp-namespace-version \
-			      stamp-visibility
+			      stamp-visibility \
+			      stamp-extern-template
 	@date=`cat ${toplevel_srcdir}/gcc/DATESTAMP` ;\
 	ns_version=`cat stamp-namespace-version` ;\
 	visibility=`cat stamp-visibility` ;\
+	externtemplate=`cat stamp-extern-template` ;\
 	ldbl_compat='s,g,g,' ;\
 	grep "^[ 	]*#[ 	]*define[ 	][ 	]*_GLIBCXX_LONG_DOUBLE_COMPAT[ 	][ 	]*1[ 	]*$$" \
 	${CONFIG_HEADER} > /dev/null 2>&1 \
@@ -1093,6 +1103,7 @@ ${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 	sed -e "s,define __GLIBCXX__,define __GLIBCXX__ $$date," \
 	-e "s,define _GLIBCXX_INLINE_VERSION, define _GLIBCXX_INLINE_VERSION $$ns_version," \
 	-e "s,define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY, define _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY $$visibility," \
+	-e "s,define _GLIBCXX_EXTERN_TEMPLATE, define _GLIBCXX_EXTERN_TEMPLATE $$externtemplate," \
 	-e "$$ldbl_compat" \
             < ${glibcxx_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCXX_HAVE_/g' \

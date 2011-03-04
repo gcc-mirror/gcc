@@ -1,7 +1,7 @@
 ## Makefile for the src subdirectory of the GNU C++ Standard library.
 ##
 ## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-## 2006, 2007, 2008, 2009, 2010
+## 2006, 2007, 2008, 2009, 2010, 2011
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -108,7 +108,7 @@ host_sources = \
 	messages_members.cc \
 	monetary_members.cc \
 	numeric_members.cc \
-	time_members.cc 
+	time_members.cc
 
 codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCODECVT_CC) . || true
@@ -138,7 +138,8 @@ atomicity.cc: ${atomicity_file}
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
 host_sources_extra = \
-	basic_file.cc c++locale.cc ${ldbl_compat_sources} ${parallel_sources}
+	basic_file.cc c++locale.cc \
+	${inst_sources} ${ldbl_compat_sources} ${parallel_sources}
 
 c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CLOCALE_CC) ./$@ || true
@@ -148,8 +149,8 @@ basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 
 if ENABLE_PARALLEL
 parallel_sources = parallel_settings.cc \
-	           compatibility-parallel_list.cc \
-	           compatibility-parallel_list-2.cc 
+		   compatibility-parallel_list.cc \
+		   compatibility-parallel_list-2.cc
 else
 parallel_sources =
 endif
@@ -160,7 +161,30 @@ else
 ldbl_compat_sources =
 endif
 
-# Sources present in the src directory.
+if ENABLE_EXTERN_TEMPLATE
+XTEMPLATE_FLAGS = -fno-implicit-templates
+inst_sources = \
+	allocator-inst.cc \
+	concept-inst.cc \
+	ext-inst.cc \
+	fstream-inst.cc \
+	ios-inst.cc \
+	iostream-inst.cc \
+	istream-inst.cc \
+	locale-inst.cc \
+	misc-inst.cc \
+	ostream-inst.cc \
+	sstream-inst.cc \
+	streambuf-inst.cc \
+	string-inst.cc \
+	wlocale-inst.cc \
+	wstring-inst.cc
+else
+XTEMPLATE_FLAGS =
+inst_sources =
+endif
+
+# Sources present in the src directory, always present.
 sources = \
 	atomic.cc \
 	bitmap_allocator.cc \
@@ -198,33 +222,18 @@ sources = \
 	strstream.cc \
 	system_error.cc \
 	tree.cc \
-	allocator-inst.cc \
-	concept-inst.cc \
-	fstream-inst.cc \
-	ext-inst.cc \
-	ios-inst.cc \
-	iostream-inst.cc \
-	istream-inst.cc \
 	istream.cc \
-	locale-inst.cc \
-	misc-inst.cc \
-	ostream-inst.cc \
 	placeholders.cc \
 	regex.cc \
-	sstream-inst.cc \
-	streambuf-inst.cc \
 	streambuf.cc \
-	string-inst.cc \
-	valarray-inst.cc \
-	wlocale-inst.cc \
-	wstring-inst.cc \
 	mutex.cc \
 	condition_variable.cc \
 	chrono.cc \
 	thread.cc \
 	future.cc \
+	valarray.cc \
 	${host_sources} \
-	${host_sources_extra} 
+	${host_sources_extra}
 
 vpath % $(top_srcdir)/src
 vpath % $(top_srcdir)
@@ -240,7 +249,7 @@ libstdc___la_DEPENDENCIES = \
 	$(top_builddir)/libsupc++/libsupc++convenience.la
 
 libstdc___la_LDFLAGS = \
-	-version-info $(libtool_VERSION) ${version_arg} -lm 
+	-version-info $(libtool_VERSION) ${version_arg} -lm
 
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS)
 
@@ -383,7 +392,7 @@ endif
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion calls for it.
 AM_CXXFLAGS = \
-	-fno-implicit-templates \
+	$(XTEMPLATE_FLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
 	$(CONFIG_CXXFLAGS)
@@ -407,8 +416,10 @@ AM_CXXFLAGS = \
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
-	       $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX \
+	       $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+	       $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	       $(AM_CXXFLAGS) $(CXXFLAGS)
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 

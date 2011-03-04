@@ -161,6 +161,29 @@
      </para>
  </listitem></varlistentry>
 
+
+ <varlistentry><term><code>--enable-libstdcxx-time</code></term>
+ <listitem><para>This is an abbreviated form of
+	<code>'--enable-libstdcxx-time=yes'</code>(described next).
+     </para>
+ </listitem></varlistentry>
+
+ <varlistentry><term><code>--enable-libstdcxx-time=OPTION</code></term>
+ <listitem><para>Enables link-type checks for the availability of the
+	clock_gettime clocks, used in the implementation of [time.clock],
+	and of the nanosleep and sched_yield functions, used in the
+	implementation of [thread.thread.this] of the current C++0x draft.
+	The choice OPTION=yes checks for the availability of the facilities
+	in libc and libposix4.  In case of need the latter is also linked
+	to libstdc++ as part of the build process.  OPTION=rt also searches
+	(and, in case, links) librt.   Note that the latter is not always
+	desirable because, in glibc, for example, in turn it triggers the
+	linking of libpthread too, which activates locking, a large overhead
+	for single-thread programs.  OPTION=no skips the tests completely.
+	The default is OPTION=no.
+    </para>
+ </listitem></varlistentry>
+
  <varlistentry><term><code>--enable-libstdcxx-debug</code></term>
  <listitem><para>Build separate debug libraries in addition to what is normally built.
 	By default, the debug libraries are compiled with
@@ -313,6 +336,19 @@
      </para>
  </listitem></varlistentry>
 
+
+ <varlistentry><term><code>--enable-extern-template</code>[default]</term>
+ <listitem><para>Use extern template to pre-instantiate all required
+ 	specializations for certain types defined in the standard libraries. 
+	These types include <classname>string</classname> and dependents like
+	<classname>char_traits</classname>, the templateized io classes,
+	<classname>allocator</classname>, and others.  
+	Disabling means that implicit
+	template generation will be used when compiling these types.  By
+	default, this option is on. This option can change the library ABI.
+     </para>
+ </listitem></varlistentry>
+
  <varlistentry><term><code>--disable-hosted-libstdcxx</code></term>
  <listitem>
    <para>
@@ -322,28 +358,6 @@
      minimal set of headers are provided.  This option builds such an
      environment.
      </para>
- </listitem></varlistentry>
-
- <varlistentry><term><code>--enable-libstdcxx-time</code></term>
- <listitem><para>This is an abbreviated form of
-	<code>'--enable-libstdcxx-time=yes'</code>(described next).
-     </para>
- </listitem></varlistentry>
-
- <varlistentry><term><code>--enable-libstdcxx-time=OPTION</code></term>
- <listitem><para>Enables link-type checks for the availability of the
-	clock_gettime clocks, used in the implementation of [time.clock],
-	and of the nanosleep and sched_yield functions, used in the
-	implementation of [thread.thread.this] of the current C++0x draft.
-	The choice OPTION=yes checks for the availability of the facilities
-	in libc and libposix4.  In case of need the latter is also linked
-	to libstdc++ as part of the build process.  OPTION=rt also searches
-	(and, in case, links) librt.   Note that the latter is not always
-	desirable because, in glibc, for example, in turn it triggers the
-	linking of libpthread too, which activates locking, a large overhead
-	for single-thread programs.  OPTION=no skips the tests completely.
-	The default is OPTION=no.
-    </para>
  </listitem></varlistentry>
 
 </variablelist>

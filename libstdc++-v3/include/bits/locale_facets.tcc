@@ -1,7 +1,7 @@
 // Locale support -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
+// 2006, 2007, 2008, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1276,7 +1276,6 @@ _GLIBCXX_END_NAMESPACE_LDBL
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.
-  // NB: This syntax is a GNU extension.
 #if _GLIBCXX_EXTERN_TEMPLATE
   extern template class numpunct<char>;
   extern template class numpunct_byname<char>;
