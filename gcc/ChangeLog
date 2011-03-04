@@ -1,3 +1,8 @@
+2011-03-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_address): Reject non-literal
+	pool references in UNSPEC_LTREL_OFFSET.
+
 2011-03-04  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/47497
