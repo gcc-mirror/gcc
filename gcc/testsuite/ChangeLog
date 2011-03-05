@@ -1,3 +1,9 @@
+2011-03-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline
+	PR libgfortran/47878
+	* gfortran.dg/pr47878.f90: New test.
+
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/lambda/lambda-98.C: New.

@@ -78,4 +78,10 @@ fbuf_getc (gfc_unit * u)
   return fbuf_getc_refill (u);
 }
 
+static inline char *
+fbuf_getptr (gfc_unit * u)
+{
+  return (char*) (u->fbuf->buf + u->fbuf->pos);
+}
+
 #endif
