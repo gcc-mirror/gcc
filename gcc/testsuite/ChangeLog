@@ -1,5 +1,8 @@
 2011-03-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/47899
+	* gcc.dg/pr47899.c: New test.
+
 	* gcc.dg/torture/pr47968.c: Ignore warnings.
 
 	PR tree-optimization/47967

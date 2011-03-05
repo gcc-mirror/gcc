@@ -1,3 +1,9 @@
+2011-03-05  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR rtl-optimization/47899
+	* cfgloopmanip.c (fix_bb_placements): Fix first argument
+	to flow_loop_nested_p when moving the loop upward.
+
 2011-03-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/47719
