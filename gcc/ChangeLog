@@ -1,3 +1,8 @@
+2011-03-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/47719
+	* arm.md (movhi_insn_arch4):  Accept any immediate constant.
+
 2011-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/47967
