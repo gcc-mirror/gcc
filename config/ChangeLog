@@ -1,3 +1,9 @@
+2011-03-05  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+	    Eric Blake  <eblake@redhat.com>
+
+	* override.m4: Error out if a buggy M4 was detected, to
+	avoid spurious diffs in generated files.
+
 2011-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* cloog.m4 (CLOOG_REQUESTED): Use $2 if --without-cloog.
