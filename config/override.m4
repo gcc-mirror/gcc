@@ -48,6 +48,12 @@ _GCC_AUTOCONF_VERSION_CHECK
 ])
 
 
+dnl Ensure we do not use a buggy M4.
+m4_if(m4_index([..wi.d.], [.d.]), [-1],
+  [m4_fatal(m4_do([m4 with buggy strstr detected.  Please install
+GNU M4 1.4.16 or newer and set the M4 environment variable]))])
+
+
 dnl Fix 2.64 cross compile detection for AVR and RTEMS
 dnl by not trying to compile fopen.
 m4_if(m4_defn([m4_PACKAGE_VERSION]), [2.64],
