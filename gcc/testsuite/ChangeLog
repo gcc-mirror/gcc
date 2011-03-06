@@ -1,3 +1,9 @@
+2011-03-06  Paul Thomas  <pault@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/47850
+	* gfortran.dg/array_constructor_37.f90 : New test.
+
 2011-03-05  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/mangle39.C: ABI v5, not 6.
