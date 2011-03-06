@@ -1846,6 +1846,10 @@ template argument.
 
 Version 4 implements a standard mangling for vector types.
 
+Version 5 corrects the mangling of attribute const/volatile on
+function pointer types, decltype of a plain decl, and use of a
+function parameter in the declaration of another parameter.
+
 See also @option{-Wabi}.
 
 @item -fno-access-control
