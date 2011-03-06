@@ -1,3 +1,9 @@
+2011-03-05  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle39.C: ABI v5, not 6.
+	* g++.dg/abi/mangle45.C: Likewise.
+	* g++.dg/cpp0x/trailing1.C: Likewise.
+
 2011-03-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/torture/pr47975.c: Add -fno-common option on hppa*-*-hpux*.
