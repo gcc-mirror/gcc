@@ -739,13 +739,12 @@ Driver Undocumented
 ;    in template non-type arguments of pointer type.
 ;
 ; 4: The version of the ABI that introduces unambiguous mangling of
-;    vector types.
+;    vector types.  First selectable in G++ 4.5.
 ;
 ; 5: The version of the ABI that ignores attribute const/noreturn
-;    in function pointer mangling.
-;
-; 6: The version of the ABI that corrects mangling of decltype and
+;    in function pointer mangling, and corrects mangling of decltype and
 ;    function parameters used in other parameters and the return type.
+;    First selectable in G++ 4.6.
 ;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.

@@ -1934,8 +1934,8 @@ write_type (tree type)
 	      gcc_assert (!DECLTYPE_FOR_LAMBDA_CAPTURE (type)
 			  && !DECLTYPE_FOR_LAMBDA_RETURN (type));
 
-	      /* In ABI <6, we stripped decltype of a plain decl.  */
-	      if (!abi_version_at_least (6)
+	      /* In ABI <5, we stripped decltype of a plain decl.  */
+	      if (!abi_version_at_least (5)
 		  && DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type))
 		{
 		  tree expr = DECLTYPE_TYPE_EXPR (type);
@@ -2498,7 +2498,7 @@ write_expression (tree expr)
       write_char ('f');
       if (delta != 0)
 	{
-	  if (abi_version_at_least (6))
+	  if (abi_version_at_least (5))
 	    {
 	      /* Let L be the number of function prototype scopes from the
 		 innermost one (in which the parameter reference occurs) up
