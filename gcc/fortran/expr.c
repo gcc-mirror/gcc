@@ -937,16 +937,18 @@ gfc_is_constant_expr (gfc_expr *e)
       return e->ref == NULL || (gfc_is_constant_expr (e->ref->u.ss.start)
 				&& gfc_is_constant_expr (e->ref->u.ss.end));
 
+    case EXPR_ARRAY:
     case EXPR_STRUCTURE:
-      for (c = gfc_constructor_first (e->value.constructor);
-	   c; c = gfc_constructor_next (c))
+      c = gfc_constructor_first (e->value.constructor);
+      if ((e->expr_type == EXPR_ARRAY) && c && c->iterator)
+        return gfc_constant_ac (e);
+
+      for (; c; c = gfc_constructor_next (c))
 	if (!gfc_is_constant_expr (c->expr))
 	  return 0;
 
       return 1;
 
-    case EXPR_ARRAY:
-      return gfc_constant_ac (e);
 
     default:
       gfc_internal_error ("gfc_is_constant_expr(): Unknown expression type");
