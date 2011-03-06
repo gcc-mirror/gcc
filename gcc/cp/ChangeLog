@@ -1,3 +1,7 @@
+2011-03-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang-specs.h: Match -save-temps* instead of -save-temps.
+
 2011-03-05  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (write_expression): Change ABI v6 to v5.

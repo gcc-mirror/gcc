@@ -1,6 +1,6 @@
 /* Definitions for specs for C++.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2007, 2010 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2007, 2010, 2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,10 +43,10 @@ along with GCC; see the file COPYING3.  If not see
   {"@c++-header",
     "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}\
      %{!E:%{!M:%{!MM:\
-       %{save-temps|no-integrated-cpp:cc1plus -E\
-		%(cpp_options) %2 -o %{save-temps:%b.ii} %{!save-temps:%g.ii} \n}\
-      cc1plus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.ii} %{!save-temps:%g.ii}}\
-	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
+       %{save-temps*|no-integrated-cpp:cc1plus -E\
+		%(cpp_options) %2 -o %{save-temps*:%b.ii} %{!save-temps*:%g.ii} \n}\
+      cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}\
+	      %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}\
 	%(cc1_options) %2\
 	%{!fsyntax-only:%{!fdump-ada-spec*:-o %g.s %{!o*:--output-pch=%i.gch}\
         %W{o*:--output-pch=%*}}%V}}}}",
@@ -54,10 +54,10 @@ along with GCC; see the file COPYING3.  If not see
   {"@c++",
     "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}\
      %{!E:%{!M:%{!MM:\
-       %{save-temps|no-integrated-cpp:cc1plus -E\
-		%(cpp_options) %2 -o %{save-temps:%b.ii} %{!save-temps:%g.ii} \n}\
-      cc1plus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.ii} %{!save-temps:%g.ii}}\
-	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
+       %{save-temps*|no-integrated-cpp:cc1plus -E\
+		%(cpp_options) %2 -o %{save-temps*:%b.ii} %{!save-temps*:%g.ii} \n}\
+      cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}\
+	      %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}\
 	%(cc1_options) %2\
        %{!fsyntax-only:%(invoke_as)}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},

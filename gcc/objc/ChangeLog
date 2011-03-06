@@ -1,3 +1,7 @@
+2011-03-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang-specs.h: Match -save-temps* instead of -save-temps.
+
 2011-02-26  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-act.c (objc_v2_encode_prop_attr): Rewritten.

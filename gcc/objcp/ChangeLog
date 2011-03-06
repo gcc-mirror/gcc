@@ -1,3 +1,7 @@
+2011-03-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang-specs.h: Match -save-temps* instead of -save-temps.
+
 2011-02-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc++/47711
