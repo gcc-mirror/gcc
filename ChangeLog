@@ -1,3 +1,7 @@
+2011-03-06  Joey Ye  <joey.ye@arm.com>
+
+	* MAINTAINERS: Update my e-mail address.
+
 2011-03-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* configure.ac: Adjust test of with_ppl.
