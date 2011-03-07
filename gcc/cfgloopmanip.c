@@ -185,7 +185,11 @@ fix_bb_placements (basic_block from,
      fix_loop_placement.  */
 
   base_loop = from->loop_father;
-  if (base_loop == current_loops->tree_root)
+  /* If we are already in the outermost loop, the basic blocks cannot be moved
+     outside of it.  If FROM is the header of the base loop, it cannot be moved
+     outside of it, either.  In both cases, we can end now.  */
+  if (base_loop == current_loops->tree_root
+      || from == base_loop->header)
     return;
 
   in_queue = sbitmap_alloc (last_basic_block);

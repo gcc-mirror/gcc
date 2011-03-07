@@ -1,3 +1,9 @@
+2011-03-07  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR bootstrap/48000
+	* cfgloopmanip.c (fix_bb_placements): Return immediately
+	if FROM is BASE_LOOP's header.
+
 2011-03-07  Paul Wögerer  <paul_woegerer@mentor.com>
 
 	* gimplify.c (gimplify_function_tree): Fix building calls
