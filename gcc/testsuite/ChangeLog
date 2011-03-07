@@ -1,3 +1,8 @@
+2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
+
+	PR target/47862
+	* gcc.target/powerpc/pr47862.c: New.
+
 2011-03-07  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/45413
