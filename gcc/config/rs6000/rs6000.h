@@ -1005,6 +1005,16 @@ extern unsigned rs6000_pointer_size;
 
 #define HARD_REGNO_NREGS(REGNO, MODE) rs6000_hard_regno_nregs[(MODE)][(REGNO)]
 
+/* When setting up caller-save slots (MODE == VOIDmode) ensure we allocate
+   enough space to account for vectors in FP regs. */
+#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)	\
+  (TARGET_VSX						\
+   && ((MODE) == VOIDmode || VSX_VECTOR_MODE (MODE)	\
+       || ALTIVEC_VECTOR_MODE (MODE))			\
+   && FP_REGNO_P (REGNO)				\
+   ? V2DFmode						\
+   : choose_hard_reg_mode ((REGNO), (NREGS), false))
+
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
   (((TARGET_32BIT && TARGET_POWERPC64					\
      && (GET_MODE_SIZE (MODE) > 4)					\

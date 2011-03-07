@@ -1,3 +1,10 @@
+2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
+
+	PR target/47862
+	* config/rs6000/rs6000.h (HARD_REGNO_CALLER_SAVE_MODE): Define.
+	* config/rs6000/e500.h (HARD_REGNO_CALLER_SAVE_MODE): Undefine
+	before definition.
+
 2011-03-07  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR bootstrap/48000
