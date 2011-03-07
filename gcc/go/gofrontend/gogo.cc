@@ -308,12 +308,7 @@ Gogo::import_package(const std::string& filename,
 	  ln = package->name();
 	  is_ln_exported = Lex::is_exported_name(ln);
 	}
-      if (ln != ".")
-	{
-	  ln = this->pack_hidden_name(ln, is_ln_exported);
-	  this->package_->bindings()->add_package(ln, package);
-	}
-      else
+      if (ln == ".")
 	{
 	  Bindings* bindings = package->bindings();
 	  for (Bindings::const_declarations_iterator p =
@@ -321,6 +316,13 @@ Gogo::import_package(const std::string& filename,
 	       p != bindings->end_declarations();
 	       ++p)
 	    this->add_named_object(p->second);
+	}
+      else if (ln == "_")
+	package->set_uses_sink_alias();
+      else
+	{
+	  ln = this->pack_hidden_name(ln, is_ln_exported);
+	  this->package_->bindings()->add_package(ln, package);
 	}
       return;
     }
