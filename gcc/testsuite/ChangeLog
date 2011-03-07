@@ -1,3 +1,7 @@
+2011-03-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* README.QMTEST: Remove.
+
 2011-03-06  Paul Thomas  <pault@gcc.gnu.org>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
