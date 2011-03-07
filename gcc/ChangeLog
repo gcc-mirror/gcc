@@ -1,3 +1,28 @@
+2011-03-07  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/linux.h (TARGET_ASM_FILE_END): Don't define.
+	* config/rs6000/linux64.h (TARGET_ASM_FILE_END): Don't define.
+	* config/rs6000/sysv4.h (TARGET_ASM_FILE_END): Define.
+	* config/rs6000/rs6000-protos.h (init_cumulative_args): Add fndecl and
+	return_mode args.
+	* config/rs6000/rs6000.h (CUMULATIVE_ARGS): Add "escapes".
+	(INIT_CUMULATIVE_ARGS): Pass FNDECL, VOIDmode.
+	(INIT_CUMULATIVE_INCOMING_ARGS): Pass current_function_decl, VOIDmode.
+	(INIT_CUMULATIVE_LIBCALL_ARGS): Pass NULL_TREE, MODE.
+	* config/rs6000/rs6000.c
+	(rs6000_elf_end_indicate_exec_stack): Rename to..
+	(rs6000_elf_file_end): ..this.  Only call file_end_indicate_exec_stack
+	for POWERPC_LINUX.  Move code emitting .gnu_attribute to here, from..
+	(rs6000_file_start): ..here.
+	(rs6000_passes_float, rs6000_passes_vector, rs6000_returns_struct): New
+	file scope variables.
+	(call_ABI_of_interest): New function.
+	(init_cumulative_args): Set above vars when function return value
+	is a float, vector, or small struct.
+	(rs6000_function_arg_advance_1): Likewise for function args.
+	(rs6000_va_start): Set rs6000_passes_float if variable arg function
+	references float args.
+
 2011-03-07  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* doc/cfg.texi: Remove "See" before @ref.

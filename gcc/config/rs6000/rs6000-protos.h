@@ -28,7 +28,8 @@
 #ifdef RTX_CODE
 
 #ifdef TREE_CODE
-extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int);
+extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, int, int, int,
+				  tree, enum machine_mode);
 #endif /* TREE_CODE */
 
 extern bool easy_altivec_constant (rtx, enum machine_mode);

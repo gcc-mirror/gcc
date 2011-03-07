@@ -1031,6 +1031,8 @@ ncrtn.o%s"
 /* Generate entries in .fixup for relocatable addresses.  */
 #define RELOCATABLE_NEEDS_FIXUP 1
 
+#define TARGET_ASM_FILE_END rs6000_elf_file_end
+
 /* This target uses the sysv4.opt file.  */
 #define TARGET_USES_SYSV4_OPT 1
 
