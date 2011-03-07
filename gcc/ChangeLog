@@ -1,3 +1,9 @@
+2011-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47991
+	* var-tracking.c (find_use_val): Return NULL for
+	cui->sets && cui->store_p BLKmode MEMs.
+
 2011-03-07  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/stormy16/stormy16.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS):

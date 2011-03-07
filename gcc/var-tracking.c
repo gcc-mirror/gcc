@@ -1,5 +1,5 @@
 /* Variable tracking routines for the GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -4784,12 +4784,19 @@ find_use_val (rtx x, enum machine_mode mode, struct count_use_info *cui)
   if (cui->sets)
     {
       /* This is called after uses are set up and before stores are
-	 processed bycselib, so it's safe to look up srcs, but not
+	 processed by cselib, so it's safe to look up srcs, but not
 	 dsts.  So we look up expressions that appear in srcs or in
 	 dest expressions, but we search the sets array for dests of
 	 stores.  */
       if (cui->store_p)
 	{
+	  /* Some targets represent memset and memcpy patterns
+	     by (set (mem:BLK ...) (reg:[QHSD]I ...)) or
+	     (set (mem:BLK ...) (const_int ...)) or
+	     (set (mem:BLK ...) (mem:BLK ...)).  Don't return anything
+	     in that case, otherwise we end up with mode mismatches.  */
+	  if (mode == BLKmode && MEM_P (x))
+	    return NULL;
 	  for (i = 0; i < cui->n_sets; i++)
 	    if (cui->sets[i].dest == x)
 	      return cui->sets[i].src_elt;
