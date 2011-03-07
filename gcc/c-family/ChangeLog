@@ -1,3 +1,9 @@
+2011-03-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c/47786
+	* c-common.c (c_type_hash): Call list_length instead of iterating
+	through DECL_CHAIN.  Rename 'i' to 'n_elements'.
+
 2011-02-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/47809
