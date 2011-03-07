@@ -1,3 +1,11 @@
+2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
+
+	Backport from mainline
+	2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
+
+	PR target/47862
+	* gcc.target/powerpc/pr47862.c: New.
+
 2011-03-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from mainline
