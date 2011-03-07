@@ -1880,16 +1880,25 @@ write_type (tree type)
 	      break;
 
 	    case POINTER_TYPE:
-	      write_char ('P');
-	      write_type (TREE_TYPE (type));
-	      break;
-
 	    case REFERENCE_TYPE:
-	      if (TYPE_REF_IS_RVALUE (type))
-        	write_char('O');
+	      if (TREE_CODE (type) == POINTER_TYPE)
+		write_char ('P');
+	      else if (TYPE_REF_IS_RVALUE (type))
+		write_char ('O');
               else
                 write_char ('R');
-	      write_type (TREE_TYPE (type));
+	      {
+		tree target = TREE_TYPE (type);
+		/* Attribute const/noreturn are not reflected in mangling.
+		   We strip them here rather than at a lower level because
+		   a typedef or template argument can have function type
+		   with function-cv-quals (that use the same representation),
+		   but you can't have a pointer/reference to such a type.  */
+		if (abi_version_at_least (5)
+		    && TREE_CODE (target) == FUNCTION_TYPE)
+		  target = build_qualified_type (target, TYPE_UNQUALIFIED);
+		write_type (target);
+	      }
 	      break;
 
 	    case TEMPLATE_TYPE_PARM:
@@ -2016,12 +2025,6 @@ write_CV_qualifiers_for_type (const tree type)
      int[3]", the "const" is emitted with the "int", not with the
      array.  */
   cp_cv_quals quals = TYPE_QUALS (type);
-
-  /* Attribute const/noreturn are not reflected in mangling.  */
-  if (abi_version_at_least (5)
-      && (TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE))
-    return 0;
 
   if (quals & TYPE_QUAL_RESTRICT)
     {
