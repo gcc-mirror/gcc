@@ -7868,7 +7868,7 @@ gimplify_function_tree (tree fndecl)
       gimple call;
 
       x = implicit_built_in_decls[BUILT_IN_RETURN_ADDRESS];
-      call = gimple_build_call (x, 0);
+      call = gimple_build_call (x, 1, integer_zero_node);
       tmp_var = create_tmp_var (ptr_type_node, "return_addr");
       gimple_call_set_lhs (call, tmp_var);
       gimplify_seq_add_stmt (&cleanup, call);
@@ -7880,7 +7880,7 @@ gimplify_function_tree (tree fndecl)
       tf = gimple_build_try (seq, cleanup, GIMPLE_TRY_FINALLY);
 
       x = implicit_built_in_decls[BUILT_IN_RETURN_ADDRESS];
-      call = gimple_build_call (x, 0);
+      call = gimple_build_call (x, 1, integer_zero_node);
       tmp_var = create_tmp_var (ptr_type_node, "return_addr");
       gimple_call_set_lhs (call, tmp_var);
       gimplify_seq_add_stmt (&body, call);
