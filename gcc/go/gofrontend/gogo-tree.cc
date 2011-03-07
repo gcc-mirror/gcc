@@ -839,19 +839,6 @@ Named_object::get_id(Gogo* gogo)
       // types.
       decl_name = Gogo::unpack_hidden_name(this->name_);
     }
-  else if (this->is_function()
-	   && !this->func_value()->is_method()
-	   && this->package_ == NULL
-	   && Gogo::unpack_hidden_name(this->name_) == "init")
-    {
-      // A single package can have multiple "init" functions, which
-      // means that we need to give them different names.
-      static int init_index;
-      char buf[20];
-      snprintf(buf, sizeof buf, "%d", init_index);
-      ++init_index;
-      decl_name = gogo->package_name() + ".init." + buf;
-    }
   else
     {
       std::string package_name;
