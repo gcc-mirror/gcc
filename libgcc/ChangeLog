@@ -1,3 +1,8 @@
+2011-03-07  Ian Lance Taylor  <iant@google.com>
+
+	* generic-morestack.c (__splitstack_find): Adjust returned stack
+	pointer to include all registers pushed by __morestack.
+
 2011-01-26  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/40125
