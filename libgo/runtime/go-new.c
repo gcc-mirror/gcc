@@ -11,7 +11,7 @@
 void *
 __go_new (size_t size)
 {
-  return __go_alloc (size);
+  return runtime_mallocgc (size, 0, 1, 1);
 }
 
 void *
