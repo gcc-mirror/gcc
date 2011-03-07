@@ -2863,6 +2863,11 @@ namelist_read (st_parameter_dt *dtp)
   char c;
   jmp_buf eof_jump;
   char nml_err_msg[200];
+
+  /* Initialize the error string buffer just in case we get an unexpected fail
+     somewhere and end up at nml_err_ret.  */
+  strcpy (nml_err_msg, "Internal namelist read error");
+
   /* Pointer to the previously read object, in case attempt is made to read
      new object name.  Should this fail, error message can give previous
      name.  */
@@ -2950,7 +2955,11 @@ find_nml_name:
 	    }
         }
 
-   }
+     /* Reset the previous namelist pointer if we know we are not going
+	to be doing multiple reads within a single namelist object.  */
+     if (prev_nl && prev_nl->var_rank == 0)
+	prev_nl = NULL;
+    }
 
   dtp->u.p.eof_jump = NULL;
   free_saved (dtp);
