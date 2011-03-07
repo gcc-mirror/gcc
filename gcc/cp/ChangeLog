@@ -1,3 +1,9 @@
+2011-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48008
+	* mangle.c (write_type): Strip cv-quals from FUNCTION_TYPE here.
+	(write_CV_qualifiers_for_type): Not here.
+
 2011-03-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang-specs.h: Match -save-temps* instead of -save-temps.

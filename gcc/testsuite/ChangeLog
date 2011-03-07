@@ -1,3 +1,7 @@
+2011-03-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/mangle46.C: New.
+
 2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
 
 	PR target/47862
