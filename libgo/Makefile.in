@@ -1563,6 +1563,12 @@ go_testing_script_files = \
 
 # Support for epoll.
 @LIBGO_IS_LINUX_TRUE@syscall_socket_epoll_file = syscalls/socket_epoll.go
+@LIBGO_IS_386_FALSE@@LIBGO_IS_SOLARIS_TRUE@syscall_uname_file = syscalls/syscall_uname.go
+
+# Support for uname.
+# 32-bit Solaris 2/x86 needs _nuname, handled in syscall_solaris_386.go.
+@LIBGO_IS_386_TRUE@@LIBGO_IS_SOLARIS_TRUE@syscall_uname_file = 
+@LIBGO_IS_SOLARIS_FALSE@syscall_uname_file = syscalls/syscall_uname.go
 go_syscall_files = \
 	$(syscall_errstr_file) \
 	$(syscall_errstr_decl_file) \
@@ -1575,6 +1581,7 @@ go_syscall_files = \
 	$(syscall_socket_os_file) \
 	$(syscall_socket_epoll_file) \
 	$(syscall_syscall_file) \
+	$(syscall_uname_file) \
 	syscalls/syscall_unix.go \
 	syscalls/stringbyte.go \
 	syscalls/syscall_$(GOOS).go \

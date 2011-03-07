@@ -1201,6 +1201,18 @@ else
 syscall_socket_epoll_file =
 endif
 
+# Support for uname.
+if LIBGO_IS_SOLARIS
+if LIBGO_IS_386
+# 32-bit Solaris 2/x86 needs _nuname, handled in syscall_solaris_386.go.
+syscall_uname_file =
+else # !LIBGO_IS_386 && LIBGO_IS_SOLARIS
+syscall_uname_file = syscalls/syscall_uname.go
+endif
+else # !LIBGO_IS_SOLARIS
+syscall_uname_file = syscalls/syscall_uname.go
+endif
+
 syscall_arch.go: s-syscall_arch; @true
 s-syscall_arch: Makefile
 	rm -f syscall_arch.go.tmp
@@ -1222,6 +1234,7 @@ go_syscall_files = \
 	$(syscall_socket_os_file) \
 	$(syscall_socket_epoll_file) \
 	$(syscall_syscall_file) \
+	$(syscall_uname_file) \
 	syscalls/syscall_unix.go \
 	syscalls/stringbyte.go \
 	syscalls/syscall_$(GOOS).go \
