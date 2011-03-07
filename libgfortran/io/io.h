@@ -1013,6 +1013,12 @@ fbuf_getc (gfc_unit * u)
   return fbuf_getc_refill (u);
 }
 
+static inline char *
+fbuf_getptr (gfc_unit * u)
+{
+  return (char*) (u->fbuf->buf + u->fbuf->pos);
+}
+
 /* lock.c */
 extern void free_ionml (st_parameter_dt *);
 internal_proto(free_ionml);
