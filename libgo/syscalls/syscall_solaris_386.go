@@ -15,3 +15,6 @@ func libc_ptrace(request int, pid Pid_t, addr uintptr, data *byte) int __asm__ (
 
 var dummy *byte
 const sizeofPtr uintptr = uintptr(unsafe.Sizeof(dummy))
+
+// 32-bit Solaris 2/x86 needs to use _nuname internally, cf. <sys/utsname.h>.
+func libc_uname(buf *Utsname) (errno int) __asm__("_nuname")
