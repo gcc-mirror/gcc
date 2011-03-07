@@ -1,3 +1,13 @@
+2011-03-07  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/stormy16/stormy16.h (PRINT_OPERAND, PRINT_OPERAND_ADDRESS):
+	Remove.
+	* config/stormy16/stormy16-protos.h (xstormy16_print_operand,
+	xstormy16_print_operand_address): Remove.
+	* config/stormy16/stormy16.c (xstormy16_print_operand,
+	xstormy16_print_operand_address): Make static.
+	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define.
+
 2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
 
 	PR target/47862

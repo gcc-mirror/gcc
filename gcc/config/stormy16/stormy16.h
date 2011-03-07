@@ -440,10 +440,6 @@ enum reg_class
   { { "r14", 14 },				\
     { "r15", 15 } }
 
-#define PRINT_OPERAND(STREAM, X, CODE) xstormy16_print_operand (STREAM, X, CODE)
-
-#define PRINT_OPERAND_ADDRESS(STREAM, X) xstormy16_print_operand_address (STREAM, X)
-
 #define REGISTER_PREFIX ""
 #define LOCAL_LABEL_PREFIX "."
 #define USER_LABEL_PREFIX ""

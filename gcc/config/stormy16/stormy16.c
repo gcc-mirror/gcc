@@ -1642,9 +1642,11 @@ xstormy16_asm_out_constructor (rtx symbol, int priority)
   assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
-/* Print a memory address as an operand to reference that memory location.  */
+/* Worker function for TARGET_PRINT_OPERAND_ADDRESS.
 
-void
+   Print a memory address as an operand to reference that memory location.  */
+
+static void
 xstormy16_print_operand_address (FILE *file, rtx address)
 {
   HOST_WIDE_INT offset;
@@ -1692,9 +1694,11 @@ xstormy16_print_operand_address (FILE *file, rtx address)
   fputc (')', file);
 }
 
-/* Print an operand to an assembler instruction.  */
+/* Worker function for TARGET_PRINT_OPERAND.
 
-void
+   Print an operand to an assembler instruction.  */
+
+static void
 xstormy16_print_operand (FILE *file, rtx x, int code)
 {
   switch (code)
@@ -2607,6 +2611,11 @@ static const struct default_options xstorym16_option_optimization_table[] =
 #define TARGET_ASM_OUTPUT_MI_THUNK xstormy16_asm_output_mi_thunk
 #undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND xstormy16_print_operand
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS xstormy16_print_operand_address
 
 #undef  TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST xstormy16_memory_move_cost
