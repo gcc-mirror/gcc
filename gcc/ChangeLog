@@ -1,3 +1,8 @@
+2011-03-07  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* doc/cfg.texi: Remove "See" before @ref.
+	* doc/invoke.texi: Likewise.
+
 2011-03-05  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Document ABI v5.
