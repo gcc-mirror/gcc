@@ -211,12 +211,6 @@ Gogo::Gogo(int int_type_size, int pointer_size)
   this->globals_->add_function_declaration("imag", NULL, imag_type, loc);
 
   this->define_builtin_function_trees();
-
-  // Declare "init", to ensure that it is not defined with parameters
-  // or return values.
-  this->declare_function("init",
-			 Type::make_function_type(NULL, NULL, NULL, loc),
-			 loc);
 }
 
 // Munge name for use in an error message.
@@ -660,7 +654,24 @@ Gogo::start_function(const std::string& name, Function_type* type,
 
   const std::string* pname;
   std::string nested_name;
-  if (!name.empty())
+  bool is_init = false;
+  if (Gogo::unpack_hidden_name(name) == "init" && !type->is_method())
+    {
+      if ((type->parameters() != NULL && !type->parameters()->empty())
+	  || (type->results() != NULL && !type->results()->empty()))
+	error_at(location,
+		 "func init must have no arguments and no return values");
+      // There can be multiple "init" functions, so give them each a
+      // different name.
+      static int init_count;
+      char buf[30];
+      snprintf(buf, sizeof buf, ".$init%d", init_count);
+      ++init_count;
+      nested_name = buf;
+      pname = &nested_name;
+      is_init = true;
+    }
+  else if (!name.empty())
     pname = &name;
   else
     {
@@ -753,7 +764,7 @@ Gogo::start_function(const std::string& name, Function_type* type,
   of.function = ret;
   of.blocks.push_back(block);
 
-  if (!type->is_method() && Gogo::unpack_hidden_name(name) == "init")
+  if (is_init)
     {
       this->init_functions_.push_back(ret);
       this->need_init_fn_ = true;
