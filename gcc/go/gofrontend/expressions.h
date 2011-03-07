@@ -903,10 +903,6 @@ class Var_expression : public Expression
   named_object() const
   { return this->variable_; }
 
-  // Return the name of the variable.
-  const std::string&
-  name() const;
-
  protected:
   Expression*
   do_lower(Gogo*, Named_object*, int);
@@ -1313,10 +1309,6 @@ class Func_expression : public Expression
   const Named_object*
   named_object() const
   { return this->function_; }
-
-  // Return the name of the function.
-  const std::string&
-  name() const;
 
   // Return the closure for this function.  This will return NULL if
   // the function has no closure, which is the normal case.

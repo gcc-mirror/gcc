@@ -936,14 +936,6 @@ Var_expression::do_lower(Gogo* gogo, Named_object* function, int)
   return this;
 }
 
-// Return the name of the variable.
-
-const std::string&
-Var_expression::name() const
-{
-  return this->variable_->name();
-}
-
 // Return the type of a reference to a variable.
 
 Type*
@@ -1124,14 +1116,6 @@ Expression::make_sink(source_location location)
 // The value is unchanging.  Initializing a constant to the address of
 // a function seems like it could work, though there might be little
 // point to it.
-
-// Return the name of the function.
-
-const std::string&
-Func_expression::name() const
-{
-  return this->function_->name();
-}
 
 // Traversal.
 
@@ -2358,10 +2342,6 @@ class Const_expression : public Expression
   Named_object*
   named_object()
   { return this->constant_; }
-
-  const std::string&
-  name() const
-  { return this->constant_->name(); }
 
   // Check that the initializer does not refer to the constant itself.
   void
@@ -11645,7 +11625,7 @@ class Composite_literal_expression : public Parser_expression
 
  private:
   Expression*
-  lower_struct(Type*);
+  lower_struct(Gogo*, Type*);
 
   Expression*
   lower_array(Type*);
@@ -11706,7 +11686,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function, int)
   if (type->is_error_type())
     return Expression::make_error(this->location());
   else if (type->struct_type() != NULL)
-    return this->lower_struct(type);
+    return this->lower_struct(gogo, type);
   else if (type->array_type() != NULL)
     return this->lower_array(type);
   else if (type->map_type() != NULL)
@@ -11723,7 +11703,7 @@ Composite_literal_expression::do_lower(Gogo* gogo, Named_object* function, int)
 // Lower a struct composite literal.
 
 Expression*
-Composite_literal_expression::lower_struct(Type* type)
+Composite_literal_expression::lower_struct(Gogo* gogo, Type* type)
 {
   source_location location = this->location();
   Struct_type* st = type->struct_type();
@@ -11751,6 +11731,7 @@ Composite_literal_expression::lower_struct(Type* type)
 
       bool bad_key = false;
       std::string name;
+      const Named_object* no = NULL;
       switch (name_expr->classification())
 	{
 	case EXPRESSION_UNKNOWN_REFERENCE:
@@ -11758,7 +11739,7 @@ Composite_literal_expression::lower_struct(Type* type)
 	  break;
 
 	case EXPRESSION_CONST_REFERENCE:
-	  name = static_cast<Const_expression*>(name_expr)->name();
+	  no = static_cast<Const_expression*>(name_expr)->named_object();
 	  break;
 
 	case EXPRESSION_TYPE:
@@ -11768,16 +11749,16 @@ Composite_literal_expression::lower_struct(Type* type)
 	    if (nt == NULL)
 	      bad_key = true;
 	    else
-	      name = nt->name();
+	      no = nt->named_object();
 	  }
 	  break;
 
 	case EXPRESSION_VAR_REFERENCE:
-	  name = name_expr->var_expression()->name();
+	  no = name_expr->var_expression()->named_object();
 	  break;
 
 	case EXPRESSION_FUNC_REFERENCE:
-	  name = name_expr->func_expression()->name();
+	  no = name_expr->func_expression()->named_object();
 	  break;
 
 	case EXPRESSION_UNARY:
@@ -11823,6 +11804,23 @@ Composite_literal_expression::lower_struct(Type* type)
 	{
 	  error_at(name_expr->location(), "expected struct field name");
 	  return Expression::make_error(location);
+	}
+
+      if (no != NULL)
+	{
+	  name = no->name();
+
+	  // A predefined name won't be packed.  If it starts with a
+	  // lower case letter we need to check for that case, because
+	  // the field name will be packed.
+	  if (!Gogo::is_hidden_name(name)
+	      && name[0] >= 'a'
+	      && name[0] <= 'z')
+	    {
+	      Named_object* gno = gogo->lookup_global(name.c_str());
+	      if (gno == no)
+		name = gogo->pack_hidden_name(name, false);
+	    }
 	}
 
       unsigned int index;
