@@ -4035,7 +4035,7 @@ c_apply_type_quals_to_decl (int type_quals, tree decl)
 static hashval_t
 c_type_hash (const void *p)
 {
-  int i = 0;
+  int n_elements;
   int shift, size;
   const_tree const t = (const_tree) p;
   tree t2;
@@ -4064,14 +4064,15 @@ c_type_hash (const void *p)
     default:
       gcc_unreachable ();
     }
-  for (; t2; t2 = DECL_CHAIN (t2))
-    i++;
+  /* FIXME: We want to use a DECL_CHAIN iteration method here, but
+     TYPE_VALUES of ENUMERAL_TYPEs is stored as a TREE_LIST.  */
+  n_elements = list_length (t2);
   /* We might have a VLA here.  */
   if (TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
     size = 0;
   else
     size = TREE_INT_CST_LOW (TYPE_SIZE (t));
-  return ((size << 24) | (i << shift));
+  return ((size << 24) | (n_elements << shift));
 }
 
 static GTY((param_is (union tree_node))) htab_t type_hash_table;
