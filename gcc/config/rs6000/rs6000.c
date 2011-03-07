@@ -184,6 +184,14 @@ unsigned rs6000_pmode;
 /* Width in bits of a pointer.  */
 unsigned rs6000_pointer_size;
 
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+/* Flag whether floating point values have been passed/returned.  */
+static bool rs6000_passes_float;
+/* Flag whether vector values have been passed/returned.  */
+static bool rs6000_passes_vector;
+/* Flag whether small (<= 8 byte) structures have been returned.  */
+static bool rs6000_returns_struct;
+#endif
 
 /* Value is TRUE if register/mode pair is acceptable.  */
 bool rs6000_hard_regno_mode_ok_p[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
@@ -940,7 +948,7 @@ static void rs6000_file_start (void);
 static int rs6000_elf_reloc_rw_mask (void);
 static void rs6000_elf_asm_out_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void rs6000_elf_asm_out_destructor (rtx, int) ATTRIBUTE_UNUSED;
-static void rs6000_elf_end_indicate_exec_stack (void) ATTRIBUTE_UNUSED;
+static void rs6000_elf_file_end (void) ATTRIBUTE_UNUSED;
 static void rs6000_elf_asm_init_sections (void);
 static section *rs6000_elf_select_rtx_section (enum machine_mode, rtx,
 					       unsigned HOST_WIDE_INT);
@@ -4695,23 +4703,6 @@ rs6000_file_start (void)
 	putc ('\n', file);
     }
 
-#ifdef HAVE_AS_GNU_ATTRIBUTE
-  if (TARGET_32BIT && DEFAULT_ABI == ABI_V4)
-    {
-      fprintf (file, "\t.gnu_attribute 4, %d\n",
-	       ((TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT) ? 1 
-	        : (TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_SINGLE_FLOAT) ? 3 
-	        : 2));
-      fprintf (file, "\t.gnu_attribute 8, %d\n",
-	       (TARGET_ALTIVEC_ABI ? 2
-		: TARGET_SPE_ABI ? 3
-		: 1));
-      fprintf (file, "\t.gnu_attribute 12, %d\n",
-	       aix_struct_return ? 2 : 1);
-
-    }
-#endif
-
   if (DEFAULT_ABI == ABI_AIX || (TARGET_ELF && flag_pic == 2))
     {
       switch_to_section (toc_section);
@@ -7865,9 +7856,36 @@ rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   return false;
 }
 
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+/* Return TRUE if a call to function FNDECL may be one that
+   potentially affects the function calling ABI of the object file.  */
+
+static bool
+call_ABI_of_interest (tree fndecl)
+{
+  if (cgraph_state == CGRAPH_STATE_EXPANSION)
+    {
+      struct cgraph_node *c_node;
+
+      /* Libcalls are always interesting.  */
+      if (fndecl == NULL_TREE)
+	return true;
+
+      /* Any call to an external function is interesting.  */
+      if (DECL_EXTERNAL (fndecl))
+	return true;
+
+      /* Interesting functions that we are emitting in this object file.  */
+      c_node = cgraph_node (fndecl);
+      return !cgraph_only_called_directly_p (c_node);
+    }
+  return false;
+}
+#endif
+
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0.
+   For a library call, FNTYPE is 0 and RETURN_MODE the return value mode.
 
    For incoming args we set the number of arguments in the prototype large
    so we never return a PARALLEL.  */
@@ -7875,7 +7893,9 @@ rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 void
 init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 		      rtx libname ATTRIBUTE_UNUSED, int incoming,
-		      int libcall, int n_named_args)
+		      int libcall, int n_named_args,
+		      tree fndecl ATTRIBUTE_UNUSED,
+		      enum machine_mode return_mode ATTRIBUTE_UNUSED)
 {
   static CUMULATIVE_ARGS zero_cumulative;
 
@@ -7916,6 +7936,45 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
       fprintf (stderr, " proto = %d, nargs = %d\n",
 	       cum->prototype, cum->nargs_prototype);
     }
+
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+  if (DEFAULT_ABI == ABI_V4)
+    {
+      cum->escapes = call_ABI_of_interest (fndecl);
+      if (cum->escapes)
+	{
+	  tree return_type;
+
+	  if (fntype)
+	    {
+	      return_type = TREE_TYPE (fntype);
+	      return_mode = TYPE_MODE (return_type);
+	    }
+	  else
+	    return_type = lang_hooks.types.type_for_mode (return_mode, 0);
+
+	  if (return_type != NULL)
+	    {
+	      if (TREE_CODE (return_type) == RECORD_TYPE
+		  && TYPE_TRANSPARENT_AGGR (return_type))
+		{
+		  return_type = TREE_TYPE (first_field (return_type));
+		  return_mode = TYPE_MODE (return_type);
+		}
+	      if (AGGREGATE_TYPE_P (return_type)
+		  && ((unsigned HOST_WIDE_INT) int_size_in_bytes (return_type)
+		      <= 8))
+		rs6000_returns_struct = true;
+	    }
+	  if (SCALAR_FLOAT_MODE_P (return_mode))
+	    rs6000_passes_float = true;
+	  else if (ALTIVEC_VECTOR_MODE (return_mode)
+		   || VSX_VECTOR_MODE (return_mode)
+		   || SPE_VECTOR_MODE (return_mode))
+	    rs6000_passes_vector = true;
+	}
+    }
+#endif
 
   if (fntype
       && !TARGET_ALTIVEC
@@ -8235,10 +8294,24 @@ static void
 rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			       const_tree type, bool named, int depth)
 {
-
   /* Only tick off an argument if we're not recursing.  */
   if (depth == 0)
     cum->nargs_prototype--;
+
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+  if (DEFAULT_ABI == ABI_V4
+      && cum->escapes)
+    {
+      if (SCALAR_FLOAT_MODE_P (mode))
+	rs6000_passes_float = true;
+      else if (named && (ALTIVEC_VECTOR_MODE (mode) || VSX_VECTOR_MODE (mode)))
+	rs6000_passes_vector = true;
+      else if (SPE_VECTOR_MODE (mode)
+	       && !cum->stdarg
+	       && cum->sysv_gregno <= GP_ARG_MAX_REG)
+	rs6000_passes_vector = true;
+    }
+#endif
 
   if (TARGET_ALTIVEC_ABI
       && (ALTIVEC_VECTOR_MODE (mode)
@@ -9504,6 +9577,11 @@ rs6000_va_start (tree valist, rtx nextarg)
 		  build_int_cst (NULL_TREE, n_fpr));
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+      if (call_ABI_of_interest (cfun->decl))
+	rs6000_passes_float = true;
+#endif
     }
 
   /* Find the overflow area.  */
@@ -25786,10 +25864,30 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
 }
 
 static void
-rs6000_elf_end_indicate_exec_stack (void)
+rs6000_elf_file_end (void)
 {
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+  if (TARGET_32BIT && DEFAULT_ABI == ABI_V4)
+    {
+      if (rs6000_passes_float)
+	fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n",
+		 ((TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT) ? 1 
+		  : (TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_SINGLE_FLOAT) ? 3 
+		  : 2));
+      if (rs6000_passes_vector)
+	fprintf (asm_out_file, "\t.gnu_attribute 8, %d\n",
+		 (TARGET_ALTIVEC_ABI ? 2
+		  : TARGET_SPE_ABI ? 3
+		  : 1));
+      if (rs6000_returns_struct)
+	fprintf (asm_out_file, "\t.gnu_attribute 12, %d\n",
+		 aix_struct_return ? 2 : 1);
+    }
+#endif
+#ifdef POWERPC_LINUX
   if (TARGET_32BIT)
     file_end_indicate_exec_stack ();
+#endif
 }
 #endif
 
