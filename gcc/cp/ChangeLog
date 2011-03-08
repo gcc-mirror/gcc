@@ -1,5 +1,8 @@
 2011-03-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48015
+	* init.c (constant_value_1): Always require init to be TREE_CONSTANT.
+
 	PR c++/48008
 	* mangle.c (write_type): Strip cv-quals from FUNCTION_TYPE here.
 	(write_CV_qualifiers_for_type): Not here.
