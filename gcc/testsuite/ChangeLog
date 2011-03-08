@@ -1,3 +1,9 @@
+2011-03-08  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR testsuite/47954
+	* gcc.dg/tree-ssa/ssa-ccp-33.c: Use __alignof__ not
+	sizeof to compute alignment.
+
 2011-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48022
