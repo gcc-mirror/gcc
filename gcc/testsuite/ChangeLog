@@ -1,5 +1,11 @@
+2011-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47881
+	* gcc.dg/pr47881.c: New test.
+
 2011-03-08  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/47957
 	* g++.dg/lookup/template3.C: New test.
 
 2011-03-08  Kai Tietz  <ktietz@redhat.com>

@@ -1,5 +1,9 @@
 2011-03-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/47881
+	* ira.c (ira): Call df_analyze again if delete_trivially_dead_insns
+	removed anything.
+
 	PR tree-optimization/48022
 	* fold-const.c (fold_comparison): Don't call fold_overflow_warning
 	for EQ/NE_EXPR.
