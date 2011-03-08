@@ -5369,15 +5369,20 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	 qualification conversion. Let's strip everything.  */
       else if (TYPE_PTROBV_P (type))
 	{
-	  STRIP_NOPS (expr);
-	  gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
-	  gcc_assert (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE);
-	  /* Skip the ADDR_EXPR only if it is part of the decay for
-	     an array. Otherwise, it is part of the original argument
-	     in the source code.  */
-	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == ARRAY_TYPE)
-	    expr = TREE_OPERAND (expr, 0);
-	  expr_type = TREE_TYPE (expr);
+	  tree sub = expr;
+	  STRIP_NOPS (sub);
+	  if (TREE_CODE (sub) == ADDR_EXPR)
+	    {
+	      gcc_assert (TREE_CODE (TREE_TYPE (sub)) == POINTER_TYPE);
+	      /* Skip the ADDR_EXPR only if it is part of the decay for
+		 an array. Otherwise, it is part of the original argument
+		 in the source code.  */
+	      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (sub, 0))) == ARRAY_TYPE)
+		expr = TREE_OPERAND (sub, 0);
+	      else
+		expr = sub;
+	      expr_type = TREE_TYPE (expr);
+	    }
 	}
     }
 
