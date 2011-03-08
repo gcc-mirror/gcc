@@ -1,5 +1,23 @@
 2011-03-08  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2010-10-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45967
+	* gcc.dg/torture/pr45967.c: New testcase.
+	* gcc.dg/torture/pr45967-2.c: Likewise.
+	* gcc.dg/torture/pr45967-3.c: Likewise.
+	* gcc.dg/torture/pr39074-2.c: Adjust. 
+	* gcc.dg/torture/pta-escape-1.c: Likewise
+	* gcc.dg/torture/pta-ptrarith-1.c: Likewise
+	* gcc.dg/tree-ssa/pta-callused.c: Likewise
+	* gcc.dg/tree-ssa/pta-escape-1.c: Likewise
+	* gcc.dg/tree-ssa/pta-escape-2.c: Likewise
+	* gcc.dg/tree-ssa/pta-escape-3.c: Likewise
+	* gcc.dg/tree-ssa/ssa-pre-21.c: Likewise
+
+2011-03-08  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/47278
 	* gcc.dg/torture/pr47278-1.c: New testcase.
 	* gcc.dg/torture/pr47278-2.c: Likewise.

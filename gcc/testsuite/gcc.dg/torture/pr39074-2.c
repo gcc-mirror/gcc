@@ -30,5 +30,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "y.._., points-to non-local, points-to escaped, points-to vars: { i }" "alias" } } */
+/* { dg-final { scan-tree-dump "y.._., points-to vars: { i }" "alias" } } */
 /* { dg-final { cleanup-tree-dump "alias" } } */
