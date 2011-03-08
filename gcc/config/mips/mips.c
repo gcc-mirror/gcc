@@ -1,6 +1,7 @@
 /* Subroutines used for MIPS code generation.
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
@@ -10804,10 +10805,10 @@ mips_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 	      && !mips_mode_ok_for_mov_fmt_p (mode2)));
 }
 
-/* Implement PREFERRED_RELOAD_CLASS.  */
+/* Implement TARGET_PREFERRED_RELOAD_CLASS.  */
 
-enum reg_class
-mips_preferred_reload_class (rtx x, enum reg_class rclass)
+static reg_class_t
+mips_preferred_reload_class (rtx x, reg_class_t rclass)
 {
   if (mips_dangerous_for_la25_p (x) && reg_class_subset_p (LEA_REGS, rclass))
     return LEA_REGS;
@@ -16486,6 +16487,9 @@ mips_shift_truncation_mask (enum machine_mode mode)
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG mips_reorg
+
+#undef  TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS mips_preferred_reload_class
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START mips_file_start

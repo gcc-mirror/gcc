@@ -2028,9 +2028,6 @@ enum reg_class
 #define SMALL_INT_UNSIGNED(X) SMALL_OPERAND_UNSIGNED (INTVAL (X))
 #define LUI_INT(X) LUI_OPERAND (INTVAL (X))
 
-#define PREFERRED_RELOAD_CLASS(X,CLASS)					\
-  mips_preferred_reload_class (X, CLASS)
-
 /* The HI and LO registers can only be reloaded via the general
    registers.  Condition code registers can only be loaded to the
    general registers, and from the floating point registers.  */
