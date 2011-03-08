@@ -1,6 +1,6 @@
 /* Fold a constant sub-tree into a single node for C-compiler
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -8572,10 +8572,11 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
 	  && (TREE_CODE (lhs) != INTEGER_CST
 	      || !TREE_OVERFLOW (lhs)))
 	{
-	  fold_overflow_warning ("assuming signed overflow does not occur "
-				  "when changing X +- C1 cmp C2 to "
-				  "X cmp C1 +- C2",
-				 WARN_STRICT_OVERFLOW_COMPARISON);
+	  if (code != EQ_EXPR && code != NE_EXPR)
+	    fold_overflow_warning ("assuming signed overflow does not occur "
+				   "when changing X +- C1 cmp C2 to "
+				   "X cmp C1 +- C2",
+				   WARN_STRICT_OVERFLOW_COMPARISON);
 	  return fold_build2_loc (loc, code, type, variable, lhs);
 	}
     }

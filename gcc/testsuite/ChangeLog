@@ -1,3 +1,9 @@
+2011-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48022
+	* gcc.dg/pr48022-1.c: New test.
+	* gcc.dg/pr48022-2.c: New test.
+
 2011-03-07  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/nontype20.C: New.
