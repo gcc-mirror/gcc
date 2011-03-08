@@ -1,3 +1,10 @@
+2011-03-08  Georg-Johann Lay  <avr@gjlay.de>
+
+       * config/avr/avr.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
+       * config/avr/avr.c (TARGET_REGISTER_MOVE_COST,
+       TARGET_MEMORY_MOVE_COST): Define.
+       (avr_register_move_cost, avr_memory_move_cost): New Functions.
+
 2011-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/47881

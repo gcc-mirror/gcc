@@ -82,6 +82,8 @@ static unsigned int avr_section_type_flags (tree, const char *, int);
 static void avr_reorg (void);
 static void avr_asm_out_ctor (rtx, int);
 static void avr_asm_out_dtor (rtx, int);
+static int avr_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
+static int avr_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static int avr_operand_rtx_cost (rtx, enum machine_mode, enum rtx_code, bool);
 static bool avr_rtx_costs (rtx, int, int, int *, bool);
 static int avr_address_cost (rtx, bool);
@@ -174,6 +176,10 @@ static const struct default_options avr_option_optimization_table[] =
 #define TARGET_INSERT_ATTRIBUTES avr_insert_attributes
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST avr_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST avr_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS avr_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -5129,6 +5135,32 @@ order_regs_for_local_alloc (void)
 		      order_0);
   for (i=0; i < ARRAY_SIZE (order_0); ++i)
       reg_alloc_order[i] = order[i];
+}
+
+
+/* Implement `TARGET_REGISTER_MOVE_COST' */
+
+static int
+avr_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+                        reg_class_t from, reg_class_t to)
+{
+  return (from == STACK_REG ? 6
+          : to == STACK_REG ? 12
+          : 2);
+}
+
+
+/* Implement `TARGET_MEMORY_MOVE_COST' */
+
+static int
+avr_memory_move_cost (enum machine_mode mode, reg_class_t rclass ATTRIBUTE_UNUSED,
+                      bool in ATTRIBUTE_UNUSED)
+{
+  return (mode == QImode ? 2
+          : mode == HImode ? 4
+          : mode == SImode ? 8
+          : mode == SFmode ? 8
+          : 16);
 }
 
 
