@@ -1,3 +1,7 @@
+2011-03-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/variadic105.C: New.
+
 2011-03-08  Dodji Seketeli  <dodji@redhat.com>
 
 	* g++.dg/lookup/template3.C: New test.
