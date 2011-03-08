@@ -1,3 +1,9 @@
+2011-03-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45651
+	* pt.c (instantiate_decl): Don't clear DECL_INTERFACE_KNOWN on
+	!TREE_PUBLIC decls.
+
 2011-03-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47957
