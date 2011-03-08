@@ -4205,8 +4205,13 @@ qualified_lookup_using_namespace (tree name, tree scope,
 }
 
 /* Subroutine of outer_binding.
-   Returns TRUE if BINDING is a binding to a template parameter of SCOPE,
-   FALSE otherwise.  */
+
+   Returns TRUE if BINDING is a binding to a template parameter of
+   SCOPE.  In that case SCOPE is the scope of a primary template
+   parameter -- in the sense of G++, i.e, a template that has its own
+   template header.
+
+   Returns FALSE otherwise.  */
 
 static bool
 binding_to_template_parms_of_scope_p (cxx_binding *binding,
@@ -4222,6 +4227,8 @@ binding_to_template_parms_of_scope_p (cxx_binding *binding,
   return (scope
 	  && scope->this_entity
 	  && get_template_info (scope->this_entity)
+	  && PRIMARY_TEMPLATE_P (TI_TEMPLATE
+				 (get_template_info (scope->this_entity)))
 	  && parameter_of_template_p (binding_value,
 				      TI_TEMPLATE (get_template_info \
 						    (scope->this_entity))));
