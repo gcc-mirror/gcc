@@ -1,3 +1,10 @@
+2011-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* go.test/go-test.exp: For goroutines.go test if GCCGO_RUN_ALL_TESTS
+	is not set in the environment, pass 64 as first argument when not
+	running expensive tests or pass max($[`ulimit -u`/4], 10000) on
+	native where ulimit -u is supported.
+
 2011-03-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* gcc.dg/optimize-bswapsi-1.c: Use -march=z900 on s390.

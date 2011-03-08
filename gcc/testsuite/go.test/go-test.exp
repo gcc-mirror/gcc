@@ -265,6 +265,27 @@ proc go-gc-tests { } {
 	    verbose -log "$test: go_execute_args is $go_execute_args"
 	    set index [string last " $progargs" $test_line]
 	    set test_line [string replace $test_line $index end]
+	} elseif { [string match "*go.test/test/chan/goroutines.go" $test] \
+		   && [getenv GCCGO_RUN_ALL_TESTS] == "" } {
+	    # goroutines.go spawns by default 10000 threads, which is too much
+	    # for many OSes.
+	    if { [getenv GCC_TEST_RUN_EXPENSIVE] == "" } {
+		set go_execute_args 64
+	    } elseif { ![is_remote host] && ![is_remote target] } {
+		# When using low ulimit -u limit, use maximum of
+		# a quarter of that limit and 10000 even when running expensive
+		# tests, otherwise parallel tests might fail after fork failures.
+		set nproc [lindex [remote_exec host {sh -c ulimit\ -u}] 1]
+		if { [string is integer -strict $nproc] } {
+			set nproc [expr $nproc / 4]
+			if { $nproc > 10000 } { set nproc 10000 }
+			if { $nproc < 16 } { set nproc 16 }
+			set go_execute_args $nproc
+		}
+	    }
+	    if { "$go_execute_args" != "" } {
+		verbose -log "$test: go_execute_args is $go_execute_args"
+	    }
 	}
 
 	if { $test_line == "// \$G \$D/\$F\.go && \$L \$F\.\$A && \./\$A\.out >tmp.go &&" \
