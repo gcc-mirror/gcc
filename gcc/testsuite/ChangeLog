@@ -1,3 +1,8 @@
+2011-03-08  Kai Tietz  <ktietz@redhat.com>
+
+	* g++.dg/tree-ssa/pr21082.C: Use __INTPTR_TYPE__ instead of
+	'long' type.
+
 2011-03-08  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR testsuite/47954

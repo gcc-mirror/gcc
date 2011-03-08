@@ -4,7 +4,7 @@
 void link_error();
 
 int a[4];
-long b, c;
+__INTPTR_TYPE__ b, c;
 
 int main()
 {
