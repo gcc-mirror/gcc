@@ -1,3 +1,7 @@
+2011-03-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/optimize-bswapsi-1.c: Use -march=z900 on s390.
+
 2011-03-08  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/nontype21.C: New.
