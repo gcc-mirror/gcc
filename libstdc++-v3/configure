@@ -632,6 +632,7 @@ BUILD_HTML_FALSE
 BUILD_HTML_TRUE
 BUILD_XML_FALSE
 BUILD_XML_TRUE
+XSL_STYLE_DIR
 XMLLINT
 XSLTPROC
 DOT
@@ -11487,7 +11488,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11490 "configure"
+#line 11491 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11593,7 +11594,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11596 "configure"
+#line 11597 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14894,7 +14895,7 @@ else
 	arm*-*-symbianelf*)
 	    enable_hosted_libstdcxx=no
 	    ;;
-        *)
+	*)
 	    enable_hosted_libstdcxx=yes
 	    ;;
      esac
@@ -14936,7 +14937,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
       case "$enableval" in
        yes|no|auto) ;;
        *) as_fn_error "Unknown argument to enable/disable sjlj-exceptions" "$LINENO" 5 ;;
-                          esac
+	  	        esac
 
 else
   enable_sjlj_exceptions=auto
@@ -14951,7 +14952,7 @@ fi
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 14954 "configure"
+#line 14955 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -14968,11 +14969,11 @@ EOF
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
-        enable_sjlj_exceptions=yes
+	enable_sjlj_exceptions=yes
       elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
-        enable_sjlj_exceptions=no
+	enable_sjlj_exceptions=no
       elif grep __cxa_end_cleanup conftest.s >/dev/null 2>&1 ; then
-        enable_sjlj_exceptions=no
+	enable_sjlj_exceptions=no
       fi
     fi
     CXXFLAGS="$old_CXXFLAGS"
@@ -15035,14 +15036,14 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
        echo '#include <math.h>' > conftest.h
        if $CXX $CXXFLAGS $CPPFLAGS -x c++-header conftest.h \
-		          -o conftest.h.gch 1>&5 2>&1 &&
-	        echo '#error "pch failed"' > conftest.h &&
-          echo '#include "conftest.h"' > conftest.cc &&
+			  -o conftest.h.gch 1>&5 2>&1 &&
+		echo '#error "pch failed"' > conftest.h &&
+	  echo '#include "conftest.h"' > conftest.cc &&
 	       $CXX -c $CXXFLAGS $CPPFLAGS conftest.cc 1>&5 2>&1 ;
        then
-         glibcxx_cv_prog_CXX_pch=yes
+	 glibcxx_cv_prog_CXX_pch=yes
        else
-         glibcxx_cv_prog_CXX_pch=no
+	 glibcxx_cv_prog_CXX_pch=no
        fi
        rm -f conftest*
        CXXFLAGS=$ac_save_CXXFLAGS
@@ -15115,7 +15116,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
     case "$host" in
       *-*-linux* | *-*-uclinux* | *-*-kfreebsd*-gnu | *-*-gnu*)
 	atomic_builtins_link_tests=yes
-        ;;
+	;;
     esac
   fi
 
@@ -15319,7 +15320,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15322 "configure"
+#line 15323 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15343,12 +15344,12 @@ $as_echo_n "checking for atomic builtins for bool... " >&6; }
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        glibcxx_cv_atomic_bool=no
+	glibcxx_cv_atomic_bool=no
       else
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_1 1" >>confdefs.h
 
-        glibcxx_cv_atomic_bool=yes
+	glibcxx_cv_atomic_bool=yes
       fi
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_bool" >&5
@@ -15356,7 +15357,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15359 "configure"
+#line 15360 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15380,12 +15381,12 @@ $as_echo_n "checking for atomic builtins for short... " >&6; }
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        glibcxx_cv_atomic_short=no
+	glibcxx_cv_atomic_short=no
       else
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_2 1" >>confdefs.h
 
-        glibcxx_cv_atomic_short=yes
+	glibcxx_cv_atomic_short=yes
       fi
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_short" >&5
@@ -15393,7 +15394,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15396 "configure"
+#line 15397 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15418,12 +15419,12 @@ $as_echo_n "checking for atomic builtins for int... " >&6; }
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        glibcxx_cv_atomic_int=no
+	glibcxx_cv_atomic_int=no
       else
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_4 1" >>confdefs.h
 
-        glibcxx_cv_atomic_int=yes
+	glibcxx_cv_atomic_int=yes
       fi
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_int" >&5
@@ -15431,7 +15432,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15434 "configure"
+#line 15435 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15455,12 +15456,12 @@ $as_echo_n "checking for atomic builtins for long long... " >&6; }
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
       if grep __sync_ conftest.s >/dev/null 2>&1 ; then
-        glibcxx_cv_atomic_long_long=no
+	glibcxx_cv_atomic_long_long=no
       else
 
 $as_echo "#define _GLIBCXX_ATOMIC_BUILTINS_8 1" >>confdefs.h
 
-        glibcxx_cv_atomic_long_long=yes
+	glibcxx_cv_atomic_long_long=yes
       fi
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_atomic_long_long" >&5
@@ -15488,14 +15489,14 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: No native atomic operations are provided for this platform." >&5
 $as_echo "$as_me: WARNING: No native atomic operations are provided for this platform." >&2;}
       if test "x$target_thread_file" = xsingle; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: They cannot be faked when thread support is disabled." >&5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: They cannot be faked when thread support is disabled." >&5
 $as_echo "$as_me: WARNING: They cannot be faked when thread support is disabled." >&2;}
-        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Thread-safety of certain classes is not guaranteed." >&5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Thread-safety of certain classes is not guaranteed." >&5
 $as_echo "$as_me: WARNING: Thread-safety of certain classes is not guaranteed." >&2;}
       else
-        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: They will be faked using a mutex." >&5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: They will be faked using a mutex." >&5
 $as_echo "$as_me: WARNING: They will be faked using a mutex." >&2;}
-        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Performance of certain classes will degrade as a result." >&5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Performance of certain classes will degrade as a result." >&5
 $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a result." >&2;}
       fi
   fi
@@ -15507,7 +15508,7 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15510 "configure"
+#line 15511 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15611,7 +15612,7 @@ if test "${enable_cstdio+set}" = set; then :
       case "$enableval" in
        stdio) ;;
        *) as_fn_error "Unknown argument to enable/disable cstdio" "$LINENO" 5 ;;
-                          esac
+	  	        esac
 
 else
   enable_cstdio=stdio
@@ -15643,7 +15644,7 @@ if test "${enable_clocale+set}" = set; then :
       case "$enableval" in
        generic|gnu|ieee_1003.1-2001|yes|no|auto) ;;
        *) as_fn_error "Unknown argument to enable/disable clocale" "$LINENO" 5 ;;
-                          esac
+	  	        esac
 
 else
   enable_clocale=auto
@@ -15674,14 +15675,14 @@ fi
   if test $enable_clocale_flag = auto; then
     case ${target_os} in
       linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
-        enable_clocale_flag=gnu
-        ;;
+	enable_clocale_flag=gnu
+	;;
       darwin* | freebsd*)
-        enable_clocale_flag=darwin
+	enable_clocale_flag=darwin
 	;;
       *)
-        enable_clocale_flag=generic
-        ;;
+	enable_clocale_flag=generic
+	;;
     esac
   fi
 
@@ -15866,12 +15867,12 @@ fi
 
 
       if test x"$check_msgfmt" = x"yes" && test x"$enable_nls" = x"yes"; then
-        USE_NLS=yes
+	USE_NLS=yes
       fi
       # Export the build objects.
       for ling in $ALL_LINGUAS; do \
-        glibcxx_MOFILES="$glibcxx_MOFILES $ling.mo"; \
-        glibcxx_POFILES="$glibcxx_POFILES $ling.po"; \
+	glibcxx_MOFILES="$glibcxx_MOFILES $ling.mo"; \
+	glibcxx_POFILES="$glibcxx_POFILES $ling.po"; \
       done
 
 
@@ -16020,7 +16021,7 @@ if test "${enable_libstdcxx_allocator+set}" = set; then :
       case "$enableval" in
        new|malloc|mt|bitmap|pool|yes|no|auto) ;;
        *) as_fn_error "Unknown argument to enable/disable libstdcxx-allocator" "$LINENO" 5 ;;
-                          esac
+	  	        esac
 
 else
   enable_libstdcxx_allocator=auto
@@ -16046,11 +16047,11 @@ fi
   if test $enable_libstdcxx_allocator_flag = auto; then
     case ${target_os} in
       linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
-        enable_libstdcxx_allocator_flag=new
-        ;;
+	enable_libstdcxx_allocator_flag=new
+	;;
       *)
-        enable_libstdcxx_allocator_flag=new
-        ;;
+	enable_libstdcxx_allocator_flag=new
+	;;
     esac
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_allocator_flag" >&5
@@ -16091,7 +16092,7 @@ if test "${enable_cheaders+set}" = set; then :
       case "$enableval" in
        c|c_std|c_global) ;;
        *) as_fn_error "Unknown argument to enable/disable cheaders" "$LINENO" 5 ;;
-                          esac
+	  	        esac
 
 else
   enable_cheaders=$c_model
@@ -16226,13 +16227,13 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-                      #include <stddef.h>
-                      wint_t i;
+		      #include <stddef.h>
+		      wint_t i;
 		      long l = WEOF;
 		      long j = WCHAR_MIN;
 		      long k = WCHAR_MAX;
-                      namespace test
-                      {
+		      namespace test
+		      {
 			using ::btowc;
 			using ::fgetwc;
 			using ::fgetws;
@@ -16852,8 +16853,8 @@ $as_echo_n "checking for ISO C99 support in <wchar.h>... " >&6; }
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-                    namespace test
-                    {
+		    namespace test
+		    {
 		      using ::wcstold;
 		      using ::wcstoll;
 		      using ::wcstoull;
@@ -16881,7 +16882,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-                    namespace test { using ::vfwscanf; }
+		    namespace test { using ::vfwscanf; }
 int
 main ()
 {
@@ -16900,7 +16901,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-                    namespace test { using ::vswscanf; }
+		    namespace test { using ::vswscanf; }
 int
 main ()
 {
@@ -16919,7 +16920,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-                    namespace test { using ::vwscanf; }
+		    namespace test { using ::vwscanf; }
 int
 main ()
 {
@@ -16938,7 +16939,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <wchar.h>
-                    namespace test { using ::wcstof; }
+		    namespace test { using ::wcstof; }
 int
 main ()
 {
@@ -17105,10 +17106,10 @@ fi
   if test -n "$enable_cxx_flags"; then
     for f in $enable_cxx_flags; do
       case "$f" in
-        -fhonor-std)  ;;
-        -*)  ;;
-        *)   # and we're trying to pass /what/ exactly?
-             as_fn_error "compiler flags start with a -" "$LINENO" 5 ;;
+	-fhonor-std)  ;;
+	-*)  ;;
+	*)   # and we're trying to pass /what/ exactly?
+	     as_fn_error "compiler flags start with a -" "$LINENO" 5 ;;
       esac
     done
   fi
@@ -17684,9 +17685,9 @@ else
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stdint.h>
-        template<typename, typename> struct same { enum { value = -1 }; };
-        template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
-        int array[same<int64_t, long>::value];
+	template<typename, typename> struct same { enum { value = -1 }; };
+	template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
+	int array[same<int64_t, long>::value];
 int
 main ()
 {
@@ -17722,9 +17723,9 @@ else
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <stdint.h>
-        template<typename, typename> struct same { enum { value = -1 }; };
-        template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
-        int array[same<int64_t, long long>::value];
+	template<typename, typename> struct same { enum { value = -1 }; };
+	template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
+	int array[same<int64_t, long long>::value];
 int
 main ()
 {
@@ -18231,26 +18232,26 @@ int
 main ()
 {
 typedef __complex__ float float_type; float_type tmpf;
-	            cacosf(tmpf);
-	            casinf(tmpf);
-	            catanf(tmpf);
-	            cacoshf(tmpf);
-	            casinhf(tmpf);
-	            catanhf(tmpf);
+		    cacosf(tmpf);
+		    casinf(tmpf);
+		    catanf(tmpf);
+		    cacoshf(tmpf);
+		    casinhf(tmpf);
+		    catanhf(tmpf);
 		    typedef __complex__ double double_type; double_type tmpd;
-	            cacos(tmpd);
-	            casin(tmpd);
-	            catan(tmpd);
-	            cacosh(tmpd);
-	            casinh(tmpd);
-	            catanh(tmpd);
+		    cacos(tmpd);
+		    casin(tmpd);
+		    catan(tmpd);
+		    cacosh(tmpd);
+		    casinh(tmpd);
+		    catanh(tmpd);
 		    typedef __complex__ long double ld_type; ld_type tmpld;
-	            cacosl(tmpld);
-	            casinl(tmpld);
-	            catanl(tmpld);
-	            cacoshl(tmpld);
-	            casinhl(tmpld);
-	            catanhl(tmpld);
+		    cacosl(tmpld);
+		    casinl(tmpld);
+		    catanl(tmpld);
+		    cacoshl(tmpld);
+		    casinhl(tmpld);
+		    catanhl(tmpld);
 
   ;
   return 0;
@@ -18285,8 +18286,8 @@ int
 main ()
 {
 int ch;
-	          int ret;
-	          ret = isblank(ch);
+		  int ret;
+		  ret = isblank(ch);
 
   ;
   return 0;
@@ -18335,20 +18336,20 @@ int
 main ()
 {
 int except, mode;
-	            fexcept_t* pflag;
-                    fenv_t* penv;
-	            int ret;
-	            ret = feclearexcept(except);
-	            ret = fegetexceptflag(pflag, except);
-	            ret = feraiseexcept(except);
-	            ret = fesetexceptflag(pflag, except);
-	            ret = fetestexcept(except);
-	            ret = fegetround();
-	            ret = fesetround(mode);
-	            ret = fegetenv(penv);
-	            ret = feholdexcept(penv);
-	            ret = fesetenv(penv);
-	            ret = feupdateenv(penv);
+		    fexcept_t* pflag;
+		    fenv_t* penv;
+		    int ret;
+		    ret = feclearexcept(except);
+		    ret = fegetexceptflag(pflag, except);
+		    ret = feraiseexcept(except);
+		    ret = fesetexceptflag(pflag, except);
+		    ret = fetestexcept(except);
+		    ret = fegetround();
+		    ret = fesetround(mode);
+		    ret = fegetenv(penv);
+		    ret = feholdexcept(penv);
+		    ret = fesetenv(penv);
+		    ret = feupdateenv(penv);
 
   ;
   return 0;
@@ -18379,45 +18380,45 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #define __STDC_LIMIT_MACROS
-                  #define __STDC_CONSTANT_MACROS
-                  #include <stdint.h>
+		  #define __STDC_CONSTANT_MACROS
+		  #include <stdint.h>
 int
 main ()
 {
 typedef int8_t          my_int8_t;
 		  my_int8_t               i8 = INT8_MIN;
 		  i8 = INT8_MAX;
-	          typedef int16_t         my_int16_t;
+		  typedef int16_t         my_int16_t;
 		  my_int16_t              i16 = INT16_MIN;
 		  i16 = INT16_MAX;
-	          typedef int32_t         my_int32_t;
+		  typedef int32_t         my_int32_t;
 		  my_int32_t              i32 = INT32_MIN;
 		  i32 = INT32_MAX;
-	          typedef int64_t         my_int64_t;
+		  typedef int64_t         my_int64_t;
 		  my_int64_t              i64 = INT64_MIN;
 		  i64 = INT64_MAX;
-	          typedef int_fast8_t     my_int_fast8_t;
+		  typedef int_fast8_t     my_int_fast8_t;
 		  my_int_fast8_t          if8 = INT_FAST8_MIN;
 		  if8 = INT_FAST8_MAX;
-	          typedef int_fast16_t    my_int_fast16_t;
+		  typedef int_fast16_t    my_int_fast16_t;
 		  my_int_fast16_t         if16 = INT_FAST16_MIN;
 		  if16 = INT_FAST16_MAX;
-	          typedef int_fast32_t    my_int_fast32_t;
+		  typedef int_fast32_t    my_int_fast32_t;
 		  my_int_fast32_t         if32 = INT_FAST32_MIN;
 		  if32 = INT_FAST32_MAX;
-	          typedef int_fast64_t    my_int_fast64_t;
+		  typedef int_fast64_t    my_int_fast64_t;
 		  my_int_fast64_t         if64 = INT_FAST64_MIN;
 		  if64 = INT_FAST64_MAX;
-	          typedef int_least8_t    my_int_least8_t;
+		  typedef int_least8_t    my_int_least8_t;
 		  my_int_least8_t         il8 = INT_LEAST8_MIN;
 		  il8 = INT_LEAST8_MAX;
-	          typedef int_least16_t   my_int_least16_t;
+		  typedef int_least16_t   my_int_least16_t;
 		  my_int_least16_t        il16 = INT_LEAST16_MIN;
 		  il16 = INT_LEAST16_MAX;
-	          typedef int_least32_t   my_int_least32_t;
+		  typedef int_least32_t   my_int_least32_t;
 		  my_int_least32_t        il32 = INT_LEAST32_MIN;
 		  il32 = INT_LEAST32_MAX;
-	          typedef int_least64_t   my_int_least64_t;
+		  typedef int_least64_t   my_int_least64_t;
 		  my_int_least64_t        il64 = INT_LEAST64_MIN;
 		  il64 = INT_LEAST64_MAX;
 		  typedef intmax_t        my_intmax_t;
@@ -18426,40 +18427,40 @@ typedef int8_t          my_int8_t;
 		  typedef intptr_t        my_intptr_t;
 		  my_intptr_t             ip = INTPTR_MAX;
 		  ip = INTPTR_MIN;
-	          typedef uint8_t         my_uint8_t;
+		  typedef uint8_t         my_uint8_t;
 		  my_uint8_t              ui8 = UINT8_MAX;
 		  ui8 = UINT8_MAX;
-	          typedef uint16_t        my_uint16_t;
+		  typedef uint16_t        my_uint16_t;
 		  my_uint16_t             ui16 = UINT16_MAX;
 		  ui16 = UINT16_MAX;
-	          typedef uint32_t        my_uint32_t;
+		  typedef uint32_t        my_uint32_t;
 		  my_uint32_t             ui32 = UINT32_MAX;
 		  ui32 = UINT32_MAX;
-	          typedef uint64_t        my_uint64_t;
+		  typedef uint64_t        my_uint64_t;
 		  my_uint64_t             ui64 = UINT64_MAX;
 		  ui64 = UINT64_MAX;
-	          typedef uint_fast8_t    my_uint_fast8_t;
+		  typedef uint_fast8_t    my_uint_fast8_t;
 		  my_uint_fast8_t         uif8 = UINT_FAST8_MAX;
 		  uif8 = UINT_FAST8_MAX;
-	          typedef uint_fast16_t   my_uint_fast16_t;
+		  typedef uint_fast16_t   my_uint_fast16_t;
 		  my_uint_fast16_t        uif16 = UINT_FAST16_MAX;
 		  uif16 = UINT_FAST16_MAX;
-	          typedef uint_fast32_t   my_uint_fast32_t;
+		  typedef uint_fast32_t   my_uint_fast32_t;
 		  my_uint_fast32_t        uif32 = UINT_FAST32_MAX;
 		  uif32 = UINT_FAST32_MAX;
-	          typedef uint_fast64_t   my_uint_fast64_t;
+		  typedef uint_fast64_t   my_uint_fast64_t;
 		  my_uint_fast64_t        uif64 = UINT_FAST64_MAX;
 		  uif64 = UINT_FAST64_MAX;
-	          typedef uint_least8_t   my_uint_least8_t;
+		  typedef uint_least8_t   my_uint_least8_t;
 		  my_uint_least8_t        uil8 = UINT_LEAST8_MAX;
 		  uil8 = UINT_LEAST8_MAX;
-	          typedef uint_least16_t  my_uint_least16_t;
+		  typedef uint_least16_t  my_uint_least16_t;
 		  my_uint_least16_t       uil16 = UINT_LEAST16_MAX;
 		  uil16 = UINT_LEAST16_MAX;
-	          typedef uint_least32_t  my_uint_least32_t;
+		  typedef uint_least32_t  my_uint_least32_t;
 		  my_uint_least32_t       uil32 = UINT_LEAST32_MAX;
 		  uil32 = UINT_LEAST32_MAX;
-	          typedef uint_least64_t  my_uint_least64_t;
+		  typedef uint_least64_t  my_uint_least64_t;
 		  my_uint_least64_t       uil64 = UINT_LEAST64_MAX;
 		  uil64 = UINT_LEAST64_MAX;
 		  typedef uintmax_t       my_uintmax_t;
@@ -18504,112 +18505,112 @@ int
 main ()
 {
 typedef double_t  my_double_t;
-	          typedef float_t   my_float_t;
-	          acosh(0.0);
-	          acoshf(0.0f);
-	          acoshl(0.0l);
-	          asinh(0.0);
-	          asinhf(0.0f);
-	          asinhl(0.0l);
-	          atanh(0.0);
-	          atanhf(0.0f);
-	          atanhl(0.0l);
-	          cbrt(0.0);
-	          cbrtf(0.0f);
-	          cbrtl(0.0l);
-	          copysign(0.0, 0.0);
-	          copysignf(0.0f, 0.0f);
-	          copysignl(0.0l, 0.0l);
-	          erf(0.0);
-	          erff(0.0f);
-	          erfl(0.0l);
-	          erfc(0.0);
-	          erfcf(0.0f);
-	          erfcl(0.0l);
-	          exp2(0.0);
-	          exp2f(0.0f);
-	          exp2l(0.0l);
-	          expm1(0.0);
-	          expm1f(0.0f);
-	          expm1l(0.0l);
-	          fdim(0.0, 0.0);
-	          fdimf(0.0f, 0.0f);
-	          fdiml(0.0l, 0.0l);
-	          fma(0.0, 0.0, 0.0);
-	          fmaf(0.0f, 0.0f, 0.0f);
-	          fmal(0.0l, 0.0l, 0.0l);
-	          fmax(0.0, 0.0);
-	          fmaxf(0.0f, 0.0f);
-	          fmaxl(0.0l, 0.0l);
-	          fmin(0.0, 0.0);
-	          fminf(0.0f, 0.0f);
-	          fminl(0.0l, 0.0l);
-	          hypot(0.0, 0.0);
-	          hypotf(0.0f, 0.0f);
-	          hypotl(0.0l, 0.0l);
-	          ilogb(0.0);
-	          ilogbf(0.0f);
-	          ilogbl(0.0l);
-	          lgamma(0.0);
-	          lgammaf(0.0f);
-	          lgammal(0.0l);
-	          llrint(0.0);
-	          llrintf(0.0f);
-	          llrintl(0.0l);
-	          llround(0.0);
-	          llroundf(0.0f);
-	          llroundl(0.0l);
-	          log1p(0.0);
-	          log1pf(0.0f);
-	          log1pl(0.0l);
-	          log2(0.0);
-	          log2f(0.0f);
-	          log2l(0.0l);
-	          logb(0.0);
-	          logbf(0.0f);
-	          logbl(0.0l);
-	          lrint(0.0);
-	          lrintf(0.0f);
-	          lrintl(0.0l);
-	          lround(0.0);
-	          lroundf(0.0f);
-	          lroundl(0.0l);
-	          nan(0);
-	          nanf(0);
-	          nanl(0);
-	          nearbyint(0.0);
-	          nearbyintf(0.0f);
-	          nearbyintl(0.0l);
-	          nextafter(0.0, 0.0);
-	          nextafterf(0.0f, 0.0f);
-	          nextafterl(0.0l, 0.0l);
-	          nexttoward(0.0, 0.0);
-	          nexttowardf(0.0f, 0.0f);
-	          nexttowardl(0.0l, 0.0l);
-	          remainder(0.0, 0.0);
-	          remainderf(0.0f, 0.0f);
-	          remainderl(0.0l, 0.0l);
-	          remquo(0.0, 0.0, 0);
-	          remquof(0.0f, 0.0f, 0);
-	          remquol(0.0l, 0.0l, 0);
-	          rint(0.0);
-	          rintf(0.0f);
-	          rintl(0.0l);
-	          round(0.0);
-	          roundf(0.0f);
-	          roundl(0.0l);
-	          scalbln(0.0, 0l);
-	          scalblnf(0.0f, 0l);
-	          scalblnl(0.0l, 0l);
-	          scalbn(0.0, 0);
-	          scalbnf(0.0f, 0);
-	          scalbnl(0.0l, 0);
-	          tgamma(0.0);
-	          tgammaf(0.0f);
-	          tgammal(0.0l);
-	          trunc(0.0);
-	          truncf(0.0f);
-	          truncl(0.0l);
+		  typedef float_t   my_float_t;
+		  acosh(0.0);
+		  acoshf(0.0f);
+		  acoshl(0.0l);
+		  asinh(0.0);
+		  asinhf(0.0f);
+		  asinhl(0.0l);
+		  atanh(0.0);
+		  atanhf(0.0f);
+		  atanhl(0.0l);
+		  cbrt(0.0);
+		  cbrtf(0.0f);
+		  cbrtl(0.0l);
+		  copysign(0.0, 0.0);
+		  copysignf(0.0f, 0.0f);
+		  copysignl(0.0l, 0.0l);
+		  erf(0.0);
+		  erff(0.0f);
+		  erfl(0.0l);
+		  erfc(0.0);
+		  erfcf(0.0f);
+		  erfcl(0.0l);
+		  exp2(0.0);
+		  exp2f(0.0f);
+		  exp2l(0.0l);
+		  expm1(0.0);
+		  expm1f(0.0f);
+		  expm1l(0.0l);
+		  fdim(0.0, 0.0);
+		  fdimf(0.0f, 0.0f);
+		  fdiml(0.0l, 0.0l);
+		  fma(0.0, 0.0, 0.0);
+		  fmaf(0.0f, 0.0f, 0.0f);
+		  fmal(0.0l, 0.0l, 0.0l);
+		  fmax(0.0, 0.0);
+		  fmaxf(0.0f, 0.0f);
+		  fmaxl(0.0l, 0.0l);
+		  fmin(0.0, 0.0);
+		  fminf(0.0f, 0.0f);
+		  fminl(0.0l, 0.0l);
+		  hypot(0.0, 0.0);
+		  hypotf(0.0f, 0.0f);
+		  hypotl(0.0l, 0.0l);
+		  ilogb(0.0);
+		  ilogbf(0.0f);
+		  ilogbl(0.0l);
+		  lgamma(0.0);
+		  lgammaf(0.0f);
+		  lgammal(0.0l);
+		  llrint(0.0);
+		  llrintf(0.0f);
+		  llrintl(0.0l);
+		  llround(0.0);
+		  llroundf(0.0f);
+		  llroundl(0.0l);
+		  log1p(0.0);
+		  log1pf(0.0f);
+		  log1pl(0.0l);
+		  log2(0.0);
+		  log2f(0.0f);
+		  log2l(0.0l);
+		  logb(0.0);
+		  logbf(0.0f);
+		  logbl(0.0l);
+		  lrint(0.0);
+		  lrintf(0.0f);
+		  lrintl(0.0l);
+		  lround(0.0);
+		  lroundf(0.0f);
+		  lroundl(0.0l);
+		  nan(0);
+		  nanf(0);
+		  nanl(0);
+		  nearbyint(0.0);
+		  nearbyintf(0.0f);
+		  nearbyintl(0.0l);
+		  nextafter(0.0, 0.0);
+		  nextafterf(0.0f, 0.0f);
+		  nextafterl(0.0l, 0.0l);
+		  nexttoward(0.0, 0.0);
+		  nexttowardf(0.0f, 0.0f);
+		  nexttowardl(0.0l, 0.0l);
+		  remainder(0.0, 0.0);
+		  remainderf(0.0f, 0.0f);
+		  remainderl(0.0l, 0.0l);
+		  remquo(0.0, 0.0, 0);
+		  remquof(0.0f, 0.0f, 0);
+		  remquol(0.0l, 0.0l, 0);
+		  rint(0.0);
+		  rintf(0.0f);
+		  rintl(0.0l);
+		  round(0.0);
+		  roundf(0.0f);
+		  roundl(0.0l);
+		  scalbln(0.0, 0l);
+		  scalblnf(0.0f, 0l);
+		  scalblnl(0.0l, 0l);
+		  scalbn(0.0, 0);
+		  scalbnf(0.0f, 0);
+		  scalbnl(0.0l, 0);
+		  tgamma(0.0);
+		  tgammaf(0.0f);
+		  tgammal(0.0l);
+		  trunc(0.0);
+		  truncf(0.0f);
+		  truncl(0.0l);
 
   ;
   return 0;
@@ -18645,12 +18646,12 @@ int
 main ()
 {
 intmax_t i, numer, denom, base;
-	            const char* s;
-	            char** endptr;
-	            intmax_t ret = imaxabs(i);
-	            imaxdiv_t dret = imaxdiv(numer, denom);
-	            ret = strtoimax(s, endptr, base);
-	            uintmax_t uret = strtoumax(s, endptr, base);
+		    const char* s;
+		    char** endptr;
+		    intmax_t ret = imaxabs(i);
+		    imaxdiv_t dret = imaxdiv(numer, denom);
+		    ret = strtoimax(s, endptr, base);
+		    uintmax_t uret = strtoumax(s, endptr, base);
 
   ;
   return 0;
@@ -18685,9 +18686,9 @@ main ()
 {
 intmax_t base;
 		    const wchar_t* s;
-	            wchar_t** endptr;
-	            intmax_t ret = wcstoimax(s, endptr, base);
-	            uintmax_t uret = wcstoumax(s, endptr, base);
+		    wchar_t** endptr;
+		    intmax_t ret = wcstoimax(s, endptr, base);
+		    uintmax_t uret = wcstoumax(s, endptr, base);
 
   ;
   return 0;
@@ -18908,7 +18909,7 @@ if test "${enable_libstdcxx_time+set}" = set; then :
       case "$enableval" in
        yes|no|rt) ;;
        *) as_fn_error "Unknown argument to enable/disable libstdcxx-time" "$LINENO" 5 ;;
-                          esac
+	  	        esac
 
 else
   enable_libstdcxx_time=no
@@ -19252,7 +19253,7 @@ $as_echo "#define _GLIBCXX_USE_SCHED_YIELD 1" >>confdefs.h
       ;;
       -lrt*)
       if test x"$enable_libstdcxx_time" = x"rt"; then
-        GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_sched_yield"
+	GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_sched_yield"
 
 $as_echo "#define _GLIBCXX_USE_SCHED_YIELD 1" >>confdefs.h
 
@@ -19289,15 +19290,15 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <unistd.h>
-         #include <time.h>
+	 #include <time.h>
 
 int
 main ()
 {
 #if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK)
-          timespec tp;
-         #endif
-          clock_gettime(CLOCK_MONOTONIC, &tp);
+	  timespec tp;
+	 #endif
+	  clock_gettime(CLOCK_MONOTONIC, &tp);
 
   ;
   return 0;
@@ -19322,15 +19323,15 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <unistd.h>
-         #include <time.h>
+	 #include <time.h>
 
 int
 main ()
 {
 #if _POSIX_TIMERS > 0
-          timespec tp;
-         #endif
-          clock_gettime(CLOCK_REALTIME, &tp);
+	  timespec tp;
+	 #endif
+	  clock_gettime(CLOCK_REALTIME, &tp);
 
   ;
   return 0;
@@ -19355,15 +19356,15 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <unistd.h>
-         #include <time.h>
+	 #include <time.h>
 
 int
 main ()
 {
 #if _POSIX_TIMERS > 0
-          timespec tp;
-         #endif
-          nanosleep(&tp, 0);
+	  timespec tp;
+	 #endif
+	  nanosleep(&tp, 0);
 
   ;
   return 0;
@@ -19447,7 +19448,7 @@ main ()
 
       // In case of POSIX threads check _POSIX_TIMEOUTS too.
       #if (defined(_PTHREADS) \
-           && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
+	   && (!defined(_POSIX_TIMEOUTS) || _POSIX_TIMEOUTS <= 0))
       #error
       #endif
 
@@ -19694,7 +19695,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -26596,7 +26597,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -32411,7 +32412,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -44056,7 +44057,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -44270,7 +44271,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -44745,7 +44746,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -50914,7 +50915,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -56714,7 +56715,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -56881,7 +56882,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -57030,7 +57031,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -57258,7 +57259,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -63058,7 +63059,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -63230,7 +63231,7 @@ $as_echo_n "checking for ld version... " >&6; }
 	   sed -e 's/GNU gold /GNU ld /;s/GNU ld version /GNU ld /;s/GNU ld ([^)]*) /GNU ld /;s/GNU ld \([0-9.][0-9.]*\).*/\1/; q'`
 
     glibcxx_gnu_ld_version=`echo $ldver | \
-           $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+	   $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_gnu_ld_version" >&5
 $as_echo "$glibcxx_gnu_ld_version" >&6; }
   fi
@@ -64078,7 +64079,7 @@ if test "${enable_symvers+set}" = set; then :
       case "$enableval" in
        yes|no|gnu|gnu-versioned-namespace|darwin|darwin-export|sun) ;;
        *) as_fn_error "Unknown argument to enable/disable symvers" "$LINENO" 5 ;;
-                          esac
+	  	        esac
 
 else
   enable_symvers=yes
@@ -64100,14 +64101,14 @@ if test x$enable_symvers = xyes ; then
   else
     if test $with_gnu_ld = yes ; then
       case ${target_os} in
-        hpux*)
-          enable_symvers=no ;;
-        *)
-          enable_symvers=gnu ;;
+	hpux*)
+	  enable_symvers=no ;;
+	*)
+	  enable_symvers=gnu ;;
       esac
     else
       case ${target_os} in
-        darwin*)
+	darwin*)
 	  enable_symvers=darwin ;;
 	# Sun symbol versioning exists since Solaris 2.5.
 	solaris2.[5-9]* | solaris2.1[0-9]*)
@@ -64126,8 +64127,8 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
 	    enable_symvers=sun
 	  fi
 	  ;;
-        *)
-          enable_symvers=no ;;
+	*)
+	  enable_symvers=no ;;
       esac
     fi
   fi
@@ -64714,14 +64715,14 @@ else
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <unistd.h>
-         #include <sys/time.h>
-         #include <sys/resource.h>
+	 #include <sys/time.h>
+	 #include <sys/resource.h>
 
 int
 main ()
 {
 struct rlimit r;
-         setrlimit(0, &r);
+	 setrlimit(0, &r);
   ;
   return 0;
 }
@@ -64816,9 +64817,9 @@ done
      test $enable_symvers != no; then
     case "$host" in
       *-*-cygwin*)
-        enable_abi_check=no ;;
+	enable_abi_check=no ;;
       *)
-        enable_abi_check=yes ;;
+	enable_abi_check=yes ;;
     esac
   else
     # Only build this as native, since automake does not understand
@@ -65064,10 +65065,40 @@ fi
 
 
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for stylesheets used in generation of documentation" >&5
+$as_echo_n "checking for stylesheets used in generation of documentation... " >&6; }
 glibcxx_stylesheets=no
-if test -f /usr/share/sgml/docbook/xsl-ns-stylesheets/VERSION; then
+if test x${XSLTPROC} = xyes && echo '<title/>' | xsltproc --noout --nonet --xinclude http://docbook.sourceforge.net/release/xsl-ns/current/xhtml-1_1/docbook.xsl - 2>/dev/null; then
   glibcxx_stylesheets=yes
 fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_stylesheets" >&5
+$as_echo "$glibcxx_stylesheets" >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for local stylesheet directory" >&5
+$as_echo_n "checking for local stylesheet directory... " >&6; }
+glibcxx_local_stylesheets=no
+if test x"$glibcxx_stylesheets" = x"yes"; then
+  if test -d /usr/share/sgml/docbook/xsl-ns-stylesheets; then
+    glibcxx_local_stylesheets=yes
+    XSL_STYLE_DIR=/usr/share/sgml/docbook/xsl-ns-stylesheets
+  fi
+  if test -d /usr/share/xml/docbook/stylesheet/docbook-xsl-ns; then
+    glibcxx_local_stylesheets=yes
+    XSL_STYLE_DIR=/usr/share/xml/docbook/stylesheet/docbook-xsl-ns
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_local_stylesheets" >&5
+$as_echo "$glibcxx_local_stylesheets" >&6; }
+
+if test x"$glibcxx_local_stylesheets" = x"yes"; then
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: $XSL_STYLE_DIR" >&5
+$as_echo "$as_me: $XSL_STYLE_DIR" >&6;}
+else
+  glibcxx_stylesheets=no
+fi
+
 
 # Check for xml/html dependencies.
  if test $ac_cv_prog_DOXYGEN = "yes" &&
@@ -65232,8 +65263,8 @@ $as_echo "no" >&6; }
 fi
 
 
-# Extract the first word of "dbtoepubm", so it can be a program name with args.
-set dummy dbtoepubm; ac_word=$2
+# Extract the first word of "dbtoepub", so it can be a program name with args.
+set dummy dbtoepub; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_prog_DBTOEPUB+set}" = set; then :
