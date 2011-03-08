@@ -2764,6 +2764,10 @@ write_template_arg_literal (const tree value)
       write_real_cst (value);
       break;
 
+    case STRING_CST:
+      sorry ("string literal in function template signature");
+      break;
+
     default:
       gcc_unreachable ();
     }

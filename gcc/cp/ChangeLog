@@ -1,5 +1,8 @@
 2011-03-08  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47488
+	* mangle.c (write_template_arg_literal) [STRING_CST]: Sorry.
+
 	PR c++/47705
 	* pt.c (convert_nontype_argument): Don't crash on non-pointer
 	argument to pointer parameter.
