@@ -1,3 +1,8 @@
+2011-03-08  Dodji Seketeli  <dodji@redhat.com>
+
+	* name-lookup.c (binding_to_template_parms_of_scope_p): Only
+	consider scopes of primary template definitions.  Adjust comments.
+
 2011-03-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/47488
