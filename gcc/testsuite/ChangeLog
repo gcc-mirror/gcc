@@ -1,5 +1,11 @@
 2011-03-07  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/nontype20.C: New.
+	* g++.dg/init/member1.C: Adjust expected errors.
+	* g++.dg/parse/constant4.C: Likewise.
+	* g++.dg/template/qualified-id3.C: Likewise.
+	* g++.old-deja/g++.pt/crash10.C: Likewise.
+
 	* g++.dg/cpp0x/regress/non-const1.C: New.
 
 2011-03-07  Jakub Jelinek  <jakub@redhat.com>

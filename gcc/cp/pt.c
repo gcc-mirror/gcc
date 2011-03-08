@@ -5402,11 +5402,19 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	{
 	  if (complain & tf_error)
 	    {
-	      error ("%qE is not a valid template argument for type %qT "
-		     "because it is a non-constant expression", expr, type);
-	      cxx_constant_value (expr);
+	      int errs = errorcount, warns = warningcount;
+	      expr = cxx_constant_value (expr);
+	      if (errorcount > errs || warningcount > warns)
+		inform (EXPR_LOC_OR_HERE (expr),
+			"in template argument for type %qT ", type);
+	      if (expr == error_mark_node)
+		return NULL_TREE;
+	      /* else cxx_constant_value complained but gave us
+		 a real constant, so go ahead.  */
+	      gcc_assert (TREE_CODE (expr) == INTEGER_CST);
 	    }
-	  return NULL_TREE;
+	  else
+	    return NULL_TREE;
 	}
     }
   /* [temp.arg.nontype]/5, bullet 2

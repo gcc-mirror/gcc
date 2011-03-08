@@ -1,5 +1,10 @@
 2011-03-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48003
+	* pt.c (convert_nontype_argument): Fix -fpermissive allowing
+	integer overflow.
+	* semantics.c (potential_constant_expression_1): Check TREE_OVERFLOW.
+
 	PR c++/48015
 	* init.c (constant_value_1): Always require init to be TREE_CONSTANT.
 
