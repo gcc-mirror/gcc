@@ -1,3 +1,14 @@
+2011-03-07  Benjamin Kosnik  <bkoz@redhat.com>
+            Matthias Klose  <doko@ubuntu.com>
+	    Jonathan Wakely  <redi@gcc.gnu.org>
+
+	PR libstdc++/47145
+	* acinclude.m4 (GLIBCXX_CONFIGURE_DOCBOOK): Define.
+	* configure.ac: Use it.
+	* doc/Makefile.am (XSL_STYLE_DIR): Set at configure time.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+
 2011-03-04  Benjamin Kosnik  <bkoz@chula>
 
 	* src/Makefile.am (inst_sources): Make source instantion files

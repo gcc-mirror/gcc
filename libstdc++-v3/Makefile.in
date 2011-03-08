@@ -204,6 +204,7 @@ WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
 XMLLINT = @XMLLINT@
 XSLTPROC = @XSLTPROC@
+XSL_STYLE_DIR = @XSL_STYLE_DIR@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
