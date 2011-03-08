@@ -7275,7 +7275,20 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       return false;
     }
   if (CONSTANT_CLASS_P (t))
-    return true;
+    {
+      if (TREE_OVERFLOW (t))
+	{
+	  if (flags & tf_error)
+	    {
+	      permerror (EXPR_LOC_OR_HERE (t),
+			 "overflow in constant expression");
+	      if (flag_permissive)
+		return true;
+	    }
+	  return false;
+	}
+      return true;
+    }
 
   switch (TREE_CODE (t))
     {
