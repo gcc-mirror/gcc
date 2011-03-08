@@ -5314,7 +5314,8 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 
   /* Add the ADDR_EXPR now for the benefit of
      value_dependent_expression_p.  */
-  if (TYPE_PTROBV_P (type))
+  if (TYPE_PTROBV_P (type)
+      && TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE)
     expr = decay_conversion (expr);
 
   /* If we are in a template, EXPR may be non-dependent, but still
@@ -5369,20 +5370,15 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	 qualification conversion. Let's strip everything.  */
       else if (TYPE_PTROBV_P (type))
 	{
-	  tree sub = expr;
-	  STRIP_NOPS (sub);
-	  if (TREE_CODE (sub) == ADDR_EXPR)
-	    {
-	      gcc_assert (TREE_CODE (TREE_TYPE (sub)) == POINTER_TYPE);
-	      /* Skip the ADDR_EXPR only if it is part of the decay for
-		 an array. Otherwise, it is part of the original argument
-		 in the source code.  */
-	      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (sub, 0))) == ARRAY_TYPE)
-		expr = TREE_OPERAND (sub, 0);
-	      else
-		expr = sub;
-	      expr_type = TREE_TYPE (expr);
-	    }
+	  STRIP_NOPS (expr);
+	  gcc_assert (TREE_CODE (expr) == ADDR_EXPR);
+	  gcc_assert (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE);
+	  /* Skip the ADDR_EXPR only if it is part of the decay for
+	     an array. Otherwise, it is part of the original argument
+	     in the source code.  */
+	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == ARRAY_TYPE)
+	    expr = TREE_OPERAND (expr, 0);
+	  expr_type = TREE_TYPE (expr);
 	}
     }
 
