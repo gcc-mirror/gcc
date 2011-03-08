@@ -1,5 +1,11 @@
 2011-03-08  Dodji Seketeli  <dodji@redhat.com>
 
+	PR c++/47705
+	* pt.c (convert_nontype_argument): Only call decay_conversion on
+	arrays.
+
+2011-03-08  Dodji Seketeli  <dodji@redhat.com>
+
 	* name-lookup.c (binding_to_template_parms_of_scope_p): Only
 	consider scopes of primary template definitions.  Adjust comments.
 

@@ -4951,7 +4951,8 @@ convert_nontype_argument (tree type, tree expr)
 
   /* Add the ADDR_EXPR now for the benefit of
      value_dependent_expression_p.  */
-  if (TYPE_PTROBV_P (type))
+  if (TYPE_PTROBV_P (type)
+      && TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE)
     expr = decay_conversion (expr);
 
   /* If we are in a template, EXPR may be non-dependent, but still
