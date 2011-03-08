@@ -1,3 +1,8 @@
+2011-03-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47278
+	* decl.c (finish_function): Use decl_replaceable_p.
+
 2011-03-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/46159

@@ -6691,6 +6691,51 @@ default_binds_local_p_1 (const_tree exp, int shlib)
   return local_p;
 }
 
+/* Return true when references to DECL must bind to current definition in
+   final executable.
+
+   The condition is usually equivalent to whether the function binds to the
+   current module (shared library or executable), that is to binds_local_p.
+   We use this fact to avoid need for another target hook and implement
+   the logic using binds_local_p and just special cases where
+   decl_binds_to_current_def_p is stronger than binds local_p.  In particular
+   the weak definitions (that can be overwritten at linktime by other
+   definition from different object file) and when resolution info is available
+   we simply use the knowledge passed to us by linker plugin.  */
+bool
+decl_binds_to_current_def_p (tree decl)
+{
+  gcc_assert (DECL_P (decl));
+  if (!TREE_PUBLIC (decl))
+    return true;
+  if (!targetm.binds_local_p (decl))
+    return false;
+  /* Otherwise we have to assume the worst for DECL_WEAK (hidden weaks
+     binds localy but still can be overwritten).
+     This rely on fact that binds_local_p behave as decl_replaceable_p
+     for all other declaration types.  */
+  return !DECL_WEAK (decl);
+}
+
+/* A replaceable function or variable is one which may be replaced
+   at link-time with an entirely different definition, provided that the
+   replacement has the same type.  For example, functions declared
+   with __attribute__((weak)) on most systems are replaceable.
+
+   COMDAT functions are not replaceable, since all definitions of the
+   function must be equivalent.  It is important that COMDAT functions
+   not be treated as replaceable so that use of C++ template
+   instantiations is not penalized.  */
+
+bool
+decl_replaceable_p (tree decl)
+{
+  gcc_assert (DECL_P (decl));
+  if (!TREE_PUBLIC (decl) || DECL_COMDAT (decl))
+    return false;
+  return !decl_binds_to_current_def_p (decl);
+}
+
 /* Default function to output code that will globalize a label.  A
    target must define GLOBAL_ASM_OP or provide its own function to
    globalize a label.  */

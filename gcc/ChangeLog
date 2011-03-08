@@ -1,3 +1,14 @@
+2011-03-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47278
+	* tree.h (DECL_REPLACEABLE_P): Remove.
+	(decl_replaceable_p): Declare.
+	(decl_binds_to_current_def_p): Likewise.
+	* varasm.c (decl_replaceable_p): New function.
+	(decl_binds_to_current_def_p): Likewise.
+	* cgraph.c (cgraph_function_body_availability): Use decl_replaceable_p.
+	* tree-inline.c (inlinable_function_p): Likewise.
+
 2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
 
 	Backport from mainline
