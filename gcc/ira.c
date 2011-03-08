@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -3232,7 +3232,8 @@ ira (FILE *f)
     check_allocation ();
 #endif
 
-  delete_trivially_dead_insns (get_insns (), max_reg_num ());
+  if (delete_trivially_dead_insns (get_insns (), max_reg_num ()))
+    df_analyze ();
 
   init_reg_equiv_memory_loc ();
 
