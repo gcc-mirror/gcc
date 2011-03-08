@@ -1760,17 +1760,15 @@ constant_value_1 (tree decl, bool integral_p)
 	init = TREE_VALUE (init);
       if (!init
 	  || !TREE_TYPE (init)
-	  || uses_template_parms (init)
-	  || (integral_p
-	      ? false
-	      : (!TREE_CONSTANT (init)
-		 /* Do not return an aggregate constant (of which
-		    string literals are a special case), as we do not
-		    want to make inadvertent copies of such entities,
-		    and we must be sure that their addresses are the
-		    same everywhere.  */
-		 || TREE_CODE (init) == CONSTRUCTOR
-		 || TREE_CODE (init) == STRING_CST)))
+	  || !TREE_CONSTANT (init)
+	  || (!integral_p
+	      /* Do not return an aggregate constant (of which
+		 string literals are a special case), as we do not
+		 want to make inadvertent copies of such entities,
+		 and we must be sure that their addresses are the
+		 same everywhere.  */
+	      && (TREE_CODE (init) == CONSTRUCTOR
+		  || TREE_CODE (init) == STRING_CST)))
 	break;
       decl = unshare_expr (init);
     }
