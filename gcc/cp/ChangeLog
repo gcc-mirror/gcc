@@ -1,3 +1,8 @@
+2011-03-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/47714
+	* method.c (use_thunk): Clear addressable flag of thunk arguments.
+
 2011-03-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/47705
