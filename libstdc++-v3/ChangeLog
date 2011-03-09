@@ -1,10 +1,38 @@
+2011-03-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_rvalref.h: Minor tweaks.
+
+2011-03-09  Jonathan Wakely  <redi@gcc.gnu.org>
+	    Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_rvalref.h (rvalstruct_compare_by_value):
+	New.
+	* testsuite/25_algorithms/sort_heap/check_compare_by_value.cc:
+	Likewise.
+	* testsuite/25_algorithms/partial_sort/check_compare_by_value:
+	Likewise.
+	* testsuite/25_algorithms/stable_sort/check_compare_by_value.cc:
+	Likewise.
+	* testsuite/25_algorithms/sort/check_compare_by_value: Likewise.
+
+2011-03-09  Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/48038
+	* include/bits/stl_algo.h (__merge_backward): Rename to
+	__move_merge_backward and change to always move rather than copy.
+	(__move_merge): New function similar to std::merge except values
+	are moved instead of copied.
+	(__merge_adaptive, __merge_sort_loop): Change from using std::merge
+	and __merge_backward to __move_merge and __move_merge_backward.
+
 2011-03-07  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Adjust
 	expected errors.
 
 2011-03-07  Benjamin Kosnik  <bkoz@redhat.com>
-            Matthias Klose  <doko@ubuntu.com>
+	    Matthias Klose  <doko@ubuntu.com>
 	    Jonathan Wakely  <redi@gcc.gnu.org>
 
 	PR libstdc++/47145
