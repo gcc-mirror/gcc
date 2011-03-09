@@ -1,3 +1,15 @@
+2011-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/47866
+	* expr.c (store_field): If MEM_SCALAR_P (target), don't use
+	MEM_SET_IN_STRUCT_P (to_rtx, 1), just set MEM_IN_STRUCT_P (to_rtx)
+	if target wasn't scalar.
+	* function.c (assign_stack_temp_for_type): Assert that neither
+	MEM_SCALAR_P nor MEM_IN_STRUCT_P is set previously, set either
+	MEM_IN_STRUCT_P or MEM_SCALAR_P instead of using MEM_SET_IN_STRUCT_P
+	macro.
+	* rtl.h (MEM_SET_IN_STRUCT_P): Removed.
+
 2011-03-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_label_align): New prototype.

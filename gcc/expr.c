@@ -5924,7 +5924,8 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       if (to_rtx == target)
 	to_rtx = copy_rtx (to_rtx);
 
-      MEM_SET_IN_STRUCT_P (to_rtx, 1);
+      if (!MEM_SCALAR_P (to_rtx))
+	MEM_IN_STRUCT_P (to_rtx) = 1;
       if (!MEM_KEEP_ALIAS_SET_P (to_rtx) && MEM_ALIAS_SET (to_rtx) != 0)
 	set_mem_alias_set (to_rtx, alias_set);
 
