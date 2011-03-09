@@ -4946,6 +4946,29 @@ easy_altivec_constant (rtx op, enum machine_mode mode)
   else if (mode != GET_MODE (op))
     return false;
 
+  /* V2DI/V2DF was added with VSX.  Only allow 0 and all 1's as easy
+     constants.  */
+  if (mode == V2DFmode)
+    return zero_constant (op, mode);
+
+  if (mode == V2DImode)
+    {
+      /* In case the compiler is built 32-bit, CONST_DOUBLE constants are not
+	 easy.  */
+      if (GET_CODE (CONST_VECTOR_ELT (op, 0)) != CONST_INT
+	  || GET_CODE (CONST_VECTOR_ELT (op, 1)) != CONST_INT)
+	return false;
+
+      if (zero_constant (op, mode))
+	return true;
+
+      if (INTVAL (CONST_VECTOR_ELT (op, 0)) == -1
+	  && INTVAL (CONST_VECTOR_ELT (op, 1)) == -1)
+	return true;
+
+      return false;
+    }
+
   /* Start with a vspltisw.  */
   step = GET_MODE_NUNITS (mode) / 4;
   copies = 1;
@@ -5022,8 +5045,16 @@ output_vec_const_move (rtx *operands)
   vec = operands[1];
   mode = GET_MODE (dest);
 
-  if (TARGET_VSX && zero_constant (vec, mode))
-    return "xxlxor %x0,%x0,%x0";
+  if (TARGET_VSX)
+    {
+      if (zero_constant (vec, mode))
+	return "xxlxor %x0,%x0,%x0";
+
+      if (mode == V2DImode
+	  && INTVAL (CONST_VECTOR_ELT (vec, 0)) == -1
+	  && INTVAL (CONST_VECTOR_ELT (vec, 1)) == -1)
+	return "vspltisw %0,-1";
+    }
 
   if (TARGET_ALTIVEC)
     {

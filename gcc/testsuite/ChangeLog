@@ -1,3 +1,8 @@
+2011-03-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/47755
+	* gcc.target/powerpc/pr47755-2.c: New file.
+
 2011-03-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* go.test/go-test.exp: For goroutines.go test if GCCGO_RUN_ALL_TESTS
