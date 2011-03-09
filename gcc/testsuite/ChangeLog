@@ -1,3 +1,7 @@
+2011-03-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/nontype22.C: New.
+
 2011-03-08  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/anon5.C: New.
