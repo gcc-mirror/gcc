@@ -1,3 +1,9 @@
+2011-03-09  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_label_align): New prototype.
+	* config/s390/s390.c (s390_label_align): New function.
+	* config/s390/s390.h (LABEL_ALIGN): New target macro definition.
+
 2011-03-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/47755

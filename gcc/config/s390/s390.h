@@ -870,6 +870,9 @@ do {									\
 /* The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */
 #define LOCAL_LABEL_PREFIX "."
 
+#define LABEL_ALIGN(LABEL) \
+  s390_label_align (LABEL)
+
 /* How to refer to registers in assembler output.  This sequence is
    indexed by compiler's hard-register-number (see above).  */
 #define REGISTER_NAMES							\
