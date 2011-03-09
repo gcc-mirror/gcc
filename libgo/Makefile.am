@@ -2952,13 +2952,13 @@ TEST_PACKAGES = \
 	fmt/check \
 	gob/check \
 	html/check \
-	http/check \
+	$(if $(GCCGO_RUN_ALL_TESTS),http/check) \
 	io/check \
 	json/check \
 	log/check \
 	math/check \
 	mime/check \
-	net/check \
+	$(if $(GCCGO_RUN_ALL_TESTS),net/check) \
 	netchan/check \
 	os/check \
 	patch/check \
@@ -2974,7 +2974,7 @@ TEST_PACKAGES = \
 	strconv/check \
 	strings/check \
 	sync/check \
-	syslog/check \
+	$(if $(GCCGO_RUN_ALL_TESTS),syslog/check) \
 	tabwriter/check \
 	template/check \
 	time/check \
