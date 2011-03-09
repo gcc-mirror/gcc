@@ -1,3 +1,7 @@
+2011-03-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/anon5.C: New.
+
 2011-01-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR testsuite/33033
