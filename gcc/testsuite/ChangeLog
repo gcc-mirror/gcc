@@ -1,5 +1,9 @@
 2011-03-08  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/anon5.C: New.
+
+2011-03-08  Jason Merrill  <jason@redhat.com>
+
 	* g++.dg/cpp0x/variadic105.C: New.
 
 2011-03-08  Jason Merrill  <jason@redhat.com>

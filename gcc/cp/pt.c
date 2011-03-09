@@ -16721,8 +16721,13 @@ instantiate_decl (tree d, int defer_ok,
   if (!pattern_defined && expl_inst_class_mem_p
       && DECL_EXPLICIT_INSTANTIATION (d))
     {
-      DECL_NOT_REALLY_EXTERN (d) = 0;
-      DECL_INTERFACE_KNOWN (d) = 0;
+      /* Leave linkage flags alone on instantiations with anonymous
+	 visibility.  */
+      if (TREE_PUBLIC (d))
+	{
+	  DECL_NOT_REALLY_EXTERN (d) = 0;
+	  DECL_INTERFACE_KNOWN (d) = 0;
+	}
       SET_DECL_IMPLICIT_INSTANTIATION (d);
     }
 
