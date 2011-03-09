@@ -1,3 +1,10 @@
+2011-03-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/47755
+	* config/rs6000/rs6000.c (easy_altivec_constant): Correctly handle
+	V2DI/V2DF constants.  Only all 0's or all 1's are easy.
+	(output_vec_const_move): Ditto.
+
 2011-03-08  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mips/mips.h (PREFERRED_RELOAD_CLASS): Remove macro.
