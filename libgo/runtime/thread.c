@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#include <errno.h>
 #include "runtime.h"
 #include "go-assert.h"
 
@@ -32,8 +33,12 @@ static void runtime_lock_full(Lock *l) __attribute__ ((noinline));
 static void
 runtime_lock_full(Lock *l)
 {
-	if(sem_wait(&l->sem) != 0)
-		runtime_throw("sem_wait failed");
+	for(;;){
+		if(sem_wait(&l->sem) == 0)
+			return;
+		if(errno != EINTR)
+			runtime_throw("sem_wait failed");
+	}
 }
 
 void
