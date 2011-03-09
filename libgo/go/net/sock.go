@@ -54,6 +54,9 @@ func socket(net string, f, p, t int, la, ra syscall.Sockaddr, toAddr func(syscal
 
 	if ra != nil {
 		e = syscall.Connect(s, ra)
+		for e == syscall.EINTR {
+			e = syscall.Connect(s, ra)
+		}
 		if e != 0 {
 			closesocket(s)
 			return nil, os.Errno(e)
