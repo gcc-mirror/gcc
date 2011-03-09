@@ -24,10 +24,10 @@
 #define _GLIBCXX_TESTSUITE_RVALREF_H 1
 
 #include <testsuite_hooks.h>
+#include <bits/functional_hash.h>
 
 namespace __gnu_test
 {
-
   // This class is designed to test libstdc++'s template-based rvalue
   // reference support. It should fail at compile-time if there is an
   // attempt to copy it.
@@ -53,8 +53,9 @@ namespace __gnu_test
     rvalstruct(const rvalstruct&) = delete;
 
     rvalstruct(rvalstruct&& in)
-    { 
-      VERIFY(in.valid == true);
+    {
+      bool test __attribute__((unused)) = true;
+      VERIFY( in.valid == true );
       val = in.val;
       in.valid = false;
       valid = true;
@@ -65,8 +66,9 @@ namespace __gnu_test
 
     rvalstruct&
     operator=(rvalstruct&& in)
-    { 
-      VERIFY(in.valid == true);
+    {
+      bool test __attribute__((unused)) = true;
+      VERIFY( in.valid == true );
       val = in.val;
       in.valid = false;
       valid = true;
@@ -84,8 +86,9 @@ namespace __gnu_test
 
   void
   swap(rvalstruct& lhs, rvalstruct& rhs)
-  {  
-    VERIFY(lhs.valid && rhs.valid);
+  {
+    bool test __attribute__((unused)) = true;
+    VERIFY( lhs.valid && rhs.valid );
     int temp = lhs.val;
     lhs.val = rhs.val;
     rhs.val = temp;
@@ -108,14 +111,16 @@ namespace __gnu_test
     { }
 
     copycounter(const copycounter& in) : val(in.val), valid(true)
-    { 
-      VERIFY(in.valid == true);
+    {
+      bool test __attribute__((unused)) = true;
+      VERIFY( in.valid == true );
       ++copycount;
     }
 
     copycounter(copycounter&& in)
-    { 
-      VERIFY(in.valid == true);
+    {
+      bool test __attribute__((unused)) = true;
+      VERIFY( in.valid == true );
       val = in.val;
       in.valid = false;
       valid = true;
@@ -131,8 +136,9 @@ namespace __gnu_test
 
     bool
     operator=(const copycounter& in) 
-    { 
-      VERIFY(in.valid == true);
+    {
+      bool test __attribute__((unused)) = true;
+      VERIFY( in.valid == true );
       ++copycount;
       val = in.val;
       valid = true;
@@ -141,7 +147,8 @@ namespace __gnu_test
 
     copycounter&
     operator=(copycounter&& in)
-    { 
+    {
+      bool test __attribute__((unused)) = true;
       VERIFY(in.valid == true);
       val = in.val;
       in.valid = false;
@@ -165,22 +172,85 @@ namespace __gnu_test
 
   inline void
   swap(copycounter& lhs, copycounter& rhs)
-  {  
-    VERIFY(lhs.valid && rhs.valid);
+  {
+    bool test __attribute__((unused)) = true;
+    VERIFY( lhs.valid && rhs.valid );
     int temp = lhs.val;
     lhs.val = rhs.val;
     rhs.val = temp;
   }
-  
+
+  // In the occasion of libstdc++/48038.
+  struct rvalstruct_compare_by_value
+  {
+    int val;
+    bool ok;
+
+    rvalstruct_compare_by_value(int v)
+    : val(v), ok(true) { }
+
+    rvalstruct_compare_by_value(const rvalstruct_compare_by_value& rh)
+    : val(rh.val), ok(rh.ok)
+    {
+      bool test __attribute__((unused)) = true;
+      VERIFY(rh.ok);
+    }
+
+    rvalstruct_compare_by_value&
+    operator=(const rvalstruct_compare_by_value& rh)
+    {
+      bool test __attribute__((unused)) = true;
+      VERIFY( rh.ok );
+      val = rh.val;
+      ok = rh.ok;
+      return *this;
+    }
+
+    rvalstruct_compare_by_value(rvalstruct_compare_by_value&& rh)
+    : val(rh.val), ok(rh.ok)
+    {
+      bool test __attribute__((unused)) = true;
+      VERIFY( rh.ok );
+      rh.ok = false;
+    }
+
+    rvalstruct_compare_by_value&
+    operator=(rvalstruct_compare_by_value&& rh)
+    {
+      bool test __attribute__((unused)) = true;
+      VERIFY( rh.ok );
+      val = rh.val;
+      ok = rh.ok;
+      rh.ok = false;
+      return *this;
+    }
+  };
+
+  inline bool
+  operator<(rvalstruct_compare_by_value lh,
+	    rvalstruct_compare_by_value rh)
+  {
+    bool test __attribute__((unused)) = true;
+    VERIFY( rh.ok );
+    VERIFY( lh.ok );
+    return lh.val < rh.val;
+  }
+
+  inline bool
+  order(rvalstruct_compare_by_value lh,
+	rvalstruct_compare_by_value rh)
+  {
+    bool test __attribute__((unused)) = true;
+    VERIFY( rh.ok );
+    VERIFY( lh.ok );
+    return lh.val < rh.val;
+  }
+
 } // namespace __gnu_test
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-
-#include <bits/functional_hash.h>
 
 namespace std
 {
-  /// std::hash specialization for type_index.
+  /// std::hash specialization for __gnu_test::rvalstruct.
   template<>
     struct hash<__gnu_test::rvalstruct>
     {
@@ -192,6 +262,5 @@ namespace std
       { return __rvs.val; }
     };
 }
-#endif
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H
