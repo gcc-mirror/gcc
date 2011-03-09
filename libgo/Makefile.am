@@ -787,8 +787,15 @@ go_sync_files = \
 go_sync_c_files = \
 	go/sync/cas.c
 
+if LIBGO_IS_SOLARIS
+go_syslog_file = go/syslog/syslog_solaris.go
+else
+go_syslog_file = go/syslog/syslog_unix.go
+endif
+
 go_syslog_files = \
-	go/syslog/syslog.go
+	go/syslog/syslog.go \
+	$(go_syslog_file)
 
 go_tabwriter_files = \
 	go/tabwriter/tabwriter.go
@@ -1785,10 +1792,14 @@ sync/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: sync/check
 
-syslog/libsyslog.$(OBJEXT): $(go_syslog_files) fmt.gox log.gox net.gox os.gox
-	$(BUILDPACKAGE)
-syslog/libsyslog.lo: syslog/libsyslog.$(OBJEXT)
-syslog/libsyslog.la: syslog/libsyslog.lo
+syslog/syslog.$(OBJEXT): $(go_syslog_files) fmt.gox log.gox net.gox os.gox \
+		syscall.gox
+	test -d syslog || $(MKDIR_P) syslog
+	$(LTGOCOMPILE) -I . -c -o $@ -fgo-prefix=libgo_syslog $(srcdir)/go/syslog/syslog.go $(srcdir)/$(go_syslog_file)
+syslog/syslog_c.$(OBJEXT): $(srcdir)/go/syslog/syslog_c.c syslog/syslog.$(OBJEXT)
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syslog/syslog_c.c
+syslog/libsyslog.la: syslog/syslog.$(OBJEXT) syslog/syslog_c.$(OBJEXT)
+	$(LINK) syslog/syslog.lo syslog/syslog_c.lo
 syslog/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: syslog/check
@@ -2733,7 +2744,7 @@ strings.gox: strings/libstrings.$(OBJEXT)
 	$(BUILDGOX)
 sync.gox: sync/mutex.$(OBJEXT)
 	$(BUILDGOX)
-syslog.gox: syslog/libsyslog.$(OBJEXT)
+syslog.gox: syslog/syslog.$(OBJEXT)
 	$(BUILDGOX)
 syscall.gox: syscalls/syscall.$(OBJEXT)
 	$(BUILDGOX)
