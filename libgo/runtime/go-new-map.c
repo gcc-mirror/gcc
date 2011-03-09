@@ -85,7 +85,7 @@ __go_map_next_prime (unsigned long n)
     {
       size_t mid;
 
-      mid = (low + high / 2);
+      mid = (low + high) / 2;
 
       /* Here LOW <= MID < HIGH.  */
 
