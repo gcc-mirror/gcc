@@ -1,3 +1,12 @@
+2011-03-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/syntax-err1.C: New.
+	* g++.dg/parse/error36.C: Adjust expected errors.
+	* g++.old-deja/g++.pt/ctor2.C: Likewise.
+	* g++.old-deja/g++.pt/typename3.C: Likewise.
+	* g++.old-deja/g++.pt/typename4.C: Likewise.
+	* g++.old-deja/g++.pt/typename6.C: Likewise.
+
 2011-03-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/nontype22.C: New.

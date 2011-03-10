@@ -30,4 +30,3 @@ void g(const A<T>::type &t);	// { dg-error "typename" }
 
 // PR c++/18451
 template <class T> A<T>::B A<T>::b; // { dg-error "typename" }
-// { dg-error "expected" "" { target *-*-* } 32 }
