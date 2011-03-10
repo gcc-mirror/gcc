@@ -5981,10 +5981,17 @@ type_hash_eq (const void *va, const void *vb)
       || TREE_TYPE (a->type) != TREE_TYPE (b->type)
       || !attribute_list_equal (TYPE_ATTRIBUTES (a->type),
 				 TYPE_ATTRIBUTES (b->type))
-      || TYPE_ALIGN (a->type) != TYPE_ALIGN (b->type)
-      || TYPE_MODE (a->type) != TYPE_MODE (b->type)
       || (TREE_CODE (a->type) != COMPLEX_TYPE
           && TYPE_NAME (a->type) != TYPE_NAME (b->type)))
+    return 0;
+
+  /* Be careful about comparing arrays before and after the element type
+     has been completed; don't compare TYPE_ALIGN unless both types are
+     complete.  */
+  if (COMPLETE_OR_UNBOUND_ARRAY_TYPE_P (a->type)
+      && COMPLETE_OR_UNBOUND_ARRAY_TYPE_P (b->type)
+      && (TYPE_ALIGN (a->type) != TYPE_ALIGN (b->type)
+	  || TYPE_MODE (a->type) != TYPE_MODE (b->type)))
     return 0;
 
   switch (TREE_CODE (a->type))

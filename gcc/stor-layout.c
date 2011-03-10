@@ -2028,11 +2028,6 @@ layout_type (tree type)
 #else
 	TYPE_ALIGN (type) = MAX (TYPE_ALIGN (element), BITS_PER_UNIT);
 #endif
-	if (!TYPE_SIZE (element))
-	  /* We don't know the size of the underlying element type, so
-	     our alignment calculations will be wrong, forcing us to
-	     fall back on structural equality. */
-	  SET_TYPE_STRUCTURAL_EQUALITY (type);
 	TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (element);
 	SET_TYPE_MODE (type, BLKmode);
 	if (TYPE_SIZE (type) != 0

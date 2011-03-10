@@ -1,7 +1,14 @@
+2011-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48029
+	* stor-layout.c (layout_type): Don't set structural equality
+	on arrays of incomplete type.
+	* tree.c (type_hash_eq): Handle comparing them properly.
+
 2011-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48043
-	* config/s390/s390.c (s390_delegitimize_address): Make sure the                                                                            
+	* config/s390/s390.c (s390_delegitimize_address): Make sure the
 	result mode matches original rtl mode.
 
 2011-03-10  Nick Clifton  <nickc@redhat.com>
