@@ -1,3 +1,9 @@
+2011-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa-hpux10.h (TARGET_OS_CPP_BUILTINS): Define _REENTRANT
+	when _HPUX_SOURCE is defined.
+	(LIB_SPEC): Use -lc instead of -lc_r when -threads is specified.
+
 2011-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48029
