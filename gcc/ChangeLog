@@ -1,6 +1,7 @@
 2011-03-10  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx.md (bitset_in_memory, bitclr_in_memory: Fix timings.
+	(andsi3, andsi3_flags): Fix timings for three operand alternative.
 
 2011-03-09  Jakub Jelinek  <jakub@redhat.com>
 
