@@ -1,5 +1,7 @@
 2011-03-10  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/array22.C: New.
+
 	* g++.dg/cpp0x/syntax-err1.C: New.
 	* g++.dg/parse/error36.C: Adjust expected errors.
 	* g++.old-deja/g++.pt/ctor2.C: Likewise.
