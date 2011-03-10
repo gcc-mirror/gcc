@@ -274,7 +274,9 @@ fi
 	# the grep -v eliminates methods and other special names
 	# that have multiple dots.
 	pattern='Test([^a-z].*)?'
-	tests=$($NM -p _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
+	# The -p option tells GNU nm not to sort.
+	# The -v option tells Solaris nm to sort by value.
+	tests=$($NM -p -v _gotest_.o $xofile | egrep ' T .*\.'$pattern'$' | grep -v '\..*\..*\.' | sed 's/.* //' | sed 's/.*\.\(.*\.\)/\1/')
 	if [ "x$tests" = x ]; then
 		echo 'gotest: warning: no tests matching '$pattern in _gotest_.o $xofile 1>&2
 		exit 2
