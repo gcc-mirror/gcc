@@ -1,5 +1,9 @@
 2011-03-11  Richard Guenther  <rguenther@suse.de>
 
+	* doc/invoke.texi (max-inline-insns-single): Adjust default value.
+
+2011-03-11  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/48073
 	* tree.c (find_decls_types_r): Do not walk types only reachable
 	from IDENTIFIER_NODEs.
