@@ -1,3 +1,21 @@
+2011-03-11  Chen Liqin <liqin.gcc@gmail.com>
+
+	* config.gcc (score-*-elf): add extra_parts .., update tmake_file, extra_objs.
+	* config/score/score3.c: Delete.
+	* config/score/score3.h: Delete.
+	* config/score/mul-div.S: Delete.
+	* config/score/sfp-machine.h: Add new file.
+	* config/score/constraints.md: Add new file.
+	* config/score/t-score-softfp: Add new file.
+	* config/score/t-score-elf: Remove score3.o and multilib generate.
+	* config/score/score7.c (score7_const_ok_for_letter_p): Delete.
+	(score7_extra_constraint): Delete.
+	(score7_option_override): Remove unused code which mode to constraint.md.
+	* config/score/score.c: Remove score3 and score5 define and code.
+	* config/score/score.h: Remove score3 and score5 define and code.
+	* config/score/score.md: Remove score3 template and unusal insn generate.
+	* config/score/score.opt: Remove score3 and score5 options.
+
 2011-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/pa-hpux10.h (TARGET_OS_CPP_BUILTINS): Define _REENTRANT
