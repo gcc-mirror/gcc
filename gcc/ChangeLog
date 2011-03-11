@@ -1,19 +1,20 @@
-2011-03-11  Chen Liqin <liqin.gcc@gmail.com>
+2011-03-11  Chen Liqin  <liqin.gcc@gmail.com>
 
-	* config.gcc (score-*-elf): add extra_parts .., update tmake_file, extra_objs.
+	* config.gcc (score-*-elf): Add extra_parts .., update tmake_file and
+	extra_objs.
 	* config/score/score3.c: Delete.
 	* config/score/score3.h: Delete.
 	* config/score/mul-div.S: Delete.
 	* config/score/sfp-machine.h: Add new file.
 	* config/score/constraints.md: Add new file.
 	* config/score/t-score-softfp: Add new file.
-	* config/score/t-score-elf: Remove score3.o and multilib generate.
+	* config/score/t-score-elf: Remove score3.o, do not generate multilib.
 	* config/score/score7.c (score7_const_ok_for_letter_p): Delete.
 	(score7_extra_constraint): Delete.
-	(score7_option_override): Remove unused code which mode to constraint.md.
+	(score7_option_override): Remove unused code.
 	* config/score/score.c: Remove score3 and score5 define and code.
 	* config/score/score.h: Remove score3 and score5 define and code.
-	* config/score/score.md: Remove score3 template and unusal insn generate.
+	* config/score/score.md: Remove score3 template and unusual insn.
 	* config/score/score.opt: Remove score3 and score5 options.
 
 2011-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -106,7 +107,7 @@
 	xstormy16_print_operand_address): Make static.
 	(TARGET_PRINT_OPERAND, TARGET_PRINT_OPERAND_ADDRESS): Define.
 
-2011-03-07  Pat Haugen <pthaugen@us.ibm.com>
+2011-03-07  Pat Haugen  <pthaugen@us.ibm.com>
 
 	PR target/47862
 	* config/rs6000/rs6000.h (HARD_REGNO_CALLER_SAVE_MODE): Define.
