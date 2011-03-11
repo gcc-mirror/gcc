@@ -1,3 +1,8 @@
+2011-03-11  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphunit.c (verify_cgraph_node): Call cgraph_get_node instead of
+	cgraph_node.
+
 2011-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48063

@@ -551,7 +551,7 @@ verify_cgraph_node (struct cgraph_node *node)
       error_found = true;
     }
 
-  if (!cgraph_node (node->decl))
+  if (!cgraph_get_node (node->decl))
     {
       error ("node not found in cgraph_hash");
       error_found = true;
