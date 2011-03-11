@@ -4822,7 +4822,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       fld_worklist_push (BLOCK_ABSTRACT_ORIGIN (t), fld);
     }
 
-  fld_worklist_push (TREE_TYPE (t), fld);
+  if (TREE_CODE (t) != IDENTIFIER_NODE)
+    fld_worklist_push (TREE_TYPE (t), fld);
 
   return NULL_TREE;
 }

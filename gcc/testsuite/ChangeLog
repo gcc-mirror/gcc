@@ -1,3 +1,8 @@
+2011-03-11  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48073
+	* g++.dg/lto/20110311-1_0.C: New testcase.
+
 2011-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/48035
