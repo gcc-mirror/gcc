@@ -1,3 +1,8 @@
+2011-03-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sparc/sparc.c (sparc_option_override): Use
+	PROCESSOR_NIAGARA2 not PROCESSOR_NIAGARA for "niagara2".
+
 2011-03-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48067
