@@ -1,5 +1,7 @@
 2011-03-11  Jason Merrill  <jason@redhat.com>
 
+	* c-common.c (attribute_takes_identifier_p): Add missing const.
+
 	PR c++/46803
 	* c-common.c (attribute_takes_identifier_p): Assume that an
 	unknown attribute takes an identifier.

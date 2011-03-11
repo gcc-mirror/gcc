@@ -1,3 +1,8 @@
+2011-03-11  Jason Merrill  <jason@redhat.com>
+
+	* attribs.c (lookup_attribute_spec): Take const_tree.
+	* tree.h: Adjust.
+
 2011-03-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sparc/sparc.c (sparc_option_override): Use
