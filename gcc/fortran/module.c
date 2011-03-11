@@ -1671,8 +1671,9 @@ typedef enum
   AB_POINTER, AB_TARGET, AB_DUMMY, AB_RESULT, AB_DATA,
   AB_IN_NAMELIST, AB_IN_COMMON, AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE,
   AB_ELEMENTAL, AB_PURE, AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT,
-  AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
-  AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
+  AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE,
+  AB_ALLOC_COMP, AB_POINTER_COMP, AB_PROC_POINTER_COMP, AB_PRIVATE_COMP,
+  AB_VALUE, AB_VOLATILE, AB_PROTECTED,
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
   AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER,
@@ -1716,6 +1717,7 @@ static const mstring attr_bits[] =
     minit ("ALLOC_COMP", AB_ALLOC_COMP),
     minit ("COARRAY_COMP", AB_COARRAY_COMP),
     minit ("POINTER_COMP", AB_POINTER_COMP),
+    minit ("PROC_POINTER_COMP", AB_PROC_POINTER_COMP),
     minit ("PRIVATE_COMP", AB_PRIVATE_COMP),
     minit ("ZERO_COMP", AB_ZERO_COMP),
     minit ("PROTECTED", AB_PROTECTED),
@@ -1881,6 +1883,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_ALLOC_COMP, attr_bits);
       if (attr->pointer_comp)
 	MIO_NAME (ab_attribute) (AB_POINTER_COMP, attr_bits);
+      if (attr->proc_pointer_comp)
+	MIO_NAME (ab_attribute) (AB_PROC_POINTER_COMP, attr_bits);
       if (attr->private_comp)
 	MIO_NAME (ab_attribute) (AB_PRIVATE_COMP, attr_bits);
       if (attr->coarray_comp)
@@ -2026,6 +2030,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_POINTER_COMP:
 	      attr->pointer_comp = 1;
+	      break;
+	    case AB_PROC_POINTER_COMP:
+	      attr->proc_pointer_comp = 1;
 	      break;
 	    case AB_PRIVATE_COMP:
 	      attr->private_comp = 1;

@@ -1,3 +1,9 @@
+2011-03-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/47768
+	* module.c (ab_attribute,attr_bits): Add AB_PROC_POINTER_COMP.
+	(mio_symbol_attribute): Handle attribute 'proc_pointer_comp'.
+
 2011-03-06  Paul Thomas  <pault@gcc.gnu.org>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
