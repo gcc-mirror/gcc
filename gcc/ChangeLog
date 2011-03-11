@@ -1,5 +1,12 @@
 2011-03-11  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/48067
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Verify the
+	multiplication result will be only used once on the target
+	stmt.
+
+2011-03-11  Richard Guenther  <rguenther@suse.de>
+
 	* doc/invoke.texi (max-inline-insns-single): Adjust default value.
 
 2011-03-11  Richard Guenther  <rguenther@suse.de>
