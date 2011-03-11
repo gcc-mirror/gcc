@@ -1,3 +1,9 @@
+2011-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48063
+	* ipa-inline.c (cgraph_decide_inlining): Don't try to
+	inline functions called once if !tree_can_inline_p (node->callers).
+
 2011-03-11  Chen Liqin  <liqin.gcc@gmail.com>
 
 	* config.gcc (score-*-elf): Add extra_parts .., update tmake_file and
