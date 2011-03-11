@@ -1,3 +1,9 @@
+2011-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47808
+	* decl.c (compute_array_index_type): Discard folding
+	if it didn't produce a constant.
+
 2011-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/48035
