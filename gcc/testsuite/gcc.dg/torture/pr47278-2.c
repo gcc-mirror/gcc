@@ -1,3 +1,5 @@
+/* { dg-require-visibility "" } */
+
 extern void abort (void);
 
 int __attribute__((weak,visibility("hidden"))) foo (void)

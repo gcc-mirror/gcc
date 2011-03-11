@@ -1,3 +1,9 @@
+2011-03-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47278
+	* gcc.dg/torture/pr47278-1.c: Require visibility support.
+	* gcc.dg/torture/pr47278-2.c: Likewise.
+
 2011-03-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/nontype22.C: New.
