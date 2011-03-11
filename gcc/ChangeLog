@@ -1,3 +1,9 @@
+2011-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48069
+	* tree.c (type_hash_eq): Use COMPLETE_TYPE_P, not
+	COMPLETE_OR_UNBOUND_ARRAY_TYPE_P.
+
 2011-03-11  Martin Jambor  <mjambor@suse.cz>
 
 	* cgraphunit.c (verify_cgraph_node): Call cgraph_get_node instead of
