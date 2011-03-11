@@ -15685,7 +15685,13 @@ static tree cp_parser_type_id (cp_parser *parser)
 
 static tree cp_parser_template_type_arg (cp_parser *parser)
 {
-  return cp_parser_type_id_1 (parser, true, false);
+  tree r;
+  const char *saved_message = parser->type_definition_forbidden_message;
+  parser->type_definition_forbidden_message
+    = G_("types may not be defined in template arguments");
+  r = cp_parser_type_id_1 (parser, true, false);
+  parser->type_definition_forbidden_message = saved_message;
+  return r;
 }
 
 static tree cp_parser_trailing_type_id (cp_parser *parser)
