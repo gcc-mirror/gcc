@@ -1,5 +1,9 @@
 2011-03-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47144
+	* parser.c (cp_parser_template_type_arg): Set
+	type_definition_forbidden_message.
+
 	PR c++/47808
 	* decl.c (compute_array_index_type): Discard folding
 	if it didn't produce a constant.
