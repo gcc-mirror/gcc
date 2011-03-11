@@ -7523,6 +7523,8 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 	    }
 
 	  size = maybe_constant_value (size);
+	  if (!TREE_CONSTANT (size))
+	    size = osize;
 	}
 
       if (error_operand_p (size))
