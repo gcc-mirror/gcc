@@ -1,6 +1,6 @@
 ; Options for the Sunnorth port of the compiler.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2010 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -34,14 +34,6 @@ muls
 Target RejectNegative Report Mask(ULS)
 Enable unaligned load/store instruction
 
-mscore5
-Target RejectNegative Report Mask(SCORE5)
-Support SCORE 5 ISA
-
-mscore5u
-Target RejectNegative Report Mask(SCORE5U)
-Support SCORE 5U ISA
-
 mscore7
 Target RejectNegative Report Mask(SCORE7)
 Support SCORE 7 ISA
@@ -49,14 +41,6 @@ Support SCORE 7 ISA
 mscore7d
 Target RejectNegative Report Mask(SCORE7D)
 Support SCORE 7D ISA
-
-mscore3
-Target RejectNegative Report Mask(SCORE3)
-Support SCORE 3 ISA
-
-mscore3d
-Target RejectNegative Report Mask(SCORE3D)
-Support SCORE 3d ISA
 
 march=
 Target RejectNegative Joined
