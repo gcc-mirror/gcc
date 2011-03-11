@@ -1,3 +1,9 @@
+2011-03-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/47278
+	* gcc.dg/torture/pr47278-1.c: New testcase.
+	* gcc.dg/torture/pr47278-2.c: Likewise.
+
 2011-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/48063
