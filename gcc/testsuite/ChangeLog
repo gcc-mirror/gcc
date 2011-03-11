@@ -1,5 +1,8 @@
 2011-03-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/48035
+	* g++.dg/inherit/virtual8.C: New test.
+
 	PR middle-end/48044
 	* gcc.dg/torture/pr48044.c: New test.
 
