@@ -1,3 +1,9 @@
+2011-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/46803
+	* c-common.c (attribute_takes_identifier_p): Assume that an
+	unknown attribute takes an identifier.
+
 2011-03-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c/47786
