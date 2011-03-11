@@ -1,3 +1,7 @@
+2011-03-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/array22.C: New.
+
 2011-03-11  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/47278

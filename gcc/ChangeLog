@@ -1,3 +1,10 @@
+2011-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48029
+	* stor-layout.c (layout_type): Don't set structural equality
+	on arrays of incomplete type.
+	* tree.c (type_hash_eq): Handle comparing them properly.
+
 2011-03-08  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
