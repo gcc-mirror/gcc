@@ -5665,9 +5665,14 @@ c_init_attributes (void)
 bool
 attribute_takes_identifier_p (const_tree attr_id)
 {
-  if (is_attribute_p ("mode", attr_id)
-      || is_attribute_p ("format", attr_id)
-      || is_attribute_p ("cleanup", attr_id))
+  struct attribute_spec *spec = lookup_attribute_spec (attr_id);
+  if (spec == NULL)
+    /* Unknown attribute that we'll end up ignoring, return true so we
+       don't complain about an identifier argument.  */
+    return true;
+  else if (!strcmp ("mode", spec->name)
+	   || !strcmp ("format", spec->name)
+	   || !strcmp ("cleanup", spec->name))
     return true;
   else
     return targetm.attribute_takes_identifier_p (attr_id);
