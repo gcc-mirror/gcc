@@ -1,5 +1,5 @@
 /* Inlining decision heuristics.
-   Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010
+   Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -1498,6 +1498,7 @@ cgraph_decide_inlining (void)
 	      && node->callers->caller != node
 	      && node->callers->caller->global.inlined_to != node
 	      && !node->callers->call_stmt_cannot_inline_p
+	      && tree_can_inline_p (node->callers)
 	      && !DECL_EXTERNAL (node->decl))
 	    {
 	      cgraph_inline_failed_t reason;
