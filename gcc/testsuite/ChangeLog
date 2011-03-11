@@ -1,3 +1,8 @@
+2011-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48044
+	* gcc.dg/torture/pr48044.c: New test.
+
 2011-03-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47768

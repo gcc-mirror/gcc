@@ -1,3 +1,9 @@
+2011-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48044
+	* ipa.c (cgraph_remove_unreachable_nodes): Enqueue
+	all vnode->force_output nodes as needed.
+
 2011-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48069
