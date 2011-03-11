@@ -5348,7 +5348,7 @@ extern bool must_pass_in_stack_var_size_or_pad (enum machine_mode, const_tree);
 
 /* In attribs.c.  */
 
-extern const struct attribute_spec *lookup_attribute_spec (tree);
+extern const struct attribute_spec *lookup_attribute_spec (const_tree);
 
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,
    which is either a DECL (including a TYPE_DECL) or a TYPE.  If a DECL,

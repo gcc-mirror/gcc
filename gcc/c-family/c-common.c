@@ -5665,7 +5665,7 @@ c_init_attributes (void)
 bool
 attribute_takes_identifier_p (const_tree attr_id)
 {
-  struct attribute_spec *spec = lookup_attribute_spec (attr_id);
+  const struct attribute_spec *spec = lookup_attribute_spec (attr_id);
   if (spec == NULL)
     /* Unknown attribute that we'll end up ignoring, return true so we
        don't complain about an identifier argument.  */
