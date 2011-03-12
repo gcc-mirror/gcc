@@ -1,6 +1,6 @@
 2011-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR libfortran/40866
+	PR libfortran/48066
 	* gfortran.dg/intrinsic_ifunction_2.f90:  New test case.
 
 2011-03-12  Janus Weil  <janus@gcc.gnu.org>

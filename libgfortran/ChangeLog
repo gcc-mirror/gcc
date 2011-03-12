@@ -1,6 +1,6 @@
 2011-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-	PR libfortran/40866
+	PR libfortran/48066
 	* m4/ifunction.m4:  If return array is empty, return.
 	* m4/ifunction_logical.m4:  Likewise.
 	* generated/all_l16.c: Regenerated.
