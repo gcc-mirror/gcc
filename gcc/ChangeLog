@@ -1,3 +1,20 @@
+2011-03-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/47127
+	* graphite-clast-to-gimple.c (build_cloog_prog): Removed state
+	parameter.
+	(set_cloog_options): Same.
+	(scop_to_clast): Same.
+	(print_clast_stmt): Do not call cloog_state_malloc and
+	cloog_state_free.
+	(print_generated_program): Same.
+	(gloog): Same.
+	* graphite-clast-to-gimple.h (cloog_state): Declared.
+	(scop_to_clast): Adjust declaration.
+	* graphite.c (cloog_state): Defined here.
+	(graphite_initialize): Call cloog_state_malloc.
+	(graphite_finalize): Call cloog_state_free.
+
 2011-03-11  Jason Merrill  <jason@redhat.com>
 
 	* attribs.c (lookup_attribute_spec): Take const_tree.
