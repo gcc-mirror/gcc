@@ -1,5 +1,7 @@
 2011-03-11  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/error45.C: New.
+
 	* g++.dg/parse/no-type-defn1.C: New.
 
 	* g++.dg/ext/attrib40.C: New.
