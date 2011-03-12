@@ -142,7 +142,7 @@ count_2_l (gfc_array_i2 * const restrict retarray,
       count[n] = 0;
       dstride[n] = GFC_DESCRIPTOR_STRIDE(retarray,n);
       if (extent[n] <= 0)
-        len = 0;
+	return;
     }
 
   base = array->data;
