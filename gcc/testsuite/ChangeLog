@@ -1,3 +1,7 @@
+2011-03-11  Dodji Seketeli  <dodji@redhat.com>
+
+	* g++.dg/conversion/cast3.C: New test.
+
 2011-03-11  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/error45.C: New.
