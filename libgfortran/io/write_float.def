@@ -1020,7 +1020,7 @@ write_float (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
 {
 
 #if defined(HAVE_GFC_REAL_16) || __LDBL_DIG__ > 18
-# define MIN_FIELD_WIDTH 46
+# define MIN_FIELD_WIDTH 48
 #else
 # define MIN_FIELD_WIDTH 31
 #endif
