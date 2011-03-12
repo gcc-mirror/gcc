@@ -1,5 +1,5 @@
 ! { dg-do run }
-! PR 40866 - this used to segfault.
+! PR 48066 - this used to segfault.
 program p
   real(8) :: empty(0, 3), square(0)
   logical :: lempty(0, 3), lsquare(0)
