@@ -1501,7 +1501,7 @@ gfc_conv_intrinsic_ctime (gfc_se * se, gfc_expr * expr)
   args = XALLOCAVEC (tree, num_args);
 
   var = gfc_create_var (pchar_type_node, "pstr");
-  len = gfc_create_var (gfc_get_int_type (8), "len");
+  len = gfc_create_var (gfc_charlen_type_node, "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = gfc_build_addr_expr (NULL_TREE, var);
