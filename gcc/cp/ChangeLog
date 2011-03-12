@@ -1,5 +1,8 @@
 2011-03-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47125
+	* pt.c (tsubst) [TYPENAME_TYPE]: Only give errors if tf_error.
+
 	PR c++/47144
 	* parser.c (cp_parser_template_type_arg): Set
 	type_definition_forbidden_message.

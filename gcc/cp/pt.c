@@ -10948,11 +10948,21 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (TREE_CODE (f) != TYPENAME_TYPE)
 	  {
 	    if (TYPENAME_IS_ENUM_P (t) && TREE_CODE (f) != ENUMERAL_TYPE)
-	      error ("%qT resolves to %qT, which is not an enumeration type",
-		     t, f);
+	      {
+		if (complain & tf_error)
+		  error ("%qT resolves to %qT, which is not an enumeration type",
+			 t, f);
+		else
+		  return error_mark_node;
+	      }
 	    else if (TYPENAME_IS_CLASS_P (t) && !CLASS_TYPE_P (f))
-	      error ("%qT resolves to %qT, which is is not a class type",
-		     t, f);
+	      {
+		if (complain & tf_error)
+		  error ("%qT resolves to %qT, which is is not a class type",
+			 t, f);
+		else
+		  return error_mark_node;
+	      }
 	  }
 
 	return cp_build_qualified_type_real
