@@ -4285,7 +4285,7 @@ end program test_exit
 @fnindex ZEXP
 @fnindex CDEXP
 @cindex exponential function
-@cindex logarithmic function, inverse
+@cindex logarithm function, inverse
 
 @table @asis
 @item @emph{Description}:
@@ -7766,7 +7766,7 @@ end program test_loc
 
 
 @node LOG
-@section @code{LOG} --- Logarithm function
+@section @code{LOG} --- Natural logarithm function
 @fnindex LOG
 @fnindex ALOG
 @fnindex DLOG
@@ -7774,11 +7774,13 @@ end program test_loc
 @fnindex ZLOG
 @fnindex CDLOG
 @cindex exponential function, inverse
-@cindex logarithmic function
+@cindex logarithm function
+@cindex natural logarithm function
 
 @table @asis
 @item @emph{Description}:
-@code{LOG(X)} computes the logarithm of @var{X}.
+@code{LOG(X)} computes the natural logarithm of @var{X}, i.e. the
+logarithm to the base @math{e}.
 
 @item @emph{Standard}:
 Fortran 77 and later
@@ -7804,9 +7806,9 @@ If @var{X} is @code{COMPLEX}, the imaginary part @math{\omega} is in the range
 @item @emph{Example}:
 @smallexample
 program test_log
-  real(8) :: x = 1.0_8
+  real(8) :: x = 2.7182818284590451_8
   complex :: z = (1.0, 2.0)
-  x = log(x)
+  x = log(x)    ! will yield (approximately) 1
   z = log(z)
 end program test_log
 @end smallexample
@@ -7830,7 +7832,8 @@ end program test_log
 @fnindex ALOG10
 @fnindex DLOG10
 @cindex exponential function, inverse
-@cindex logarithmic function
+@cindex logarithm function with base 10
+@cindex base 10 logarithm function
 
 @table @asis
 @item @emph{Description}:
