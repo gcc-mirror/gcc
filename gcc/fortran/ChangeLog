@@ -1,3 +1,9 @@
+2011-03-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/47552
+	* trans-intrinsic.c (gfc_conv_intrinsic_ctime): Fix type of
+	the string length variable.
+
 2011-03-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/47768
