@@ -2247,6 +2247,10 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
 	  expr->symtree = sym->new_sym;
 	else if (sym->expr)
 	  gfc_replace_expr (expr, gfc_copy_expr (sym->expr));
+	/* Replace base type for polymorphic arguments.  */
+	if (expr->ref && expr->ref->type == REF_COMPONENT
+	    && sym->expr && sym->expr->ts.type == BT_CLASS)
+	  expr->ref->u.c.sym = sym->expr->ts.u.derived;
       }
 
       /* ...and to subexpressions in expr->value.  */
