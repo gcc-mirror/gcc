@@ -1,3 +1,9 @@
+2011-03-13  Chris Demetriou  <cgd@google.com>
+
+	* doc/invoke.texi (-fdiagnostics-show-option): Replace with...
+	(-fno-diagnostics-show-option): this, to reflect current default.
+	(-Werror=): Update text about -fno-diagnostics-show-option.
+
 2011-03-12  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/48053
