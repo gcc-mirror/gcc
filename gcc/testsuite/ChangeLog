@@ -1,3 +1,9 @@
+2011-03-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/48066
+	Backport from trunk
+	* gfortran.dg/intrinsic_ifunction_2.f90:  Correct PR number.
+
 2011-03-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/47348
