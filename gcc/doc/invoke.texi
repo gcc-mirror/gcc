@@ -227,7 +227,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Language Independent Options,,Options to Control Diagnostic Messages Formatting}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
--fdiagnostics-show-option}
+-fno-diagnostics-show-option}
 
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
@@ -2771,12 +2771,13 @@ messages reporter to emit the same source location information (as
 prefix) for physical lines that result from the process of breaking
 a message which is too long to fit on a single line.
 
-@item -fdiagnostics-show-option
+@item -fno-diagnostics-show-option
+@opindex fno-diagnostics-show-option
 @opindex fdiagnostics-show-option
-This option instructs the diagnostic machinery to add text to each
-diagnostic emitted, which indicates which command line option directly
-controls that diagnostic, when such an option is known to the
-diagnostic machinery.
+By default, each diagnostic emitted includes text which indicates the
+command line option that directly controls the diagnostic (if such an
+option is known to the diagnostic machinery).  Specifying the
+@option{-fno-diagnostics-show-option} flag suppresses that behavior.
 
 @item -Wcoverage-mismatch
 @opindex Wcoverage-mismatch
@@ -2842,9 +2843,13 @@ controlled by @option{-Wswitch} into errors.  This switch takes a
 negative form, to be used to negate @option{-Werror} for specific
 warnings, for example @option{-Wno-error=switch} makes
 @option{-Wswitch} warnings not be errors, even when @option{-Werror}
-is in effect.  You can use the @option{-fdiagnostics-show-option}
-option to have each controllable warning amended with the option which
-controls it, to determine what to use with this option.
+is in effect.
+
+The warning message for each controllable warning includes the
+option which controls the warning.  That option can then be used with
+@option{-Werror=} and @option{-Wno-error=} as described above.
+(Printing of the option in the warning message can be disabled using the
+@option{-fno-diagnostics-show-option} flag.)
 
 Note that specifying @option{-Werror=}@var{foo} automatically implies
 @option{-W}@var{foo}.  However, @option{-Wno-error=}@var{foo} does not
