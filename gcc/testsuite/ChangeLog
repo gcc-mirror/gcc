@@ -1,3 +1,11 @@
+2011-03-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47348
+	* gfortran.dg/array_constructor_36.f90 : New test.
+	* gfortran.dg/bounds_check_10.f90 : Change dg-output message to
+	allow for comparison between different elements of the array
+	constructor at different levels of optimization.
+
 2011-03-11  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/error45.C: New.

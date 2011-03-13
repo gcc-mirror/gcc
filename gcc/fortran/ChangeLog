@@ -1,3 +1,13 @@
+2011-03-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/47348
+	* trans-array.c (get_array_ctor_all_strlen): Move up in file.
+	(get_array_ctor_var_strlen): Add block dummy and add call to
+	get_array_ctor_all_strlen instead of giving up on substrings.
+	Call gcc_unreachable for default case.
+	(get_array_ctor_strlen): Add extra argument to in call to
+	get_array_ctor_var_strlen.
+
 2011-01-27  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline
