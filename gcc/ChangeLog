@@ -1,3 +1,16 @@
+2011-03-12  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/48053
+	* config/rs6000/predicates.md (easy_vector_constant_add_self,
+	easy_vector_constant_msb): Do not handle V2DImode and V2DFmode.
+	* config/rs6000/rs6000.c (const_vector_elt_as_int): Add assert that
+	mode is not V2DImode or V2DFmode.
+	(vspltis_constant): Do not handle V2DImode and V2DFmode.
+	(rs6000_expand_vector_init): Replace copy_to_reg with copy_to_mode_reg.
+	* config/rs6000/rs6000.md (movdi_internal32): Allow setting VSX
+	registers to 0.
+	(movdi_internal64): Likewise.
+
 2011-03-12  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/47127

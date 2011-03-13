@@ -1,3 +1,9 @@
+2011-03-12  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/48053
+	* gcc/testsuite/gcc.target/powerpc/pr48053-1.c: New test.
+	* gcc/testsuite/gcc.target/powerpc/pr48053-2.c: Likewise.
+
 2011-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/48066
