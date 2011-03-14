@@ -1,3 +1,8 @@
+2011-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48098
+	* gcc.dg/torture/pr48098.c: New testcase.
+
 2011-03-12  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/48053

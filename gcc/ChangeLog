@@ -1,3 +1,9 @@
+2011-03-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48098
+	* tree.c (build_vector_from_val): Adjust assert to requirements
+	and reality.
+
 2011-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/48102
