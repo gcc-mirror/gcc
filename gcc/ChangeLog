@@ -1,5 +1,8 @@
 2011-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* doc/invoke.texi, doc/standards.texi: Refer to
+	gcc-4.6/c99status.html.
+
 	* DEV-PHASE: Mark "prerelease".
 
 2011-03-14  Richard Guenther  <rguenther@suse.de>
