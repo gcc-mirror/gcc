@@ -1,3 +1,8 @@
+2011-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/38878
+	* gcc.dg/tree-ssa/foldaddr-1.c: Remove xfail.
+
 2011-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse4_1-floor-vec.c: New test.

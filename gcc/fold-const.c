@@ -12112,6 +12112,9 @@ fold_binary_loc (location_t loc,
 
     case EQ_EXPR:
     case NE_EXPR:
+      STRIP_NOPS (arg0);
+      STRIP_NOPS (arg1);
+
       tem = fold_comparison (loc, code, type, op0, op1);
       if (tem != NULL_TREE)
 	return tem;
@@ -12194,7 +12197,8 @@ fold_binary_loc (location_t loc,
       /* Similarly for a NEGATE_EXPR.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && TREE_CODE (arg1) == INTEGER_CST
-	  && 0 != (tem = negate_expr (arg1))
+	  && 0 != (tem = negate_expr (fold_convert_loc (loc, TREE_TYPE (arg0),
+							arg1)))
 	  && TREE_CODE (tem) == INTEGER_CST
 	  && !TREE_OVERFLOW (tem))
 	return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0), tem);
@@ -12214,7 +12218,9 @@ fold_binary_loc (location_t loc,
       if ((TREE_CODE (arg0) == PLUS_EXPR
 	   || TREE_CODE (arg0) == POINTER_PLUS_EXPR
 	   || TREE_CODE (arg0) == MINUS_EXPR)
-	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
+	  && operand_equal_p (tree_strip_nop_conversions (TREE_OPERAND (arg0,
+									0)),
+			      arg1, 0)
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
 	      || POINTER_TYPE_P (TREE_TYPE (arg0))))
 	{
@@ -12230,7 +12236,9 @@ fold_binary_loc (location_t loc,
       /* Transform comparisons of the form C - X CMP X if C % 2 == 1.  */
       if (TREE_CODE (arg0) == MINUS_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == INTEGER_CST
-	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0)
+	  && operand_equal_p (tree_strip_nop_conversions (TREE_OPERAND (arg0,
+									1)),
+			      arg1, 0)
 	  && (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 0)) & 1) == 1)
 	{
 	  return omit_two_operands_loc (loc, type,
