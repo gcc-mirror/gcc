@@ -1,5 +1,11 @@
 2011-03-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/38878
+	* fold-const.c (fold_binary_loc) <case EQ_EXPR, NE_EXPR>: Add
+	STRIP_NOPS on arg0 and arg1.  When optimizing X +- C == X
+	and C - X == X also strip nops from +/-/p+ operand.
+	When optimizing -X == C, fold C to arg0's type.
+
 	PR debug/47946
 	* dwarf2out.c (add_bit_offset_attribute): If bit_offset is negative,
 	emit it as add_AT_int instead of add_AT_unsigned.
