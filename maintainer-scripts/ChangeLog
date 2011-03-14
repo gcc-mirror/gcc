@@ -1,3 +1,8 @@
+2011-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Enable 4.7 snapshots, switch 4.6 snapshots to
+	4.6 branch.
+
 2011-02-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* update_web_docs_svn: Generate libquadmath-vers.texi.
