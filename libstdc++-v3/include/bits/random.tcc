@@ -1,6 +1,6 @@
 // random number generation (out of line) -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1392,7 +1392,7 @@ namespace std
       {
 	result_type __ret;
 	const _IntType __t = __param.t();
-	const _IntType __p = __param.p();
+	const double __p = __param.p();
 	const double __p12 = __p <= 0.5 ? __p : 1.0 - __p;
 	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);

@@ -1,3 +1,9 @@
+2011-03-14  Andrey Zholos  <aaz@althenia.net>
+
+	PR libstdc++/48114
+	* include/bits/random.tcc (binomial_distribution<>::operator()):
+	Fix thinko in computation, __param.p() is a double.
+
 2011-02-25  Johannes Singler  <singler@kit.edu>
 
         PR libstdc++/47433
