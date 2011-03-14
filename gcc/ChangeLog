@@ -1,3 +1,9 @@
+2011-03-14  Tom Tromey  <tromey@redhat.com>
+
+	* c-parser.c (disable_extension_diagnostics): Save
+	warn_overlength_strings.
+	(restore_extension_diagnostics): Restore warn_overlength_strings.
+
 2011-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Change to 4.7.0.

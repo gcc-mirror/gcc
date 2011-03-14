@@ -1,3 +1,9 @@
+2011-03-14  Tom Tromey  <tromey@redhat.com>
+
+	* gcc.dg/Woverlength-strings-pedantic-c89-ext.c: New file.
+	* gcc.dg/Woverlength-strings-pedantic-c90-ext.c: New file.
+	* gcc.dg/Woverlength-strings-pedantic-c99-ext.c: New file.
+
 2011-03-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/builtin-copysign.c: Remove __LP64__ check.
