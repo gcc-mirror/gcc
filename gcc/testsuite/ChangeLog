@@ -1,3 +1,8 @@
+2011-03-14  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/47166
+	* gcc.c-torture/execute/postmod-1.c: New test.
+
 2011-03-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/48066
