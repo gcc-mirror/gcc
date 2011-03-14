@@ -1,6 +1,6 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2008, 2009, 2010  Free Software Foundation, Inc.
+   2008, 2009, 2010, 2011  Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -36,6 +36,10 @@
 #include "unwind-dw2-fde.h"
 #include "gthr.h"
 #include "unwind-dw2.h"
+
+#ifdef HAVE_SYS_SDT_H
+#include <sys/sdt.h>
+#endif
 
 #ifndef __USING_SJLJ_EXCEPTIONS__
 
@@ -1493,7 +1497,13 @@ static void
 _Unwind_DebugHook (void *cfa __attribute__ ((__unused__)),
 		   void *handler __attribute__ ((__unused__)))
 {
+  /* We only want to use stap probes starting with v3.  Earlier
+     versions added too much startup cost.  */
+#if defined (HAVE_SYS_SDT_H) && defined (STAP_PROBE2) && _SDT_NOTE_TYPE >= 3
+  STAP_PROBE2 (libgcc, unwind, cfa, handler);
+#else
   asm ("");
+#endif
 }
 
 /* Install TARGET into CURRENT so that we can return to it.  This is a

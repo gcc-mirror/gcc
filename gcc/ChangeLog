@@ -1,3 +1,10 @@
+2011-01-14  Tom Tromey  <tromey@redhat.com>
+
+	* unwind-dw2.c: Include sys/sdt.h if it exists.
+	(_Unwind_DebugHook): Use STAP_PROBE2.
+	* config.in, configure: Rebuild.
+	* configure.ac: Check for sys/sdt.h.
+
 2011-03-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (ROUND_FLOOR): New constant.

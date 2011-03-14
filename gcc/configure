@@ -25792,6 +25792,19 @@ $as_echo "#define TARGET_LIBC_PROVIDES_SSP 1" >>confdefs.h
 
 fi
 
+# Test for <sys/sdt.h> on the target.
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking sys/sdt.h in the target C library" >&5
+$as_echo_n "checking sys/sdt.h in the target C library... " >&6; }
+have_sys_sdt_h=no
+if test -f $target_header_dir/sys/sdt.h; then
+
+$as_echo "#define HAVE_SYS_SDT_H 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_sys_sdt_h" >&5
+$as_echo "$have_sys_sdt_h" >&6; }
+
 # Check if TFmode long double should be used by default or not.
 # Some glibc targets used DFmode long double, but with glibc 2.4
 # and later they can use TFmode.
