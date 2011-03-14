@@ -1,3 +1,15 @@
+2011-03-14  Andrey Zholos  <aaz@althenia.net>
+
+	PR libstdc++/48114
+	* include/bits/random.h (geometric_distribution): Correct formula
+	in comment, per C++0x.
+	(geometric_distribution<>::param_type::param_type(double)): Fix check.
+	(geometric_distribution<>::param_type::_M_initialize):
+	Store log(1 - p).
+	* include/bits/random.tcc (geometric_distribution<>::operator()):
+	Fix computation.
+	(binomial_distribution<>::operator()): Likewise.
+
 2011-03-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/util/testsuite_rvalref.h: Minor tweaks.
