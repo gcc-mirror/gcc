@@ -1,3 +1,7 @@
+2011-03-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/builtin-copysign.c: Remove __LP64__ check.
+
 2011-03-14  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR rtl-optimization/47166
