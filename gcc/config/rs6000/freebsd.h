@@ -1,5 +1,6 @@
 /* Definitions for PowerPC running FreeBSD using the ELF format
-   Copyright (C) 2001, 2003, 2007, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2007, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by David E. O'Brien <obrien@FreeBSD.org> and BSDi.
 
    This file is part of GCC.
@@ -69,5 +70,11 @@
 /* Override rs6000.h definition.  */
 #undef  ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
+
+/* We don't need to generate entries in .fixup, except when
+   -mrelocatable or -mrelocatable-lib is given.  */
+#undef RELOCATABLE_NEEDS_FIXUP
+#define RELOCATABLE_NEEDS_FIXUP \
+  (target_flags & target_flags_explicit & MASK_RELOCATABLE)
 
 #define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number (REGNO)

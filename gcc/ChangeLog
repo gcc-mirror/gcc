@@ -1,3 +1,12 @@
+2011-03-14  Andreas Tobler  <andreast@fgznet.ch>
+
+	* config/rs6000/freebsd.h: (RELOCATABLE_NEEDS_FIXUP): Define in
+	terms of target_flags_explicit. Adjust copyright year.
+
+	* config.gcc: Add FreeBSD PowerPC soft-float libgcc bits.
+	* config/rs6000/t-freebsd: New file. Add override for
+	LIB2FUNCS_EXTRA.
+
 2011-03-13  Chris Demetriou  <cgd@google.com>
 
 	* doc/invoke.texi (-fdiagnostics-show-option): Replace with...
