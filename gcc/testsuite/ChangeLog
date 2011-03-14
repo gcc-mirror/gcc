@@ -1,3 +1,22 @@
+2011-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse4_1-floor-vec.c: New test.
+	* gcc.target/i386/sse4_1-ceil-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-trunc-vec.c: Ditto.
+	* gcc-target/i386/sse4_1-rint-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-floorf-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-ceilf-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-truncf-vec.c: Ditto.
+	* gcc.target/i386/sse4_1-rintf-vec.c: Ditto.
+	* gcc.target/i386/avx-floor-vec.c: Ditto.
+	* gcc.target/i386/avx-ceil-vec.c: Ditto.
+	* gcc.target/i386/avx-trunc-vec.c: Ditto.
+	* gcc.target/i386/avx-rint-vec.c: Ditto.
+	* gcc.target/i386/avx-floorf-vec.c: Ditto.
+	* gcc.target/i386/avx-ceilf-vec.c: Ditto.
+	* gcc.target/i386/avx-truncf-vec.c: Ditto.
+	* gcc.target/i386/avx-rintf-vec.c: Ditto.
+
 2011-03-14  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.dg/Woverlength-strings-pedantic-c90-asm.c: New file.
@@ -27,8 +46,8 @@
 2011-03-12  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/48053
-	* gcc/testsuite/gcc.target/powerpc/pr48053-1.c: New test.
-	* gcc/testsuite/gcc.target/powerpc/pr48053-2.c: Likewise.
+	* gcc.target/powerpc/pr48053-1.c: New test.
+	* gcc.target/powerpc/pr48053-2.c: Likewise.
 
 2011-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
