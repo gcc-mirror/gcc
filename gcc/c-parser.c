@@ -3264,6 +3264,8 @@ static tree
 c_parser_asm_string_literal (c_parser *parser)
 {
   tree str;
+  int save_flag = warn_overlength_strings;
+  warn_overlength_strings = 0;
   if (c_parser_next_token_is (parser, CPP_STRING))
     {
       str = c_parser_peek_token (parser)->value;
@@ -3281,6 +3283,7 @@ c_parser_asm_string_literal (c_parser *parser)
       c_parser_error (parser, "expected string literal");
       str = NULL_TREE;
     }
+  warn_overlength_strings = save_flag;
   return str;
 }
 
