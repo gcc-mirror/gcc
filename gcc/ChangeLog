@@ -1,3 +1,8 @@
+2011-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.c (solaris_assemble_visibility): Remove obsolete
+	URLs.
+
 2011-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/invoke.texi, doc/standards.texi: Refer to
