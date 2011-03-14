@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -3589,7 +3589,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @brief A discrete geometric random number distribution.
    *
    * The formula for the geometric probability density function is
-   * @f$p(i|p) = (1 - p)p^{i-1}@f$ where @f$p@f$ is the parameter of the
+   * @f$p(i|p) = p(1 - p)^{i}@f$ where @f$p@f$ is the parameter of the
    * distribution.
    */
   template<typename _IntType = int>
@@ -3611,8 +3611,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	param_type(double __p = 0.5)
 	: _M_p(__p)
 	{
-	  _GLIBCXX_DEBUG_ASSERT((_M_p >= 0.0)
-			     && (_M_p <= 1.0));
+	  _GLIBCXX_DEBUG_ASSERT((_M_p > 0.0)
+			     && (_M_p < 1.0));
 	  _M_initialize();
 	}
 
@@ -3627,11 +3627,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       private:
 	void
 	_M_initialize()
-	{ _M_log_p = std::log(_M_p); }
+	{ _M_log_1_p = std::log(1.0 - _M_p); }
 
 	double _M_p;
 
-	double _M_log_p;
+	double _M_log_1_p;
       };
 
       // constructors and member function
