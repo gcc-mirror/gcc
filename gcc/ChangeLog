@@ -1,4 +1,10 @@
-2011-01-14  Tom Tromey  <tromey@redhat.com>
+2011-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/47946
+	* dwarf2out.c (add_bit_offset_attribute): If bit_offset is negative,
+	emit it as add_AT_int instead of add_AT_unsigned.
+
+2011-03-14  Tom Tromey  <tromey@redhat.com>
 
 	* unwind-dw2.c: Include sys/sdt.h if it exists.
 	(_Unwind_DebugHook): Use STAP_PROBE2.
