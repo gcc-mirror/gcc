@@ -1127,7 +1127,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
   </biblioentry>
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://docs.sun.com/app/docs/doc/819-0690" class="uri">
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://download.oracle.com/docs/cd/E19963-01/html/819-0690/index.html" class="uri">
       </biblioid>
       <citetitle>
 	Linker and Libraries Guide (document 819-0690)
@@ -1136,7 +1136,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 
 
   <biblioentry>
-    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://docs.sun.com/app/docs/doc/819-3689" class="uri">
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://download.oracle.com/docs/cd/E19422-01/819-3689/index.html" class="uri">
     </biblioid>
     <citetitle>
       Sun Studio 11: C++ Migration Guide (document 819-3689)
