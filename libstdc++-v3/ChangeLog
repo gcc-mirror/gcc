@@ -1,3 +1,21 @@
+2011-03-14  Tom Tromey  <tromey@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (_use_gdb_pp): New global.
+	Try to import `gdb.printing' module.
+	(UniquePointerPrinter.__init__): Add 'typename' argument.
+	(StdSlistPrinter.__init__): Likewise.
+	(StdSlistIteratorPrinter.__init__): Likewise.
+	(StdVectorIteratorPrinter.__init__): Likewise.
+	(StdRbtreeIteratorPrinter.__init__): Likewise.
+	(StdDebugIteratorPrinter.__init__): Likewise.
+	(StdDequeIteratorPrinter.__init__): Likewise.
+	(StdStringPrinter.__init__): Likewise.
+	(RxPrinter, Printer): New class.
+	(libstdcxx_printer): New global.
+	(register_libstdcxx_printers): Rewrite.
+	(build_libstdcxx_dictionary): Rewrite.
+	(pretty_printers_dict): Remove.
+
 2011-03-14  Andrey Zholos  <aaz@althenia.net>
 
 	PR libstdc++/48114
