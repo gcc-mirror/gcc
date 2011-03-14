@@ -463,7 +463,8 @@ powerpc-*-darwin*)
 	;;
 powerpc64-*-darwin*)
 	;;
-powerpc*-*-freebsd*)
+powerpc-*-freebsd*)
+	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-freebsd t-softfp"
 	;;
 powerpc-*-netbsd*)
 	;;
