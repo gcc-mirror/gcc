@@ -1,3 +1,11 @@
+2011-03-13  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR lto/48086
+	* configure.ac: Disable LTO on darwin due to an assembler change in
+	Xcode 3.2.6/4.0 that limits the total number of sections/segments to
+	under 256.
+	* configure: Regenerate.
+
 2011-03-11  Chen Liqin <liqin.gcc@gmail.com>
 
 	* MAINTAINERS: Update myself as score backend maintainer, update my e-mail address.
