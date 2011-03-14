@@ -1,3 +1,10 @@
+2011-03-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/48053
+	* config/rs6000/rs6000.md (movdi split for 32-bit): Don't split up
+	64-bit constants being loaded into registers other than GPRs such
+	as loading 0 into a VSX register.
+
 2011-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2.c (solaris_assemble_visibility): Remove obsolete
