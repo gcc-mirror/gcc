@@ -1,3 +1,9 @@
+2011-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/48102
+	* graphite-cloog-compat.h (build_cloog_prog): Remove STATE
+	parameter.
+
 2011-03-14  Andreas Tobler  <andreast@fgznet.ch>
 
 	* config/rs6000/freebsd.h: (RELOCATABLE_NEEDS_FIXUP): Define in
