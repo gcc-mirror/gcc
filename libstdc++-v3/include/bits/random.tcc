@@ -1025,7 +1025,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	double __cand;
 	do
-	  __cand = std::ceil(std::log(__aurng()) / __param._M_log_p);
+	  __cand = std::floor(std::log(__aurng()) / __param._M_log_1_p);
 	while (__cand >= __thr);
 
 	return result_type(__cand + __naf);
@@ -1434,7 +1434,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	result_type __ret;
 	const _IntType __t = __param.t();
-	const _IntType __p = __param.p();
+	const double __p = __param.p();
 	const double __p12 = __p <= 0.5 ? __p : 1.0 - __p;
 	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
