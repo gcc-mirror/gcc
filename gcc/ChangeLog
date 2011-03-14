@@ -1,3 +1,26 @@
+2011-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ROUND_FLOOR): New constant.
+	(ROUND_CEIL): Ditto.
+	(ROUND_TRUNC): Ditto.
+	(ROUND_MXCSR): Ditto.
+	(ROUND_NO_EXC): Ditto.
+	(rint<mode>2): Use new defines instead of numerical constants.
+	(floor<mode>2): Ditto.
+	(ceil<mode>2): Ditto.
+	(btrunc<mode>2): Ditto.
+	* config/i386/i386-builtin-types.def: Define ROUND function type
+	aliases.
+	* config/i386/i386.c (enum ix86_builtins): Add
+	IX86_BUILTIN_{FLOOR,CEIL,TRUNC,RINT}{PS,PD}{,256} defines.
+	(struct builtin_description): Add
+	__builtin_ia32_{floor,ceil,trunc,rint}{pd,ps}{,256} descriptions.
+	(ix86_expand_sse_round): New static function.
+	(ix86_expand_args_builtin): Call ix86_expand_sse_round for ROUND
+	function types.
+	(ix86_builtin_vectorized_function): Handle
+	BUILT_IN_{FLOOR,CEIL,TRUNC,RINT}{,F} builtins.
+
 2011-03-14  Tom Tromey  <tromey@redhat.com>
 
 	* c-parser.c (c_parser_asm_string_literal): Clear
@@ -22,8 +45,7 @@
 2011-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/48102
-	* graphite-cloog-compat.h (build_cloog_prog): Remove STATE
-	parameter.
+	* graphite-cloog-compat.h (build_cloog_prog): Remove STATE parameter.
 
 2011-03-14  Andreas Tobler  <andreast@fgznet.ch>
 
@@ -321,7 +343,8 @@
 	PR lto/47497
 	* lto-symtab.c (lto_cgraph_replace_node): Do not set thunk.alias.
 	(lto_symtab_merge_cgraph_nodes_1): Update thunk.alias pointers here.
-	* cgraph.h (cgraph_same_body_alias, cgraph_add_thunk): Add node pointers.
+	* cgraph.h (cgraph_same_body_alias, cgraph_add_thunk):
+	Add node pointers.
 	* cgraph.c (cgraph_same_body_alias_1, cgraph_same_body_alias,
 	cgraph_add_thunk): Add node pointers.
 	* lto-cgraph.c (lto_output_node): Verify that thunks&aliases are
@@ -332,8 +355,8 @@
 2011-03-04  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* config/i386/i386.opt (mprefer-avx128): New flag.
-	* config/i386/i386.c (ix86_preferred_simd_mode): Prefer 128-bit mode
-	when the flag -mprefer-avx128 is on.
+	* config/i386/i386.c (ix86_preferred_simd_mode): Prefer 128-bit AVX
+	modes when the flag -mprefer-avx128 is on.
 
 2011-03-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
