@@ -1,6 +1,6 @@
 /* Output Dwarf2 format symbol table information from GCC.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
@@ -17685,7 +17685,7 @@ add_bit_offset_attribute (dw_die_ref die, tree decl)
   HOST_WIDE_INT bitpos_int;
   HOST_WIDE_INT highest_order_object_bit_offset;
   HOST_WIDE_INT highest_order_field_bit_offset;
-  HOST_WIDE_INT unsigned bit_offset;
+  HOST_WIDE_INT bit_offset;
 
   /* Must be a field and a bit field.  */
   gcc_assert (type && TREE_CODE (decl) == FIELD_DECL);
@@ -17718,7 +17718,10 @@ add_bit_offset_attribute (dw_die_ref die, tree decl)
        ? highest_order_object_bit_offset - highest_order_field_bit_offset
        : highest_order_field_bit_offset - highest_order_object_bit_offset);
 
-  add_AT_unsigned (die, DW_AT_bit_offset, bit_offset);
+  if (bit_offset < 0)
+    add_AT_int (die, DW_AT_bit_offset, bit_offset);
+  else
+    add_AT_unsigned (die, DW_AT_bit_offset, (unsigned HOST_WIDE_INT) bit_offset);
 }
 
 /* For a FIELD_DECL node which represents a bit field, output an attribute
