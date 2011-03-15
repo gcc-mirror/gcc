@@ -1080,14 +1080,9 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   tsubst_flags_t complain;
   const char *msg;
   bool ctor_p;
-  tree cleanup_spec;
-  bool cleanup_trivial = true;
-  bool cleanup_deleted = false;
 
-  cleanup_spec
-    = (cxx_dialect >= cxx0x ? noexcept_true_spec : empty_except_spec);
   if (spec_p)
-    *spec_p = cleanup_spec;
+    *spec_p = (cxx_dialect >= cxx0x ? noexcept_true_spec : empty_except_spec);
 
   if (deleted_p)
     {
@@ -1228,8 +1223,10 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	     destructors for cleanup of partially constructed objects.  */
 	  rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
 				  NULL_TREE, flags, complain);
-	  process_subob_fn (rval, false, &cleanup_spec, &cleanup_trivial,
-			    &cleanup_deleted, NULL, NULL,
+	  /* Note that we don't pass down trivial_p; the subobject
+	     destructors don't affect triviality of the constructor.  */
+	  process_subob_fn (rval, false, spec_p, NULL,
+			    deleted_p, NULL, NULL,
 			    basetype);
 	}
 
@@ -1275,8 +1272,8 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	    {
 	      rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
 				      NULL_TREE, flags, complain);
-	      process_subob_fn (rval, false, &cleanup_spec, &cleanup_trivial,
-				&cleanup_deleted, NULL, NULL,
+	      process_subob_fn (rval, false, spec_p, NULL,
+				deleted_p, NULL, NULL,
 				basetype);
 	    }
 	}
@@ -1295,23 +1292,14 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   if (ctor_p)
     walk_field_subobs (TYPE_FIELDS (ctype), complete_dtor_identifier,
 		       sfk_destructor, TYPE_UNQUALIFIED, false,
-		       false, false, &cleanup_spec, &cleanup_trivial,
-		       &cleanup_deleted, NULL,
+		       false, false, spec_p, NULL,
+		       deleted_p, NULL,
 		       NULL, flags, complain);
 
   pop_scope (scope);
 
   --cp_unevaluated_operand;
   --c_inhibit_evaluation_warnings;
-
-  /* If the constructor isn't trivial, consider the subobject cleanups.  */
-  if (ctor_p && trivial_p && !*trivial_p)
-    {
-      if (deleted_p && cleanup_deleted)
-	*deleted_p = true;
-      if (spec_p)
-	*spec_p = merge_exception_specifiers (*spec_p, cleanup_spec);
-    }
 }
 
 /* DECL is a deleted function.  If it's implicitly deleted, explain why and
