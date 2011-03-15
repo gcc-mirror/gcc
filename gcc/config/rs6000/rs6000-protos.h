@@ -41,7 +41,8 @@ extern int small_data_operand (rtx, enum machine_mode);
 extern bool toc_relative_expr_p (rtx);
 extern bool invalid_e500_subreg (rtx, enum machine_mode);
 extern void validate_condition_mode (enum rtx_code, enum machine_mode);
-extern bool legitimate_constant_pool_address_p (const_rtx, bool);
+extern bool legitimate_constant_pool_address_p (const_rtx, enum machine_mode,
+						bool);
 extern bool legitimate_indirect_address_p (rtx, int);
 extern bool legitimate_indexed_address_p (rtx, int);
 extern bool avoiding_indexed_address_p (enum machine_mode);
