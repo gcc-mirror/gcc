@@ -31935,38 +31935,38 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
 
 void ix86_emit_swdivsf (rtx res, rtx a, rtx b, enum machine_mode mode)
 {
-  rtx x0, x1, e0, e1, two;
+  rtx x0, x1, e0, e1;
 
   x0 = gen_reg_rtx (mode);
   e0 = gen_reg_rtx (mode);
   e1 = gen_reg_rtx (mode);
   x1 = gen_reg_rtx (mode);
 
-  two = CONST_DOUBLE_FROM_REAL_VALUE (dconst2, SFmode);
-
-  if (VECTOR_MODE_P (mode))
-    two = ix86_build_const_vector (mode, true, two);
-
-  two = force_reg (mode, two);
-
-  /* a / b = a * rcp(b) * (2.0 - b * rcp(b)) */
+  /* a / b = a * ((rcp(b) + rcp(b)) - (b * rcp(b) * rcp (b))) */
 
   /* x0 = rcp(b) estimate */
   emit_insn (gen_rtx_SET (VOIDmode, x0,
 			  gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
 					  UNSPEC_RCP)));
-  /* e0 = x0 * a */
+  /* e0 = x0 * b */
   emit_insn (gen_rtx_SET (VOIDmode, e0,
-			  gen_rtx_MULT (mode, x0, a)));
-  /* e1 = x0 * b */
-  emit_insn (gen_rtx_SET (VOIDmode, e1,
 			  gen_rtx_MULT (mode, x0, b)));
-  /* x1 = 2. - e1 */
+
+  /* e0 = x0 * e0 */
+  emit_insn (gen_rtx_SET (VOIDmode, e0,
+			  gen_rtx_MULT (mode, x0, e0)));
+
+  /* e1 = x0 + x0 */
+  emit_insn (gen_rtx_SET (VOIDmode, e1,
+			  gen_rtx_PLUS (mode, x0, x0)));
+
+  /* x1 = e1 - e0 */
   emit_insn (gen_rtx_SET (VOIDmode, x1,
-			  gen_rtx_MINUS (mode, two, e1)));
-  /* res = e0 * x1 */
+			  gen_rtx_MINUS (mode, e1, e0)));
+
+  /* res = a * x1 */
   emit_insn (gen_rtx_SET (VOIDmode, res,
-			  gen_rtx_MULT (mode, e0, x1)));
+			  gen_rtx_MULT (mode, a, x1)));
 }
 
 /* Output code to perform a Newton-Rhapson approximation of a
