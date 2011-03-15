@@ -1,3 +1,10 @@
+2011-03-15  Jason Merrill  <jason@redhat.com>
+
+	* c-common.c (max_constexpr_depth): New.
+	* c-common.h: Declare it.
+	* c-opts.c (c_common_handle_option): Set it.
+	* c.opt (fconstexpr-depth): New option.
+
 2011-03-11  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (attribute_takes_identifier_p): Add missing const.

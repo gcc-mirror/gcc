@@ -255,12 +255,15 @@ int flag_use_repository;
 enum cxx_dialect cxx_dialect = cxx98;
 
 /* Maximum template instantiation depth.  This limit exists to limit the
-   time it takes to notice infinite template instantiations; the default
-   value of 1024 is likely to be in the next C++ standard.  */
+   time it takes to notice excessively recursive template instantiations;
+   the default value of 1024 is likely to be in the next C++ standard.  */
 
 int max_tinst_depth = 1024;
 
+/* Likewise, for constexpr function call evaluations.  N3225 specifies a
+   minimum of 512.  */
 
+int max_constexpr_depth = 512;
 
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */

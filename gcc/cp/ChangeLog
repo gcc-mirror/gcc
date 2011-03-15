@@ -1,5 +1,8 @@
 2011-03-15  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (push_cx_call_context): Return bool.
+	(cxx_eval_call_expression): Handle excess depth.
+
 	Core 1191
 	* method.c (synthesized_method_walk): Cleanups don't affect the
 	triviality of a constructor, but do affect deletion and exception
