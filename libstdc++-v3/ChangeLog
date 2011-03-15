@@ -24,12 +24,18 @@
 	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Same.
 	* config/abi/pre/gnu.ver: Add new exports.
 
+2011-03-14  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/bits/regex_compiler.h: Nest namespace versioning.
 	* include/bits/regex_grep_matcher.tcc: Same.
 	* include/bits/regex_grep_matcher.h: Same.
 	* include/bits/regex_cursor.h: Same.
 	* include/bits/regex_nfa.h: Same.
 	* include/bits/regex_nfa.tcc: Same.
+
+	* include/bits/regex_grep_matcher.h: Version forward declarations.
+	* include/bits/c++config: Add namespace association for __regex.
+	* include/bits/regex.h: Make sub_match consistent.
 
 2011-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

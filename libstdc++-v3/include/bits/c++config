@@ -170,9 +170,6 @@ namespace std
 {
   inline namespace _6 { }
 
-  namespace __detail { inline namespace _6 { } }
-
-
   namespace rel_ops { inline namespace _6 { } }
 
   namespace tr1
@@ -189,6 +186,9 @@ namespace std
   namespace placeholders { inline namespace _6 { } }
   namespace regex_constants { inline namespace _6 { } }
   namespace this_thread { inline namespace _6 { } }
+
+  namespace __detail { inline namespace _6 { } }
+  namespace __regex { inline namespace _6 { } }
 }
 
 namespace __gnu_cxx

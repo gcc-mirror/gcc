@@ -30,12 +30,15 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _BiIter>
     class sub_match;
 
   template<typename _Bi_iter, typename _Allocator>
     class match_results;
+
+_GLIBCXX_END_NAMESPACE_VERSION
   
 namespace __regex
 {
