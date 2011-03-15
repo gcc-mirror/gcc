@@ -18143,9 +18143,7 @@ value_dependent_expression_p (tree expression)
 
     case NOEXCEPT_EXPR:
       expression = TREE_OPERAND (expression, 0);
-      /* FIXME why check value-dependency?  */
-      return (type_dependent_expression_p (expression)
-	      || value_dependent_expression_p (expression));
+      return type_dependent_expression_p (expression);
 
     case SCOPE_REF:
       {
