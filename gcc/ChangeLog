@@ -1,5 +1,11 @@
 2011-03-15  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/13954
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Look through memcpy
+	and friends.
+
+2011-03-15  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/48037
 	* tree-ssa.c (maybe_rewrite_mem_ref_base): Rewrite vector
 	selects into BIT_FIELD_REFs.
