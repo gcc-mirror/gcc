@@ -1,3 +1,10 @@
+2011-03-15  Jason Merrill  <jason@redhat.com>
+
+	Core 1191
+	* method.c (synthesized_method_walk): Cleanups don't affect the
+	triviality of a constructor, but do affect deletion and exception
+	specification.
+
 2011-03-15  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
 
 	* decl2.c (cp_check_const_attributes): New.

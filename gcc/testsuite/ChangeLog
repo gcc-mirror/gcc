@@ -1,3 +1,7 @@
+2011-03-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/implicit11.C: New.
+
 2011-03-15  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
 
        * g++.dg/cpp0x/constexpr-attribute.C: New.
