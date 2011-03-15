@@ -1,5 +1,11 @@
 2011-03-15  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/47650
+	* tree-pretty-print.c (dump_function_declaration): Properly
+	dump unprototyped and varargs function types.
+
+2011-03-15  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/13954
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Look through memcpy
 	and friends.

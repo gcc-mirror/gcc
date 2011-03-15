@@ -35,6 +35,6 @@ end program
 !   -- once in the function definition itself
 !   -- plus as many times as the function is called
 !
-! { dg-final { scan-tree-dump-times "foo *\\\(\\\)" 5 "original" } }
-! { dg-final { scan-tree-dump-times "bar *\\\(\\\)" 5 "original" } }
+! { dg-final { scan-tree-dump-times "foo *\\\(\\\)" 6 "original" } }
+! { dg-final { scan-tree-dump-times "bar *\\\(\\\)" 6 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

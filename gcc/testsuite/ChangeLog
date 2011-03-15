@@ -1,5 +1,12 @@
 2011-03-15  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/47650
+	* gfortran.dg/c_f_pointer_tests_3.f90: Adjust.
+	* gfortran.dg/ishft_4.f90: Likewise.
+	* gfortran.dg/leadz_trailz_3.f90: Likewise.
+
+2011-03-15  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/13954
 	* g++.dg/tree-ssa/pr13954.C: New testcase.
 

@@ -30,6 +30,6 @@ end program test
 ! { dg-final { scan-tree-dump-times "  fptr = .integer.kind=4. .. cptr" 1 "original" } }
 !
 ! Check c_f_procpointer
-! { dg-final { scan-tree-dump-times "  fprocptr = .integer.kind=4. .\\*<.*>. .void.. cfunptr;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "  fprocptr = .integer.kind=4. .\\*<.*>. ... cfunptr;" 1 "original" } }
 !
 ! { dg-final { cleanup-tree-dump "original" } }
