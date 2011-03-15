@@ -12038,9 +12038,8 @@ fold_builtin_snprintf (location_t loc, tree dest, tree destsize, tree fmt,
 
   if (call && retval)
     {
-      retval = fold_convert_loc
-	(loc, TREE_TYPE (TREE_TYPE (implicit_built_in_decls[BUILT_IN_SNPRINTF])),
-	 retval);
+      tree fn = built_in_decls[BUILT_IN_SNPRINTF];
+      retval = fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fn)), retval);
       return build2 (COMPOUND_EXPR, TREE_TYPE (retval), call, retval);
     }
   else

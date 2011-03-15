@@ -1,3 +1,10 @@
+2011-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/48129
+	* builtins.c (fold_builtin_snprintf): Convert to type of
+	built_in_decls[BUILT_IN_SNPRINTF] retval instead of
+	implicit_built_in_decls[BUILT_IN_SNPRINTF] retval.
+
 2011-03-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41490
