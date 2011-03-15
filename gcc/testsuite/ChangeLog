@@ -1,3 +1,12 @@
+2011-03-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/41490
+	* gcc.dg/tree-ssa/ssa-sink-6.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-sink-7.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sink-8.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sink-9.c: Likewise.
+	* g++.dg/tree-ssa/pr33604.C: Adjust.
+
 2011-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/47917

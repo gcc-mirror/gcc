@@ -869,7 +869,8 @@ propagate_necessity (struct edge_list *el)
 	    {
 	      tree rhs = gimple_return_retval (stmt);
 	      /* A return statement may perform a load.  */
-	      if (TREE_CODE (rhs) != SSA_NAME
+	      if (rhs
+		  && TREE_CODE (rhs) != SSA_NAME
 		  && !is_gimple_min_invariant (rhs))
 		{
 		  if (!ref_may_be_aliased (rhs))
