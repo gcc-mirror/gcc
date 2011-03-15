@@ -1,5 +1,11 @@
 2011-03-15  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/48031
+	* fold-const.c (fold_indirect_ref_1): Do not create new variable-sized
+	or variable-indexed array accesses when in gimple form.
+
+2011-03-15  Richard Guenther  <rguenther@suse.de>
+
 	* config/i386/i386.c (ix86_emit_swdivsf): Implement more
 	efficiently.
 
