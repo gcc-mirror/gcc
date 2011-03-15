@@ -1,7 +1,7 @@
 2011-03-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-	PR target/47688
-	* gcc.target/arm/pr47688.c: New.
+	PR target/46788
+	* gcc.target/arm/pr46788.c: New.
 
 2011-03-15  Richard Guenther  <rguenther@suse.de>
 
