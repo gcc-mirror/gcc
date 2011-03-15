@@ -10580,13 +10580,15 @@
   [(set_attr "conds" "clob")]
 )
 
+;; We only care about the lower 16 bits of the constant 
+;; being inserted into the upper 16 bits of the register.
 (define_insn "*arm_movtas_ze" 
   [(set (zero_extract:SI (match_operand:SI 0 "s_register_operand" "+r")
                    (const_int 16)
                    (const_int 16))
         (match_operand:SI 1 "const_int_operand" ""))]
   "arm_arch_thumb2"
-  "movt%?\t%0, %c1"
+  "movt%?\t%0, %L1"
  [(set_attr "predicable" "yes")
    (set_attr "length" "4")]
 )
