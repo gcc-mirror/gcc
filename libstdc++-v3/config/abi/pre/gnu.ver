@@ -618,7 +618,10 @@ GLIBCXX_3.4 {
     _ZTVSt[0-9][0-9][g-k]*;
     _ZTVSt11logic_error;
     _ZTVSt12length_error;
-    _ZTVSt[0-9][0-9][m-q]*;
+#   _ZTVSt[0-9][0-9][m-q]*;
+    _ZTVSt[0-9][0-9][m]*;
+    _ZTVSt[0-9][0-9]n[^e]*;
+    _ZTVSt[0-9][0-9][o-q]*;
     _ZTVSt11range_error;
     _ZTVSt13runtime_error;
     _ZTVSt[0-9][0-9][t-z]*;
@@ -648,7 +651,10 @@ GLIBCXX_3.4 {
     _ZTISt[0-9][0-9][g-k]*;
     _ZTISt11logic_error;
     _ZTISt12length_error;
-    _ZTISt[0-9][0-9][m-q]*;
+#   _ZTISt[0-9][0-9][m-q]*;
+    _ZTISt[0-9][0-9][m]*;
+    _ZTISt[0-9][0-9]n[^e]*;
+    _ZTISt[0-9][0-9][o-q]*;
     _ZTISt11range_error;
     _ZTISt13runtime_error;
     _ZTISt[0-9][0-9][t-z]*;
@@ -682,7 +688,10 @@ GLIBCXX_3.4 {
     _ZTSSt[0-9][0-9][g-k]*;
     _ZTSSt11logic_error;
     _ZTSSt12length_error;
-    _ZTSSt[0-9][0-9][m-q]*;
+#   _ZTSSt[0-9][0-9][m-q]*;
+    _ZTSSt[0-9][0-9][m]*;
+    _ZTSSt[0-9][0-9]n[^e]*;
+    _ZTSSt[0-9][0-9][o-q]*;
     _ZTSSt11range_error;
     _ZTSSt13runtime_error;
     _ZTSSt[0-9][0-9][t-z]*;
@@ -1219,11 +1228,18 @@ GLIBCXX_3.4.15 {
     _ZTISt11regex_error;
     _ZSt19__throw_regex_errorNSt15regex_constants10error_typeE;
 
+    # std::bad_weak_ptr
     _ZNSt12bad_weak_ptrD*;
     _ZNKSt12bad_weak_ptr4whatEv;
     _ZTSSt12bad_weak_ptr;
     _ZTVSt12bad_weak_ptr;
     _ZTISt12bad_weak_ptr;
+
+    # std::bad_function_call
+    _ZNSt17bad_function_callD*;
+    _ZTISt17bad_function_call;
+    _ZTSSt17bad_function_call;
+    _ZTVSt17bad_function_call;
 
     _ZNSt14error_categoryC*;
     _ZNSt14error_categoryD*;
@@ -1421,12 +1437,6 @@ CXXABI_1.3.5 {
 
     # FNV hash.
     _ZSt15_Fnv_hash_bytesPKv*;
-
-    # std::bad_function_call.
-    _ZNSt17bad_function_callD*;
-    _ZTISt17bad_function_call;
-    _ZTSSt17bad_function_call;
-    _ZTVSt17bad_function_call;
 
     # std::nested_exception
     _ZNSt16nested_exceptionD*;

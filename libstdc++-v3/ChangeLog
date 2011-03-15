@@ -1,3 +1,8 @@
+2011-03-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/pre/gnu.ver: Make nested_exception exports super clear.
+	Move bad_function_call exports from CXXABI_1.3.5 to GLIBCXX_3.4.15.
+
 2011-03-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/48130
