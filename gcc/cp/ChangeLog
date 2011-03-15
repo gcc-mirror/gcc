@@ -1,5 +1,9 @@
 2011-03-15  Jason Merrill  <jason@redhat.com>
 
+	Core 1074
+	* pt.c (value_dependent_expression_p) [NOEXCEPT_EXPR]: Don't
+	check value_dependent_expression_p on the operand.
+
 	* semantics.c (push_cx_call_context): Return bool.
 	(cxx_eval_call_expression): Handle excess depth.
 
