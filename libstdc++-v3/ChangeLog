@@ -1,3 +1,10 @@
+2011-03-15  Doug Kwan  <dougkwan@google.com>
+
+	PR libstdc++/48123
+	* include/Makefile.am (install-freestanding-headers): Install
+	cpu_defines.h
+	* include/Makefile.in: Regenerate.
+
 2011-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/xml/manual/abi.xml: Replace docs.sun.com URLs by their OTN
