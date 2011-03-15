@@ -1459,7 +1459,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Bi_iter,
 	   typename _Allocator = allocator<sub_match<_Bi_iter> > >
     class match_results
-    : private std::vector<std::sub_match<_Bi_iter>, _Allocator>
+    : private std::vector<sub_match<_Bi_iter>, _Allocator>
     {
     private:
       /*
@@ -1473,8 +1473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * [n+1] prefix
        * [n+2] suffix
        */
-      typedef std::vector<std::sub_match<_Bi_iter>, _Allocator>
-                                                              _Base_type;
+      typedef std::vector<sub_match<_Bi_iter>, _Allocator>    _Base_type;
 
     public:
       /**
