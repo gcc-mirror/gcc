@@ -1,5 +1,11 @@
 2011-03-14  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/48130
+	* src/future.cc: Guard definitions.
+	* libsupc++/nested_exception.cc: Same.
+
+2011-03-14  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* src/Makefile.am: Add functional.cc, shared_ptr.cc.
 	* src/Makefile.in: Regenerate.
 	* libsupc++/Makefile.am: Add nested_exception.cc.
