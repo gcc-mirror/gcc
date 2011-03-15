@@ -5922,17 +5922,21 @@ cxx_bind_parameters_in_call (const constexpr_call *old_call, tree t,
 /* Variables and functions to manage constexpr call expansion context.
    These do not need to be marked for PCH or GC.  */
 
+/* FIXME remember and print actual constant arguments.  */
 static VEC(tree,heap) *call_stack = NULL;
 static int call_stack_tick;
 static int last_cx_error_tick;
 
-static void
+static bool
 push_cx_call_context (tree call)
 {
   ++call_stack_tick;
   if (!EXPR_HAS_LOCATION (call))
     SET_EXPR_LOCATION (call, input_location);
   VEC_safe_push (tree, heap, call_stack, call);
+  if (VEC_length (tree, call_stack) > (unsigned) max_constexpr_depth)
+    return false;
+  return true;
 }
 
 static void
@@ -5967,6 +5971,9 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
   tree result;
   constexpr_call new_call = { NULL, NULL, NULL, 0 };
   constexpr_call **slot;
+  constexpr_call *entry;
+  bool depth_ok;
+
   if (TREE_CODE (fun) != FUNCTION_DECL)
     {
       /* Might be a constexpr function pointer.  */
@@ -6029,7 +6036,7 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
   if (*non_constant_p)
     return t;
 
-  push_cx_call_context (t);
+  depth_ok = push_cx_call_context (t);
 
   new_call.hash
     = iterative_hash_template_arg (new_call.bindings,
@@ -6039,37 +6046,43 @@ cxx_eval_call_expression (const constexpr_call *old_call, tree t,
   maybe_initialize_constexpr_call_table ();
   slot = (constexpr_call **)
     htab_find_slot (constexpr_call_table, &new_call, INSERT);
-  if (*slot != NULL)
-    {
-      /* Calls which are in progress have their result set to NULL
-         so that we can detect circular dependencies.  */
-      if ((*slot)->result == NULL)
-        {
-	  if (!allow_non_constant)
-	    error ("call has circular dependency");
-	  (*slot)->result = result = error_mark_node;
-        }
-      else
-	{
-	  result = (*slot)->result;
-	  if (result == error_mark_node && !allow_non_constant)
-	    /* Re-evaluate to get the error.  */
-	    cxx_eval_constant_expression (&new_call, new_call.fundef->body,
-					  allow_non_constant, addr,
-					  non_constant_p);
-	}
-    }
-  else
+  entry = *slot;
+  if (entry == NULL)
     {
       /* We need to keep a pointer to the entry, not just the slot, as the
 	 slot can move in the call to cxx_eval_builtin_function_call.  */
-      constexpr_call *entry = ggc_alloc_constexpr_call ();
+      *slot = entry = ggc_alloc_constexpr_call ();
       *entry = new_call;
-      *slot = entry;
-      result
-	= cxx_eval_constant_expression (&new_call, new_call.fundef->body,
-					allow_non_constant, addr,
-					non_constant_p);
+    }
+  /* Calls which are in progress have their result set to NULL
+     so that we can detect circular dependencies.  */
+  else if (entry->result == NULL)
+    {
+      if (!allow_non_constant)
+	error ("call has circular dependency");
+      *non_constant_p = true;
+      entry->result = result = error_mark_node;
+    }
+
+  if (!depth_ok)
+    {
+      if (!allow_non_constant)
+	error ("constexpr evaluation depth exceeds maximum of %d (use "
+	       "-fconstexpr-depth= to increase the maximum)",
+	       max_constexpr_depth);
+      *non_constant_p = true;
+      entry->result = result = error_mark_node;
+    }
+  else
+    {
+      result = entry->result;
+      if (!result || (result == error_mark_node && !allow_non_constant))
+	result = (cxx_eval_constant_expression
+		  (&new_call, new_call.fundef->body,
+		   allow_non_constant, addr,
+		   non_constant_p));
+      if (result == error_mark_node)
+	*non_constant_p = true;
       if (*non_constant_p)
 	entry->result = result = error_mark_node;
       else

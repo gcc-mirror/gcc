@@ -619,9 +619,13 @@ extern enum cxx_dialect cxx_dialect;
 
 /* Maximum template instantiation depth.  This limit is rather
    arbitrary, but it exists to limit the time it takes to notice
-   infinite template instantiations.  */
+   excessively recursive template instantiations.  */
 
 extern int max_tinst_depth;
+
+/* Likewise, for constexpr function call evaluations.  */
+
+extern int max_constexpr_depth;
 
 /* Nonzero means that we should not issue warnings about problems that
    occur when the code is executed, because the code being processed
