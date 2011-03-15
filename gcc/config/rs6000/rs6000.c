@@ -5791,6 +5791,94 @@ virtual_stack_registers_memory_p (rtx op)
 	  && regnum <= LAST_VIRTUAL_POINTER_REGISTER);
 }
 
+/* Return true if memory accesses to OP are known to never straddle
+   a 32k boundary.  */
+
+static bool
+offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
+			     enum machine_mode mode)
+{
+  tree decl, type;
+  unsigned HOST_WIDE_INT dsize, dalign;
+
+  if (GET_CODE (op) != SYMBOL_REF)
+    return false;
+
+  decl = SYMBOL_REF_DECL (op);
+  if (!decl)
+    {
+      if (GET_MODE_SIZE (mode) == 0)
+	return false;
+
+      /* -fsection-anchors loses the original SYMBOL_REF_DECL when
+	 replacing memory addresses with an anchor plus offset.  We
+	 could find the decl by rummaging around in the block->objects
+	 VEC for the given offset but that seems like too much work.  */
+      dalign = 1;
+      if (SYMBOL_REF_HAS_BLOCK_INFO_P (op)
+	  && SYMBOL_REF_ANCHOR_P (op)
+	  && SYMBOL_REF_BLOCK (op) != NULL)
+	{
+	  struct object_block *block = SYMBOL_REF_BLOCK (op);
+	  HOST_WIDE_INT lsb, mask;
+
+	  /* Given the alignment of the block..  */
+	  dalign = block->alignment;
+	  mask = dalign / BITS_PER_UNIT - 1;
+
+	  /* ..and the combined offset of the anchor and any offset
+	     to this block object..  */
+	  offset += SYMBOL_REF_BLOCK_OFFSET (op);
+	  lsb = offset & -offset;
+
+	  /* ..find how many bits of the alignment we know for the
+	     object.  */
+	  mask &= lsb - 1;
+	  dalign = mask + 1;
+	}
+      return dalign >= GET_MODE_SIZE (mode);
+    }
+
+  if (DECL_P (decl))
+    {
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	return true;
+
+      if (!DECL_SIZE_UNIT (decl))
+	return false;
+
+      if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+	return false;
+
+      dsize = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+      if (dsize > 32768)
+	return false;
+
+      dalign = DECL_ALIGN_UNIT (decl);
+      return dalign >= dsize;
+    }
+
+  type = TREE_TYPE (decl);
+
+  if (TREE_CODE (decl) == STRING_CST)
+    dsize = TREE_STRING_LENGTH (decl);
+  else if (TYPE_SIZE_UNIT (type)
+	   && host_integerp (TYPE_SIZE_UNIT (type), 1))
+    dsize = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  else
+    return false;
+  if (dsize > 32768)
+    return false;
+
+  dalign = TYPE_ALIGN (type);
+  if (CONSTANT_CLASS_P (decl))
+    dalign = CONSTANT_ALIGNMENT (decl, dalign);
+  else
+    dalign = DATA_ALIGNMENT (decl, dalign);
+  dalign /= BITS_PER_UNIT;
+  return dalign >= dsize;
+}
+
 static bool
 constant_pool_expr_p (rtx op)
 {
@@ -5815,8 +5903,12 @@ toc_relative_expr_p (rtx op)
 	  && XINT (tocrel_base, 1) == UNSPEC_TOCREL);
 }
 
+/* Return true if X is a constant pool address, and also for cmodel=medium
+   if X is a toc-relative address known to be offsettable within MODE.  */
+
 bool
-legitimate_constant_pool_address_p (const_rtx x, bool strict)
+legitimate_constant_pool_address_p (const_rtx x, enum machine_mode mode,
+				    bool strict)
 {
   return (TARGET_TOC
 	  && (GET_CODE (x) == PLUS || GET_CODE (x) == LO_SUM)
@@ -5825,7 +5917,12 @@ legitimate_constant_pool_address_p (const_rtx x, bool strict)
 	      || ((TARGET_MINIMAL_TOC
 		   || TARGET_CMODEL != CMODEL_SMALL)
 		  && INT_REG_OK_FOR_BASE_P (XEXP (x, 0), strict)))
-	  && toc_relative_expr_p (XEXP (x, 1)));
+	  && toc_relative_expr_p (XEXP (x, 1))
+	  && (TARGET_CMODEL != CMODEL_MEDIUM
+	      || constant_pool_expr_p (XVECEXP (tocrel_base, 0, 0))
+	      || mode == QImode
+	      || offsettable_ok_by_alignment (XVECEXP (tocrel_base, 0, 0),
+					      INTVAL (tocrel_offset), mode)));
 }
 
 static bool
@@ -5853,7 +5950,7 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
     return false;
   if (!reg_offset_addressing_ok_p (mode))
     return virtual_stack_registers_memory_p (x);
-  if (legitimate_constant_pool_address_p (x, strict))
+  if (legitimate_constant_pool_address_p (x, mode, strict))
     return true;
   if (GET_CODE (XEXP (x, 1)) != CONST_INT)
     return false;
@@ -6853,7 +6950,8 @@ rs6000_legitimate_address_p (enum machine_mode mode, rtx x, bool reg_ok_strict)
     return 1;
   if (reg_offset_p && legitimate_small_data_p (mode, x))
     return 1;
-  if (reg_offset_p && legitimate_constant_pool_address_p (x, reg_ok_strict))
+  if (reg_offset_p
+      && legitimate_constant_pool_address_p (x, mode, reg_ok_strict))
     return 1;
   /* If not REG_OK_STRICT (before reload) let pass any stack offset.  */
   if (! reg_ok_strict
@@ -6963,7 +7061,7 @@ rs6000_mode_dependent_address (const_rtx addr)
     case LO_SUM:
       /* Anything in the constant pool is sufficiently aligned that
 	 all bytes have the same high part address.  */
-      return !legitimate_constant_pool_address_p (addr, false);
+      return !legitimate_constant_pool_address_p (addr, QImode, false);
 
     /* Auto-increment cases are now treated generically in recog.c.  */
     case PRE_MODIFY:
@@ -7327,51 +7425,19 @@ rs6000_eliminate_indexed_memrefs (rtx operands[2])
 
   if (GET_CODE (operands[0]) == MEM
       && GET_CODE (XEXP (operands[0], 0)) != REG
-      && ! legitimate_constant_pool_address_p (XEXP (operands[0], 0), false))
+      && ! legitimate_constant_pool_address_p (XEXP (operands[0], 0),
+					       GET_MODE (operands[0]), false))
     operands[0]
       = replace_equiv_address (operands[0],
 			       copy_addr_to_reg (XEXP (operands[0], 0)));
 
   if (GET_CODE (operands[1]) == MEM
       && GET_CODE (XEXP (operands[1], 0)) != REG
-      && ! legitimate_constant_pool_address_p (XEXP (operands[1], 0), false))
+      && ! legitimate_constant_pool_address_p (XEXP (operands[1], 0),
+					       GET_MODE (operands[1]), false))
     operands[1]
       = replace_equiv_address (operands[1],
 			       copy_addr_to_reg (XEXP (operands[1], 0)));
-}
-
-/* Return true if memory accesses to DECL are known to never straddle
-   a 32k boundary.  */
-
-static bool
-offsettable_ok_by_alignment (tree decl)
-{
-  unsigned HOST_WIDE_INT dsize, dalign;
-
-  /* Presume any compiler generated symbol_ref is suitably aligned.  */
-  if (!decl)
-    return true;
-
-  if (TREE_CODE (decl) != VAR_DECL
-      && TREE_CODE (decl) != PARM_DECL
-      && TREE_CODE (decl) != RESULT_DECL
-      && TREE_CODE (decl) != FIELD_DECL)
-    return true;
-
-  if (!DECL_SIZE_UNIT (decl))
-    return false;
-
-  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
-    return false;
-
-  dsize = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
-  if (dsize <= 1)
-    return true;
-  if (dsize > 32768)
-    return false;
-
-  dalign = DECL_ALIGN_UNIT (decl);
-  return dalign >= dsize;
 }
 
 /* Emit a move from SOURCE to DEST in mode MODE.  */
@@ -7695,8 +7761,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 	  || (TARGET_CMODEL == CMODEL_MEDIUM
 	      && GET_CODE (operands[1]) == SYMBOL_REF
 	      && !CONSTANT_POOL_ADDRESS_P (operands[1])
-	      && SYMBOL_REF_LOCAL_P (operands[1])
-	      && offsettable_ok_by_alignment (SYMBOL_REF_DECL (operands[1]))))
+	      && SYMBOL_REF_LOCAL_P (operands[1])))
 	{
 	  rtx reg = NULL_RTX;
 	  if (TARGET_CMODEL != CMODEL_SMALL)
@@ -7718,7 +7783,8 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 		   || (GET_CODE (operands[0]) == REG
 		       && FP_REGNO_P (REGNO (operands[0]))))
 	       && GET_CODE (operands[1]) != HIGH
-	       && ! legitimate_constant_pool_address_p (operands[1], false)
+	       && ! legitimate_constant_pool_address_p (operands[1], mode,
+							false)
 	       && ! toc_relative_expr_p (operands[1])
 	       && (TARGET_CMODEL == CMODEL_SMALL
 		   || can_create_pseudo_p ()
@@ -16444,7 +16510,7 @@ print_operand_address (FILE *file, rtx x)
       fprintf (file, ")(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
     }
 #endif
-  else if (legitimate_constant_pool_address_p (x, true))
+  else if (legitimate_constant_pool_address_p (x, QImode, true))
     {
       /* This hack along with a corresponding hack in
 	 rs6000_output_addr_const_extra arranges to output addends

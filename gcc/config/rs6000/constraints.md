@@ -166,7 +166,7 @@ usually better to use @samp{m} or @samp{es} in @code{asm} statements)"
 
 (define_constraint "R"
   "AIX TOC entry"
-  (match_test "legitimate_constant_pool_address_p (op, false)"))
+  (match_test "legitimate_constant_pool_address_p (op, QImode, false)"))
 
 ;; General constraints
 

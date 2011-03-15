@@ -1,3 +1,20 @@
+2011-03-15  Alan Modra  <amodra@gmail.com>
+
+	PR target/48032
+	* config/rs6000/rs6000.c (offsettable_ok_by_alignment): Do not
+	presume symbol_refs without a symbol_ref_decl are suitably
+	aligned, nor other trees we may see here.  Handle anchor symbols.
+	(legitimate_constant_pool_address_p): Comment.  Add mode param.
+	Check cmodel=medium addresses.  Adjust all calls.
+	(rs6000_emit_move): Don't call offsettable_ok_by_alignment on
+	creating cmodel=medium optimized access to locals.
+	* config/rs6000/constraints.md (R): Pass QImode to
+	legitimate_constant_pool_address_p.
+	* config/rs6000/predicates.md (input_operand): Pass mode to
+	legitimate_constant_pool_address_p.
+	* config/rs6000/rs6000-protos.h (legitimate_constant_pool_address_p):
+	Update prototype.
+
 2011-03-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/48053
