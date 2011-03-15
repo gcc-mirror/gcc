@@ -5746,10 +5746,17 @@ cxx_type_promotes_to (tree type)
 }
 
 /* ARG is a default argument expression being passed to a parameter of
-   the indicated TYPE, which is a parameter to FN.  Do any required
-   conversions.  Return the converted value.  */
+   the indicated TYPE, which is a parameter to FN.  PARMNUM is the
+   zero-based argument number.  Do any required conversions.  Return
+   the converted value.  */
 
 static GTY(()) VEC(tree,gc) *default_arg_context;
+void
+push_defarg_context (tree fn)
+{ VEC_safe_push (tree, gc, default_arg_context, fn); }
+void
+pop_defarg_context (void)
+{ VEC_pop (tree, default_arg_context); }
 
 tree
 convert_default_arg (tree type, tree arg, tree fn, int parmnum)
@@ -5757,15 +5764,8 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
   int i;
   tree t;
 
-  /* If the ARG is an unparsed default argument expression, the
-     conversion cannot be performed.  */
-  if (TREE_CODE (arg) == DEFAULT_ARG)
-    {
-      error ("the default argument for parameter %d of %qD has "
-	     "not yet been parsed",
-	     parmnum, fn);
-      return error_mark_node;
-    }
+  /* See through clones.  */
+  fn = DECL_ORIGIN (fn);
 
   /* Detect recursion.  */
   FOR_EACH_VEC_ELT (tree, default_arg_context, i, t)
@@ -5774,7 +5774,17 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 	error ("recursive evaluation of default argument for %q#D", fn);
 	return error_mark_node;
       }
-  VEC_safe_push (tree, gc, default_arg_context, fn);
+
+  /* If the ARG is an unparsed default argument expression, the
+     conversion cannot be performed.  */
+  if (TREE_CODE (arg) == DEFAULT_ARG)
+    {
+      error ("call to %qD uses the default argument for parameter %P, which "
+	     "is not yet defined", fn, parmnum);
+      return error_mark_node;
+    }
+
+  push_defarg_context (fn);
 
   if (fn && DECL_TEMPLATE_INFO (fn))
     arg = tsubst_default_argument (fn, type, arg);
@@ -5814,7 +5824,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
     }
   pop_deferring_access_checks();
 
-  VEC_pop (tree, default_arg_context);
+  pop_defarg_context ();
 
   return arg;
 }
