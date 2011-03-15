@@ -1,3 +1,7 @@
+2011-03-15  Rodrigo Rivas Costa  <rodrigorivascosta@gmail.com>
+
+       * g++.dg/cpp0x/constexpr-attribute.C: New.
+
 2011-03-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* g++.dg/parse/pr34758.C: New.
