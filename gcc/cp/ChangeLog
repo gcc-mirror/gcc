@@ -1,3 +1,12 @@
+2011-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34758
+	* call.c (convert_default_arg): Use DECL_ORIGIN of fn.  Check for
+	recursion first.
+	(push_defarg_context, pop_defarg_context): New.
+	* parser.c (cp_parser_late_parsing_default_args): Use them.
+	* cp-tree.h: Declare them.
+
 2011-03-11  Dodji Seketeli  <dodji@redhat.com>
 
 	* call.c (add_builtin_candidate)<case INDIRECT_REF>: The type of

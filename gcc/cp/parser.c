@@ -20521,6 +20521,8 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
   saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
   parser->local_variables_forbidden_p = true;
 
+  push_defarg_context (fn);
+
   for (parm = TYPE_ARG_TYPES (TREE_TYPE (fn)),
 	 parmdecl = DECL_ARGUMENTS (fn);
        parm && parm != void_list_node;
@@ -20578,6 +20580,8 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       /* Revert to the main lexer.  */
       cp_parser_pop_lexer (parser);
     }
+
+  pop_defarg_context ();
 
   /* Make sure no default arg is missing.  */
   check_default_args (fn);

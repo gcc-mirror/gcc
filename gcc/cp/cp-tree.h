@@ -4638,6 +4638,8 @@ extern bool can_convert				(tree, tree);
 extern bool can_convert_arg			(tree, tree, tree, int);
 extern bool can_convert_arg_bad			(tree, tree, tree, int);
 extern bool enforce_access			(tree, tree, tree);
+extern void push_defarg_context			(tree);
+extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int);
 extern tree convert_arg_to_ellipsis		(tree);
 extern tree build_x_va_arg			(tree, tree);
