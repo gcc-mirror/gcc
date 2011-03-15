@@ -30,10 +30,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 namespace __regex
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // ABC for pattern matching
   struct _PatternCursor
   {
@@ -88,7 +88,6 @@ namespace __regex
     __cursor(const _FwdIterT& __b, const _FwdIterT __e)
     { return _SpecializedCursor<_FwdIterT>(__b, __e); }
 
-} // namespace __regex
-
 _GLIBCXX_END_NAMESPACE_VERSION
+} // namespace __regex
 } // namespace

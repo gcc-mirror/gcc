@@ -1,6 +1,6 @@
 // Standard exception classes  -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2005, 2007, 2009, 2010
+// Copyright (C) 2001, 2002, 2005, 2007, 2009, 2010, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -62,8 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit 
     logic_error(const string& __arg);
 
-    virtual 
-    ~logic_error() throw();
+    virtual ~logic_error() throw();
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
@@ -77,6 +76,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit domain_error(const string& __arg);
+    virtual ~domain_error() throw();
   };
 
   /** Thrown to report invalid arguments to functions.  */
@@ -84,6 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit invalid_argument(const string& __arg);
+    virtual ~invalid_argument() throw();
   };
 
   /** Thrown when an object is constructed that would exceed its maximum
@@ -92,6 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit length_error(const string& __arg);
+    virtual ~length_error() throw();
   };
 
   /** This represents an argument whose value is not within the expected
@@ -100,6 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit out_of_range(const string& __arg);
+    virtual ~out_of_range() throw();
   };
 
   /** Runtime errors represent problems outside the scope of a program;
@@ -116,8 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit 
     runtime_error(const string& __arg);
 
-    virtual 
-    ~runtime_error() throw();
+    virtual ~runtime_error() throw();
 
     /** Returns a C-style character string describing the general cause of
      *  the current error (the same string passed to the ctor).  */
@@ -130,6 +132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit range_error(const string& __arg);
+    virtual ~range_error() throw();
   };
 
   /** Thrown to indicate arithmetic overflow.  */
@@ -137,6 +140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit overflow_error(const string& __arg);
+    virtual ~overflow_error() throw();
   };
 
   /** Thrown to indicate arithmetic underflow.  */
@@ -144,6 +148,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     explicit underflow_error(const string& __arg);
+    virtual ~underflow_error() throw();
   };
 
   // @} group exceptions

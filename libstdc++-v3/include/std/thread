@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __shared_base_type	_M_this_ptr;
 
-      inline virtual ~_Impl_base();
+      virtual ~_Impl_base();
 
       virtual void _M_run() = 0;
     };
@@ -194,8 +194,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return make_shared<_Impl<_Callable>>(std::forward<_Callable>(__f));
       }
   };
-
-  inline thread::_Impl_base::~_Impl_base() = default;
 
   inline void
   swap(thread& __x, thread& __y)

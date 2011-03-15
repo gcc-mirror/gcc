@@ -98,10 +98,10 @@ am__objects_1 = array_type_info.lo atexit_arm.lo bad_alloc.lo \
 	eh_term_handler.lo eh_terminate.lo eh_throw.lo eh_type.lo \
 	eh_unex_handler.lo enum_type_info.lo function_type_info.lo \
 	fundamental_type_info.lo guard.lo guard_error.lo hash_bytes.lo \
-	new_handler.lo new_op.lo new_opnt.lo new_opv.lo new_opvnt.lo \
-	pbase_type_info.lo pmem_type_info.lo pointer_type_info.lo \
-	pure.lo si_class_type_info.lo tinfo.lo tinfo2.lo vec.lo \
-	vmi_class_type_info.lo vterminate.lo
+	nested_exception.lo new_handler.lo new_op.lo new_opnt.lo \
+	new_opv.lo new_opvnt.lo pbase_type_info.lo pmem_type_info.lo \
+	pointer_type_info.lo pure.lo si_class_type_info.lo tinfo.lo \
+	tinfo2.lo vec.lo vmi_class_type_info.lo vterminate.lo
 @GLIBCXX_HOSTED_TRUE@am__objects_2 = cp-demangle.lo
 am_libsupc___la_OBJECTS = $(am__objects_1) $(am__objects_2)
 libsupc___la_OBJECTS = $(am_libsupc___la_OBJECTS)
@@ -383,6 +383,7 @@ sources = \
 	guard.cc \
 	guard_error.cc \
 	hash_bytes.cc \
+	nested_exception.cc \
 	new_handler.cc \
 	new_op.cc \
 	new_opnt.cc \
@@ -765,6 +766,11 @@ cp-demangle.lo: cp-demangle.c
 	$(LTCOMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
 cp-demangle.o: cp-demangle.c
 	$(C_COMPILE) -DIN_GLIBCPP_V3 -Wno-error -c $<
+
+nested_exception.lo: nested_exception.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+nested_exception.o: nested_exception.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 install-stdHEADERS: $(std_HEADERS)
 	@$(NORMAL_INSTALL)

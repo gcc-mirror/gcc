@@ -54,6 +54,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  thread::_Impl_base::~_Impl_base() = default;
+
   void
   thread::join()
   {
