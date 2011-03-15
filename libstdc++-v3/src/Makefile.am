@@ -201,6 +201,7 @@ sources = \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \
+	functional.cc \
 	globals_io.cc \
 	hash_c++0x.cc \
 	hash_tr1.cc \
@@ -225,6 +226,7 @@ sources = \
 	istream.cc \
 	placeholders.cc \
 	regex.cc \
+	shared_ptr.cc \
 	streambuf.cc \
 	mutex.cc \
 	condition_variable.cc \
@@ -292,6 +294,11 @@ functexcept.lo: functexcept.cc
 functexcept.o: functexcept.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
+shared_ptr.lo: shared_ptr.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+shared_ptr.o: shared_ptr.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
 system_error.lo: system_error.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 system_error.o: system_error.cc
@@ -310,6 +317,11 @@ condition_variable.o: condition_variable.cc
 compatibility-c++0x.lo: compatibility-c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 compatibility-c++0x.o: compatibility-c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+functional.lo: functional.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+functional.o: functional.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 hash_c++0x.lo: hash_c++0x.cc

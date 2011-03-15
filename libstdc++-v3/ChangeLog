@@ -1,3 +1,36 @@
+2011-03-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am: Add functional.cc, shared_ptr.cc.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Add nested_exception.cc.
+	* libsupc++/Makefile.in: Regenerate.
+	* src/system_error.cc: Add ctor and dtor definitions for error_category.
+	* src/functional.cc: New. Add dtor definition for bad_function_call.
+	* src/stdexcept.cc: Add dtor definitions for domain_error,
+	invalid_argument, length_error, out_of_range, range_error,
+	overflow_error, underflow_error.
+	* src/future.cc: Add dtor definition for __future_base::_Result_base.
+	* src/shared_ptr.cc: New. Add dtor definition for bad_weak_ptr.
+	* src/thread.cc: Add dtor for thread::_Impl_base.
+	* include/std/system_error: Adjust.
+	* include/std/stdexcept: Same.
+	* include/std/future: Same.
+	* include/std/functional: Same.
+	* include/std/thread: Same.
+	* include/bits/shared_ptr_base.h: Same.
+	* libsupc++/nested_exception.cc: New. Add dtor for nested_exception.
+	* libsupc++/nested_exception.h: Adjust.
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Same.
+	* config/abi/pre/gnu.ver: Add new exports.
+
+	* include/bits/regex_compiler.h: Nest namespace versioning.
+	* include/bits/regex_grep_matcher.tcc: Same.
+	* include/bits/regex_grep_matcher.h: Same.
+	* include/bits/regex_cursor.h: Same.
+	* include/bits/regex_nfa.h: Same.
+	* include/bits/regex_nfa.tcc: Same.
+
 2011-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/xml/manual/abi.xml: Replace docs.sun.com URLs by their OTN

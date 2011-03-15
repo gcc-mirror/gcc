@@ -30,10 +30,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 namespace __regex
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   struct _Scanner_base
   {
     typedef unsigned int _StateT;
@@ -41,6 +41,8 @@ namespace __regex
     static constexpr _StateT _S_state_at_start    = 1 << 0;
     static constexpr _StateT _S_state_in_brace    = 1 << 2;
     static constexpr _StateT _S_state_in_bracket  = 1 << 3;
+
+    virtual ~_Scanner_base() { };
   };
 
   //
@@ -1100,9 +1102,8 @@ namespace __regex
     { return _AutomatonPtr(new _Nfa(_Compiler<_InIter, _TraitsT>(__b, __e, __t,
                                         __f)._M_nfa())); }
 
-} // namespace __regex
-
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace __regex
+} // namespace std
 
 /* vim: set ts=8 sw=2 sts=2: */

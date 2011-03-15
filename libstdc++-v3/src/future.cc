@@ -79,8 +79,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const char* 
   future_error::what() const throw() { return _M_code.message().c_str(); }
 
+  __future_base::_Result_base::_Result_base() = default;
+
+  __future_base::_Result_base::~_Result_base() = default;
+
+  __future_base::_State_base::~_State_base() = default;
+
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 // XXX GLIBCXX_ABI Deprecated
 // gcc-4.6.0

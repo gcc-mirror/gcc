@@ -160,7 +160,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       exception_ptr		_M_error;
 
-      _Result_base() = default;
       _Result_base(const _Result_base&) = delete;
       _Result_base& operator=(const _Result_base&) = delete;
 
@@ -173,7 +172,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     protected:
-      ~_Result_base();
+      _Result_base();
+      virtual ~_Result_base();
     };
 
     /// Result.
@@ -273,8 +273,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 
-    /// Shared state between a promise and one or more associated futures.
-    class _State
+    /// Base class for state between a promise and one or more
+    /// associated futures.
+    class _State_base
     {
       typedef _Ptr<_Result_base>::type _Ptr_type;
 
@@ -285,10 +286,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       once_flag			_M_once;
 
     public:
-      _State() : _M_result(), _M_retrieved(ATOMIC_FLAG_INIT) { }
-
-      _State(const _State&) = delete;
-      _State& operator=(const _State&) = delete;
+      _State_base() : _M_result(), _M_retrieved(ATOMIC_FLAG_INIT) { }
+      _State_base(const _State_base&) = delete;
+      _State_base& operator=(const _State_base&) = delete;
+      virtual ~_State_base();
 
       _Result_base&
       wait()
@@ -296,7 +297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_run_deferred();
 	unique_lock<mutex> __lock(_M_mutex);
 	if (!_M_ready())
-	  _M_cond.wait(__lock, std::bind<bool>(&_State::_M_ready, this));
+	  _M_cond.wait(__lock, std::bind<bool>(&_State_base::_M_ready, this));
 	return *_M_result;
       }
 
@@ -305,7 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         wait_for(const chrono::duration<_Rep, _Period>& __rel)
         {
 	  unique_lock<mutex> __lock(_M_mutex);
-	  auto __bound = std::bind<bool>(&_State::_M_ready, this);
+	  auto __bound = std::bind<bool>(&_State_base::_M_ready, this);
 	  return _M_ready() || _M_cond.wait_for(__lock, __rel, __bound);
 	}
 
@@ -314,7 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         wait_until(const chrono::time_point<_Clock, _Duration>& __abs)
         {
 	  unique_lock<mutex> __lock(_M_mutex);
-	  auto __bound = std::bind<bool>(&_State::_M_ready, this);
+	  auto __bound = std::bind<bool>(&_State_base::_M_ready, this);
 	  return _M_ready() || _M_cond.wait_until(__lock, __abs, __bound);
 	}
 
@@ -324,7 +325,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         bool __set = __ignore_failure;
         // all calls to this function are serialized,
         // side-effects of invoking __res only happen once
-        call_once(_M_once, &_State::_M_do_set, this, ref(__res),
+        call_once(_M_once, &_State_base::_M_do_set, this, ref(__res),
             ref(__set));
         if (!__set)
           __throw_future_error(int(future_errc::promise_already_satisfied));
@@ -368,7 +369,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
           typename promise<_Res>::_Ptr_type operator()()
           {
-            _State::_S_check(_M_promise->_M_future);
+            _State_base::_S_check(_M_promise->_M_future);
             _M_promise->_M_storage->_M_set(_M_arg);
             return std::move(_M_promise->_M_storage);
           }
@@ -382,7 +383,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
           typename promise<_Res>::_Ptr_type operator()()
           {
-            _State::_S_check(_M_promise->_M_future);
+            _State_base::_S_check(_M_promise->_M_future);
             _M_promise->_M_storage->_M_set(std::move(_M_arg));
             return std::move(_M_promise->_M_storage);
           }
@@ -398,7 +399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
           typename promise<_Res>::_Ptr_type operator()()
           {
-            _State::_S_check(_M_promise->_M_future);
+            _State_base::_S_check(_M_promise->_M_future);
             _M_promise->_M_storage->_M_error = _M_ex;
             return std::move(_M_promise->_M_storage);
           }
@@ -463,8 +464,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct _Task_setter;
   };
 
-  inline __future_base::_Result_base::~_Result_base() = default;
-
   /// Partial specialization for reference types.
   template<typename _Res>
     struct __future_base::_Result<_Res&> : __future_base::_Result_base
@@ -495,7 +494,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __basic_future : public __future_base
     {
     protected:
-      typedef shared_ptr<_State>		__state_type;
+      typedef shared_ptr<_State_base>		__state_type;
       typedef __future_base::_Result<_Res>&	__result_type;
 
     private:
@@ -512,7 +511,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void 
       wait() const
       {
-        _State::_S_check(_M_state);
+        _State_base::_S_check(_M_state);
         _M_state->wait();
       }
 
@@ -520,7 +519,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         bool
         wait_for(const chrono::duration<_Rep, _Period>& __rel) const
         {
-          _State::_S_check(_M_state);
+          _State_base::_S_check(_M_state);
           return _M_state->wait_for(__rel);
         }
 
@@ -528,7 +527,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         bool
         wait_until(const chrono::time_point<_Clock, _Duration>& __abs) const
         {
-          _State::_S_check(_M_state);
+          _State_base::_S_check(_M_state);
           return _M_state->wait_until(__abs);
         }
 
@@ -537,7 +536,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __result_type
       _M_get_result()
       {
-        _State::_S_check(_M_state);
+        _State_base::_S_check(_M_state);
         _Result_base& __res = _M_state->wait();
         if (!(__res._M_error == 0))
           rethrow_exception(__res._M_error);
@@ -553,7 +552,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit
       __basic_future(const __state_type& __state) : _M_state(__state)
       {
-        _State::_S_check(_M_state);
+        _State_base::_S_check(_M_state);
         _M_state->_M_set_retrieved_flag();
       }
 
@@ -850,9 +849,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res>
     class promise
     {
-      typedef __future_base::_State 		_State;
-      typedef __future_base::_Result<_Res>	_Res_type;
-      typedef typename __future_base::_Ptr<_Res_type>::type _Ptr_type;
+      typedef __future_base::_State_base 			_State;
+      typedef __future_base::_Result<_Res>			_Res_type;
+      typedef typename __future_base::_Ptr<_Res_type>::type	_Ptr_type;
       template<typename, typename> friend class _State::_Setter;
       
       shared_ptr<_State>                        _M_future;
@@ -942,9 +941,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Res>
     class promise<_Res&>
     {
-      typedef __future_base::_State 		_State;
-      typedef __future_base::_Result<_Res&>	_Res_type;
-      typedef typename __future_base::_Ptr<_Res_type>::type _Ptr_type;
+      typedef __future_base::_State_base			_State;
+      typedef __future_base::_Result<_Res&>			_Res_type;
+      typedef typename __future_base::_Ptr<_Res_type>::type 	_Ptr_type;
       template<typename, typename> friend class _State::_Setter;
 
       shared_ptr<_State>                        _M_future;
@@ -1017,9 +1016,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     class promise<void>
     {
-      typedef __future_base::_State 		_State;
-      typedef __future_base::_Result<void>	_Res_type;
-      typedef typename __future_base::_Ptr<_Res_type>::type _Ptr_type;
+      typedef __future_base::_State_base			_State;
+      typedef __future_base::_Result<void>			_Res_type;
+      typedef typename __future_base::_Ptr<_Res_type>::type 	_Ptr_type;
       template<typename, typename> friend class _State::_Setter;
 
       shared_ptr<_State>                        _M_future;
@@ -1085,19 +1084,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // set void
   template<>
-    struct __future_base::_State::_Setter<void, void>
+    struct __future_base::_State_base::_Setter<void, void>
     {
       promise<void>::_Ptr_type operator()()
       {
-        _State::_S_check(_M_promise->_M_future);
+        _State_base::_S_check(_M_promise->_M_future);
         return std::move(_M_promise->_M_storage);
       }
 
       promise<void>*    _M_promise;
     };
 
-  inline __future_base::_State::_Setter<void, void>
-  __future_base::_State::__setter(promise<void>* __prom)
+  inline __future_base::_State_base::_Setter<void, void>
+  __future_base::_State_base::__setter(promise<void>* __prom)
   {
     return _Setter<void, void>{ __prom };
   }
@@ -1149,7 +1148,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Res, typename... _Args>
-    struct __future_base::_Task_state<_Res(_Args...)> : __future_base::_State
+    struct __future_base::_Task_state<_Res(_Args...)> 
+    : __future_base::_State_base
     {
       typedef _Res _Res_type;
 
@@ -1263,14 +1263,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       operator()(_ArgTypes... __args)
       {
-        __future_base::_State::_S_check(_M_state);
+        __future_base::_State_base::_S_check(_M_state);
         _M_state->_M_run(std::forward<_ArgTypes>(__args)...);
       }
 
       void
       reset()
       {
-        __future_base::_State::_S_check(_M_state);
+        __future_base::_State_base::_S_check(_M_state);
         packaged_task(std::move(_M_state->_M_task)).swap(*this);
       }
     };
@@ -1288,7 +1288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 
   template<typename _Res>
-    class __future_base::_Deferred_state : public __future_base::_State
+    class __future_base::_Deferred_state : public __future_base::_State_base
     {
     public:
       typedef _Res _Res_type;
@@ -1314,7 +1314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Res>
-    class __future_base::_Async_state : public __future_base::_State
+    class __future_base::_Async_state : public __future_base::_State_base
     {
     public:
       typedef _Res _Res_type;
@@ -1347,7 +1347,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     async(launch __policy, _Fn&& __fn, _Args&&... __args)
     {
       typedef typename result_of<_Fn(_Args...)>::type result_type;
-      std::shared_ptr<__future_base::_State> __state;
+      std::shared_ptr<__future_base::_State_base> __state;
       if (__policy == launch::async)
 	{
 	  typedef typename __future_base::_Async_state<result_type> _State;

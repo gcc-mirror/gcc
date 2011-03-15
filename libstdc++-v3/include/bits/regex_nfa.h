@@ -30,10 +30,9 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 namespace __regex
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Base class for, um, automata.  Could be an NFA or a DFA.  Your choice.
   class _Automaton
@@ -43,8 +42,7 @@ namespace __regex
 
   public:
     virtual
-    ~_Automaton()
-    { }
+    ~_Automaton() { }
 
     virtual _SizeT
     _M_sub_count() const = 0;
@@ -394,10 +392,9 @@ namespace __regex
 
   };
 
-} // namespace __regex
-
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace __regex
+} // namespace std
 
 #include <bits/regex_nfa.tcc>
 

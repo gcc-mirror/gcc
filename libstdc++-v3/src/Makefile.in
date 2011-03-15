@@ -110,13 +110,13 @@ am__objects_6 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	compatibility-c++0x.lo compatibility-debug_list.lo \
 	compatibility-debug_list-2.lo compatibility-list.lo \
 	compatibility-list-2.lo complex_io.lo ctype.lo debug.lo \
-	functexcept.lo globals_io.lo hash_c++0x.lo hash_tr1.lo \
-	hashtable_c++0x.lo hashtable_tr1.lo ios.lo ios_failure.lo \
-	ios_init.lo ios_locale.lo limits.lo list.lo locale.lo \
-	locale_init.lo locale_facets.lo localename.lo \
+	functexcept.lo functional.lo globals_io.lo hash_c++0x.lo \
+	hash_tr1.lo hashtable_c++0x.lo hashtable_tr1.lo ios.lo \
+	ios_failure.lo ios_init.lo ios_locale.lo limits.lo list.lo \
+	locale.lo locale_init.lo locale_facets.lo localename.lo \
 	math_stubs_float.lo math_stubs_long_double.lo stdexcept.lo \
 	strstream.lo system_error.lo tree.lo istream.lo \
-	placeholders.lo regex.lo streambuf.lo mutex.lo \
+	placeholders.lo regex.lo shared_ptr.lo streambuf.lo mutex.lo \
 	condition_variable.lo chrono.lo thread.lo future.lo \
 	valarray.lo $(am__objects_1) $(am__objects_5)
 am_libstdc___la_OBJECTS = $(am__objects_6)
@@ -420,6 +420,7 @@ sources = \
 	ctype.cc \
 	debug.cc \
 	functexcept.cc \
+	functional.cc \
 	globals_io.cc \
 	hash_c++0x.cc \
 	hash_tr1.cc \
@@ -444,6 +445,7 @@ sources = \
 	istream.cc \
 	placeholders.cc \
 	regex.cc \
+	shared_ptr.cc \
 	streambuf.cc \
 	mutex.cc \
 	condition_variable.cc \
@@ -885,6 +887,11 @@ functexcept.lo: functexcept.cc
 functexcept.o: functexcept.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
+shared_ptr.lo: shared_ptr.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+shared_ptr.o: shared_ptr.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
 system_error.lo: system_error.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 system_error.o: system_error.cc
@@ -903,6 +910,11 @@ condition_variable.o: condition_variable.cc
 compatibility-c++0x.lo: compatibility-c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 compatibility-c++0x.o: compatibility-c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
+functional.lo: functional.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+functional.o: functional.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 hash_c++0x.lo: hash_c++0x.cc
