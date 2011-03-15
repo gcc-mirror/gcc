@@ -1,3 +1,10 @@
+2011-03-15  Doug Kwan  <dougkwan@google.com>
+
+	PR libstdc++/48123
+	* include/Makefile.am (install-freestanding-headers): Install
+	cpu_defines.h
+	* include/Makefile.in: Regenerate.
+
 2011-03-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/abi/pre/gnu.ver: Make nested_exception exports super clear.
