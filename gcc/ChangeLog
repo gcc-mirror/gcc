@@ -1,5 +1,16 @@
 2011-03-15  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/41490
+	* tree-ssa-dce.c (propagate_necessity): Handle returns without
+	value but with VUSE.
+	* tree-ssa-operands.c (parse_ssa_operands): Add a VUSE on all
+	return statements.
+	* tree-ssa-sink.c (statement_sink_location): Fix store sinking.
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Handle virtual PHIs.
+	* tree-tailcall.c (find_tail_calls): Ignore returns.
+
+2011-03-15  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/48031
 	* fold-const.c (fold_indirect_ref_1): Do not create new variable-sized
 	or variable-indexed array accesses when in gimple form.

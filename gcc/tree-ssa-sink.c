@@ -268,7 +268,6 @@ statement_sink_location (gimple stmt, basic_block frombb,
 			 gimple_stmt_iterator *togsi)
 {
   gimple use;
-  tree def;
   use_operand_p one_use = NULL_USE_OPERAND_P;
   basic_block sinkbb;
   use_operand_p use_p;
@@ -276,24 +275,17 @@ statement_sink_location (gimple stmt, basic_block frombb,
   ssa_op_iter iter;
   imm_use_iterator imm_iter;
 
-  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
-    {
-      FOR_EACH_IMM_USE_FAST (one_use, imm_iter, def)
-	{
-	  if (is_gimple_debug (USE_STMT (one_use)))
-	    continue;
-
-	  break;
-	}
-      if (one_use != NULL_USE_OPERAND_P)
-        break;
-    }
-
-  /* Return if there are no immediate uses of this stmt.  */
-  if (one_use == NULL_USE_OPERAND_P)
+  /* We only can sink assignments.  */
+  if (!is_gimple_assign (stmt))
     return false;
 
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+  /* We only can sink stmts with a single definition.  */
+  def_p = single_ssa_def_operand (stmt, SSA_OP_ALL_DEFS);
+  if (def_p == NULL_DEF_OPERAND_P)
+    return false;
+
+  /* Return if there are no immediate uses of this stmt.  */
+  if (has_zero_uses (DEF_FROM_PTR (def_p)))
     return false;
 
   /* There are a few classes of things we can't or don't move, some because we
@@ -323,20 +315,14 @@ statement_sink_location (gimple stmt, basic_block frombb,
   */
   if (stmt_ends_bb_p (stmt)
       || gimple_has_side_effects (stmt)
-      || is_hidden_global_store (stmt)
       || gimple_has_volatile_ops (stmt)
-      || gimple_vuse (stmt)
+      || (gimple_vuse (stmt) && !gimple_vdef (stmt))
       || (cfun->has_local_explicit_reg_vars
 	  && TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt))) == BLKmode))
     return false;
 
-  FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_ALL_DEFS)
-    {
-      tree def = DEF_FROM_PTR (def_p);
-      if (is_global_var (SSA_NAME_VAR (def))
-	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def))
-	return false;
-    }
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (DEF_FROM_PTR (def_p)))
+    return false;
 
   FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_ALL_USES)
     {
@@ -345,11 +331,40 @@ statement_sink_location (gimple stmt, basic_block frombb,
 	return false;
     }
 
+  use = NULL;
+
+  /* If stmt is a store the one and only use needs to be the VOP
+     merging PHI node.  */
+  if (gimple_vdef (stmt))
+    {
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, DEF_FROM_PTR (def_p))
+	{
+	  gimple use_stmt = USE_STMT (use_p);
+
+	  /* A killing definition is not a use.  */
+	  if (gimple_assign_single_p (use_stmt)
+	      && gimple_vdef (use_stmt)
+	      && operand_equal_p (gimple_assign_lhs (stmt),
+				  gimple_assign_lhs (use_stmt), 0))
+	    continue;
+
+	  if (gimple_code (use_stmt) != GIMPLE_PHI)
+	    return false;
+
+	  if (use
+	      && use != use_stmt)
+	    return false;
+
+	  use = use_stmt;
+	}
+      if (!use)
+	return false;
+    }
   /* If all the immediate uses are not in the same place, find the nearest
      common dominator of all the immediate uses.  For PHI nodes, we have to
      find the nearest common dominator of all of the predecessor blocks, since
      that is where insertion would have to take place.  */
-  if (!all_immediate_uses_same_place (stmt))
+  else if (!all_immediate_uses_same_place (stmt))
     {
       bool debug_stmts = false;
       basic_block commondom = nearest_common_dominator_of_uses (stmt,
@@ -387,31 +402,35 @@ statement_sink_location (gimple stmt, basic_block frombb,
 
       return true;
     }
-
-  use = USE_STMT (one_use);
-  if (gimple_code (use) != GIMPLE_PHI)
+  else
     {
-      sinkbb = gimple_bb (use);
-      if (sinkbb == frombb || sinkbb->loop_depth > frombb->loop_depth
-	  || sinkbb->loop_father != frombb->loop_father)
-	return false;
+      FOR_EACH_IMM_USE_FAST (one_use, imm_iter, DEF_FROM_PTR (def_p))
+	{
+	  if (is_gimple_debug (USE_STMT (one_use)))
+	    continue;
+	  break;
+	}
+      use = USE_STMT (one_use);
 
-      /* Move the expression to a post dominator can't reduce the number of
-         executions.  */
-      if (dominated_by_p (CDI_POST_DOMINATORS, frombb, sinkbb))
-        return false;
+      if (gimple_code (use) != GIMPLE_PHI)
+	{
+	  sinkbb = gimple_bb (use);
+	  if (sinkbb == frombb || sinkbb->loop_depth > frombb->loop_depth
+	      || sinkbb->loop_father != frombb->loop_father)
+	    return false;
 
-      *togsi = gsi_for_stmt (use);
+	  /* Move the expression to a post dominator can't reduce the number of
+	     executions.  */
+	  if (dominated_by_p (CDI_POST_DOMINATORS, frombb, sinkbb))
+	    return false;
 
-      return true;
+	  *togsi = gsi_for_stmt (use);
+
+	  return true;
+	}
     }
 
-  /* Note that at this point, all uses must be in the same statement, so it
-     doesn't matter which def op we choose, pick the first one.  */
-  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_ALL_DEFS)
-    break;
-
-  sinkbb = find_bb_for_arg (use, def);
+  sinkbb = find_bb_for_arg (use, DEF_FROM_PTR (def_p));
   if (!sinkbb)
     return false;
 
@@ -484,6 +503,14 @@ sink_code_in_bb (basic_block bb)
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS);
 	  fprintf (dump_file, " from bb %d to bb %d\n",
 		   bb->index, (gsi_bb (togsi))->index);
+	}
+
+      /* Prepare for VOP update.  */
+      if (gimple_vdef (stmt))
+	{
+	  unlink_stmt_vdef (stmt);
+	  gimple_set_vdef (stmt, gimple_vop (cfun));
+	  mark_sym_for_renaming (gimple_vop (cfun));
 	}
 
       /* If this is the end of the basic block, we need to insert at the end
