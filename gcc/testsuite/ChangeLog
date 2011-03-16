@@ -1,5 +1,10 @@
 2011-03-16  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/48149
+	* gcc.dg/fold-complex-1.c: New testcase.
+
+2011-03-16  Richard Guenther  <rguenther@suse.de>
+
 	PR testsuite/48147
 	* gcc.dg/guality/pr45882.c: Really make sure no inlining
 	or cloning happens.
