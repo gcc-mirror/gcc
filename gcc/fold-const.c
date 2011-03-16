@@ -13176,6 +13176,14 @@ fold_binary_loc (location_t loc,
 	  || (TREE_CODE (arg0) == INTEGER_CST
 	      && TREE_CODE (arg1) == INTEGER_CST))
 	return build_complex (type, arg0, arg1);
+      if (TREE_CODE (arg0) == REALPART_EXPR
+	  && TREE_CODE (arg1) == IMAGPART_EXPR
+	  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg0, 0)))
+	      == TYPE_MAIN_VARIANT (type))
+	  && operand_equal_p (TREE_OPERAND (arg0, 0),
+			      TREE_OPERAND (arg1, 0), 0))
+	return omit_one_operand_loc (loc, type, TREE_OPERAND (arg0, 0),
+				     TREE_OPERAND (arg1, 0));
       return NULL_TREE;
 
     case ASSERT_EXPR:
