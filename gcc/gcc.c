@@ -621,18 +621,36 @@ proper position among the other output files.  */
 # endif
 #endif
 
-/* Conditional to test whether plugin is used or not.
+/* Conditional to test whether the LTO plugin is used or not.
    FIXME: For slim LTO we will need to enable plugin unconditionally.  This
    still cause problems with PLUGIN_LD != LD and when plugin is built but
    not useable.  For GCC 4.6 we don't support slim LTO and thus we can enable
    plugin only when LTO is enabled.  We still honor explicit
-   -fuse-linker-plugin.  */
-#ifdef HAVE_LTO_PLUGIN
+   -fuse-linker-plugin if the linker used understands -plugin.  */
+
+/* The linker has some plugin support.  */
+#if HAVE_LTO_PLUGIN > 0
+/* The linker used has full plugin support, use LTO plugin by default.  */
+#if HAVE_LTO_PLUGIN == 2
 #define PLUGIN_COND "!fno-use-linker-plugin:%{flto|flto=*|fuse-linker-plugin"
 #define PLUGIN_COND_CLOSE "}"
 #else
+/* The linker used has limited plugin support, use LTO plugin with explicit
+   -fuse-linker-plugin.  */
 #define PLUGIN_COND "fuse-linker-plugin"
 #define PLUGIN_COND_CLOSE ""
+#endif
+#define LINK_PLUGIN_SPEC \
+    "%{"PLUGIN_COND": \
+    -plugin %(linker_plugin_file) \
+    -plugin-opt=%(lto_wrapper) \
+    -plugin-opt=-fresolution=%u.res \
+    %{!nostdlib:%{!nodefaultlibs:%:pass-through-libs(%(link_gcc_c_sequence))}} \
+    }"PLUGIN_COND_CLOSE
+#else
+/* The linker used doesn't support -plugin, reject -fuse-linker-plugin.  */
+#define LINK_PLUGIN_SPEC "%{fuse-linker-plugin:\
+    %e-fuse-linker-plugin is not supported in this configuration}"
 #endif
 
 
@@ -648,14 +666,9 @@ proper position among the other output files.  */
 #ifndef LINK_COMMAND_SPEC
 #define LINK_COMMAND_SPEC "\
 %{!fsyntax-only:%{!c:%{!M:%{!MM:%{!E:%{!S:\
-    %(linker) \
-    %{"PLUGIN_COND": \
-    -plugin %(linker_plugin_file) \
-    -plugin-opt=%(lto_wrapper) \
-    -plugin-opt=-fresolution=%u.res \
-    %{!nostdlib:%{!nodefaultlibs:%:pass-through-libs(%(link_gcc_c_sequence))}} \
-    }"PLUGIN_COND_CLOSE" \
-    %{flto|flto=*:%<fcompare-debug*} \
+    %(linker) " \
+    LINK_PLUGIN_SPEC \
+    "%{flto|flto=*:%<fcompare-debug*} \
     %{flto} %{flto=*} %l " LINK_PIE_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}}\
@@ -6815,10 +6828,12 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
   if (num_linker_inputs > 0 && !seen_error () && print_subprocess_help < 2)
     {
       int tmp = execution_count;
-#ifdef HAVE_LTO_PLUGIN
+#if HAVE_LTO_PLUGIN > 0
+#if HAVE_LTO_PLUGIN == 2
       const char *fno_use_linker_plugin = "fno-use-linker-plugin";
 #else
       const char *fuse_linker_plugin = "fuse-linker-plugin";
+#endif
 #endif
 
       /* We'll use ld if we can't find collect2.  */
@@ -6829,7 +6844,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	    linker_name_spec = "ld";
 	}
 
-#ifdef HAVE_LTO_PLUGIN
+#if HAVE_LTO_PLUGIN > 0
+#if HAVE_LTO_PLUGIN == 2
       if (!switch_matches (fno_use_linker_plugin,
 			   fno_use_linker_plugin + strlen (fno_use_linker_plugin), 0))
 #else
@@ -6843,6 +6859,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  if (!linker_plugin_file_spec)
 	    fatal_error ("-fuse-linker-plugin, but " LTOPLUGINSONAME " not found");
 	}
+#endif
       lto_gcc_spec = argv[0];
 
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables

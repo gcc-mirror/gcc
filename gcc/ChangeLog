@@ -1,3 +1,19 @@
+2011-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR lto/46944
+	* configure.ac (gcc_cv_gld_major_version, gcc_cv_gld_minor):
+	Handle in-tree gold.
+	(ld_vers): Extract binutils version for gold.
+	(gcc_cv_ld_hidden): Handle gold here.
+	(gcc_cv_lto_plugin): Determine level of linker plugin support.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* gcc.c: Only use LTO plugin if HAVE_LTO_PLUGIN > 0, reject
+	-fuse-linker-plugin otherwise.
+	(LINK_PLUGIN_SPEC): Define.  Extract from LINK_COMMAND_SPEC.
+	(LINK_COMMAND_SPEC): Use it.
+	(main): Only look for LTOPLUGINSONAME if HAVE_LTO_PLUGIN > 0.
+
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* emit-rtl.c (try_split): Don't call copy_call_info debug hook.
