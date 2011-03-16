@@ -6,7 +6,7 @@ extern void abort (void);
 int a[1024];
 volatile short int v;
 
-__attribute__((noinline)) int
+__attribute__((noinline,noclone,used)) int
 foo (int i, int j)
 {
   int b = i;		/* { dg-final { gdb-test 16 "b" "7" } } */
