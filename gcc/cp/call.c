@@ -5671,6 +5671,10 @@ convert_arg_to_ellipsis (tree arg)
   arg_type = TREE_TYPE (arg);
 
   if (arg != error_mark_node
+      /* In a template (or ill-formed code), we can have an incomplete type
+	 even after require_complete_type, in which case we don't know
+	 whether it has trivial copy or not.  */
+      && COMPLETE_TYPE_P (arg_type)
       && (type_has_nontrivial_copy_init (arg_type)
 	  || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (arg_type)))
     {
