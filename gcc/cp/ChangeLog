@@ -1,3 +1,7 @@
+2011-03-16  Jason Merrill  <jason@redhat.com>
+
+	* call.c (convert_default_arg): Use LOOKUP_IMPLICIT.
+
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-objcp-common.c (cp_function_decl_explicit_p): Don't crash if
