@@ -5,6 +5,7 @@
 package tls
 
 import (
+	"crypto"
 	"crypto/rsa"
 	"crypto/subtle"
 	"crypto/x509"
@@ -56,6 +57,7 @@ Curves:
 
 	var suite *cipherSuite
 	var suiteId uint16
+FindCipherSuite:
 	for _, id := range clientHello.cipherSuites {
 		for _, supported := range config.cipherSuites() {
 			if id == supported {
@@ -66,7 +68,7 @@ Curves:
 					continue
 				}
 				suiteId = id
-				break
+				break FindCipherSuite
 			}
 		}
 	}
@@ -213,7 +215,7 @@ Curves:
 		digest := make([]byte, 36)
 		copy(digest[0:16], finishedHash.serverMD5.Sum())
 		copy(digest[16:36], finishedHash.serverSHA1.Sum())
-		err = rsa.VerifyPKCS1v15(pub, rsa.HashMD5SHA1, digest, certVerify.signature)
+		err = rsa.VerifyPKCS1v15(pub, crypto.MD5SHA1, digest, certVerify.signature)
 		if err != nil {
 			c.sendAlert(alertBadCertificate)
 			return os.ErrorString("could not validate signature of connection nonces: " + err.String())

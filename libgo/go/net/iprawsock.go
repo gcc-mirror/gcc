@@ -245,7 +245,7 @@ func hostToIP(host string) (ip IP, err os.Error) {
 			err = err1
 			goto Error
 		}
-		addr = ParseIP(addrs[0])
+		addr = firstSupportedAddr(addrs)
 		if addr == nil {
 			// should not happen
 			err = &AddrError{"LookupHost returned invalid address", addrs[0]}
@@ -311,7 +311,7 @@ func DialIP(netProto string, laddr, raddr *IPAddr) (c *IPConn, err os.Error) {
 	if err != nil {
 		return
 	}
-	switch prefixBefore(net, ':') {
+	switch net {
 	case "ip", "ip4", "ip6":
 	default:
 		return nil, UnknownNetworkError(net)
@@ -335,7 +335,7 @@ func ListenIP(netProto string, laddr *IPAddr) (c *IPConn, err os.Error) {
 	if err != nil {
 		return
 	}
-	switch prefixBefore(net, ':') {
+	switch net {
 	case "ip", "ip4", "ip6":
 	default:
 		return nil, UnknownNetworkError(net)

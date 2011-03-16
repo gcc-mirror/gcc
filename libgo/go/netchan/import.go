@@ -5,6 +5,7 @@
 package netchan
 
 import (
+	"io"
 	"log"
 	"net"
 	"os"
@@ -25,7 +26,6 @@ func impLog(args ...interface{}) {
 // importers, even from the same machine/network port.
 type Importer struct {
 	*encDec
-	conn     net.Conn
 	chanLock sync.Mutex // protects access to channel map
 	names    map[string]*netChan
 	chans    map[int]*netChan
@@ -33,23 +33,26 @@ type Importer struct {
 	maxId    int
 }
 
-// NewImporter creates a new Importer object to import channels
-// from an Exporter at the network and remote address as defined in net.Dial.
-// The Exporter must be available and serving when the Importer is
-// created.
-func NewImporter(network, remoteaddr string) (*Importer, os.Error) {
-	conn, err := net.Dial(network, "", remoteaddr)
-	if err != nil {
-		return nil, err
-	}
+// NewImporter creates a new Importer object to import a set of channels
+// from the given connection. The Exporter must be available and serving when
+// the Importer is created.
+func NewImporter(conn io.ReadWriter) *Importer {
 	imp := new(Importer)
 	imp.encDec = newEncDec(conn)
-	imp.conn = conn
 	imp.chans = make(map[int]*netChan)
 	imp.names = make(map[string]*netChan)
 	imp.errors = make(chan os.Error, 10)
 	go imp.run()
-	return imp, nil
+	return imp
+}
+
+// Import imports a set of channels from the given network and address.
+func Import(network, remoteaddr string) (*Importer, os.Error) {
+	conn, err := net.Dial(network, "", remoteaddr)
+	if err != nil {
+		return nil, err
+	}
+	return NewImporter(conn), nil
 }
 
 // shutdown closes all channels for which we are receiving data from the remote side.
@@ -91,11 +94,13 @@ func (imp *Importer) run() {
 			}
 			if err.Error != "" {
 				impLog("response error:", err.Error)
-				if sent := imp.errors <- os.ErrorString(err.Error); !sent {
+				select {
+				case imp.errors <- os.ErrorString(err.Error):
+					continue // errors are not acknowledged
+				default:
 					imp.shutdown()
 					return
 				}
-				continue // errors are not acknowledged.
 			}
 		case payClosed:
 			nch := imp.getChan(hdr.Id, false)
@@ -171,13 +176,13 @@ func (imp *Importer) Import(name string, chT interface{}, dir Dir, size int) os.
 // The channel to be bound to the remote site's channel is provided
 // in the call and may be of arbitrary channel type.
 // Despite the literal signature, the effective signature is
-//	ImportNValues(name string, chT chan T, dir Dir, n int) os.Error
+//	ImportNValues(name string, chT chan T, dir Dir, size, n int) os.Error
 // Example usage:
 //	imp, err := NewImporter("tcp", "netchanserver.mydomain.com:1234")
-//	if err != nil { log.Exit(err) }
+//	if err != nil { log.Fatal(err) }
 //	ch := make(chan myType)
-//	err = imp.ImportNValues("name", ch, Recv, 1)
-//	if err != nil { log.Exit(err) }
+//	err = imp.ImportNValues("name", ch, Recv, 1, 1)
+//	if err != nil { log.Fatal(err) }
 //	fmt.Printf("%+v\n", <-ch)
 func (imp *Importer) ImportNValues(name string, chT interface{}, dir Dir, size, n int) os.Error {
 	ch, err := checkChan(chT, dir)
@@ -229,15 +234,13 @@ func (imp *Importer) ImportNValues(name string, chT interface{}, dir Dir, size, 
 // the channel.  Messages in flight for the channel may be dropped.
 func (imp *Importer) Hangup(name string) os.Error {
 	imp.chanLock.Lock()
-	nc, ok := imp.names[name]
-	if ok {
-		imp.names[name] = nil, false
-		imp.chans[nc.id] = nil, false
-	}
-	imp.chanLock.Unlock()
-	if !ok {
+	defer imp.chanLock.Unlock()
+	nc := imp.names[name]
+	if nc == nil {
 		return os.ErrorString("netchan import: hangup: no such channel: " + name)
 	}
+	imp.names[name] = nil, false
+	imp.chans[nc.id] = nil, false
 	nc.close()
 	return nil
 }

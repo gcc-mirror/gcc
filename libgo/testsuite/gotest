@@ -131,6 +131,13 @@ esac
 # so that the tests do not have to refer to srcdir to find test data.
 ln -s $srcdir/* .
 
+# Some tests refer to a ../testdata directory.
+if test -e $srcdir/../testdata; then
+  rm -f ../testdata
+  abssrcdir=`cd $srcdir && pwd`
+  ln -s $abssrcdir/../testdata ../testdata
+fi
+
 # Copy the .go files because io/utils_test.go expects a regular file.
 case "x$gofiles" in
 x)

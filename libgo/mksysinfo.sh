@@ -416,4 +416,12 @@ echo $msghdr | \
       -e 's/msg_flags/Flags/' \
     >> ${OUT}
 
+# The ip_mreq struct
+grep '^type _ip_mreq ' gen-sysinfo.go | \
+    sed -e 's/_ip_mreq/IpMreq/' \
+      -e 's/imr_multiaddr/Multiaddr/' \
+      -e 's/imr_interface/Interface/' \
+      -e 's/_in_addr/[4]byte/g' \
+    >> ${OUT}
+
 exit $?

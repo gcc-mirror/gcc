@@ -112,7 +112,7 @@ __go_panic_msg (const char* msg)
   struct __go_empty_interface arg;
 
   len = __builtin_strlen (msg);
-  sdata = runtime_mallocgc (len, RefNoPointers, 0, 0);
+  sdata = runtime_mallocgc (len, FlagNoPointers, 0, 0);
   __builtin_memcpy (sdata, msg, len);
   s.__data = sdata;
   s.__length = len;

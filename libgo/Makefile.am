@@ -105,6 +105,7 @@ toolexeclibgo_DATA = \
 	bufio.gox \
 	bytes.gox \
 	cmath.gox \
+	crypto.gox \
 	ebnf.gox \
 	exec.gox \
 	expvar.gox \
@@ -158,8 +159,10 @@ toolexeclibgoarchive_DATA = \
 toolexeclibgocompressdir = $(toolexeclibgodir)/compress
 
 toolexeclibgocompress_DATA = \
+	compress/bzip2.gox \
 	compress/flate.gox \
 	compress/gzip.gox \
+	compress/lzw.gox \
 	compress/zlib.gox
 
 toolexeclibgocontainerdir = $(toolexeclibgodir)/container
@@ -178,11 +181,13 @@ toolexeclibgocrypto_DATA = \
 	crypto/blowfish.gox \
 	crypto/cast5.gox \
 	crypto/cipher.gox \
+	crypto/dsa.gox \
 	crypto/elliptic.gox \
 	crypto/hmac.gox \
 	crypto/md4.gox \
 	crypto/md5.gox \
 	crypto/ocsp.gox \
+	crypto/openpgp.gox \
 	crypto/rand.gox \
 	crypto/rc4.gox \
 	crypto/ripemd160.gox \
@@ -201,6 +206,7 @@ toolexeclibgocryptoopenpgpdir = $(toolexeclibgocryptodir)/openpgp
 toolexeclibgocryptoopenpgp_DATA = \
 	crypto/openpgp/armor.gox \
 	crypto/openpgp/error.gox \
+	crypto/openpgp/packet.gox \
 	crypto/openpgp/s2k.gox
 
 toolexeclibgodebugdir = $(toolexeclibgodir)/debug
@@ -305,6 +311,11 @@ toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
 toolexeclibgoruntime_DATA = \
 	runtime/debug.gox \
 	runtime/pprof.gox
+
+toolexeclibgosyncdir = $(toolexeclibgodir)/sync
+
+toolexeclibgosync_DATA = \
+	sync/atomic.gox
 
 toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 
@@ -411,8 +422,6 @@ runtime_files = \
 	runtime/mfixalloc.c \
 	runtime/mgc0.c \
 	runtime/mheap.c \
-	runtime/mheapmap32.c \
-	runtime/mheapmap64.c \
 	runtime/msize.c \
 	runtime/proc.c \
 	runtime/thread.c \
@@ -489,6 +498,9 @@ go_cmath_files = \
 	go/cmath/sqrt.go \
 	go/cmath/tan.go
 
+go_crypto_files = \
+	go/crypto/crypto.go
+
 go_ebnf_files = \
 	go/ebnf/ebnf.go \
 	go/ebnf/parser.go
@@ -533,6 +545,7 @@ go_http_files = \
 	go/http/client.go \
 	go/http/dump.go \
 	go/http/fs.go \
+	go/http/header.go \
 	go/http/lex.go \
 	go/http/persist.go \
 	go/http/request.go \
@@ -540,6 +553,7 @@ go_http_files = \
 	go/http/server.go \
 	go/http/status.go \
 	go/http/transfer.go \
+	go/http/transport.go \
 	go/http/url.go
 
 go_image_files = \
@@ -693,6 +707,7 @@ go_os_files = \
 	go/os/env_unix.go \
 	go/os/error.go \
 	go/os/exec.go \
+	go/os/exec_unix.go \
 	go/os/file.go \
 	go/os/file_unix.go \
 	go/os/getwd.go \
@@ -738,8 +753,6 @@ go_runtime_files = \
 	go/runtime/debug.go \
 	go/runtime/error.go \
 	go/runtime/extern.go \
-	go/runtime/malloc_defs.go \
-	go/runtime/runtime_defs.go \
 	go/runtime/sig.go \
 	go/runtime/softfloat64.go \
 	go/runtime/type.go \
@@ -781,11 +794,11 @@ go_strings_files = \
 	go/strings/strings.go
 
 go_sync_files = \
+	go/sync/cond.go \
 	go/sync/mutex.go \
 	go/sync/once.go \
-	go/sync/rwmutex.go
-go_sync_c_files = \
-	go/sync/cas.c
+	go/sync/rwmutex.go \
+	go/sync/waitgroup.go
 
 if LIBGO_IS_SOLARIS
 go_syslog_file = go/syslog/syslog_solaris.go
@@ -851,6 +864,12 @@ go_archive_zip_files = \
 	go/archive/zip/reader.go \
 	go/archive/zip/struct.go
 
+go_compress_bzip2_files = \
+	go/compress/bzip2/bit_reader.go \
+	go/compress/bzip2/bzip2.go \
+	go/compress/bzip2/huffman.go \
+	go/compress/bzip2/move_to_front.go
+
 go_compress_flate_files = \
 	go/compress/flate/deflate.go \
 	go/compress/flate/huffman_bit_writer.go \
@@ -863,6 +882,10 @@ go_compress_flate_files = \
 go_compress_gzip_files = \
 	go/compress/gzip/gzip.go \
 	go/compress/gzip/gunzip.go
+
+go_compress_lzw_files = \
+	go/compress/lzw/reader.go \
+	go/compress/lzw/writer.go
 
 go_compress_zlib_files = \
 	go/compress/zlib/reader.go \
@@ -911,6 +934,8 @@ go_crypto_cipher_files = \
 	go/crypto/cipher/io.go \
 	go/crypto/cipher/ocfb.go \
 	go/crypto/cipher/ofb.go
+go_crypto_dsa_files = \
+	go/crypto/dsa/dsa.go
 go_crypto_elliptic_files = \
 	go/crypto/elliptic/elliptic.go
 go_crypto_hmac_files = \
@@ -923,6 +948,11 @@ go_crypto_md5_files = \
 	go/crypto/md5/md5block.go
 go_crypto_ocsp_files = \
 	go/crypto/ocsp/ocsp.go
+go_crypto_openpgp_files = \
+	go/crypto/openpgp/canonical_text.go \
+	go/crypto/openpgp/keys.go \
+	go/crypto/openpgp/read.go \
+	go/crypto/openpgp/write.go
 go_crypto_rand_files = \
 	go/crypto/rand/rand.go \
 	go/crypto/rand/rand_unix.go
@@ -970,6 +1000,19 @@ go_crypto_openpgp_armor_files = \
 	go/crypto/openpgp/armor/encode.go
 go_crypto_openpgp_error_files = \
 	go/crypto/openpgp/error/error.go
+go_crypto_openpgp_packet_files = \
+	go/crypto/openpgp/packet/compressed.go \
+	go/crypto/openpgp/packet/encrypted_key.go \
+	go/crypto/openpgp/packet/literal.go \
+	go/crypto/openpgp/packet/one_pass_signature.go \
+	go/crypto/openpgp/packet/packet.go \
+	go/crypto/openpgp/packet/private_key.go \
+	go/crypto/openpgp/packet/public_key.go \
+	go/crypto/openpgp/packet/reader.go \
+	go/crypto/openpgp/packet/signature.go \
+	go/crypto/openpgp/packet/symmetric_key_encrypted.go \
+	go/crypto/openpgp/packet/symmetrically_encrypted.go \
+	go/crypto/openpgp/packet/userid.go
 go_crypto_openpgp_s2k_files = \
 	go/crypto/openpgp/s2k/s2k.go
 
@@ -1095,6 +1138,7 @@ go_net_dict_files = \
 	go/net/dict/dict.go
 
 go_net_textproto_files = \
+	go/net/textproto/header.go \
 	go/net/textproto/pipeline.go \
 	go/net/textproto/reader.go \
 	go/net/textproto/textproto.go \
@@ -1115,6 +1159,11 @@ go_runtime_debug_files = \
 	go/runtime/debug/stack.go
 go_runtime_pprof_files = \
 	go/runtime/pprof/pprof.go
+
+go_sync_atomic_files = \
+	go/sync/atomic/doc.go
+go_sync_atomic_c_files = \
+	go/sync/atomic/atomic.c
 
 go_testing_iotest_files = \
 	go/testing/iotest/logger.go \
@@ -1268,6 +1317,7 @@ libgo_go_objs = \
 	bytes/bytes.lo \
 	bytes/index.lo \
 	cmath/cmath.lo \
+	crypto/crypto.lo \
 	ebnf/ebnf.lo \
 	exec/exec.lo \
 	expvar/expvar.lo \
@@ -1298,8 +1348,7 @@ libgo_go_objs = \
 	sort/sort.lo \
 	strconv/strconv.lo \
 	strings/strings.lo \
-	sync/mutex.lo \
-	sync/cas.lo \
+	sync/sync.lo \
 	syslog/syslog.lo \
 	syslog/syslog_c.lo \
 	tabwriter/tabwriter.lo \
@@ -1313,8 +1362,10 @@ libgo_go_objs = \
 	xml/xml.lo \
 	archive/tar.lo \
 	archive/zip.lo \
+	compress/bzip2.lo \
 	compress/flate.lo \
 	compress/gzip.lo \
+	compress/lzw.lo \
 	compress/zlib.lo \
 	container/heap.lo \
 	container/list.lo \
@@ -1325,11 +1376,13 @@ libgo_go_objs = \
 	crypto/blowfish.lo \
 	crypto/cast5.lo \
 	crypto/cipher.lo \
+	crypto/dsa.lo \
 	crypto/elliptic.lo \
 	crypto/hmac.lo \
 	crypto/md4.lo \
 	crypto/md5.lo \
 	crypto/ocsp.lo \
+	crypto/openpgp.lo \
 	crypto/rand.lo \
 	crypto/rc4.lo \
 	crypto/ripemd160.lo \
@@ -1344,6 +1397,7 @@ libgo_go_objs = \
 	crypto/xtea.lo \
 	crypto/openpgp/armor.lo \
 	crypto/openpgp/error.lo \
+	crypto/openpgp/packet.lo \
 	crypto/openpgp/s2k.lo \
 	debug/dwarf.lo \
 	debug/elf.lo \
@@ -1385,6 +1439,8 @@ libgo_go_objs = \
 	rpc/jsonrpc.lo \
 	runtime/debug.lo \
 	runtime/pprof.lo \
+	sync/atomic.lo \
+	sync/atomic_c.lo \
 	syscalls/syscall.lo \
 	syscalls/errno.lo \
 	testing/testing.lo \
@@ -1500,6 +1556,12 @@ cmath/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: cmath/check
 
+crypto/crypto.lo: $(go_crypto_files) hash.gox
+	$(BUILDPACKAGE)
+crypto/check: $(CHECK_DEPS)
+	$(CHECK)
+.PHONY: crypto/check
+
 ebnf/ebnf.lo: $(go_ebnf_files) container/vector.gox go/scanner.gox \
 		go/token.gox os.gox strconv.gox unicode.gox utf8.gox
 	$(BUILDPACKAGE)
@@ -1507,7 +1569,7 @@ ebnf/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: ebnf/check
 
-exec/exec.lo: $(go_exec_files) os.gox strings.gox
+exec/exec.lo: $(go_exec_files) os.gox strconv.gox strings.gox
 	$(BUILDPACKAGE)
 exec/check: $(CHECK_DEPS)
 	$(CHECK)
@@ -1526,8 +1588,8 @@ flag/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: flag/check
 
-fmt/fmt.lo: $(go_fmt_files) bytes.gox io.gox os.gox reflect.gox strconv.gox \
-		strings.gox unicode.gox utf8.gox
+fmt/fmt.lo: $(go_fmt_files) bytes.gox io.gox math.gox os.gox reflect.gox \
+		strconv.gox strings.gox unicode.gox utf8.gox
 	$(BUILDPACKAGE)
 fmt/check: $(CHECK_DEPS)
 	$(CHECK)
@@ -1554,10 +1616,10 @@ html/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: html/check
 
-http/http.lo: $(go_http_files) bufio.gox bytes.gox container/list.gox \
-		container/vector.gox crypto/rand.gox crypto/tls.gox \
-		encoding/base64.gox fmt.gox io.gox io/ioutil.gox log.gox \
-		mime.gox mime/multipart.gox net.gox os.gox path.gox sort.gox \
+http/http.lo: $(go_http_files) bufio.gox bytes.gox container/vector.gox \
+		crypto/rand.gox crypto/tls.gox encoding/base64.gox fmt.gox \
+		io.gox io/ioutil.gox log.gox mime.gox mime/multipart.gox \
+		net.gox net/textproto.gox os.gox path.gox sort.gox \
 		strconv.gox strings.gox sync.gox time.gox utf8.gox
 	$(BUILDPACKAGE)
 http/check: $(CHECK_DEPS)
@@ -1576,9 +1638,10 @@ io/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: io/check
 
-json/json.lo: $(go_json_files) bytes.gox container/vector.gox fmt.gox io.gox \
-		math.gox os.gox reflect.gox runtime.gox strconv.gox \
-		strings.gox unicode.gox utf16.gox utf8.gox
+json/json.lo: $(go_json_files) bytes.gox container/vector.gox \
+		encoding/base64.gox fmt.gox io.gox math.gox os.gox \
+		reflect.gox runtime.gox strconv.gox strings.gox unicode.gox \
+		utf16.gox utf8.gox
 	$(BUILDPACKAGE)
 json/check: $(CHECK_DEPS)
 	$(CHECK)
@@ -1611,14 +1674,14 @@ net/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: net/check
 
-netchan/netchan.lo: $(go_netchan_files) gob.gox log.gox net.gox os.gox \
+netchan/netchan.lo: $(go_netchan_files) gob.gox io.gox log.gox net.gox os.gox \
 		reflect.gox strconv.gox sync.gox time.gox
 	$(BUILDPACKAGE)
 netchan/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: netchan/check
 
-os/os.lo: $(go_os_files) sync.gox syscall.gox
+os/os.lo: $(go_os_files) runtime.gox sync.gox syscall.gox
 	$(BUILDPACKAGE)
 os/check: $(CHECK_DEPS)
 	$(CHECK)
@@ -1706,10 +1769,8 @@ strings/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: strings/check
 
-sync/mutex.lo: $(go_sync_files) runtime.gox
+sync/sync.lo: $(go_sync_files) runtime.gox sync/atomic.gox
 	$(BUILDPACKAGE)
-sync/cas.lo: $(go_sync_c_files) sync/mutex.lo
-	$(LTCOMPILE) -c -o sync/cas.lo $(srcdir)/go/sync/cas.c
 sync/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: sync/check
@@ -1806,6 +1867,13 @@ archive/zip/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: archive/zip/check
 
+compress/bzip2.lo: $(go_compress_bzip2_files) bufio.gox io.gox os.gox sort.gox
+	$(BUILDPACKAGE)
+compress/bzip2/check: $(CHECK_DEPS)
+	@$(MKDIR_P) compress/bzip2
+	$(CHECK)
+.PHONY: compress/bzip2/check
+
 compress/flate.lo: $(go_compress_flate_files) bufio.gox io.gox math.gox \
 		os.gox sort.gox strconv.gox
 	$(BUILDPACKAGE)
@@ -1821,6 +1889,13 @@ compress/gzip/check: $(CHECK_DEPS)
 	@$(MKDIR_P) compress/gzip
 	$(CHECK)
 .PHONY: compress/gzip/check
+
+compress/lzw.lo: $(go_compress_lzw_files) bufio.gox fmt.gox io.gox os.gox
+	$(BUILDPACKAGE)
+compress/lzw/check: $(CHECK_DEPS)
+	@$(MKDIR_P) compress/lzw
+	$(CHECK)
+.PHONY: compress/lzw/check
 
 compress/zlib.lo: $(go_compress_zlib_files) bufio.gox compress/flate.gox \
 		hash.gox hash/adler32.gox io.gox os.gox
@@ -1893,6 +1968,13 @@ crypto/cipher/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: crypto/cipher/check
 
+crypto/dsa.lo: $(go_crypto_dsa_files) big.gox io.gox os.gox
+	$(BUILDPACKAGE)
+crypto/dsa/check: $(CHECK_DEPS)
+	@$(MKDIR_P) crypto/dsa
+	$(CHECK)
+.PHONY: crypto/dsa/check
+
 crypto/elliptic.lo: $(go_crypto_elliptic_files) big.gox io.gox os.gox sync.gox
 	$(BUILDPACKAGE)
 crypto/elliptic/check: $(CHECK_DEPS)
@@ -1908,21 +1990,21 @@ crypto/hmac/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: crypto/hmac/check
 
-crypto/md4.lo: $(go_crypto_md4_files) hash.gox os.gox
+crypto/md4.lo: $(go_crypto_md4_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/md4/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/md4
 	$(CHECK)
 .PHONY: crypto/md4/check
 
-crypto/md5.lo: $(go_crypto_md5_files) hash.gox os.gox
+crypto/md5.lo: $(go_crypto_md5_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/md5/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/md5
 	$(CHECK)
 .PHONY: crypto/md5/check
 
-crypto/ocsp.lo: $(go_crypto_ocsp_files) asn1.gox crypto/rsa.gox \
+crypto/ocsp.lo: $(go_crypto_ocsp_files) asn1.gox crypto.gox crypto/rsa.gox \
 		crypto/sha1.gox crypto/x509.gox os.gox time.gox
 	$(BUILDPACKAGE)
 crypto/ocsp/check: $(CHECK_DEPS)
@@ -1930,8 +2012,18 @@ crypto/ocsp/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: crypto/ocsp/check
 
-crypto/rand.lo: $(go_crypto_rand_files) crypto/aes.gox io.gox os.gox sync.gox \
-		time.gox
+crypto/openpgp.lo: $(go_crypto_openpgp_files) crypto.gox \
+		 crypto/openpgp/armor.gox crypto/openpgp/error.gox \
+		crypto/openpgp/packet.gox crypto/rsa.gox crypto/sha256.gox \
+		hash.gox io.gox os.gox strconv.gox time.gox
+	$(BUILDPACKAGE)
+crypto/openpgp/check: $(CHECK_DEPS)
+	@$(MKDIR_P) crypto/openpgp
+	$(CHECK)
+.PHONY: crypto/openpgp/check
+
+crypto/rand.lo: $(go_crypto_rand_files) bufio.gox crypto/aes.gox io.gox \
+		os.gox sync.gox time.gox
 	$(BUILDPACKAGE)
 crypto/rand/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/rand
@@ -1945,14 +2037,14 @@ crypto/rc4/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: crypto/rc4/check
 
-crypto/ripemd160.lo: $(go_crypto_ripemd160_files) hash.gox os.gox
+crypto/ripemd160.lo: $(go_crypto_ripemd160_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/ripemd160/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/ripemd160
 	$(CHECK)
 .PHONY: crypto/ripemd160/check
 
-crypto/rsa.lo: $(go_crypto_rsa_files) big.gox crypto/sha1.gox \
+crypto/rsa.lo: $(go_crypto_rsa_files) big.gox crypto.gox crypto/sha1.gox \
 		crypto/subtle.gox encoding/hex.gox hash.gox io.gox os.gox
 	$(BUILDPACKAGE)
 crypto/rsa/check: $(CHECK_DEPS)
@@ -1960,21 +2052,21 @@ crypto/rsa/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: crypto/rsa/check
 
-crypto/sha1.lo: $(go_crypto_sha1_files) hash.gox os.gox
+crypto/sha1.lo: $(go_crypto_sha1_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/sha1/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha1
 	$(CHECK)
 .PHONY: crypto/sha1/check
 
-crypto/sha256.lo: $(go_crypto_sha256_files) hash.gox os.gox
+crypto/sha256.lo: $(go_crypto_sha256_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/sha256/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha256
 	$(CHECK)
 .PHONY: crypto/sha256/check
 
-crypto/sha512.lo: $(go_crypto_sha512_files) hash.gox os.gox
+crypto/sha512.lo: $(go_crypto_sha512_files) crypto.gox hash.gox os.gox
 	$(BUILDPACKAGE)
 crypto/sha512/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/sha512
@@ -1989,7 +2081,7 @@ crypto/subtle/check: $(CHECK_DEPS)
 .PHONY: crypto/subtle/check
 
 crypto/tls.lo: $(go_crypto_tls_files) big.gox bufio.gox bytes.gox \
-		container/list.gox crypto/aes.gox crypto/cipher.gox \
+		container/list.gox crypto.gox crypto/aes.gox crypto/cipher.gox \
 		crypto/elliptic.gox crypto/hmac.gox crypto/md5.gox \
 		crypto/rc4.gox crypto/rand.gox crypto/rsa.gox crypto/sha1.gox \
 		crypto/subtle.gox crypto/rsa.gox crypto/sha1.gox \
@@ -2009,8 +2101,8 @@ crypto/twofish/check: $(CHECK_DEPS)
 .PHONY: crypto/twofish/check
 
 crypto/x509.lo: $(go_crypto_x509_files) asn1.gox big.gox container/vector.gox \
-		crypto/rsa.gox crypto/sha1.gox hash.gox os.gox strings.gox \
-		time.gox
+		crypto.gox crypto/rsa.gox crypto/sha1.gox hash.gox os.gox \
+		strings.gox time.gox
 	$(BUILDPACKAGE)
 crypto/x509/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/x509
@@ -2033,16 +2125,30 @@ crypto/openpgp/armor/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: crypto/openpgp/armor/check
 
-crypto/openpgp/error.lo: $(go_crypto_openpgp_error_files)
+crypto/openpgp/error.lo: $(go_crypto_openpgp_error_files) strconv.gox
 	$(BUILDPACKAGE)
 crypto/openpgp/error/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/error
 	$(CHECK)
 .PHONY: crypto/openpgp/error/check
 
-crypto/openpgp/s2k.lo: $(go_crypto_openpgp_s2k_files) crypto/md5.gox \
-		crypto/openpgp/error.gox crypto/ripemd160.gox crypto/sha1.gox \
-		crypto/sha256.gox crypto/sha512.gox hash.gox io.gox os.gox
+crypto/openpgp/packet.lo: $(go_crypto_openpgp_packet_files) big.gox bytes.gox \
+		compress/flate.gox compress/zlib.gox crypto.gox \
+		crypto/aes.gox crypto/cast5.gox crypto/cipher.gox \
+		crypto/openpgp/error.gox crypto/openpgp/s2k.gox \
+		crypto/rand.gox crypto/rsa.gox crypto/sha1.gox \
+		crypto/subtle.gox encoding/binary.gox hash.gox io.gox \
+		io/ioutil.gox os.gox strconv.gox strings.gox
+	$(BUILDPACKAGE)
+crypto/openpgp/packet/check: $(CHECK_DEPS)
+	@$(MKDIR_P) crypto/openpgp/packet
+	$(CHECK)
+.PHONY: crypto/openpgp/packet/check
+
+crypto/openpgp/s2k.lo: $(go_crypto_openpgp_s2k_files) crypto.gox \
+		crypto/md5.gox crypto/openpgp/error.gox crypto/ripemd160.gox \
+		crypto/sha1.gox crypto/sha256.gox crypto/sha512.gox hash.gox \
+		io.gox os.gox
 	$(BUILDPACKAGE)
 crypto/openpgp/s2k/check: $(CHECK_DEPS)
 	@$(MKDIR_P) crypto/openpgp/s2k
@@ -2361,6 +2467,15 @@ runtime/pprof/check: $(CHECK_DEPS)
 	$(CHECK)
 .PHONY: runtime/pprof/check
 
+sync/atomic.lo: $(go_sync_atomic_files)
+	$(BUILDPACKAGE)
+sync/atomic_c.lo: $(go_sync_atomic_c_files) sync/atomic.lo
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/sync/atomic/atomic.c
+sync/atomic/check: $(CHECK_DEPS)
+	@$(MKDIR_P) sync/atomic
+	$(CHECK)
+.PHONY: sync/atomic/check
+
 testing/iotest.lo: $(go_testing_iotest_files) io.gox log.gox os.gox
 	$(BUILDPACKAGE)
 testing/iotest/check: $(CHECK_DEPS)
@@ -2409,6 +2524,8 @@ bufio.gox: bufio/bufio.lo
 bytes.gox: bytes/bytes.lo
 	$(BUILDGOX)
 cmath.gox: cmath/cmath.lo
+	$(BUILDGOX)
+crypto.gox: crypto/crypto.lo
 	$(BUILDGOX)
 ebnf.gox: ebnf/ebnf.lo
 	$(BUILDGOX)
@@ -2470,7 +2587,7 @@ strconv.gox: strconv/strconv.lo
 	$(BUILDGOX)
 strings.gox: strings/strings.lo
 	$(BUILDGOX)
-sync.gox: sync/mutex.lo
+sync.gox: sync/sync.lo
 	$(BUILDGOX)
 syslog.gox: syslog/syslog.lo
 	$(BUILDGOX)
@@ -2502,9 +2619,13 @@ archive/tar.gox: archive/tar.lo
 archive/zip.gox: archive/zip.lo
 	$(BUILDGOX)
 
+compress/bzip2.gox: compress/bzip2.lo
+	$(BUILDGOX)
 compress/flate.gox: compress/flate.lo
 	$(BUILDGOX)
 compress/gzip.gox: compress/gzip.lo
+	$(BUILDGOX)
+compress/lzw.gox: compress/lzw.lo
 	$(BUILDGOX)
 compress/zlib.gox: compress/zlib.lo
 	$(BUILDGOX)
@@ -2528,6 +2649,8 @@ crypto/cast5.gox: crypto/cast5.lo
 	$(BUILDGOX)
 crypto/cipher.gox: crypto/cipher.lo
 	$(BUILDGOX)
+crypto/dsa.gox: crypto/dsa.lo
+	$(BUILDGOX)
 crypto/elliptic.gox: crypto/elliptic.lo
 	$(BUILDGOX)
 crypto/hmac.gox: crypto/hmac.lo
@@ -2537,6 +2660,8 @@ crypto/md4.gox: crypto/md4.lo
 crypto/md5.gox: crypto/md5.lo
 	$(BUILDGOX)
 crypto/ocsp.gox: crypto/ocsp.lo
+	$(BUILDGOX)
+crypto/openpgp.gox: crypto/openpgp.lo
 	$(BUILDGOX)
 crypto/rand.gox: crypto/rand.lo
 	$(BUILDGOX)
@@ -2566,6 +2691,8 @@ crypto/xtea.gox: crypto/xtea.lo
 crypto/openpgp/armor.gox: crypto/openpgp/armor.lo
 	$(BUILDGOX)
 crypto/openpgp/error.gox: crypto/openpgp/error.lo
+	$(BUILDGOX)
+crypto/openpgp/packet.gox: crypto/openpgp/packet.lo
 	$(BUILDGOX)
 crypto/openpgp/s2k.gox: crypto/openpgp/s2k.lo
 	$(BUILDGOX)
@@ -2664,6 +2791,9 @@ runtime/debug.gox: runtime/debug.lo
 runtime/pprof.gox: runtime/pprof.lo
 	$(BUILDGOX)
 
+sync/atomic.gox: sync/atomic.lo
+	$(BUILDGOX)
+
 testing/iotest.gox: testing/iotest.lo
 	$(BUILDGOX)
 testing/quick.gox: testing/quick.lo
@@ -2725,8 +2855,10 @@ TEST_PACKAGES = \
 	xml/check \
 	archive/tar/check \
 	archive/zip/check \
+	compress/bzip2/check \
 	compress/flate/check \
 	compress/gzip/check \
+	compress/lzw/check \
 	compress/zlib/check \
 	container/heap/check \
 	container/list/check \
@@ -2737,11 +2869,13 @@ TEST_PACKAGES = \
 	crypto/blowfish/check \
 	crypto/cast5/check \
 	crypto/cipher/check \
+	crypto/dsa/check \
 	crypto/elliptic/check \
 	crypto/hmac/check \
 	crypto/md4/check \
 	crypto/md5/check \
 	crypto/ocsp/check \
+	crypto/openpgp/check \
 	crypto/rand/check \
 	crypto/rc4/check \
 	crypto/ripemd160/check \
@@ -2755,6 +2889,7 @@ TEST_PACKAGES = \
 	crypto/x509/check \
 	crypto/xtea/check \
 	crypto/openpgp/armor/check \
+	crypto/openpgp/packet/check \
 	crypto/openpgp/s2k/check \
 	debug/dwarf/check \
 	debug/elf/check \
@@ -2787,6 +2922,7 @@ TEST_PACKAGES = \
 	$(os_inotify_check) \
 	os/signal/check \
 	rpc/jsonrpc/check \
+	sync/atomic/check \
 	testing/quick/check \
 	testing/script/check
 

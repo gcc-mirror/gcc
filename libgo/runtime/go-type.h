@@ -94,6 +94,10 @@ struct __go_type_descriptor
 
   /* A pointer to fields which are only used for some types.  */
   const struct __go_uncommon_type *__uncommon;
+
+  /* The descriptor for the type which is a pointer to this type.
+     This may be NULL.  */
+  const struct __go_type_descriptor *__pointer_to_this;
 };
 
 /* The information we store for each method of a type.  */

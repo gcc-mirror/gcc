@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This package implements a Reader which handles reading \r and \r\n
-// deliminated lines.
+// The line package implements a Reader that reads lines delimited by '\n' or ' \r\n'.
 package line
 
 import (
@@ -11,8 +10,7 @@ import (
 	"os"
 )
 
-// Reader reads lines from an io.Reader (which may use either '\n' or
-// '\r\n').
+// Reader reads lines, delimited by '\n' or \r\n', from an io.Reader.
 type Reader struct {
 	buf      []byte
 	consumed int
@@ -20,11 +18,33 @@ type Reader struct {
 	err      os.Error
 }
 
-func NewReader(in io.Reader, maxLineLength int) *Reader {
+// NewReader returns a new Reader that will read successive
+// lines from the input Reader.
+func NewReader(input io.Reader, maxLineLength int) *Reader {
 	return &Reader{
 		buf:      make([]byte, 0, maxLineLength),
 		consumed: 0,
-		in:       in,
+		in:       input,
+	}
+}
+
+// Read reads from any buffered data past the last line read, or from the underlying
+// io.Reader if the buffer is empty.
+func (l *Reader) Read(p []byte) (n int, err os.Error) {
+	l.removeConsumedFromBuffer()
+	if len(l.buf) > 0 {
+		n = copy(p, l.buf)
+		l.consumed += n
+		return
+	}
+	return l.in.Read(p)
+}
+
+func (l *Reader) removeConsumedFromBuffer() {
+	if l.consumed > 0 {
+		n := copy(l.buf, l.buf[l.consumed:])
+		l.buf = l.buf[:n]
+		l.consumed = 0
 	}
 }
 
@@ -36,11 +56,7 @@ func NewReader(in io.Reader, maxLineLength int) *Reader {
 // the Reader and is only valid until the next call to ReadLine. ReadLine
 // either returns a non-nil line or it returns an error, never both.
 func (l *Reader) ReadLine() (line []byte, isPrefix bool, err os.Error) {
-	if l.consumed > 0 {
-		n := copy(l.buf, l.buf[l.consumed:])
-		l.buf = l.buf[:n]
-		l.consumed = 0
-	}
+	l.removeConsumedFromBuffer()
 
 	if len(l.buf) == 0 && l.err != nil {
 		err = l.err
@@ -89,6 +105,9 @@ func (l *Reader) ReadLine() (line []byte, isPrefix bool, err os.Error) {
 		l.buf = l.buf[:oldLen+n]
 		if readErr != nil {
 			l.err = readErr
+			if len(l.buf) == 0 {
+				return nil, false, readErr
+			}
 		}
 	}
 	panic("unreachable")

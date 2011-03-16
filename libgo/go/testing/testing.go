@@ -12,7 +12,7 @@
 //
 // Functions of the form
 //     func BenchmarkXxx(*testing.B)
-// are considered benchmarks, and are executed by gotest when the -benchmarks
+// are considered benchmarks, and are executed by gotest when the -test.bench
 // flag is provided.
 //
 // A sample benchmark function looks like this:
@@ -43,11 +43,12 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"time"
 )
 
 // Report as tests are run; default is silent for success.
-var chatty = flag.Bool("v", false, "verbose: print additional output")
-var match = flag.String("match", "", "regular expression to select tests to run")
+var chatty = flag.Bool("test.v", false, "verbose: print additional output")
+var match = flag.String("test.run", "", "regular expression to select tests to run")
 
 
 // Insert final newline if needed and tabs after internal newlines.
@@ -91,7 +92,7 @@ func (t *T) FailNow() {
 // and records the text in the error log.
 func (t *T) Log(args ...interface{}) { t.errors += "\t" + tabify(fmt.Sprintln(args...)) }
 
-// Log formats its arguments according to the format, analogous to Printf(),
+// Logf formats its arguments according to the format, analogous to Printf(),
 // and records the text in the error log.
 func (t *T) Logf(format string, args ...interface{}) {
 	t.errors += "\t" + tabify(fmt.Sprintf(format, args...))
@@ -144,7 +145,7 @@ func Main(matchString func(pat, str string) (bool, os.Error), tests []InternalTe
 	for i := 0; i < len(tests); i++ {
 		matched, err := matchString(*match, tests[i].Name)
 		if err != nil {
-			println("invalid regexp for -match:", err.String())
+			println("invalid regexp for -test.run:", err.String())
 			os.Exit(1)
 		}
 		if !matched {
@@ -153,16 +154,19 @@ func Main(matchString func(pat, str string) (bool, os.Error), tests []InternalTe
 		if *chatty {
 			println("=== RUN ", tests[i].Name)
 		}
+		ns := -time.Nanoseconds()
 		t := new(T)
 		t.ch = make(chan *T)
 		go tRunner(t, &tests[i])
 		<-t.ch
+		ns += time.Nanoseconds()
+		tstr := fmt.Sprintf("(%.1f seconds)", float64(ns)/1e9)
 		if t.failed {
-			println("--- FAIL:", tests[i].Name)
+			println("--- FAIL:", tests[i].Name, tstr)
 			print(t.errors)
 			ok = false
 		} else if *chatty {
-			println("--- PASS:", tests[i].Name)
+			println("--- PASS:", tests[i].Name, tstr)
 			print(t.errors)
 		}
 	}

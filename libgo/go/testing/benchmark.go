@@ -8,10 +8,11 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"time"
 )
 
-var matchBenchmarks = flag.String("benchmarks", "", "regular expression to select benchmarks to run")
+var matchBenchmarks = flag.String("test.bench", "", "regular expression to select benchmarks to run")
 
 // An internal type but exported because it is cross-package; part of the implementation
 // of gotest.
@@ -64,6 +65,9 @@ func (b *B) nsPerOp() int64 {
 
 // runN runs a single benchmark for the specified number of iterations.
 func (b *B) runN(n int) {
+	// Try to get a comparable environment for each run
+	// by clearing garbage from previous runs.
+	runtime.GC()
 	b.N = n
 	b.ResetTimer()
 	b.StartTimer()
@@ -175,7 +179,7 @@ func RunBenchmarks(matchString func(pat, str string) (bool, os.Error), benchmark
 	for _, Benchmark := range benchmarks {
 		matched, err := matchString(*matchBenchmarks, Benchmark.Name)
 		if err != nil {
-			println("invalid regexp for -benchmarks:", err.String())
+			println("invalid regexp for -test.bench:", err.String())
 			os.Exit(1)
 		}
 		if !matched {

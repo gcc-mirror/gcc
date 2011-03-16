@@ -264,9 +264,6 @@ func encComplex128(i *encInstr, state *encoderState, p unsafe.Pointer) {
 	}
 }
 
-func encNoOp(i *encInstr, state *encoderState, p unsafe.Pointer) {
-}
-
 // Byte arrays are encoded as an unsigned count followed by the raw bytes.
 func encUint8Array(i *encInstr, state *encoderState, p unsafe.Pointer) {
 	b := *(*[]byte)(p)
@@ -359,7 +356,7 @@ func encodeReflectValue(state *encoderState, v reflect.Value, op encOp, indir in
 	if v == nil {
 		errorf("gob: encodeReflectValue: nil element")
 	}
-	op(nil, state, unsafe.Pointer(v.Addr()))
+	op(nil, state, unsafe.Pointer(v.UnsafeAddr()))
 }
 
 func (enc *Encoder) encodeMap(b *bytes.Buffer, mv *reflect.MapValue, keyOp, elemOp encOp, keyIndir, elemIndir int) {
@@ -387,10 +384,10 @@ func (enc *Encoder) encodeInterface(b *bytes.Buffer, iv *reflect.InterfaceValue)
 		return
 	}
 
-	typ, _ := indirect(iv.Elem().Type())
-	name, ok := concreteTypeToName[typ]
+	ut := userType(iv.Elem().Type())
+	name, ok := concreteTypeToName[ut.base]
 	if !ok {
-		errorf("gob: type not registered for interface: %s", typ)
+		errorf("gob: type not registered for interface: %s", ut.base)
 	}
 	// Send the name.
 	state.encodeUint(uint64(len(name)))
@@ -398,22 +395,26 @@ func (enc *Encoder) encodeInterface(b *bytes.Buffer, iv *reflect.InterfaceValue)
 	if err != nil {
 		error(err)
 	}
-	// Send (and maybe first define) the type id.
-	enc.sendTypeDescriptor(typ)
-	// Encode the value into a new buffer.
+	// Define the type id if necessary.
+	enc.sendTypeDescriptor(enc.writer(), state, ut)
+	// Send the type id.
+	enc.sendTypeId(state, ut)
+	// Encode the value into a new buffer.  Any nested type definitions
+	// should be written to b, before the encoded value.
+	enc.pushWriter(b)
 	data := new(bytes.Buffer)
-	err = enc.encode(data, iv.Elem())
+	err = enc.encode(data, iv.Elem(), ut)
 	if err != nil {
 		error(err)
 	}
-	state.encodeUint(uint64(data.Len()))
-	_, err = state.b.Write(data.Bytes())
-	if err != nil {
+	enc.popWriter()
+	enc.writeMessage(b, data)
+	if enc.err != nil {
 		error(err)
 	}
 }
 
-var encOpMap = []encOp{
+var encOpTable = [...]encOp{
 	reflect.Bool:       encBool,
 	reflect.Int:        encInt,
 	reflect.Int8:       encInt8,
@@ -433,16 +434,24 @@ var encOpMap = []encOp{
 	reflect.String:     encString,
 }
 
-// Return the encoding op for the base type under rt and
+// Return (a pointer to) the encoding op for the base type under rt and
 // the indirection count to reach it.
-func (enc *Encoder) encOpFor(rt reflect.Type) (encOp, int) {
-	typ, indir := indirect(rt)
-	var op encOp
+func (enc *Encoder) encOpFor(rt reflect.Type, inProgress map[reflect.Type]*encOp) (*encOp, int) {
+	ut := userType(rt)
+	// If this type is already in progress, it's a recursive type (e.g. map[string]*T).
+	// Return the pointer to the op we're already building.
+	if opPtr := inProgress[rt]; opPtr != nil {
+		return opPtr, ut.indir
+	}
+	typ := ut.base
+	indir := ut.indir
 	k := typ.Kind()
-	if int(k) < len(encOpMap) {
-		op = encOpMap[k]
+	var op encOp
+	if int(k) < len(encOpTable) {
+		op = encOpTable[k]
 	}
 	if op == nil {
+		inProgress[rt] = &op
 		// Special cases
 		switch t := typ.(type) {
 		case *reflect.SliceType:
@@ -451,25 +460,25 @@ func (enc *Encoder) encOpFor(rt reflect.Type) (encOp, int) {
 				break
 			}
 			// Slices have a header; we decode it to find the underlying array.
-			elemOp, indir := enc.encOpFor(t.Elem())
+			elemOp, indir := enc.encOpFor(t.Elem(), inProgress)
 			op = func(i *encInstr, state *encoderState, p unsafe.Pointer) {
 				slice := (*reflect.SliceHeader)(p)
 				if !state.sendZero && slice.Len == 0 {
 					return
 				}
 				state.update(i)
-				state.enc.encodeArray(state.b, slice.Data, elemOp, t.Elem().Size(), indir, int(slice.Len))
+				state.enc.encodeArray(state.b, slice.Data, *elemOp, t.Elem().Size(), indir, int(slice.Len))
 			}
 		case *reflect.ArrayType:
 			// True arrays have size in the type.
-			elemOp, indir := enc.encOpFor(t.Elem())
+			elemOp, indir := enc.encOpFor(t.Elem(), inProgress)
 			op = func(i *encInstr, state *encoderState, p unsafe.Pointer) {
 				state.update(i)
-				state.enc.encodeArray(state.b, uintptr(p), elemOp, t.Elem().Size(), indir, t.Len())
+				state.enc.encodeArray(state.b, uintptr(p), *elemOp, t.Elem().Size(), indir, t.Len())
 			}
 		case *reflect.MapType:
-			keyOp, keyIndir := enc.encOpFor(t.Key())
-			elemOp, elemIndir := enc.encOpFor(t.Elem())
+			keyOp, keyIndir := enc.encOpFor(t.Key(), inProgress)
+			elemOp, elemIndir := enc.encOpFor(t.Elem(), inProgress)
 			op = func(i *encInstr, state *encoderState, p unsafe.Pointer) {
 				// Maps cannot be accessed by moving addresses around the way
 				// that slices etc. can.  We must recover a full reflection value for
@@ -480,7 +489,7 @@ func (enc *Encoder) encOpFor(rt reflect.Type) (encOp, int) {
 					return
 				}
 				state.update(i)
-				state.enc.encodeMap(state.b, mv, keyOp, elemOp, keyIndir, elemIndir)
+				state.enc.encodeMap(state.b, mv, *keyOp, *elemOp, keyIndir, elemIndir)
 			}
 		case *reflect.StructType:
 			// Generate a closure that calls out to the engine for the nested type.
@@ -508,28 +517,31 @@ func (enc *Encoder) encOpFor(rt reflect.Type) (encOp, int) {
 	if op == nil {
 		errorf("gob enc: can't happen: encode type %s", rt.String())
 	}
-	return op, indir
+	return &op, indir
 }
 
 // The local Type was compiled from the actual value, so we know it's compatible.
 func (enc *Encoder) compileEnc(rt reflect.Type) *encEngine {
 	srt, isStruct := rt.(*reflect.StructType)
 	engine := new(encEngine)
+	seen := make(map[reflect.Type]*encOp)
 	if isStruct {
-		engine.instr = make([]encInstr, srt.NumField()+1) // +1 for terminator
-		for fieldnum := 0; fieldnum < srt.NumField(); fieldnum++ {
-			f := srt.Field(fieldnum)
-			op, indir := enc.encOpFor(f.Type)
+		for fieldNum := 0; fieldNum < srt.NumField(); fieldNum++ {
+			f := srt.Field(fieldNum)
 			if !isExported(f.Name) {
-				op = encNoOp
+				continue
 			}
-			engine.instr[fieldnum] = encInstr{op, fieldnum, indir, uintptr(f.Offset)}
+			op, indir := enc.encOpFor(f.Type, seen)
+			engine.instr = append(engine.instr, encInstr{*op, fieldNum, indir, uintptr(f.Offset)})
 		}
-		engine.instr[srt.NumField()] = encInstr{encStructTerminator, 0, 0, 0}
+		if srt.NumField() > 0 && len(engine.instr) == 0 {
+			errorf("type %s has no exported fields", rt)
+		}
+		engine.instr = append(engine.instr, encInstr{encStructTerminator, 0, 0, 0})
 	} else {
 		engine.instr = make([]encInstr, 1)
-		op, indir := enc.encOpFor(rt)
-		engine.instr[0] = encInstr{op, singletonField, indir, 0} // offset is zero
+		op, indir := enc.encOpFor(rt, seen)
+		engine.instr[0] = encInstr{*op, singletonField, indir, 0} // offset is zero
 	}
 	return engine
 }
@@ -556,18 +568,16 @@ func (enc *Encoder) lockAndGetEncEngine(rt reflect.Type) *encEngine {
 	return enc.getEncEngine(rt)
 }
 
-func (enc *Encoder) encode(b *bytes.Buffer, value reflect.Value) (err os.Error) {
+func (enc *Encoder) encode(b *bytes.Buffer, value reflect.Value, ut *userTypeInfo) (err os.Error) {
 	defer catchError(&err)
-	// Dereference down to the underlying object.
-	rt, indir := indirect(value.Type())
-	for i := 0; i < indir; i++ {
+	for i := 0; i < ut.indir; i++ {
 		value = reflect.Indirect(value)
 	}
-	engine := enc.lockAndGetEncEngine(rt)
+	engine := enc.lockAndGetEncEngine(ut.base)
 	if value.Type().Kind() == reflect.Struct {
-		enc.encodeStruct(b, engine, value.Addr())
+		enc.encodeStruct(b, engine, value.UnsafeAddr())
 	} else {
-		enc.encodeSingle(b, engine, value.Addr())
+		enc.encodeSingle(b, engine, value.UnsafeAddr())
 	}
 	return nil
 }

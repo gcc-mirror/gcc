@@ -40,6 +40,11 @@ var (
 	umtrue   = unmarshaler{true}
 )
 
+type badTag struct {
+	X string
+	Y string "y"
+	Z string "@#*%(#@"
+}
 
 type unmarshalTest struct {
 	in  string
@@ -61,6 +66,9 @@ var unmarshalTests = []unmarshalTest{
 	{"null", new(interface{}), nil, nil},
 	{`{"X": [1,2,3], "Y": 4}`, new(T), T{Y: 4}, &UnmarshalTypeError{"array", reflect.Typeof("")}},
 	{`{"x": 1}`, new(tx), tx{}, &UnmarshalFieldError{"x", txType, txType.Field(0)}},
+
+	// skip invalid tags
+	{`{"X":"a", "y":"b", "Z":"c"}`, new(badTag), badTag{"a", "b", "c"}, nil},
 
 	// syntax errors
 	{`{"X": "foo", "Y"}`, nil, nil, SyntaxError("invalid character '}' after object key")},
@@ -161,6 +169,25 @@ func TestUnmarshalMarshal(t *testing.T) {
 		t.Errorf("Marshal jsonBig")
 		diff(t, b, jsonBig)
 		return
+	}
+}
+
+func TestLargeByteSlice(t *testing.T) {
+	s0 := make([]byte, 2000)
+	for i := range s0 {
+		s0[i] = byte(i)
+	}
+	b, err := Marshal(s0)
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	var s1 []byte
+	if err := Unmarshal(b, &s1); err != nil {
+		t.Fatalf("Unmarshal: %v", err)
+	}
+	if bytes.Compare(s0, s1) != 0 {
+		t.Errorf("Marshal large byte slice")
+		diff(t, s0, s1)
 	}
 }
 
@@ -412,11 +439,7 @@ var allValueIndent = `{
 		"str25",
 		"str26"
 	],
-	"ByteSlice": [
-		27,
-		28,
-		29
-	],
+	"ByteSlice": "Gxwd",
 	"Small": {
 		"Tag": "tag30"
 	},
@@ -502,7 +525,7 @@ var pallValueIndent = `{
 	"EmptySlice": [],
 	"NilSlice": [],
 	"StringSlice": [],
-	"ByteSlice": [],
+	"ByteSlice": "",
 	"Small": {
 		"Tag": ""
 	},

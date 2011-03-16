@@ -423,10 +423,11 @@ func TestForkExec(t *testing.T) {
 		adir = "/"
 		expect = "/\n"
 	}
-	pid, err := ForkExec(cmd, args, nil, adir, []*File{nil, w, Stderr})
+	p, err := StartProcess(cmd, args, nil, adir, []*File{nil, w, Stderr})
 	if err != nil {
-		t.Fatalf("ForkExec: %v", err)
+		t.Fatalf("StartProcess: %v", err)
 	}
+	defer p.Release()
 	w.Close()
 
 	var b bytes.Buffer
@@ -436,7 +437,7 @@ func TestForkExec(t *testing.T) {
 		args[0] = cmd
 		t.Errorf("exec %q returned %q wanted %q", strings.Join(args, " "), output, expect)
 	}
-	Wait(pid, 0)
+	p.Wait(0)
 }
 
 func checkMode(t *testing.T, path string, mode uint32) {
@@ -746,15 +747,16 @@ func run(t *testing.T, cmd []string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pid, err := ForkExec("/bin/hostname", []string{"hostname"}, nil, "/", []*File{nil, w, Stderr})
+	p, err := StartProcess("/bin/hostname", []string{"hostname"}, nil, "/", []*File{nil, w, Stderr})
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer p.Release()
 	w.Close()
 
 	var b bytes.Buffer
 	io.Copy(&b, r)
-	Wait(pid, 0)
+	p.Wait(0)
 	output := b.String()
 	if n := len(output); n > 0 && output[n-1] == '\n' {
 		output = output[0 : n-1]

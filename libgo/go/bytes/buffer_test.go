@@ -6,6 +6,7 @@ package bytes_test
 
 import (
 	. "bytes"
+	"os"
 	"rand"
 	"testing"
 	"utf8"
@@ -238,7 +239,7 @@ func TestMixedReadsAndWrites(t *testing.T) {
 func TestNil(t *testing.T) {
 	var b *Buffer
 	if b.String() != "<nil>" {
-		t.Errorf("expcted <nil>; got %q", b.String())
+		t.Errorf("expected <nil>; got %q", b.String())
 	}
 }
 
@@ -344,6 +345,41 @@ func TestNext(t *testing.T) {
 					}
 				}
 			}
+		}
+	}
+}
+
+var readBytesTests = []struct {
+	buffer   string
+	delim    byte
+	expected []string
+	err      os.Error
+}{
+	{"", 0, []string{""}, os.EOF},
+	{"a\x00", 0, []string{"a\x00"}, nil},
+	{"abbbaaaba", 'b', []string{"ab", "b", "b", "aaab"}, nil},
+	{"hello\x01world", 1, []string{"hello\x01"}, nil},
+	{"foo\nbar", 0, []string{"foo\nbar"}, os.EOF},
+	{"alpha\nbeta\ngamma\n", '\n', []string{"alpha\n", "beta\n", "gamma\n"}, nil},
+	{"alpha\nbeta\ngamma", '\n', []string{"alpha\n", "beta\n", "gamma"}, os.EOF},
+}
+
+func TestReadBytes(t *testing.T) {
+	for _, test := range readBytesTests {
+		buf := NewBufferString(test.buffer)
+		var err os.Error
+		for _, expected := range test.expected {
+			var bytes []byte
+			bytes, err = buf.ReadBytes(test.delim)
+			if string(bytes) != expected {
+				t.Errorf("expected %q, got %q", expected, bytes)
+			}
+			if err != nil {
+				break
+			}
+		}
+		if err != test.err {
+			t.Errorf("expected error %v, got %v", test.err, err)
 		}
 	}
 }

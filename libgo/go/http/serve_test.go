@@ -9,10 +9,14 @@ package http
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"net"
+	"strings"
 	"testing"
+	"time"
 )
 
 type dummyAddr string
@@ -136,6 +140,71 @@ func TestConsumingBodyOnNextConn(t *testing.T) {
 	}
 }
 
+type stringHandler string
+
+func (s stringHandler) ServeHTTP(w ResponseWriter, r *Request) {
+	w.SetHeader("Result", string(s))
+}
+
+var handlers = []struct {
+	pattern string
+	msg     string
+}{
+	{"/", "Default"},
+	{"/someDir/", "someDir"},
+	{"someHost.com/someDir/", "someHost.com/someDir"},
+}
+
+var vtests = []struct {
+	url      string
+	expected string
+}{
+	{"http://localhost/someDir/apage", "someDir"},
+	{"http://localhost/otherDir/apage", "Default"},
+	{"http://someHost.com/someDir/apage", "someHost.com/someDir"},
+	{"http://otherHost.com/someDir/apage", "someDir"},
+	{"http://otherHost.com/aDir/apage", "Default"},
+}
+
+func TestHostHandlers(t *testing.T) {
+	for _, h := range handlers {
+		Handle(h.pattern, stringHandler(h.msg))
+	}
+	l, err := net.Listen("tcp", "127.0.0.1:0") // any port
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer l.Close()
+	go Serve(l, nil)
+	conn, err := net.Dial("tcp", "", l.Addr().String())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	cc := NewClientConn(conn, nil)
+	for _, vt := range vtests {
+		var r *Response
+		var req Request
+		if req.URL, err = ParseURL(vt.url); err != nil {
+			t.Errorf("cannot parse url: %v", err)
+			continue
+		}
+		if err := cc.Write(&req); err != nil {
+			t.Errorf("writing request: %v", err)
+			continue
+		}
+		r, err := cc.Read(&req)
+		if err != nil {
+			t.Errorf("reading response: %v", err)
+			continue
+		}
+		s := r.Header.Get("Result")
+		if s != vt.expected {
+			t.Errorf("Get(%q) = %q, want %q", vt.url, s, vt.expected)
+		}
+	}
+}
+
 type responseWriterMethodCall struct {
 	method                 string
 	headerKey, headerValue string // if method == "SetHeader"
@@ -216,5 +285,150 @@ func TestMuxRedirectLeadingSlashes(t *testing.T) {
 			t.Errorf("Expected WriteHeader of StatusMovedPermanently")
 			return
 		}
+	}
+}
+
+func TestServerTimeouts(t *testing.T) {
+	l, err := net.ListenTCP("tcp", &net.TCPAddr{Port: 0})
+	if err != nil {
+		t.Fatalf("listen error: %v", err)
+	}
+	addr, _ := l.Addr().(*net.TCPAddr)
+
+	reqNum := 0
+	handler := HandlerFunc(func(res ResponseWriter, req *Request) {
+		reqNum++
+		fmt.Fprintf(res, "req=%d", reqNum)
+	})
+
+	const second = 1000000000 /* nanos */
+	server := &Server{Handler: handler, ReadTimeout: 0.25 * second, WriteTimeout: 0.25 * second}
+	go server.Serve(l)
+
+	url := fmt.Sprintf("http://localhost:%d/", addr.Port)
+
+	// Hit the HTTP server successfully.
+	r, _, err := Get(url)
+	if err != nil {
+		t.Fatalf("http Get #1: %v", err)
+	}
+	got, _ := ioutil.ReadAll(r.Body)
+	expected := "req=1"
+	if string(got) != expected {
+		t.Errorf("Unexpected response for request #1; got %q; expected %q",
+			string(got), expected)
+	}
+
+	// Slow client that should timeout.
+	t1 := time.Nanoseconds()
+	conn, err := net.Dial("tcp", "", fmt.Sprintf("localhost:%d", addr.Port))
+	if err != nil {
+		t.Fatalf("Dial: %v", err)
+	}
+	buf := make([]byte, 1)
+	n, err := conn.Read(buf)
+	latency := time.Nanoseconds() - t1
+	if n != 0 || err != os.EOF {
+		t.Errorf("Read = %v, %v, wanted %v, %v", n, err, 0, os.EOF)
+	}
+	if latency < second*0.20 /* fudge from 0.25 above */ {
+		t.Errorf("got EOF after %d ns, want >= %d", latency, second*0.20)
+	}
+
+	// Hit the HTTP server successfully again, verifying that the
+	// previous slow connection didn't run our handler.  (that we
+	// get "req=2", not "req=3")
+	r, _, err = Get(url)
+	if err != nil {
+		t.Fatalf("http Get #2: %v", err)
+	}
+	got, _ = ioutil.ReadAll(r.Body)
+	expected = "req=2"
+	if string(got) != expected {
+		t.Errorf("Get #2 got %q, want %q", string(got), expected)
+	}
+
+	l.Close()
+}
+
+// TestIdentityResponse verifies that a handler can unset 
+func TestIdentityResponse(t *testing.T) {
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("failed to listen on a port: %v", err)
+	}
+	defer l.Close()
+	urlBase := "http://" + l.Addr().String() + "/"
+
+	handler := HandlerFunc(func(rw ResponseWriter, req *Request) {
+		rw.SetHeader("Content-Length", "3")
+		rw.SetHeader("Transfer-Encoding", req.FormValue("te"))
+		switch {
+		case req.FormValue("overwrite") == "1":
+			_, err := rw.Write([]byte("foo TOO LONG"))
+			if err != ErrContentLength {
+				t.Errorf("expected ErrContentLength; got %v", err)
+			}
+		case req.FormValue("underwrite") == "1":
+			rw.SetHeader("Content-Length", "500")
+			rw.Write([]byte("too short"))
+		default:
+			rw.Write([]byte("foo"))
+		}
+	})
+
+	server := &Server{Handler: handler}
+	go server.Serve(l)
+
+	// Note: this relies on the assumption (which is true) that
+	// Get sends HTTP/1.1 or greater requests.  Otherwise the
+	// server wouldn't have the choice to send back chunked
+	// responses.
+	for _, te := range []string{"", "identity"} {
+		url := urlBase + "?te=" + te
+		res, _, err := Get(url)
+		if err != nil {
+			t.Fatalf("error with Get of %s: %v", url, err)
+		}
+		if cl, expected := res.ContentLength, int64(3); cl != expected {
+			t.Errorf("for %s expected res.ContentLength of %d; got %d", url, expected, cl)
+		}
+		if cl, expected := res.Header.Get("Content-Length"), "3"; cl != expected {
+			t.Errorf("for %s expected Content-Length header of %q; got %q", url, expected, cl)
+		}
+		if tl, expected := len(res.TransferEncoding), 0; tl != expected {
+			t.Errorf("for %s expected len(res.TransferEncoding) of %d; got %d (%v)",
+				url, expected, tl, res.TransferEncoding)
+		}
+	}
+
+	// Verify that ErrContentLength is returned
+	url := urlBase + "?overwrite=1"
+	_, _, err = Get(url)
+	if err != nil {
+		t.Fatalf("error with Get of %s: %v", url, err)
+	}
+
+	// Verify that the connection is closed when the declared Content-Length
+	// is larger than what the handler wrote.
+	conn, err := net.Dial("tcp", "", l.Addr().String())
+	if err != nil {
+		t.Fatalf("error dialing: %v", err)
+	}
+	_, err = conn.Write([]byte("GET /?underwrite=1 HTTP/1.1\r\nHost: foo\r\n\r\n"))
+	if err != nil {
+		t.Fatalf("error writing: %v", err)
+	}
+	// The next ReadAll will hang for a failing test, so use a Timer instead
+	// to fail more traditionally
+	timer := time.AfterFunc(2e9, func() {
+		t.Fatalf("Timeout expired in ReadAll.")
+	})
+	defer timer.Stop()
+	got, _ := ioutil.ReadAll(conn)
+	expectedSuffix := "\r\n\r\ntoo short"
+	if !strings.HasSuffix(string(got), expectedSuffix) {
+		t.Fatalf("Expected output to end with %q; got response body %q",
+			expectedSuffix, string(got))
 	}
 }

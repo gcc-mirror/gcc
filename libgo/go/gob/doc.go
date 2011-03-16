@@ -220,6 +220,54 @@ be predefined or be defined before the value in the stream.
 package gob
 
 /*
+Grammar:
+
+Tokens starting with a lower case letter are terminals; int(n)
+and uint(n) represent the signed/unsigned encodings of the value n.
+
+GobStream:
+	DelimitedMessage*
+DelimitedMessage:
+	uint(lengthOfMessage) Message
+Message:
+	TypeSequence TypedValue
+TypeSequence
+	(TypeDefinition DelimitedTypeDefinition*)?
+DelimitedTypeDefinition:
+	uint(lengthOfTypeDefinition) TypeDefinition
+TypedValue:
+	int(typeId) Value
+TypeDefinition:
+	int(-typeId) encodingOfWireType
+Value:
+	SingletonValue | StructValue
+SingletonValue:
+	uint(0) FieldValue
+FieldValue:
+	builtinValue | ArrayValue | MapValue | SliceValue | StructValue | InterfaceValue
+InterfaceValue:
+	NilInterfaceValue | NonNilInterfaceValue
+NilInterfaceValue:
+	uint(0)
+NonNilInterfaceValue:
+	ConcreteTypeName TypeSequence InterfaceContents
+ConcreteTypeName:
+	uint(lengthOfName) [already read=n] name
+InterfaceContents:
+	int(concreteTypeId) DelimitedValue
+DelimitedValue:
+	uint(length) Value
+ArrayValue:
+	uint(n) FieldValue*n [n elements]
+MapValue:
+	uint(n) (FieldValue FieldValue)*n  [n (key, value) pairs]
+SliceValue:
+	uint(n) FieldValue*n [n elements]
+StructValue:
+	(uint(fieldDelta) FieldValue)*
+*/
+
+/*
 For implementers and the curious, here is an encoded example.  Given
 	type Point struct {x, y int}
 and the value

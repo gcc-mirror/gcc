@@ -185,6 +185,7 @@ void	runtime_walkfintab(void (*fn)(void*), void (*scan)(byte *, int64));
 #define runtime_mmap mmap
 #define runtime_munmap(p, s) munmap((p), (s))
 #define runtime_cas(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
+#define runtime_casp(pval, old, new) __sync_bool_compare_and_swap (pval, old, new)
 
 struct __go_func_type;
 void reflect_call(const struct __go_func_type *, const void *, _Bool, void **,

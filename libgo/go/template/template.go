@@ -24,7 +24,8 @@
 		- The result of invoking a niladic single-valued method with that name
 		  (result = data.field())
 
-	Major constructs ({} are metacharacters; [] marks optional elements):
+	Major constructs ({} are the default delimiters for template actions;
+	[] are the notation in this comment for optional elements):
 
 		{# comment }
 
@@ -47,11 +48,19 @@
 		{field1 field2 ...}
 		{field|formatter}
 		{field1 field2...|formatter}
+		{field|formatter1|formatter2}
 
 	Insert the value of the fields into the output. Each field is
 	first looked for in the cursor, as in .section and .repeated.
 	If it is not found, the search continues in outer sections
 	until the top level is reached.
+
+	If the field value is a pointer, leading asterisks indicate
+	that the value to be inserted should be evaluated through the
+	pointer.  For example, if x.p is of type *int, {x.p} will
+	insert the value of the pointer but {*x.p} will insert the
+	value of the underlying integer.  If the value is nil or not a
+	pointer, asterisks have no effect.
 
 	If a formatter is specified, it must be named in the formatter
 	map passed to the template set up routines or in the default
@@ -62,10 +71,20 @@
 	values at the instantiation, and formatter is its name at
 	the invocation site.  The default formatter just concatenates
 	the string representations of the fields.
+
+	Multiple formatters separated by the pipeline character | are
+	executed sequentially, with each formatter receiving the bytes
+	emitted by the one to its left.
+
+	The delimiter strings get their default value, "{" and "}", from
+	JSON-template.  They may be set to any non-empty, space-free
+	string using the SetDelims method.  Their value can be printed
+	in the output using {.meta-left} and {.meta-right}.
 */
 package template
 
 import (
+	"bytes"
 	"container/vector"
 	"fmt"
 	"io"
@@ -131,9 +150,9 @@ type literalElement struct {
 
 // A variable invocation to be evaluated
 type variableElement struct {
-	linenum   int
-	word      []string // The fields in the invocation.
-	formatter string   // TODO(r): implement pipelines
+	linenum int
+	word    []string // The fields in the invocation.
+	fmts    []string // Names of formatters to apply. len(fmts) > 0
 }
 
 // A .section block, possibly with a .or
@@ -169,13 +188,14 @@ type Template struct {
 // the data item descends into the fields associated with sections, etc.
 // Parent is used to walk upwards to find variables higher in the tree.
 type state struct {
-	parent *state        // parent in hierarchy
-	data   reflect.Value // the driver data for this section etc.
-	wr     io.Writer     // where to send output
+	parent *state          // parent in hierarchy
+	data   reflect.Value   // the driver data for this section etc.
+	wr     io.Writer       // where to send output
+	buf    [2]bytes.Buffer // alternating buffers used when chaining formatters
 }
 
 func (parent *state) clone(data reflect.Value) *state {
-	return &state{parent, data, parent.wr}
+	return &state{parent: parent, data: data, wr: parent.wr}
 }
 
 // New creates a new template with the specified formatter map (which
@@ -402,38 +422,43 @@ func (t *Template) analyze(item []byte) (tok int, w []string) {
 	return
 }
 
+// formatter returns the Formatter with the given name in the Template, or nil if none exists.
+func (t *Template) formatter(name string) func(io.Writer, string, ...interface{}) {
+	if t.fmap != nil {
+		if fn := t.fmap[name]; fn != nil {
+			return fn
+		}
+	}
+	return builtins[name]
+}
+
 // -- Parsing
 
 // Allocate a new variable-evaluation element.
-func (t *Template) newVariable(words []string) (v *variableElement) {
-	// The words are tokenized elements from the {item}. The last one may be of
-	// the form "|fmt".  For example: {a b c|d}
-	formatter := ""
+func (t *Template) newVariable(words []string) *variableElement {
+	// After the final space-separated argument, formatters may be specified separated
+	// by pipe symbols, for example: {a b c|d|e}
+
+	// Until we learn otherwise, formatters contains a single name: "", the default formatter.
+	formatters := []string{""}
 	lastWord := words[len(words)-1]
-	bar := strings.Index(lastWord, "|")
+	bar := strings.IndexRune(lastWord, '|')
 	if bar >= 0 {
 		words[len(words)-1] = lastWord[0:bar]
-		formatter = lastWord[bar+1:]
+		formatters = strings.Split(lastWord[bar+1:], "|", -1)
 	}
-	// Probably ok, so let's build it.
-	v = &variableElement{t.linenum, words, formatter}
 
 	// We could remember the function address here and avoid the lookup later,
 	// but it's more dynamic to let the user change the map contents underfoot.
 	// We do require the name to be present, though.
 
 	// Is it in user-supplied map?
-	if t.fmap != nil {
-		if _, ok := t.fmap[formatter]; ok {
-			return
+	for _, f := range formatters {
+		if t.formatter(f) == nil {
+			t.parseError("unknown formatter: %q", f)
 		}
 	}
-	// Is it in builtin map?
-	if _, ok := builtins[formatter]; ok {
-		return
-	}
-	t.parseError("unknown formatter: %s", formatter)
-	return
+	return &variableElement{t.linenum, words, formatters}
 }
 
 // Grab the next item.  If it's simple, just append it to the template.
@@ -622,9 +647,29 @@ func (t *Template) lookup(st *state, v reflect.Value, name string) reflect.Value
 			}
 			return av.FieldByName(name)
 		case *reflect.MapValue:
-			return av.Elem(reflect.NewValue(name))
+			if v := av.Elem(reflect.NewValue(name)); v != nil {
+				return v
+			}
+			return reflect.MakeZero(typ.(*reflect.MapType).Elem())
 		default:
 			return nil
+		}
+	}
+	return v
+}
+
+// indirectPtr returns the item numLevels levels of indirection below the value.
+// It is forgiving: if the value is not a pointer, it returns it rather than giving
+// an error.  If the pointer is nil, it is returned as is.
+func indirectPtr(v reflect.Value, numLevels int) reflect.Value {
+	for i := numLevels; v != nil && i > 0; i++ {
+		if p, ok := v.(*reflect.PtrValue); ok {
+			if p.IsNil() {
+				return v
+			}
+			v = p.Elem()
+		} else {
+			break
 		}
 	}
 	return v
@@ -651,12 +696,16 @@ loop:
 // The special name "@" (the "cursor") denotes the current data.
 // The value coming in (st.data) might need indirecting to reach
 // a struct while the return value is not indirected - that is,
-// it represents the actual named field.
+// it represents the actual named field. Leading stars indicate
+// levels of indirection to be applied to the value.
 func (t *Template) findVar(st *state, s string) reflect.Value {
-	if s == "@" {
-		return st.data
-	}
 	data := st.data
+	flattenedName := strings.TrimLeft(s, "*")
+	numStars := len(s) - len(flattenedName)
+	s = flattenedName
+	if s == "@" {
+		return indirectPtr(data, numStars)
+	}
 	for _, elem := range strings.Split(s, ".", -1) {
 		// Look up field; data must be a struct or map.
 		data = t.lookup(st, data, elem)
@@ -664,7 +713,7 @@ func (t *Template) findVar(st *state, s string) reflect.Value {
 			return nil
 		}
 	}
-	return data
+	return indirectPtr(data, numStars)
 }
 
 // Is there no data to look at?
@@ -702,28 +751,31 @@ func (t *Template) varValue(name string, st *state) reflect.Value {
 	return field
 }
 
+func (t *Template) format(wr io.Writer, fmt string, val []interface{}, v *variableElement, st *state) {
+	fn := t.formatter(fmt)
+	if fn == nil {
+		t.execError(st, v.linenum, "missing formatter %s for variable %s", fmt, v.word[0])
+	}
+	fn(wr, fmt, val...)
+}
+
 // Evaluate a variable, looking up through the parent if necessary.
 // If it has a formatter attached ({var|formatter}) run that too.
 func (t *Template) writeVariable(v *variableElement, st *state) {
-	formatter := v.formatter
 	// Turn the words of the invocation into values.
 	val := make([]interface{}, len(v.word))
 	for i, word := range v.word {
 		val[i] = t.varValue(word, st).Interface()
 	}
-	// is it in user-supplied map?
-	if t.fmap != nil {
-		if fn, ok := t.fmap[formatter]; ok {
-			fn(st.wr, formatter, val...)
-			return
-		}
+
+	for i, fmt := range v.fmts[:len(v.fmts)-1] {
+		b := &st.buf[i&1]
+		b.Reset()
+		t.format(b, fmt, val, v, st)
+		val = val[0:1]
+		val[0] = b.Bytes()
 	}
-	// is it in builtin map?
-	if fn, ok := builtins[formatter]; ok {
-		fn(st.wr, formatter, val...)
-		return
-	}
-	t.execError(st, v.linenum, "missing formatter %s for variable %s", formatter, v.word[0])
+	t.format(st.wr, v.fmts[len(v.fmts)-1], val, v, st)
 }
 
 // Execute element i.  Return next index to execute.
@@ -926,12 +978,12 @@ func (t *Template) ParseFile(filename string) (err os.Error) {
 
 // Execute applies a parsed template to the specified data object,
 // generating output to wr.
-func (t *Template) Execute(data interface{}, wr io.Writer) (err os.Error) {
+func (t *Template) Execute(wr io.Writer, data interface{}) (err os.Error) {
 	// Extract the driver data.
 	val := reflect.NewValue(data)
 	defer checkError(&err)
 	t.p = 0
-	t.execute(0, t.elems.Len(), &state{nil, val, wr})
+	t.execute(0, t.elems.Len(), &state{parent: nil, data: val, wr: wr})
 	return nil
 }
 

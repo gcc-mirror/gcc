@@ -51,6 +51,8 @@ const struct __go_type_descriptor unsafe_Pointer =
   /* __reflection */
   &reflection_string,
   /* __uncommon */
+  NULL,
+  /* __pointer_to_this */
   NULL
 };
 
@@ -90,6 +92,8 @@ const struct __go_ptr_type pointer_unsafe_Pointer =
     /* __reflection */
     &preflection_string,
     /* __uncommon */
+    NULL,
+    /* __pointer_to_this */
     NULL
   },
   /* __element_type */

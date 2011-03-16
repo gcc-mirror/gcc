@@ -19,7 +19,6 @@
 //		used to manage storage used by the allocator.
 //	MHeap: the malloc heap, managed at page (4096-byte) granularity.
 //	MSpan: a run of pages managed by the MHeap.
-//	MHeapMap: a mapping from page IDs to MSpans.
 //	MCentral: a shared free list for a given size class.
 //	MCache: a per-thread (in Go, per-M) cache for small objects.
 //	MStats: allocation statistics.
@@ -84,7 +83,6 @@
 typedef struct FixAlloc	FixAlloc;
 typedef struct MCentral	MCentral;
 typedef struct MHeap	MHeap;
-typedef struct MHeapMap	MHeapMap;
 typedef struct MSpan	MSpan;
 typedef struct MStats	MStats;
 typedef struct MLink	MLink;
@@ -99,8 +97,14 @@ typedef	uintptr	PageID;		// address >> PageShift
 
 enum
 {
+	// Computed constant.  The definition of MaxSmallSize and the
+	// algorithm in msize.c produce some number of different allocation
+	// size classes.  NumSizeClasses is that number.  It's needed here
+	// because there are static arrays of this length; when msize runs its
+	// size choosing algorithm it double-checks that NumSizeClasses agrees.
+	NumSizeClasses = 61,
+
 	// Tunable constants.
-	NumSizeClasses = 67,		// Number of size classes (must match msize.c)
 	MaxSmallSize = 32<<10,
 
 	FixAllocChunk = 128<<10,	// Chunk size for FixAlloc
@@ -108,13 +112,16 @@ enum
 	MaxMCacheSize = 2<<20,		// Maximum bytes in one MCache
 	MaxMHeapList = 1<<(20 - PageShift),	// Maximum page length for fixed-size list in MHeap.
 	HeapAllocChunk = 1<<20,		// Chunk size for heap growth
-};
 
+	// Number of bits in page to span calculations (4k pages).
+	// On 64-bit, we limit the arena to 16G, so 22 bits suffices.
+	// On 32-bit, we don't bother limiting anything: 20 bits for 4G.
 #if __SIZEOF_POINTER__ == 8
-#include "mheapmap64.h"
+	MHeapMap_Bits = 22,
 #else
-#include "mheapmap32.h"
+	MHeapMap_Bits = 20,
 #endif
+};
 
 // A generic linked list of blocks.  (Typically the block is bigger than sizeof(MLink).)
 struct MLink
@@ -124,7 +131,8 @@ struct MLink
 
 // SysAlloc obtains a large chunk of zeroed memory from the
 // operating system, typically on the order of a hundred kilobytes
-// or a megabyte.
+// or a megabyte.  If the pointer argument is non-nil, the caller
+// wants a mapping there or nowhere.
 //
 // SysUnused notifies the operating system that the contents
 // of the memory region are no longer needed and can be reused
@@ -134,11 +142,19 @@ struct MLink
 // SysFree returns it unconditionally; this is only used if
 // an out-of-memory error has been detected midway through
 // an allocation.  It is okay if SysFree is a no-op.
+//
+// SysReserve reserves address space without allocating memory.
+// If the pointer passed to it is non-nil, the caller wants the
+// reservation there, but SysReserve can still choose another
+// location if that one is unavailable.
+//
+// SysMap maps previously reserved address space for use.
 
 void*	runtime_SysAlloc(uintptr nbytes);
 void	runtime_SysFree(void *v, uintptr nbytes);
 void	runtime_SysUnused(void *v, uintptr nbytes);
-void	runtime_SysMemInit(void);
+void	runtime_SysMap(void *v, uintptr nbytes);
+void*	runtime_SysReserve(void *v, uintptr nbytes);
 
 // FixAlloc is a simple free-list allocator for fixed size objects.
 // Malloc uses a FixAlloc wrapped around SysAlloc to manages its
@@ -194,7 +210,6 @@ struct MStats
 	uint64	mspan_sys;
 	uint64	mcache_inuse;	// MCache structures
 	uint64	mcache_sys;
-	uint64	heapmap_sys;	// heap map
 	uint64	buckhash_sys;	// profiling bucket hash table
 	
 	// Statistics about garbage collector.
@@ -281,10 +296,7 @@ struct MSpan
 	uint32	ref;		// number of allocated objects in this span
 	uint32	sizeclass;	// size class
 	uint32	state;		// MSpanInUse etc
-	union {
-		uint32	*gcref;	// sizeclass > 0
-		uint32	gcref0;	// sizeclass == 0
-	};
+	byte	*limit;	// end of data in span
 };
 
 void	runtime_MSpan_Init(MSpan *span, PageID start, uintptr npages);
@@ -323,11 +335,14 @@ struct MHeap
 	MSpan *allspans;
 
 	// span lookup
-	MHeapMap map;
+	MSpan *map[1<<MHeapMap_Bits];
 
 	// range of addresses we might see in the heap
-	byte *min;
-	byte *max;
+	byte *bitmap;
+	uintptr bitmap_mapped;
+	byte *arena_start;
+	byte *arena_used;
+	byte *arena_end;
 	
 	// central free lists for small size classes.
 	// the union makes sure that the MCentrals are
@@ -346,31 +361,31 @@ extern MHeap runtime_mheap;
 void	runtime_MHeap_Init(MHeap *h, void *(*allocator)(uintptr));
 MSpan*	runtime_MHeap_Alloc(MHeap *h, uintptr npage, int32 sizeclass, int32 acct);
 void	runtime_MHeap_Free(MHeap *h, MSpan *s, int32 acct);
-MSpan*	runtime_MHeap_Lookup(MHeap *h, PageID p);
-MSpan*	runtime_MHeap_LookupMaybe(MHeap *h, PageID p);
-void	runtime_MGetSizeClassInfo(int32 sizeclass, int32 *size, int32 *npages, int32 *nobj);
+MSpan*	runtime_MHeap_Lookup(MHeap *h, void *v);
+MSpan*	runtime_MHeap_LookupMaybe(MHeap *h, void *v);
+void	runtime_MGetSizeClassInfo(int32 sizeclass, uintptr *size, int32 *npages, int32 *nobj);
+void*	runtime_MHeap_SysAlloc(MHeap *h, uintptr n);
+void	runtime_MHeap_MapBits(MHeap *h);
 
 void*	runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed);
-int32	runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **s, uint32 **ref);
+int32	runtime_mlookup(void *v, byte **base, uintptr *size, MSpan **s);
 void	runtime_gc(int32 force);
-
-void*	runtime_SysAlloc(uintptr);
-void	runtime_SysUnused(void*, uintptr);
-void	runtime_SysFree(void*, uintptr);
+void	runtime_markallocated(void *v, uintptr n, bool noptr);
+void	runtime_checkallocated(void *v, uintptr n);
+void	runtime_markfreed(void *v, uintptr n);
+void	runtime_checkfreed(void *v, uintptr n);
+int32	runtime_checking;
+void	runtime_markspan(void *v, uintptr size, uintptr n, bool leftover);
+void	runtime_unmarkspan(void *v, uintptr size);
+bool	runtime_blockspecial(void*);
+void	runtime_setblockspecial(void*);
 
 enum
 {
-	RefcountOverhead = 4,	// one uint32 per object
-
-	RefFree = 0,	// must be zero
-	RefStack,		// stack segment - don't free and don't scan for pointers
-	RefNone,		// no references
-	RefSome,		// some references
-	RefNoPointers = 0x80000000U,	// flag - no pointers here
-	RefHasFinalizer = 0x40000000U,	// flag - has finalizer
-	RefProfiled = 0x20000000U,	// flag - is in profiling table
-	RefNoProfiling = 0x10000000U,	// flag - must not profile
-	RefFlags = 0xFFFF0000U,
+	// flags to malloc
+	FlagNoPointers = 1<<0,	// no pointers here
+	FlagNoProfiling = 1<<1,	// must not profile
+	FlagNoGC = 1<<2,	// must not free or scan for pointers
 };
 
 void	runtime_Mprof_Init(void);

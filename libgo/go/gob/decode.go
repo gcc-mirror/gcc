@@ -30,15 +30,17 @@ type decodeState struct {
 	dec *Decoder
 	// The buffer is stored with an extra indirection because it may be replaced
 	// if we load a type during decode (when reading an interface value).
-	b        **bytes.Buffer
+	b        *bytes.Buffer
 	fieldnum int // the last field number read.
 	buf      []byte
 }
 
-func newDecodeState(dec *Decoder, b **bytes.Buffer) *decodeState {
+// We pass the bytes.Buffer separately for easier testing of the infrastructure
+// without requiring a full Decoder.
+func newDecodeState(dec *Decoder, buf *bytes.Buffer) *decodeState {
 	d := new(decodeState)
 	d.dec = dec
-	d.b = b
+	d.b = buf
 	d.buf = make([]byte, uint64Size)
 	return d
 }
@@ -49,14 +51,15 @@ func overflow(name string) os.ErrorString {
 
 // decodeUintReader reads an encoded unsigned integer from an io.Reader.
 // Used only by the Decoder to read the message length.
-func decodeUintReader(r io.Reader, buf []byte) (x uint64, err os.Error) {
-	_, err = r.Read(buf[0:1])
+func decodeUintReader(r io.Reader, buf []byte) (x uint64, width int, err os.Error) {
+	width = 1
+	_, err = r.Read(buf[0:width])
 	if err != nil {
 		return
 	}
 	b := buf[0]
 	if b <= 0x7f {
-		return uint64(b), nil
+		return uint64(b), width, nil
 	}
 	nb := -int(int8(b))
 	if nb > uint64Size {
@@ -75,6 +78,7 @@ func decodeUintReader(r io.Reader, buf []byte) (x uint64, err os.Error) {
 	for i := 0; i < n; i++ {
 		x <<= 8
 		x |= uint64(buf[i])
+		width++
 	}
 	return
 }
@@ -405,10 +409,9 @@ func allocate(rtyp reflect.Type, p uintptr, indir int) uintptr {
 	return *(*uintptr)(up)
 }
 
-func (dec *Decoder) decodeSingle(engine *decEngine, rtyp reflect.Type, b **bytes.Buffer, p uintptr, indir int) (err os.Error) {
-	defer catchError(&err)
-	p = allocate(rtyp, p, indir)
-	state := newDecodeState(dec, b)
+func (dec *Decoder) decodeSingle(engine *decEngine, ut *userTypeInfo, p uintptr) (err os.Error) {
+	p = allocate(ut.base, p, ut.indir)
+	state := newDecodeState(dec, &dec.buf)
 	state.fieldnum = singletonField
 	basep := p
 	delta := int(state.decodeUint())
@@ -424,10 +427,13 @@ func (dec *Decoder) decodeSingle(engine *decEngine, rtyp reflect.Type, b **bytes
 	return nil
 }
 
-func (dec *Decoder) decodeStruct(engine *decEngine, rtyp *reflect.StructType, b **bytes.Buffer, p uintptr, indir int) (err os.Error) {
-	defer catchError(&err)
-	p = allocate(rtyp, p, indir)
-	state := newDecodeState(dec, b)
+// Indir is for the value, not the type.  At the time of the call it may
+// differ from ut.indir, which was computed when the engine was built.
+// This state cannot arise for decodeSingle, which is called directly
+// from the user's value, not from the innards of an engine.
+func (dec *Decoder) decodeStruct(engine *decEngine, ut *userTypeInfo, p uintptr, indir int) (err os.Error) {
+	p = allocate(ut.base.(*reflect.StructType), p, indir)
+	state := newDecodeState(dec, &dec.buf)
 	state.fieldnum = -1
 	basep := p
 	for state.b.Len() > 0 {
@@ -454,9 +460,8 @@ func (dec *Decoder) decodeStruct(engine *decEngine, rtyp *reflect.StructType, b 
 	return nil
 }
 
-func (dec *Decoder) ignoreStruct(engine *decEngine, b **bytes.Buffer) (err os.Error) {
-	defer catchError(&err)
-	state := newDecodeState(dec, b)
+func (dec *Decoder) ignoreStruct(engine *decEngine) (err os.Error) {
+	state := newDecodeState(dec, &dec.buf)
 	state.fieldnum = -1
 	for state.b.Len() > 0 {
 		delta := int(state.decodeUint())
@@ -474,6 +479,18 @@ func (dec *Decoder) ignoreStruct(engine *decEngine, b **bytes.Buffer) (err os.Er
 		instr.op(instr, state, unsafe.Pointer(nil))
 		state.fieldnum = fieldnum
 	}
+	return nil
+}
+
+func (dec *Decoder) ignoreSingle(engine *decEngine) (err os.Error) {
+	state := newDecodeState(dec, &dec.buf)
+	state.fieldnum = singletonField
+	delta := int(state.decodeUint())
+	if delta != 0 {
+		errorf("gob decode: corrupted data: non-zero delta for singleton")
+	}
+	instr := &engine.instr[singletonField]
+	instr.op(instr, state, unsafe.Pointer(nil))
 	return nil
 }
 
@@ -501,7 +518,7 @@ func (dec *Decoder) decodeArray(atyp *reflect.ArrayType, state *decodeState, p u
 
 func decodeIntoValue(state *decodeState, op decOp, indir int, v reflect.Value, ovfl os.ErrorString) reflect.Value {
 	instr := &decInstr{op, 0, indir, 0, ovfl}
-	up := unsafe.Pointer(v.Addr())
+	up := unsafe.Pointer(v.UnsafeAddr())
 	if indir > 1 {
 		up = decIndirect(up, indir)
 	}
@@ -612,9 +629,17 @@ func (dec *Decoder) decodeInterface(ityp *reflect.InterfaceType, state *decodeSt
 	if !ok {
 		errorf("gob: name not registered for interface: %q", name)
 	}
+	// Read the type id of the concrete value.
+	concreteId := dec.decodeTypeSequence(true)
+	if concreteId < 0 {
+		error(dec.err)
+	}
+	// Byte count of value is next; we don't care what it is (it's there
+	// in case we want to ignore the value by skipping it completely).
+	state.decodeUint()
 	// Read the concrete value.
 	value := reflect.MakeZero(typ)
-	dec.decodeValueFromBuffer(value, false, true)
+	dec.decodeValue(concreteId, value)
 	if dec.err != nil {
 		error(dec.err)
 	}
@@ -637,14 +662,16 @@ func (dec *Decoder) ignoreInterface(state *decodeState) {
 	if err != nil {
 		error(err)
 	}
-	dec.decodeValueFromBuffer(nil, true, true)
-	if dec.err != nil {
-		error(err)
+	id := dec.decodeTypeSequence(true)
+	if id < 0 {
+		error(dec.err)
 	}
+	// At this point, the decoder buffer contains a delimited value. Just toss it.
+	state.b.Next(int(state.decodeUint()))
 }
 
 // Index by Go types.
-var decOpMap = []decOp{
+var decOpTable = [...]decOp{
 	reflect.Bool:       decBool,
 	reflect.Int8:       decInt8,
 	reflect.Int16:      decInt16,
@@ -674,35 +701,43 @@ var decIgnoreOpMap = map[typeId]decOp{
 
 // Return the decoding op for the base type under rt and
 // the indirection count to reach it.
-func (dec *Decoder) decOpFor(wireId typeId, rt reflect.Type, name string) (decOp, int) {
-	typ, indir := indirect(rt)
+func (dec *Decoder) decOpFor(wireId typeId, rt reflect.Type, name string, inProgress map[reflect.Type]*decOp) (*decOp, int) {
+	ut := userType(rt)
+	// If this type is already in progress, it's a recursive type (e.g. map[string]*T).
+	// Return the pointer to the op we're already building.
+	if opPtr := inProgress[rt]; opPtr != nil {
+		return opPtr, ut.indir
+	}
+	typ := ut.base
+	indir := ut.indir
 	var op decOp
 	k := typ.Kind()
-	if int(k) < len(decOpMap) {
-		op = decOpMap[k]
+	if int(k) < len(decOpTable) {
+		op = decOpTable[k]
 	}
 	if op == nil {
+		inProgress[rt] = &op
 		// Special cases
 		switch t := typ.(type) {
 		case *reflect.ArrayType:
 			name = "element of " + name
 			elemId := dec.wireType[wireId].ArrayT.Elem
-			elemOp, elemIndir := dec.decOpFor(elemId, t.Elem(), name)
+			elemOp, elemIndir := dec.decOpFor(elemId, t.Elem(), name, inProgress)
 			ovfl := overflow(name)
 			op = func(i *decInstr, state *decodeState, p unsafe.Pointer) {
-				state.dec.decodeArray(t, state, uintptr(p), elemOp, t.Elem().Size(), t.Len(), i.indir, elemIndir, ovfl)
+				state.dec.decodeArray(t, state, uintptr(p), *elemOp, t.Elem().Size(), t.Len(), i.indir, elemIndir, ovfl)
 			}
 
 		case *reflect.MapType:
 			name = "element of " + name
 			keyId := dec.wireType[wireId].MapT.Key
 			elemId := dec.wireType[wireId].MapT.Elem
-			keyOp, keyIndir := dec.decOpFor(keyId, t.Key(), name)
-			elemOp, elemIndir := dec.decOpFor(elemId, t.Elem(), name)
+			keyOp, keyIndir := dec.decOpFor(keyId, t.Key(), name, inProgress)
+			elemOp, elemIndir := dec.decOpFor(elemId, t.Elem(), name, inProgress)
 			ovfl := overflow(name)
 			op = func(i *decInstr, state *decodeState, p unsafe.Pointer) {
 				up := unsafe.Pointer(p)
-				state.dec.decodeMap(t, state, uintptr(up), keyOp, elemOp, i.indir, keyIndir, elemIndir, ovfl)
+				state.dec.decodeMap(t, state, uintptr(up), *keyOp, *elemOp, i.indir, keyIndir, elemIndir, ovfl)
 			}
 
 		case *reflect.SliceType:
@@ -717,10 +752,10 @@ func (dec *Decoder) decOpFor(wireId typeId, rt reflect.Type, name string) (decOp
 			} else {
 				elemId = dec.wireType[wireId].SliceT.Elem
 			}
-			elemOp, elemIndir := dec.decOpFor(elemId, t.Elem(), name)
+			elemOp, elemIndir := dec.decOpFor(elemId, t.Elem(), name, inProgress)
 			ovfl := overflow(name)
 			op = func(i *decInstr, state *decodeState, p unsafe.Pointer) {
-				state.dec.decodeSlice(t, state, uintptr(p), elemOp, t.Elem().Size(), i.indir, elemIndir, ovfl)
+				state.dec.decodeSlice(t, state, uintptr(p), *elemOp, t.Elem().Size(), i.indir, elemIndir, ovfl)
 			}
 
 		case *reflect.StructType:
@@ -730,8 +765,8 @@ func (dec *Decoder) decOpFor(wireId typeId, rt reflect.Type, name string) (decOp
 				error(err)
 			}
 			op = func(i *decInstr, state *decodeState, p unsafe.Pointer) {
-				// indirect through enginePtr to delay evaluation for recursive structs
-				err = dec.decodeStruct(*enginePtr, t, state.b, uintptr(p), i.indir)
+				// indirect through enginePtr to delay evaluation for recursive structs.
+				err = dec.decodeStruct(*enginePtr, userType(typ), uintptr(p), i.indir)
 				if err != nil {
 					error(err)
 				}
@@ -745,7 +780,7 @@ func (dec *Decoder) decOpFor(wireId typeId, rt reflect.Type, name string) (decOp
 	if op == nil {
 		errorf("gob: decode can't handle type %s", rt.String())
 	}
-	return op, indir
+	return &op, indir
 }
 
 // Return the decoding op for a field that has no destination.
@@ -796,7 +831,7 @@ func (dec *Decoder) decIgnoreOpFor(wireId typeId) decOp {
 			}
 			op = func(i *decInstr, state *decodeState, p unsafe.Pointer) {
 				// indirect through enginePtr to delay evaluation for recursive structs
-				state.dec.ignoreStruct(*enginePtr, state.b)
+				state.dec.ignoreStruct(*enginePtr)
 			}
 		}
 	}
@@ -809,11 +844,15 @@ func (dec *Decoder) decIgnoreOpFor(wireId typeId) decOp {
 // Are these two gob Types compatible?
 // Answers the question for basic types, arrays, and slices.
 // Structs are considered ok; fields will be checked later.
-func (dec *Decoder) compatibleType(fr reflect.Type, fw typeId) bool {
-	fr, _ = indirect(fr)
+func (dec *Decoder) compatibleType(fr reflect.Type, fw typeId, inProgress map[reflect.Type]typeId) bool {
+	if rhs, ok := inProgress[fr]; ok {
+		return rhs == fw
+	}
+	inProgress[fr] = fw
+	fr = userType(fr).base
 	switch t := fr.(type) {
 	default:
-		// map, chan, etc: cannot handle.
+		// chan, etc: cannot handle.
 		return false
 	case *reflect.BoolType:
 		return fw == tBool
@@ -835,14 +874,14 @@ func (dec *Decoder) compatibleType(fr reflect.Type, fw typeId) bool {
 			return false
 		}
 		array := wire.ArrayT
-		return t.Len() == array.Len && dec.compatibleType(t.Elem(), array.Elem)
+		return t.Len() == array.Len && dec.compatibleType(t.Elem(), array.Elem, inProgress)
 	case *reflect.MapType:
 		wire, ok := dec.wireType[fw]
 		if !ok || wire.MapT == nil {
 			return false
 		}
 		MapType := wire.MapT
-		return dec.compatibleType(t.Key(), MapType.Key) && dec.compatibleType(t.Elem(), MapType.Elem)
+		return dec.compatibleType(t.Key(), MapType.Key, inProgress) && dec.compatibleType(t.Elem(), MapType.Elem, inProgress)
 	case *reflect.SliceType:
 		// Is it an array of bytes?
 		if t.Elem().Kind() == reflect.Uint8 {
@@ -855,8 +894,8 @@ func (dec *Decoder) compatibleType(fr reflect.Type, fw typeId) bool {
 		} else {
 			sw = dec.wireType[fw].SliceT
 		}
-		elem, _ := indirect(t.Elem())
-		return sw != nil && dec.compatibleType(elem, sw.Elem)
+		elem := userType(t.Elem()).base
+		return sw != nil && dec.compatibleType(elem, sw.Elem, inProgress)
 	case *reflect.StructType:
 		return true
 	}
@@ -877,12 +916,22 @@ func (dec *Decoder) compileSingle(remoteId typeId, rt reflect.Type) (engine *dec
 	engine = new(decEngine)
 	engine.instr = make([]decInstr, 1) // one item
 	name := rt.String()                // best we can do
-	if !dec.compatibleType(rt, remoteId) {
+	if !dec.compatibleType(rt, remoteId, make(map[reflect.Type]typeId)) {
 		return nil, os.ErrorString("gob: wrong type received for local value " + name + ": " + dec.typeString(remoteId))
 	}
-	op, indir := dec.decOpFor(remoteId, rt, name)
+	op, indir := dec.decOpFor(remoteId, rt, name, make(map[reflect.Type]*decOp))
 	ovfl := os.ErrorString(`value for "` + name + `" out of range`)
-	engine.instr[singletonField] = decInstr{op, singletonField, indir, 0, ovfl}
+	engine.instr[singletonField] = decInstr{*op, singletonField, indir, 0, ovfl}
+	engine.numInstr = 1
+	return
+}
+
+func (dec *Decoder) compileIgnoreSingle(remoteId typeId) (engine *decEngine, err os.Error) {
+	engine = new(decEngine)
+	engine.instr = make([]decInstr, 1) // one item
+	op := dec.decIgnoreOpFor(remoteId)
+	ovfl := overflow(dec.typeString(remoteId))
+	engine.instr[0] = decInstr{op, 0, 0, 0, ovfl}
 	engine.numInstr = 1
 	return
 }
@@ -894,7 +943,6 @@ func isExported(name string) bool {
 }
 
 func (dec *Decoder) compileDec(remoteId typeId, rt reflect.Type) (engine *decEngine, err os.Error) {
-	defer catchError(&err)
 	srt, ok := rt.(*reflect.StructType)
 	if !ok {
 		return dec.compileSingle(remoteId, rt)
@@ -905,13 +953,18 @@ func (dec *Decoder) compileDec(remoteId typeId, rt reflect.Type) (engine *decEng
 	if t, ok := builtinIdToType[remoteId]; ok {
 		wireStruct, _ = t.(*structType)
 	} else {
-		wireStruct = dec.wireType[remoteId].StructT
+		wire := dec.wireType[remoteId]
+		if wire == nil {
+			error(errBadType)
+		}
+		wireStruct = wire.StructT
 	}
 	if wireStruct == nil {
 		errorf("gob: type mismatch in decoder: want struct type %s; got non-struct", rt.String())
 	}
 	engine = new(decEngine)
 	engine.instr = make([]decInstr, len(wireStruct.Field))
+	seen := make(map[reflect.Type]*decOp)
 	// Loop over the fields of the wire type.
 	for fieldnum := 0; fieldnum < len(wireStruct.Field); fieldnum++ {
 		wireField := wireStruct.Field[fieldnum]
@@ -927,11 +980,11 @@ func (dec *Decoder) compileDec(remoteId typeId, rt reflect.Type) (engine *decEng
 			engine.instr[fieldnum] = decInstr{op, fieldnum, 0, 0, ovfl}
 			continue
 		}
-		if !dec.compatibleType(localField.Type, wireField.Id) {
+		if !dec.compatibleType(localField.Type, wireField.Id, make(map[reflect.Type]typeId)) {
 			errorf("gob: wrong type (%s) for received field %s.%s", localField.Type, wireStruct.Name, wireField.Name)
 		}
-		op, indir := dec.decOpFor(wireField.Id, localField.Type, localField.Name)
-		engine.instr[fieldnum] = decInstr{op, fieldnum, indir, uintptr(localField.Offset), ovfl}
+		op, indir := dec.decOpFor(wireField.Id, localField.Type, localField.Name, seen)
+		engine.instr[fieldnum] = decInstr{*op, fieldnum, indir, uintptr(localField.Offset), ovfl}
 		engine.numInstr++
 	}
 	return
@@ -966,7 +1019,12 @@ func (dec *Decoder) getIgnoreEnginePtr(wireId typeId) (enginePtr **decEngine, er
 		// To handle recursive types, mark this engine as underway before compiling.
 		enginePtr = new(*decEngine)
 		dec.ignorerCache[wireId] = enginePtr
-		*enginePtr, err = dec.compileDec(wireId, emptyStructType)
+		wire := dec.wireType[wireId]
+		if wire != nil && wire.StructT != nil {
+			*enginePtr, err = dec.compileDec(wireId, emptyStructType)
+		} else {
+			*enginePtr, err = dec.compileIgnoreSingle(wireId)
+		}
 		if err != nil {
 			dec.ignorerCache[wireId] = nil, false
 		}
@@ -974,22 +1032,41 @@ func (dec *Decoder) getIgnoreEnginePtr(wireId typeId) (enginePtr **decEngine, er
 	return
 }
 
-func (dec *Decoder) decode(wireId typeId, val reflect.Value) os.Error {
+func (dec *Decoder) decodeValue(wireId typeId, val reflect.Value) (err os.Error) {
+	defer catchError(&err)
+	// If the value is nil, it means we should just ignore this item.
+	if val == nil {
+		return dec.decodeIgnoredValue(wireId)
+	}
 	// Dereference down to the underlying struct type.
-	rt, indir := indirect(val.Type())
-	enginePtr, err := dec.getDecEnginePtr(wireId, rt)
+	ut := userType(val.Type())
+	base := ut.base
+	indir := ut.indir
+	enginePtr, err := dec.getDecEnginePtr(wireId, base)
 	if err != nil {
 		return err
 	}
 	engine := *enginePtr
-	if st, ok := rt.(*reflect.StructType); ok {
+	if st, ok := base.(*reflect.StructType); ok {
 		if engine.numInstr == 0 && st.NumField() > 0 && len(dec.wireType[wireId].StructT.Field) > 0 {
-			name := rt.Name()
+			name := base.Name()
 			return os.ErrorString("gob: type mismatch: no fields matched compiling decoder for " + name)
 		}
-		return dec.decodeStruct(engine, st, dec.state.b, uintptr(val.Addr()), indir)
+		return dec.decodeStruct(engine, ut, uintptr(val.UnsafeAddr()), indir)
 	}
-	return dec.decodeSingle(engine, rt, dec.state.b, uintptr(val.Addr()), indir)
+	return dec.decodeSingle(engine, ut, uintptr(val.UnsafeAddr()))
+}
+
+func (dec *Decoder) decodeIgnoredValue(wireId typeId) os.Error {
+	enginePtr, err := dec.getIgnoreEnginePtr(wireId)
+	if err != nil {
+		return err
+	}
+	wire := dec.wireType[wireId]
+	if wire != nil && wire.StructT != nil {
+		return dec.ignoreStruct(*enginePtr)
+	}
+	return dec.ignoreSingle(*enginePtr)
 }
 
 func init() {
@@ -1004,8 +1081,8 @@ func init() {
 	default:
 		panic("gob: unknown size of int/uint")
 	}
-	decOpMap[reflect.Int] = iop
-	decOpMap[reflect.Uint] = uop
+	decOpTable[reflect.Int] = iop
+	decOpTable[reflect.Uint] = uop
 
 	// Finally uintptr
 	switch reflect.Typeof(uintptr(0)).Bits() {
@@ -1016,5 +1093,5 @@ func init() {
 	default:
 		panic("gob: unknown size of uintptr")
 	}
-	decOpMap[reflect.Uintptr] = uop
+	decOpTable[reflect.Uintptr] = uop
 }

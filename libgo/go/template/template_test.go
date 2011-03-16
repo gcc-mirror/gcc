@@ -31,8 +31,10 @@ type U struct {
 
 type S struct {
 	Header        string
+	HeaderPtr     *string
 	Integer       int
-	Raw           string
+	IntegerPtr    *int
+	NilPtr        *int
 	InnerT        T
 	InnerPointerT *T
 	Data          []T
@@ -47,7 +49,7 @@ type S struct {
 	JSON          interface{}
 	Innermap      U
 	Stringmap     map[string]string
-	Bytes         []byte
+	Ptrmap        map[string]*string
 	Iface         interface{}
 	Ifaceptr      interface{}
 }
@@ -116,6 +118,24 @@ var tests = []*Test{
 		in: "{Header}={Integer}\n",
 
 		out: "Header=77\n",
+	},
+
+	&Test{
+		in: "Pointers: {*HeaderPtr}={*IntegerPtr}\n",
+
+		out: "Pointers: Header=77\n",
+	},
+
+	&Test{
+		in: "Stars but not pointers: {*Header}={*Integer}\n",
+
+		out: "Stars but not pointers: Header=77\n",
+	},
+
+	&Test{
+		in: "nil pointer: {*NilPtr}={*Integer}\n",
+
+		out: "nil pointer: <nil>=77\n",
 	},
 
 	// Method at top level
@@ -312,38 +332,6 @@ var tests = []*Test{
 		out: "ItemNumber1=ValueNumber1\n",
 	},
 
-
-	// Formatters
-	&Test{
-		in: "{.section Pdata }\n" +
-			"{Header|uppercase}={Integer|+1}\n" +
-			"{Header|html}={Integer|str}\n" +
-			"{.end}\n",
-
-		out: "HEADER=78\n" +
-			"Header=77\n",
-	},
-
-	&Test{
-		in: "{.section Pdata }\n" +
-			"{Header|uppercase}={Integer Header|multiword}\n" +
-			"{Header|html}={Header Integer|multiword}\n" +
-			"{Header|html}={Header Integer}\n" +
-			"{.end}\n",
-
-		out: "HEADER=<77><Header>\n" +
-			"Header=<Header><77>\n" +
-			"Header=Header77\n",
-	},
-
-	&Test{
-		in: "{Raw}\n" +
-			"{Raw|html}\n",
-
-		out: "&<>!@ #$%^\n" +
-			"&amp;&lt;&gt;!@ #$%^\n",
-	},
-
 	&Test{
 		in: "{.section Emptystring}emptystring{.end}\n" +
 			"{.section Header}header{.end}\n",
@@ -356,12 +344,6 @@ var tests = []*Test{
 			"{.section False}3{.or}4{.end}\n",
 
 		out: "1\n4\n",
-	},
-
-	&Test{
-		in: "{Bytes}",
-
-		out: "hello",
 	},
 
 	// Maps
@@ -407,6 +389,20 @@ var tests = []*Test{
 		out: "\tstringresult\n" +
 			"\tstringresult\n",
 	},
+	&Test{
+		in: "{*Ptrmap.stringkey1}\n",
+
+		out: "pointedToString\n",
+	},
+	&Test{
+		in: "{.repeated section Ptrmap}\n" +
+			"{*@}\n" +
+			"{.end}",
+
+		out: "pointedToString\n" +
+			"pointedToString\n",
+	},
+
 
 	// Interface values
 
@@ -460,8 +456,9 @@ func testAll(t *testing.T, parseFunc func(*Test) (*Template, os.Error)) {
 	s := new(S)
 	// initialized by hand for clarity.
 	s.Header = "Header"
+	s.HeaderPtr = &s.Header
 	s.Integer = 77
-	s.Raw = "&<>!@ #$%^"
+	s.IntegerPtr = &s.Integer
 	s.InnerT = t1
 	s.Data = []T{t1, t2}
 	s.Pdata = []*T{&t1, &t2}
@@ -480,7 +477,10 @@ func testAll(t *testing.T, parseFunc func(*Test) (*Template, os.Error)) {
 	s.Stringmap = make(map[string]string)
 	s.Stringmap["stringkey1"] = "stringresult" // the same value so repeated section is order-independent
 	s.Stringmap["stringkey2"] = "stringresult"
-	s.Bytes = []byte("hello")
+	s.Ptrmap = make(map[string]*string)
+	x := "pointedToString"
+	s.Ptrmap["stringkey1"] = &x // the same value so repeated section is order-independent
+	s.Ptrmap["stringkey2"] = &x
 	s.Iface = []int{1, 2, 3}
 	s.Ifaceptr = &T{"Item", "Value"}
 
@@ -492,7 +492,7 @@ func testAll(t *testing.T, parseFunc func(*Test) (*Template, os.Error)) {
 			t.Error("unexpected parse error: ", err)
 			continue
 		}
-		err = tmpl.Execute(s, &buf)
+		err = tmpl.Execute(&buf, s)
 		if test.err == "" {
 			if err != nil {
 				t.Error("unexpected execute error:", err)
@@ -517,14 +517,32 @@ func TestMapDriverType(t *testing.T) {
 		t.Error("unexpected parse error:", err)
 	}
 	var b bytes.Buffer
-	err = tmpl.Execute(mp, &b)
+	err = tmpl.Execute(&b, mp)
 	if err != nil {
 		t.Error("unexpected execute error:", err)
 	}
 	s := b.String()
-	expected := "template: Ahoy!"
-	if s != expected {
-		t.Errorf("failed passing string as data: expected %q got %q", "template: Ahoy!", s)
+	expect := "template: Ahoy!"
+	if s != expect {
+		t.Errorf("failed passing string as data: expected %q got %q", expect, s)
+	}
+}
+
+func TestMapNoEntry(t *testing.T) {
+	mp := make(map[string]int)
+	tmpl, err := Parse("template: {notthere}!", nil)
+	if err != nil {
+		t.Error("unexpected parse error:", err)
+	}
+	var b bytes.Buffer
+	err = tmpl.Execute(&b, mp)
+	if err != nil {
+		t.Error("unexpected execute error:", err)
+	}
+	s := b.String()
+	expect := "template: 0!"
+	if s != expect {
+		t.Errorf("failed passing string as data: expected %q got %q", expect, s)
 	}
 }
 
@@ -534,13 +552,14 @@ func TestStringDriverType(t *testing.T) {
 		t.Error("unexpected parse error:", err)
 	}
 	var b bytes.Buffer
-	err = tmpl.Execute("hello", &b)
+	err = tmpl.Execute(&b, "hello")
 	if err != nil {
 		t.Error("unexpected execute error:", err)
 	}
 	s := b.String()
-	if s != "template: hello" {
-		t.Errorf("failed passing string as data: expected %q got %q", "template: hello", s)
+	expect := "template: hello"
+	if s != expect {
+		t.Errorf("failed passing string as data: expected %q got %q", expect, s)
 	}
 }
 
@@ -550,23 +569,23 @@ func TestTwice(t *testing.T) {
 		t.Error("unexpected parse error:", err)
 	}
 	var b bytes.Buffer
-	err = tmpl.Execute("hello", &b)
+	err = tmpl.Execute(&b, "hello")
 	if err != nil {
 		t.Error("unexpected parse error:", err)
 	}
 	s := b.String()
-	text := "template: hello"
-	if s != text {
-		t.Errorf("failed passing string as data: expected %q got %q", text, s)
+	expect := "template: hello"
+	if s != expect {
+		t.Errorf("failed passing string as data: expected %q got %q", expect, s)
 	}
-	err = tmpl.Execute("hello", &b)
+	err = tmpl.Execute(&b, "hello")
 	if err != nil {
 		t.Error("unexpected parse error:", err)
 	}
 	s = b.String()
-	text += text
-	if s != text {
-		t.Errorf("failed passing string as data: expected %q got %q", text, s)
+	expect += expect
+	if s != expect {
+		t.Errorf("failed passing string as data: expected %q got %q", expect, s)
 	}
 }
 
@@ -595,7 +614,7 @@ func TestCustomDelims(t *testing.T) {
 				continue
 			}
 			var b bytes.Buffer
-			err = tmpl.Execute("hello", &b)
+			err = tmpl.Execute(&b, "hello")
 			s := b.String()
 			if s != "template: hello"+ldelim+rdelim {
 				t.Errorf("failed delim check(%q %q) %q got %q", ldelim, rdelim, text, s)
@@ -616,7 +635,7 @@ func TestVarIndirection(t *testing.T) {
 	if err != nil {
 		t.Fatal("unexpected parse error:", err)
 	}
-	err = tmpl.Execute(s, &buf)
+	err = tmpl.Execute(&buf, s)
 	if err != nil {
 		t.Fatal("unexpected execute error:", err)
 	}
@@ -650,11 +669,95 @@ func TestReferenceToUnexported(t *testing.T) {
 	if err != nil {
 		t.Fatal("unexpected parse error:", err)
 	}
-	err = tmpl.Execute(u, &buf)
+	err = tmpl.Execute(&buf, u)
 	if err == nil {
 		t.Fatal("expected execute error, got none")
 	}
 	if strings.Index(err.String(), "not exported") < 0 {
 		t.Fatal("expected unexported error; got", err)
+	}
+}
+
+var formatterTests = []Test{
+	{
+		in: "{Header|uppercase}={Integer|+1}\n" +
+			"{Header|html}={Integer|str}\n",
+
+		out: "HEADER=78\n" +
+			"Header=77\n",
+	},
+
+	{
+		in: "{Header|uppercase}={Integer Header|multiword}\n" +
+			"{Header|html}={Header Integer|multiword}\n" +
+			"{Header|html}={Header Integer}\n",
+
+		out: "HEADER=<77><Header>\n" +
+			"Header=<Header><77>\n" +
+			"Header=Header77\n",
+	},
+	{
+		in: "{Raw}\n" +
+			"{Raw|html}\n",
+
+		out: "a <&> b\n" +
+			"a &lt;&amp;&gt; b\n",
+	},
+	{
+		in:  "{Bytes}",
+		out: "hello",
+	},
+	{
+		in:  "{Raw|uppercase|html|html}",
+		out: "A &amp;lt;&amp;amp;&amp;gt; B",
+	},
+	{
+		in:  "{Header Integer|multiword|html}",
+		out: "&lt;Header&gt;&lt;77&gt;",
+	},
+	{
+		in:  "{Integer|no_formatter|html}",
+		err: `unknown formatter: "no_formatter"`,
+	},
+	{
+		in:  "{Integer|||||}", // empty string is a valid formatter
+		out: "77",
+	},
+}
+
+func TestFormatters(t *testing.T) {
+	data := map[string]interface{}{
+		"Header":  "Header",
+		"Integer": 77,
+		"Raw":     "a <&> b",
+		"Bytes":   []byte("hello"),
+	}
+	for _, c := range formatterTests {
+		tmpl, err := Parse(c.in, formatters)
+		if err != nil {
+			if c.err == "" {
+				t.Error("unexpected parse error:", err)
+				continue
+			}
+			if strings.Index(err.String(), c.err) < 0 {
+				t.Errorf("unexpected error: expected %q, got %q", c.err, err.String())
+				continue
+			}
+		} else {
+			if c.err != "" {
+				t.Errorf("For %q, expected error, got none.", c.in)
+				continue
+			}
+			buf := bytes.NewBuffer(nil)
+			err = tmpl.Execute(buf, data)
+			if err != nil {
+				t.Error("unexpected Execute error: ", err)
+				continue
+			}
+			actual := buf.String()
+			if actual != c.out {
+				t.Errorf("for %q: expected %q but got %q.", c.in, c.out, actual)
+			}
+		}
 	}
 }
