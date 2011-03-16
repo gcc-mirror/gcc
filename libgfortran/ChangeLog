@@ -1,3 +1,10 @@
+2011-03-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/47883
+	* acinclude.m4: Don't use AC_TRY_ macros.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
 2011-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/48066

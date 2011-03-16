@@ -25662,8 +25662,10 @@ else
   CFLAGS="$CFLAGS -Wunknown-pragmas"
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+
 void foo (void);
 #pragma weak foo
+
 int
 main ()
 {
