@@ -663,3 +663,28 @@ typedef unsigned int CUMULATIVE_ARGS;
   
 #define SELECT_CC_MODE(OP,X,Y)  rx_select_cc_mode ((OP), (X), (Y))
 
+#define JUMP_ALIGN(x)				rx_align_for_label (x)
+#define JUMP_ALIGN_MAX_SKIP			rx_max_skip_for_label (label)
+#define LABEL_ALIGN_AFTER_BARRIER(x)		rx_align_for_label (x)
+#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP	rx_max_skip_for_label (label)
+#define LOOP_ALIGN(x)				rx_align_for_label (x)
+#define LOOP_ALIGN_MAX_SKIP			rx_max_skip_for_label (label)
+#define LABEL_ALIGN(x)				rx_align_for_label (x)
+#define LABEL_ALIGN_MAX_SKIP			rx_max_skip_for_label (NULL_RTX)
+
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(STREAM, LOG, MAX_SKIP)	\
+  do						\
+    {						\
+      if ((LOG) == 0 || (MAX_SKIP) == 0)	\
+        break;					\
+      if (TARGET_AS100_SYNTAX)			\
+	{					\
+	  if ((LOG) >= 2)			\
+	    fprintf (STREAM, "\t.ALIGN 4\t; %d alignment actually requested\n", 1 << (LOG)); \
+	  else					\
+	    fprintf (STREAM, "\t.ALIGN 2\n");	\
+	}					\
+      else					\
+	fprintf (STREAM, "\t.balign %d,3,%d\n", 1 << (LOG), (MAX_SKIP));	\
+    }						\
+  while (0)

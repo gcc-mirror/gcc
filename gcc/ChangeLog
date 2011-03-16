@@ -1,3 +1,24 @@
+2011-03-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (JUMP_ALIGN): Define.
+	(JUMP_ALIGN_MAX_SKIP, LABEL_ALIGN_AFTER_BARRIER, LOOP_ALIGN,
+	(LABEL_ALIGN, LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP,
+	(LOOP_ALIGN_MAX_SKIP, LABEL_ALIGN_MAX_SKIP): Define.
+	* config/rx/rx-protos.h (rx_align_for_label): Prototype.
+	(rx_max_skip_for_label): Prototype.
+	* config/rx/rx.md (abssi3): Use CC_ZSmode.
+	(andis3): Fix timings.
+	(peephole): Add peephole to combine zero- and sign- extending
+	loads with arithmetic instructions.
+	(bset): Fix timing.
+	(bclr): Fix timing.
+	* config/rx/rx.c (rx_is_legitimate_address): Add checks for QImode
+	and HImode reg+int address.
+	(rx_print_operand): Add support for %R.  Fix generation of .B and
+	.W addressing modes.
+	(rx_align_for_label): New function.
+	(rx_max_skip_for_label): New function.
+
 2011-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48029
