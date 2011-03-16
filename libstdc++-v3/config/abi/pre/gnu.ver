@@ -1255,11 +1255,6 @@ GLIBCXX_3.4.15 {
     _ZTSNSt13__future_base11_State_baseE;
     _ZTVNSt13__future_base11_State_baseE;
 
-    _ZNSt6thread10_Impl_baseD*;
-    _ZTINSt6thread10_Impl_baseE;
-    _ZTSNSt6thread10_Impl_baseE;
-    _ZTVNSt6thread10_Impl_baseE;
-
 } GLIBCXX_3.4.14;
 
 # Symbols in the support library (libsupc++) have their own tag.
