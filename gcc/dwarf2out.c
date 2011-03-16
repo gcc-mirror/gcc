@@ -19615,7 +19615,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  for (ca_loc = call_arg_locations; ca_loc; ca_loc = ca_loc->next)
 	    {
 	      dw_die_ref die = NULL;
-	      rtx tloc = NULL_RTX;
+	      rtx tloc = NULL_RTX, tlocc = NULL_RTX;
 	      rtx arg, next_arg;
 
 	      for (arg = NOTE_VAR_LOCATION (ca_loc->call_arg_loc_note);
@@ -19642,6 +19642,13 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		    {
 		      gcc_assert (ca_loc->symbol_ref == NULL_RTX);
 		      tloc = XEXP (XEXP (arg, 0), 1);
+		      continue;
+		    }
+		  else if (GET_CODE (XEXP (XEXP (arg, 0), 0)) == CLOBBER
+			   && XEXP (XEXP (XEXP (arg, 0), 0), 0) == pc_rtx)
+		    {
+		      gcc_assert (ca_loc->symbol_ref == NULL_RTX);
+		      tlocc = XEXP (XEXP (arg, 0), 1);
 		      continue;
 		    }
 		  if (REG_P (XEXP (XEXP (arg, 0), 0)))
@@ -19677,13 +19684,23 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      if (die == NULL
 		  && (ca_loc->symbol_ref || tloc))
 		die = gen_call_site_die (decl, subr_die, ca_loc);
-	      if (die != NULL && tloc != NULL_RTX)
+	      if (die != NULL && (tloc != NULL_RTX || tlocc != NULL_RTX))
 		{
-		  dw_loc_descr_ref tval
-		    = mem_loc_descriptor (tloc, VOIDmode,
-					  VAR_INIT_STATUS_INITIALIZED);
+		  dw_loc_descr_ref tval = NULL;
+
+		  if (tloc != NULL_RTX)
+		    tval = mem_loc_descriptor (tloc, VOIDmode,
+					       VAR_INIT_STATUS_INITIALIZED);
 		  if (tval)
 		    add_AT_loc (die, DW_AT_GNU_call_site_target, tval);
+		  else if (tlocc != NULL_RTX)
+		    {
+		      tval = mem_loc_descriptor (tlocc, VOIDmode,
+						 VAR_INIT_STATUS_INITIALIZED);
+		      if (tval)
+			add_AT_loc (die, DW_AT_GNU_call_site_target_clobbered,
+				    tval);
+		    }
 		}
 	      if (die != NULL)
 		{

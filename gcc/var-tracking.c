@@ -5576,7 +5576,9 @@ prepare_call_arguments (basic_block bb, rtx insn)
   rtx link, x;
   rtx prev, cur, next;
   rtx call = PATTERN (insn);
-  tree type = NULL_TREE, t;
+  rtx this_arg = NULL_RTX;
+  tree type = NULL_TREE, t, fndecl = NULL_TREE;
+  tree obj_type_ref = NULL_TREE;
   CUMULATIVE_ARGS args_so_far;
 
   memset (&args_so_far, 0, sizeof (args_so_far));
@@ -5584,27 +5586,91 @@ prepare_call_arguments (basic_block bb, rtx insn)
     call = XVECEXP (call, 0, 0);
   if (GET_CODE (call) == SET)
     call = SET_SRC (call);
-  if (GET_CODE (call) == CALL
-      && MEM_P (XEXP (call, 0))
-      && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
+  if (GET_CODE (call) == CALL && MEM_P (XEXP (call, 0)))
     {
-      rtx symbol = XEXP (XEXP (call, 0), 0);
-      if (SYMBOL_REF_DECL (symbol)
-	  && TREE_CODE (SYMBOL_REF_DECL (symbol)) == FUNCTION_DECL
-	  && TYPE_ARG_TYPES (TREE_TYPE (SYMBOL_REF_DECL (symbol))))
+      if (GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
 	{
-	  type = TREE_TYPE (SYMBOL_REF_DECL (symbol));
+	  rtx symbol = XEXP (XEXP (call, 0), 0);
+	  if (SYMBOL_REF_DECL (symbol))
+	    fndecl = SYMBOL_REF_DECL (symbol);
+	}
+      if (fndecl == NULL_TREE)
+	fndecl = MEM_EXPR (XEXP (call, 0));
+      if (fndecl
+	  && TREE_CODE (TREE_TYPE (fndecl)) != FUNCTION_TYPE
+	  && TREE_CODE (TREE_TYPE (fndecl)) != METHOD_TYPE)
+	fndecl = NULL_TREE;
+      if (fndecl && TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
+	type = TREE_TYPE (fndecl);
+      if (fndecl && TREE_CODE (fndecl) != FUNCTION_DECL)
+	{
+	  if (TREE_CODE (fndecl) == INDIRECT_REF
+	      && TREE_CODE (TREE_OPERAND (fndecl, 0)) == OBJ_TYPE_REF)
+	    obj_type_ref = TREE_OPERAND (fndecl, 0);
+	  fndecl = NULL_TREE;
+	}
+      if (type)
+	{
 	  for (t = TYPE_ARG_TYPES (type); t && t != void_list_node;
 	       t = TREE_CHAIN (t))
 	    if (TREE_CODE (TREE_VALUE (t)) == REFERENCE_TYPE
 		&& INTEGRAL_TYPE_P (TREE_TYPE (TREE_VALUE (t))))
 	      break;
-	  if (t == NULL || t == void_list_node)
+	  if ((t == NULL || t == void_list_node) && obj_type_ref == NULL_TREE)
 	    type = NULL;
 	  else
-	    INIT_CUMULATIVE_ARGS (args_so_far, type, NULL_RTX,
-				  SYMBOL_REF_DECL (symbol),
-				  list_length (TYPE_ARG_TYPES (type)));
+	    {
+	      int nargs = list_length (TYPE_ARG_TYPES (type));
+	      link = CALL_INSN_FUNCTION_USAGE (insn);
+#ifndef PCC_STATIC_STRUCT_RETURN
+	      if (aggregate_value_p (TREE_TYPE (type), type)
+		  && targetm.calls.struct_value_rtx (type, 0) == 0)
+		{
+		  tree struct_addr = build_pointer_type (TREE_TYPE (type));
+		  enum machine_mode mode = TYPE_MODE (struct_addr);
+		  rtx reg;
+		  INIT_CUMULATIVE_ARGS (args_so_far, type, NULL_RTX, fndecl,
+					nargs + 1);
+		  reg = targetm.calls.function_arg (&args_so_far, mode,
+						    struct_addr, true);
+		  targetm.calls.function_arg_advance (&args_so_far, mode,
+						      struct_addr, true);
+		  if (reg == NULL_RTX)
+		    {
+		      for (; link; link = XEXP (link, 1))
+			if (GET_CODE (XEXP (link, 0)) == USE
+			    && MEM_P (XEXP (XEXP (link, 0), 0)))
+			  {
+			    link = XEXP (link, 1);
+			    break;
+			  }
+		    }
+		}
+#endif
+	      else
+		INIT_CUMULATIVE_ARGS (args_so_far, type, NULL_RTX, fndecl,
+				      nargs);
+	      if (obj_type_ref && TYPE_ARG_TYPES (type) != void_list_node)
+		{
+		  enum machine_mode mode;
+		  t = TYPE_ARG_TYPES (type);
+		  mode = TYPE_MODE (TREE_VALUE (t));
+		  this_arg = targetm.calls.function_arg (&args_so_far, mode,
+							 TREE_VALUE (t), true);
+		  if (this_arg && !REG_P (this_arg))
+		    this_arg = NULL_RTX;
+		  else if (this_arg == NULL_RTX)
+		    {
+		      for (; link; link = XEXP (link, 1))
+			if (GET_CODE (XEXP (link, 0)) == USE
+			    && MEM_P (XEXP (XEXP (link, 0), 0)))
+			  {
+			    this_arg = XEXP (XEXP (link, 0), 0);
+			    break;
+			  }
+		    }
+		}
+	    }
 	}
     }
   t = type ? TYPE_ARG_TYPES (type) : NULL_TREE;
@@ -5751,6 +5817,20 @@ prepare_call_arguments (basic_block bb, rtx insn)
 		= gen_rtx_EXPR_LIST (VOIDmode, x, call_arguments);
 	    }
 	}
+    }
+  if (this_arg)
+    {
+      enum machine_mode mode
+	= TYPE_MODE (TREE_TYPE (OBJ_TYPE_REF_EXPR (obj_type_ref)));
+      rtx clobbered = gen_rtx_MEM (mode, this_arg);
+      HOST_WIDE_INT token
+	= tree_low_cst (OBJ_TYPE_REF_TOKEN (obj_type_ref), 0);
+      if (token)
+	clobbered = plus_constant (clobbered, token * GET_MODE_SIZE (mode));
+      clobbered = gen_rtx_MEM (mode, clobbered);
+      x = gen_rtx_CONCAT (mode, gen_rtx_CLOBBER (VOIDmode, pc_rtx), clobbered);
+      call_arguments
+	= gen_rtx_EXPR_LIST (VOIDmode, x, call_arguments);
     }
 }
 
