@@ -1,5 +1,7 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	* call.c (build_over_call): Remove require_complete_type_sfinae call.
+
 	PR c++/48132
 	* decl.c (check_array_designated_initializer): Allow integer index.
 	(reshape_init_array_1): Set index on the elements.
