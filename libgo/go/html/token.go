@@ -25,6 +25,8 @@ const (
 	EndTagToken
 	// A SelfClosingTagToken tag looks like <br/>.
 	SelfClosingTagToken
+	// A CommentToken looks like <!--x-->.
+	CommentToken
 )
 
 // String returns a string representation of the TokenType.
@@ -40,6 +42,8 @@ func (t TokenType) String() string {
 		return "EndTag"
 	case SelfClosingTagToken:
 		return "SelfClosingTag"
+	case CommentToken:
+		return "Comment"
 	}
 	return "Invalid(" + strconv.Itoa(int(t)) + ")"
 }
@@ -52,8 +56,8 @@ type Attribute struct {
 }
 
 // A Token consists of a TokenType and some Data (tag name for start and end
-// tags, content for text). A tag Token may also contain a slice of Attributes.
-// Data is unescaped for both tag and text Tokens (it looks like "a<b" rather
+// tags, content for text and comments). A tag Token may also contain a slice
+// of Attributes. Data is unescaped for all Tokens (it looks like "a<b" rather
 // than "a&lt;b").
 type Token struct {
 	Type TokenType
@@ -91,12 +95,18 @@ func (t Token) String() string {
 		return "</" + t.tagString() + ">"
 	case SelfClosingTagToken:
 		return "<" + t.tagString() + "/>"
+	case CommentToken:
+		return "<!--" + EscapeString(t.Data) + "-->"
 	}
 	return "Invalid(" + strconv.Itoa(int(t.Type)) + ")"
 }
 
 // A Tokenizer returns a stream of HTML Tokens.
 type Tokenizer struct {
+	// If ReturnComments is set, Next returns comment tokens;
+	// otherwise it skips over comments (default).
+	ReturnComments bool
+
 	// r is the source of the HTML text.
 	r io.Reader
 	// tt is the TokenType of the most recently read token. If tt == Error
@@ -176,6 +186,39 @@ func (z *Tokenizer) readTo(x uint8) os.Error {
 	panic("unreachable")
 }
 
+// nextMarkupDeclaration returns the next TokenType starting with "<!".
+func (z *Tokenizer) nextMarkupDeclaration() (TokenType, os.Error) {
+	// TODO: check for <!DOCTYPE ... >, don't just assume that it's a comment.
+	for i := 0; i < 2; i++ {
+		c, err := z.readByte()
+		if err != nil {
+			return TextToken, err
+		}
+		if c != '-' {
+			return z.nextText(), nil
+		}
+	}
+	// <!--> is a valid comment.
+	for dashCount := 2; ; {
+		c, err := z.readByte()
+		if err != nil {
+			return TextToken, err
+		}
+		switch c {
+		case '-':
+			dashCount++
+		case '>':
+			if dashCount >= 2 {
+				return CommentToken, nil
+			}
+			fallthrough
+		default:
+			dashCount = 0
+		}
+	}
+	panic("unreachable")
+}
+
 // nextTag returns the next TokenType starting from the tag open state.
 func (z *Tokenizer) nextTag() (tt TokenType, err os.Error) {
 	c, err := z.readByte()
@@ -189,7 +232,7 @@ func (z *Tokenizer) nextTag() (tt TokenType, err os.Error) {
 	case 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z':
 		tt = StartTagToken
 	case c == '!':
-		return ErrorToken, os.NewError("html: TODO(nigeltao): implement comments")
+		return z.nextMarkupDeclaration()
 	case c == '?':
 		return ErrorToken, os.NewError("html: TODO(nigeltao): implement XML processing instructions")
 	default:
@@ -221,22 +264,8 @@ func (z *Tokenizer) nextTag() (tt TokenType, err os.Error) {
 	panic("unreachable")
 }
 
-// Next scans the next token and returns its type.
-func (z *Tokenizer) Next() TokenType {
-	if z.err != nil {
-		z.tt = ErrorToken
-		return z.tt
-	}
-	z.p0 = z.p1
-	c, err := z.readByte()
-	if err != nil {
-		z.tt, z.err = ErrorToken, err
-		return z.tt
-	}
-	if c == '<' {
-		z.tt, z.err = z.nextTag()
-		return z.tt
-	}
+// nextText reads all text up until an '<'.
+func (z *Tokenizer) nextText() TokenType {
 	for {
 		c, err := z.readByte()
 		if err != nil {
@@ -251,6 +280,31 @@ func (z *Tokenizer) Next() TokenType {
 			z.tt = TextToken
 			return z.tt
 		}
+	}
+	panic("unreachable")
+}
+
+// Next scans the next token and returns its type.
+func (z *Tokenizer) Next() TokenType {
+	for {
+		if z.err != nil {
+			z.tt = ErrorToken
+			return z.tt
+		}
+		z.p0 = z.p1
+		c, err := z.readByte()
+		if err != nil {
+			z.tt, z.err = ErrorToken, err
+			return z.tt
+		}
+		if c == '<' {
+			z.tt, z.err = z.nextTag()
+			if z.tt == CommentToken && !z.ReturnComments {
+				continue
+			}
+			return z.tt
+		}
+		return z.nextText()
 	}
 	panic("unreachable")
 }
@@ -299,18 +353,33 @@ loop:
 	return z.buf[i0:i], z.trim(i)
 }
 
-// Text returns the raw data after unescaping.
+// Text returns the unescaped text of a TextToken or a CommentToken.
 // The contents of the returned slice may change on the next call to Next.
 func (z *Tokenizer) Text() []byte {
-	s := unescape(z.Raw())
-	z.p0 = z.p1
-	return s
+	switch z.tt {
+	case TextToken:
+		s := unescape(z.Raw())
+		z.p0 = z.p1
+		return s
+	case CommentToken:
+		// We trim the "<!--" from the left and the "-->" from the right.
+		// "<!-->" is a valid comment, so the adjusted endpoints might overlap.
+		i0 := z.p0 + 4
+		i1 := z.p1 - 3
+		z.p0 = z.p1
+		var s []byte
+		if i0 < i1 {
+			s = unescape(z.buf[i0:i1])
+		}
+		return s
+	}
+	return nil
 }
 
 // TagName returns the lower-cased name of a tag token (the `img` out of
-// `<IMG SRC="foo">`), and whether the tag has attributes.
+// `<IMG SRC="foo">`) and whether the tag has attributes.
 // The contents of the returned slice may change on the next call to Next.
-func (z *Tokenizer) TagName() (name []byte, remaining bool) {
+func (z *Tokenizer) TagName() (name []byte, hasAttr bool) {
 	i := z.p0 + 1
 	if i >= z.p1 {
 		z.p0 = z.p1
@@ -320,14 +389,14 @@ func (z *Tokenizer) TagName() (name []byte, remaining bool) {
 		i++
 	}
 	name, z.p0 = z.lower(i)
-	remaining = z.p0 != z.p1
+	hasAttr = z.p0 != z.p1
 	return
 }
 
 // TagAttr returns the lower-cased key and unescaped value of the next unparsed
-// attribute for the current tag token, and whether there are more attributes.
+// attribute for the current tag token and whether there are more attributes.
 // The contents of the returned slices may change on the next call to Next.
-func (z *Tokenizer) TagAttr() (key, val []byte, remaining bool) {
+func (z *Tokenizer) TagAttr() (key, val []byte, moreAttr bool) {
 	key, i := z.lower(z.p0)
 	// Get past the "=\"".
 	if i == z.p1 || z.buf[i] != '=' {
@@ -363,7 +432,7 @@ loop:
 		}
 	}
 	val, z.p0 = z.buf[i:dst], z.trim(src)
-	remaining = z.p0 != z.p1
+	moreAttr = z.p0 != z.p1
 	return
 }
 
@@ -372,14 +441,14 @@ loop:
 func (z *Tokenizer) Token() Token {
 	t := Token{Type: z.tt}
 	switch z.tt {
-	case TextToken:
+	case TextToken, CommentToken:
 		t.Data = string(z.Text())
 	case StartTagToken, EndTagToken, SelfClosingTagToken:
 		var attr []Attribute
-		name, remaining := z.TagName()
-		for remaining {
+		name, moreAttr := z.TagName()
+		for moreAttr {
 			var key, val []byte
-			key, val, remaining = z.TagAttr()
+			key, val, moreAttr = z.TagAttr()
 			attr = append(attr, Attribute{string(key), string(val)})
 		}
 		t.Data = string(name)

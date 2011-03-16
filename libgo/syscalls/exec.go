@@ -12,7 +12,7 @@ import "unsafe"
 
 func libc_fcntl(fd int, cmd int, arg int) int __asm__ ("fcntl")
 func libc_fork() Pid_t __asm__ ("fork")
-func libc_chdir(name *byte) int __asm__ ("chdir");
+func libc_chdir(name *byte) int __asm__ ("chdir")
 func libc_dup2(int, int) int __asm__ ("dup2")
 func libc_execve(*byte, **byte, **byte) int __asm__ ("execve")
 func libc_sysexit(int) __asm__ ("_exit")
@@ -27,17 +27,17 @@ func libc_wait4(Pid_t, *int, int, *Rusage) Pid_t __asm__ ("wait4")
 func forkAndExecInChild(argv0 *byte, argv []*byte, envv []*byte, traceme bool, dir *byte, fd []int, pipe int) (pid int, err int) {
 	// Declare all variables at top in case any
 	// declarations require heap allocation (e.g., err1).
-	var r1, r2, err1 uintptr;
-	var nextfd int;
-	var i int;
+	var r1, r2, err1 uintptr
+	var nextfd int
+	var i int
 
-	darwin := OS == "darwin";
+	darwin := OS == "darwin"
 
 	// About to call fork.
 	// No more allocation or calls of non-assembly functions.
-	child := libc_fork();
+	child := libc_fork()
 	if child == -1 {
-		return 0, GetErrno();
+		return 0, GetErrno()
 	}
 
 	if child != 0 {
@@ -50,41 +50,41 @@ func forkAndExecInChild(argv0 *byte, argv []*byte, envv []*byte, traceme bool, d
 	// Enable tracing if requested.
 	if traceme {
 		if libc_ptrace(_PTRACE_TRACEME, 0, 0, nil) < 0 {
-			goto childerror;
+			goto childerror
 		}
 	}
 
 	// Chdir
 	if dir != nil {
-		r := libc_chdir(dir);
+		r := libc_chdir(dir)
 		if r < 0 {
-			goto childerror;
+			goto childerror
 		}
 	}
 
 	// Pass 1: look for fd[i] < i and move those up above len(fd)
 	// so that pass 2 won't stomp on an fd it needs later.
-	nextfd = int(len(fd));
+	nextfd = int(len(fd))
 	if pipe < nextfd {
-		r := libc_dup2(pipe, nextfd);
+		r := libc_dup2(pipe, nextfd)
 		if r == -1 {
-			goto childerror;
+			goto childerror
 		}
-		libc_fcntl(nextfd, F_SETFD, FD_CLOEXEC);
-		pipe = nextfd;
-		nextfd++;
+		libc_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
+		pipe = nextfd
+		nextfd++
 	}
 	for i = 0; i < len(fd); i++ {
 		if fd[i] >= 0 && fd[i] < int(i) {
-			r := libc_dup2(fd[i], nextfd);
+			r := libc_dup2(fd[i], nextfd)
 			if r == -1 {
-				goto childerror;
+				goto childerror
 			}
-			libc_fcntl(nextfd, F_SETFD, FD_CLOEXEC);
-			fd[i] = nextfd;
-			nextfd++;
-			if nextfd == pipe {	// don't stomp on pipe
-				nextfd++;
+			libc_fcntl(nextfd, F_SETFD, FD_CLOEXEC)
+			fd[i] = nextfd
+			nextfd++
+			if nextfd == pipe { // don't stomp on pipe
+				nextfd++
 			}
 		}
 	}
@@ -92,23 +92,23 @@ func forkAndExecInChild(argv0 *byte, argv []*byte, envv []*byte, traceme bool, d
 	// Pass 2: dup fd[i] down onto i.
 	for i = 0; i < len(fd); i++ {
 		if fd[i] == -1 {
-			libc_close(i);
-			continue;
+			libc_close(i)
+			continue
 		}
 		if fd[i] == int(i) {
 			// dup2(i, i) won't clear close-on-exec flag on Linux,
 			// probably not elsewhere either.
-			r := libc_fcntl(fd[i], F_SETFD, 0);
+			r := libc_fcntl(fd[i], F_SETFD, 0)
 			if r != 0 {
-				goto childerror;
+				goto childerror
 			}
-			continue;
+			continue
 		}
 		// The new fd is created NOT close-on-exec,
 		// which is exactly what we want.
-		r := libc_dup2(fd[i], i);
+		r := libc_dup2(fd[i], i)
 		if r == -1 {
-			goto childerror;
+			goto childerror
 		}
 	}
 
@@ -117,17 +117,17 @@ func forkAndExecInChild(argv0 *byte, argv []*byte, envv []*byte, traceme bool, d
 	// Programs that know they inherit fds >= 3 will need
 	// to set them close-on-exec.
 	for i = len(fd); i < 3; i++ {
-		libc_close(i);
+		libc_close(i)
 	}
 
 	// Time to exec.
-	libc_execve(argv0, &argv[0], &envv[0]);
+	libc_execve(argv0, &argv[0], &envv[0])
 
 childerror:
 	// send error code on pipe
-	var e uintptr = uintptr(GetErrno());
+	var e uintptr = uintptr(GetErrno())
 	libc_write(pipe, (*byte)(unsafe.Pointer(&e)),
-		   Size_t(unsafe.Sizeof(err1)));
+		   Size_t(unsafe.Sizeof(err1)))
 	for {
 		libc_sysexit(253)
 	}
@@ -135,79 +135,78 @@ childerror:
 	// Calling panic is not actually safe,
 	// but the for loop above won't break
 	// and this shuts up the compiler.
-	panic("unreached");
+	panic("unreached")
 }
 
 func forkExec(argv0 string, argv []string, envv []string, traceme bool, dir string, fd []int) (pid int, err int) {
-	var p [2]int;
-	var r1 int;
-	var err1 uintptr;
-	var wstatus WaitStatus;
+	var p [2]int
+	var r1 int
+	var err1 uintptr
+	var wstatus WaitStatus
 
-	p[0] = -1;
-	p[1] = -1;
+	p[0] = -1
+	p[1] = -1
 
 	// Convert args to C form.
-	argv0p := StringBytePtr(argv0);
-	argvp := StringArrayPtr(argv);
-	envvp := StringArrayPtr(envv);
-	var dirp *byte;
+	argv0p := StringBytePtr(argv0)
+	argvp := StringArrayPtr(argv)
+	envvp := StringArrayPtr(envv)
+	var dirp *byte
 	if len(dir) > 0 {
-		dirp = StringBytePtr(dir);
+		dirp = StringBytePtr(dir)
 	}
 
 	// Acquire the fork lock so that no other threads
 	// create new fds that are not yet close-on-exec
 	// before we fork.
-	ForkLock.Lock();
+	ForkLock.Lock()
 
 	// Allocate child status pipe close on exec.
 	if err = Pipe(p[0:]); err != 0 {
-		goto error;
+		goto error
 	}
-	var val int;
-	if val, err = fcntl(p[0], F_SETFD, FD_CLOEXEC); err != 0 {
-		goto error;
+	if _, err = fcntl(p[0], F_SETFD, FD_CLOEXEC); err != 0 {
+		goto error
 	}
-	if val, err = fcntl(p[1], F_SETFD, FD_CLOEXEC); err != 0 {
-		goto error;
+	if _, err = fcntl(p[1], F_SETFD, FD_CLOEXEC); err != 0 {
+		goto error
 	}
 
 	// Kick off child.
-	pid, err = forkAndExecInChild(argv0p, argvp, envvp, traceme, dirp, fd, p[1]);
+	pid, err = forkAndExecInChild(argv0p, argvp, envvp, traceme, dirp, fd, p[1])
 	if err != 0 {
 	error:
 		if p[0] >= 0 {
-			Close(p[0]);
-			Close(p[1]);
+			Close(p[0])
+			Close(p[1])
 		}
-		ForkLock.Unlock();
+		ForkLock.Unlock()
 		return 0, err
 	}
-	ForkLock.Unlock();
+	ForkLock.Unlock()
 
 	// Read child error status from pipe.
-	Close(p[1]);
+	Close(p[1])
 	n := libc_read(p[0], (*byte)(unsafe.Pointer(&err1)),
-		       Size_t(unsafe.Sizeof(err1)));
-	err = 0;
+		       Size_t(unsafe.Sizeof(err1)))
+	err = 0
 	if n < 0 {
-		err = GetErrno();
+		err = GetErrno()
 	}
-	Close(p[0]);
+	Close(p[0])
 	if err != 0 || n != 0 {
 		if int(n) == unsafe.Sizeof(err1) {
-			err = int(err1);
+			err = int(err1)
 		}
 		if err == 0 {
-			err = EPIPE;
+			err = EPIPE
 		}
 
 		// Child failed; wait for it to exit, to make sure
 		// the zombies don't accumulate.
-		pid1, err1 := Wait4(pid, &wstatus, 0, nil);
+		_, err1 := Wait4(pid, &wstatus, 0, nil)
 		for err1 == EINTR {
-			pid1, err1 = Wait4(pid, &wstatus, 0, nil);
+			_, err1 = Wait4(pid, &wstatus, 0, nil)
 		}
 		return 0, err
 	}
@@ -218,31 +217,37 @@ func forkExec(argv0 string, argv []string, envv []string, traceme bool, dir stri
 
 // Combination of fork and exec, careful to be thread safe.
 func ForkExec(argv0 string, argv []string, envv []string, dir string, fd []int) (pid int, err int) {
-	return forkExec(argv0, argv, envv, false, dir, fd);
+	return forkExec(argv0, argv, envv, false, dir, fd)
 }
 
 // PtraceForkExec is like ForkExec, but starts the child in a traced state.
 func PtraceForkExec(argv0 string, argv []string, envv []string, dir string, fd []int) (pid int, err int) {
-	return forkExec(argv0, argv, envv, true, dir, fd);
+	return forkExec(argv0, argv, envv, true, dir, fd)
 }
 
 // Ordinary exec.
 func Exec(argv0 string, argv []string, envv []string) (err int) {
-	argv_arg := StringArrayPtr(argv);
-	envv_arg := StringArrayPtr(envv);
-	libc_execve(StringBytePtr(argv0), &argv_arg[0], &envv_arg[0]);
-	return GetErrno();
+	argv_arg := StringArrayPtr(argv)
+	envv_arg := StringArrayPtr(envv)
+	libc_execve(StringBytePtr(argv0), &argv_arg[0], &envv_arg[0])
+	return GetErrno()
+}
+
+// StartProcess wraps ForkExec for package os.
+func StartProcess(argv0 string, argv []string, envv []string, dir string, fd []int) (pid, handle int, err int) {
+	pid, err = forkExec(argv0, argv, envv, false, dir, fd)
+	return pid, 0, err
 }
 
 func Wait4(pid int, wstatus *WaitStatus, options int, rusage *Rusage) (wpid int, errno int) {
-	var status int;
-	r := libc_wait4(Pid_t(pid), &status, options, rusage);
-	wpid = int(r);
+	var status int
+	r := libc_wait4(Pid_t(pid), &status, options, rusage)
+	wpid = int(r)
 	if r < 0 {
-		errno = GetErrno();
+		errno = GetErrno()
 	}
 	if wstatus != nil {
-		*wstatus = WaitStatus(status);
+		*wstatus = WaitStatus(status)
 	}
-	return;
+	return
 }

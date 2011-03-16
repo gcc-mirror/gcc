@@ -57,7 +57,6 @@ type MemStatsType struct {
 	MSpanSys    uint64
 	MCacheInuse uint64 // mcache structures
 	MCacheSys   uint64
-	MHeapMapSys uint64 // heap map
 	BuckHashSys uint64 // profiling bucket hash table
 
 	// Garbage collector statistics.
@@ -70,7 +69,8 @@ type MemStatsType struct {
 
 	// Per-size allocation statistics.
 	// Not locked during update; approximate.
-	BySize [67]struct {
+	// 61 is NumSizeClasses in the C code.
+	BySize [61]struct {
 		Size    uint32
 		Mallocs uint64
 		Frees   uint64

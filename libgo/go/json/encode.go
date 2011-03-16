@@ -7,12 +7,14 @@
 package json
 
 import (
-	"os"
 	"bytes"
+	"encoding/base64"
+	"os"
 	"reflect"
 	"runtime"
 	"sort"
 	"strconv"
+	"unicode"
 	"utf8"
 )
 
@@ -31,13 +33,14 @@ import (
 // String values encode as JSON strings, with each invalid UTF-8 sequence
 // replaced by the encoding of the Unicode replacement character U+FFFD.
 //
-// Array and slice values encode as JSON arrays.
+// Array and slice values encode as JSON arrays, except that
+// []byte encodes as a base64-encoded string.
 //
 // Struct values encode as JSON objects.  Each struct field becomes
 // a member of the object.  By default the object's key name is the
-// struct field name converted to lower case.  If the struct field
-// has a tag, that tag will be used as the name instead.
-// Only exported fields will be encoded.
+// struct field name.  If the struct field has a non-empty tag consisting
+// of only Unicode letters, digits, and underscores, that tag will be used
+// as the name instead.  Only exported fields will be encoded.
 //
 // Map values encode as JSON objects.
 // The map's key type must be string; the object keys are used directly
@@ -177,6 +180,8 @@ func (e *encodeState) error(err os.Error) {
 	panic(err)
 }
 
+var byteSliceType = reflect.Typeof([]byte(nil))
+
 func (e *encodeState) reflectValue(v reflect.Value) {
 	if v == nil {
 		e.WriteString("null")
@@ -231,7 +236,7 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 			} else {
 				e.WriteByte(',')
 			}
-			if f.Tag != "" {
+			if isValidTag(f.Tag) {
 				e.string(f.Tag)
 			} else {
 				e.string(f.Name)
@@ -263,6 +268,24 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 		e.WriteByte('}')
 
 	case reflect.ArrayOrSliceValue:
+		if v.Type() == byteSliceType {
+			e.WriteByte('"')
+			s := v.Interface().([]byte)
+			if len(s) < 1024 {
+				// for small buffers, using Encode directly is much faster.
+				dst := make([]byte, base64.StdEncoding.EncodedLen(len(s)))
+				base64.StdEncoding.Encode(dst, s)
+				e.Write(dst)
+			} else {
+				// for large buffers, avoid unnecessary extra temporary
+				// buffer space.
+				enc := base64.NewEncoder(base64.StdEncoding, e)
+				enc.Write(s)
+				enc.Close()
+			}
+			e.WriteByte('"')
+			break
+		}
 		e.WriteByte('[')
 		n := v.Len()
 		for i := 0; i < n; i++ {
@@ -284,6 +307,18 @@ func (e *encodeState) reflectValue(v reflect.Value) {
 		e.error(&UnsupportedTypeError{v.Type()})
 	}
 	return
+}
+
+func isValidTag(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, c := range s {
+		if c != '_' && !unicode.IsLetter(c) && !unicode.IsDigit(c) {
+			return false
+		}
+	}
+	return true
 }
 
 // stringValues is a slice of reflect.Value holding *reflect.StringValue.

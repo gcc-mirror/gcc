@@ -31,6 +31,7 @@ var (
 	ErrWriteAfterFlush = os.NewError("Conn.Write called after Flush")
 	ErrBodyNotAllowed  = os.NewError("http: response status code does not allow body")
 	ErrHijacked        = os.NewError("Conn has been hijacked")
+	ErrContentLength   = os.NewError("Conn.Write wrote more than the declared Content-Length")
 )
 
 // Objects implementing the Handler interface can be
@@ -60,10 +61,10 @@ type ResponseWriter interface {
 	//
 	//	Content-Type: text/html; charset=utf-8
 	//
-	// being sent.  UTF-8 encoded HTML is the default setting for
+	// being sent. UTF-8 encoded HTML is the default setting for
 	// Content-Type in this library, so users need not make that
-	// particular call.  Calls to SetHeader after WriteHeader (or Write)
-	// are ignored.
+	// particular call. Calls to SetHeader after WriteHeader (or Write)
+	// are ignored. An empty value removes the header if previously set.
 	SetHeader(string, string)
 
 	// Write writes the data to the connection as part of an HTTP reply.
@@ -108,6 +109,7 @@ type response struct {
 	wroteContinue bool              // 100 Continue response was written
 	header        map[string]string // reply header parameters
 	written       int64             // number of bytes written in body
+	contentLength int64             // explicitly-declared Content-Length; or -1
 	status        int               // status code passed to WriteHeader
 
 	// close connection after this reply.  set on request and
@@ -170,33 +172,13 @@ func (c *conn) readRequest() (w *response, err os.Error) {
 	w.conn = c
 	w.req = req
 	w.header = make(map[string]string)
+	w.contentLength = -1
 
 	// Expect 100 Continue support
 	if req.expectsContinue() && req.ProtoAtLeast(1, 1) {
 		// Wrap the Body reader with one that replies on the connection
 		req.Body = &expectContinueReader{readCloser: req.Body, resp: w}
 	}
-
-	// Default output is HTML encoded in UTF-8.
-	w.SetHeader("Content-Type", "text/html; charset=utf-8")
-	w.SetHeader("Date", time.UTC().Format(TimeFormat))
-
-	if req.Method == "HEAD" {
-		// do nothing
-	} else if req.ProtoAtLeast(1, 1) {
-		// HTTP/1.1 or greater: use chunked transfer encoding
-		// to avoid closing the connection at EOF.
-		w.chunking = true
-		w.SetHeader("Transfer-Encoding", "chunked")
-	} else {
-		// HTTP version < 1.1: cannot do chunked transfer
-		// encoding, so signal EOF by closing connection.
-		// Will be overridden if the HTTP handler ends up
-		// writing a Content-Length and the client requested
-		// "Connection: keep-alive"
-		w.closeAfterReply = true
-	}
-
 	return w, nil
 }
 
@@ -209,7 +191,10 @@ func (w *response) UsingTLS() bool {
 func (w *response) RemoteAddr() string { return w.conn.remoteAddr }
 
 // SetHeader implements the ResponseWriter.SetHeader method
-func (w *response) SetHeader(hdr, val string) { w.header[CanonicalHeaderKey(hdr)] = val }
+// An empty value removes the header from the map.
+func (w *response) SetHeader(hdr, val string) {
+	w.header[CanonicalHeaderKey(hdr)] = val, val != ""
+}
 
 // WriteHeader implements the ResponseWriter.WriteHeader method
 func (w *response) WriteHeader(code int) {
@@ -225,13 +210,83 @@ func (w *response) WriteHeader(code int) {
 	w.status = code
 	if code == StatusNotModified {
 		// Must not have body.
-		w.header["Content-Type"] = "", false
-		w.header["Transfer-Encoding"] = "", false
-		w.chunking = false
+		for _, header := range []string{"Content-Type", "Content-Length", "Transfer-Encoding"} {
+			if w.header[header] != "" {
+				// TODO: return an error if WriteHeader gets a return parameter
+				// or set a flag on w to make future Writes() write an error page?
+				// for now just log and drop the header.
+				log.Printf("http: StatusNotModified response with header %q defined", header)
+				w.header[header] = "", false
+			}
+		}
+	} else {
+		// Default output is HTML encoded in UTF-8.
+		if w.header["Content-Type"] == "" {
+			w.SetHeader("Content-Type", "text/html; charset=utf-8")
+		}
 	}
+
+	if w.header["Date"] == "" {
+		w.SetHeader("Date", time.UTC().Format(TimeFormat))
+	}
+
+	// Check for a explicit (and valid) Content-Length header.
+	var hasCL bool
+	var contentLength int64
+	if clenStr, ok := w.header["Content-Length"]; ok {
+		var err os.Error
+		contentLength, err = strconv.Atoi64(clenStr)
+		if err == nil {
+			hasCL = true
+		} else {
+			log.Printf("http: invalid Content-Length of %q sent", clenStr)
+			w.SetHeader("Content-Length", "")
+		}
+	}
+
+	te, hasTE := w.header["Transfer-Encoding"]
+	if hasCL && hasTE && te != "identity" {
+		// TODO: return an error if WriteHeader gets a return parameter
+		// For now just ignore the Content-Length.
+		log.Printf("http: WriteHeader called with both Transfer-Encoding of %q and a Content-Length of %d",
+			te, contentLength)
+		w.SetHeader("Content-Length", "")
+		hasCL = false
+	}
+
+	if w.req.Method == "HEAD" {
+		// do nothing
+	} else if hasCL {
+		w.chunking = false
+		w.contentLength = contentLength
+		w.SetHeader("Transfer-Encoding", "")
+	} else if w.req.ProtoAtLeast(1, 1) {
+		// HTTP/1.1 or greater: use chunked transfer encoding
+		// to avoid closing the connection at EOF.
+		// TODO: this blows away any custom or stacked Transfer-Encoding they
+		// might have set.  Deal with that as need arises once we have a valid
+		// use case.
+		w.chunking = true
+		w.SetHeader("Transfer-Encoding", "chunked")
+	} else {
+		// HTTP version < 1.1: cannot do chunked transfer
+		// encoding and we don't know the Content-Length so
+		// signal EOF by closing connection.
+		w.closeAfterReply = true
+		w.chunking = false                   // redundant
+		w.SetHeader("Transfer-Encoding", "") // in case already set
+	}
+
+	if w.req.wantsHttp10KeepAlive() && (w.req.Method == "HEAD" || hasCL) {
+		_, connectionHeaderSet := w.header["Connection"]
+		if !connectionHeaderSet {
+			w.SetHeader("Connection", "keep-alive")
+		}
+	}
+
 	// Cannot use Content-Length with non-identity Transfer-Encoding.
 	if w.chunking {
-		w.header["Content-Length"] = "", false
+		w.SetHeader("Content-Length", "")
 	}
 	if !w.req.ProtoAtLeast(1, 0) {
 		return
@@ -259,15 +314,6 @@ func (w *response) Write(data []byte) (n int, err os.Error) {
 		return 0, ErrHijacked
 	}
 	if !w.wroteHeader {
-		if w.req.wantsHttp10KeepAlive() {
-			_, hasLength := w.header["Content-Length"]
-			if hasLength {
-				_, connectionHeaderSet := w.header["Connection"]
-				if !connectionHeaderSet {
-					w.header["Connection"] = "keep-alive"
-				}
-			}
-		}
 		w.WriteHeader(StatusOK)
 	}
 	if len(data) == 0 {
@@ -280,6 +326,9 @@ func (w *response) Write(data []byte) (n int, err os.Error) {
 	}
 
 	w.written += int64(len(data)) // ignoring errors, for errorKludge
+	if w.contentLength != -1 && w.written > w.contentLength {
+		return 0, ErrContentLength
+	}
 
 	// TODO(rsc): if chunking happened after the buffering,
 	// then there would be fewer chunk headers.
@@ -369,6 +418,11 @@ func (w *response) finishRequest() {
 	}
 	w.conn.buf.Flush()
 	w.req.Body.Close()
+
+	if w.contentLength != -1 && w.contentLength != w.written {
+		// Did not write enough. Avoid getting out of sync.
+		w.closeAfterReply = true
+	}
 }
 
 // Flush implements the ResponseWriter.Flush method.
@@ -539,9 +593,8 @@ func RedirectHandler(url string, code int) Handler {
 // patterns and calls the handler for the pattern that
 // most closely matches the URL.
 //
-// Patterns named fixed paths, like "/favicon.ico",
-// or subtrees, like "/images/" (note the trailing slash).
-// Patterns must begin with /.
+// Patterns named fixed, rooted paths, like "/favicon.ico",
+// or rooted subtrees, like "/images/" (note the trailing slash).
 // Longer patterns take precedence over shorter ones, so that
 // if there are handlers registered for both "/images/"
 // and "/images/thumbnails/", the latter handler will be
@@ -549,11 +602,11 @@ func RedirectHandler(url string, code int) Handler {
 // former will receiver requests for any other paths in the
 // "/images/" subtree.
 //
-// In the future, the pattern syntax may be relaxed to allow
-// an optional host-name at the beginning of the pattern,
-// so that a handler might register for the two patterns
-// "/codesearch" and "codesearch.google.com/"
-// without taking over requests for http://www.google.com/.
+// Patterns may optionally begin with a host name, restricting matches to
+// URLs on that host only.  Host-specific patterns take precedence over
+// general patterns, so that a handler might register for the two patterns
+// "/codesearch" and "codesearch.google.com/" without also taking over
+// requests for "http://www.google.com/".
 //
 // ServeMux also takes care of sanitizing the URL request path,
 // redirecting any request containing . or .. elements to an
@@ -598,6 +651,23 @@ func cleanPath(p string) string {
 	return np
 }
 
+// Find a handler on a handler map given a path string
+// Most-specific (longest) pattern wins
+func (mux *ServeMux) match(path string) Handler {
+	var h Handler
+	var n = 0
+	for k, v := range mux.m {
+		if !pathMatch(k, path) {
+			continue
+		}
+		if h == nil || len(k) > n {
+			n = len(k)
+			h = v
+		}
+	}
+	return h
+}
+
 // ServeHTTP dispatches the request to the handler whose
 // pattern most closely matches the request URL.
 func (mux *ServeMux) ServeHTTP(w ResponseWriter, r *Request) {
@@ -607,18 +677,10 @@ func (mux *ServeMux) ServeHTTP(w ResponseWriter, r *Request) {
 		w.WriteHeader(StatusMovedPermanently)
 		return
 	}
-
-	// Most-specific (longest) pattern wins.
-	var h Handler
-	var n = 0
-	for k, v := range mux.m {
-		if !pathMatch(k, r.URL.Path) {
-			continue
-		}
-		if h == nil || len(k) > n {
-			n = len(k)
-			h = v
-		}
+	// Host-specific pattern takes precedence over generic ones
+	h := mux.match(r.Host + r.URL.Path)
+	if h == nil {
+		h = mux.match(r.URL.Path)
 	}
 	if h == nil {
 		h = NotFoundHandler()
@@ -628,7 +690,7 @@ func (mux *ServeMux) ServeHTTP(w ResponseWriter, r *Request) {
 
 // Handle registers the handler for the given pattern.
 func (mux *ServeMux) Handle(pattern string, handler Handler) {
-	if pattern == "" || pattern[0] != '/' {
+	if pattern == "" {
 		panic("http: invalid pattern " + pattern)
 	}
 
@@ -649,10 +711,12 @@ func (mux *ServeMux) HandleFunc(pattern string, handler func(ResponseWriter, *Re
 
 // Handle registers the handler for the given pattern
 // in the DefaultServeMux.
+// The documentation for ServeMux explains how patterns are matched.
 func Handle(pattern string, handler Handler) { DefaultServeMux.Handle(pattern, handler) }
 
 // HandleFunc registers the handler function for the given pattern
 // in the DefaultServeMux.
+// The documentation for ServeMux explains how patterns are matched.
 func HandleFunc(pattern string, handler func(ResponseWriter, *Request)) {
 	DefaultServeMux.HandleFunc(pattern, handler)
 }
@@ -662,6 +726,39 @@ func HandleFunc(pattern string, handler func(ResponseWriter, *Request)) {
 // read requests and then call handler to reply to them.
 // Handler is typically nil, in which case the DefaultServeMux is used.
 func Serve(l net.Listener, handler Handler) os.Error {
+	srv := &Server{Handler: handler}
+	return srv.Serve(l)
+}
+
+// A Server defines parameters for running an HTTP server.
+type Server struct {
+	Addr         string  // TCP address to listen on, ":http" if empty
+	Handler      Handler // handler to invoke, http.DefaultServeMux if nil
+	ReadTimeout  int64   // the net.Conn.SetReadTimeout value for new connections
+	WriteTimeout int64   // the net.Conn.SetWriteTimeout value for new connections
+}
+
+// ListenAndServe listens on the TCP network address srv.Addr and then
+// calls Serve to handle requests on incoming connections.  If
+// srv.Addr is blank, ":http" is used.
+func (srv *Server) ListenAndServe() os.Error {
+	addr := srv.Addr
+	if addr == "" {
+		addr = ":http"
+	}
+	l, e := net.Listen("tcp", addr)
+	if e != nil {
+		return e
+	}
+	return srv.Serve(l)
+}
+
+// Serve accepts incoming connections on the Listener l, creating a
+// new service thread for each.  The service threads read requests and
+// then call srv.Handler to reply to them.
+func (srv *Server) Serve(l net.Listener) os.Error {
+	defer l.Close()
+	handler := srv.Handler
 	if handler == nil {
 		handler = DefaultServeMux
 	}
@@ -669,6 +766,12 @@ func Serve(l net.Listener, handler Handler) os.Error {
 		rw, e := l.Accept()
 		if e != nil {
 			return e
+		}
+		if srv.ReadTimeout != 0 {
+			rw.SetReadTimeout(srv.ReadTimeout)
+		}
+		if srv.WriteTimeout != 0 {
+			rw.SetWriteTimeout(srv.WriteTimeout)
 		}
 		c, err := newConn(rw, handler)
 		if err != nil {
@@ -703,17 +806,12 @@ func Serve(l net.Listener, handler Handler) os.Error {
 //		http.HandleFunc("/hello", HelloServer)
 //		err := http.ListenAndServe(":12345", nil)
 //		if err != nil {
-//			log.Exit("ListenAndServe: ", err.String())
+//			log.Fatal("ListenAndServe: ", err.String())
 //		}
 //	}
 func ListenAndServe(addr string, handler Handler) os.Error {
-	l, e := net.Listen("tcp", addr)
-	if e != nil {
-		return e
-	}
-	e = Serve(l, handler)
-	l.Close()
-	return e
+	server := &Server{Addr: addr, Handler: handler}
+	return server.ListenAndServe()
 }
 
 // ListenAndServeTLS acts identically to ListenAndServe, except that it
@@ -737,7 +835,7 @@ func ListenAndServe(addr string, handler Handler) os.Error {
 //		log.Printf("About to listen on 10443. Go to https://127.0.0.1:10443/")
 //		err := http.ListenAndServeTLS(":10443", "cert.pem", "key.pem", nil)
 //		if err != nil {
-//			log.Exit(err)
+//			log.Fatal(err)
 //		}
 //	}
 //

@@ -21,7 +21,7 @@ __go_string_plus (struct __go_string s1, struct __go_string s2)
     return s1;
 
   len = s1.__length + s2.__length;
-  retdata = runtime_mallocgc (len, RefNoPointers, 1, 0);
+  retdata = runtime_mallocgc (len, FlagNoPointers, 1, 0);
   __builtin_memcpy (retdata, s1.__data, s1.__length);
   __builtin_memcpy (retdata + s1.__length, s2.__data, s2.__length);
   ret.__data = retdata;

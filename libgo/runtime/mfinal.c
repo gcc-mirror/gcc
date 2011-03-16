@@ -5,6 +5,9 @@
 #include "runtime.h"
 #include "malloc.h"
 
+// Lock to protect finalizer data structures.
+// Cannot reuse mheap.Lock because the finalizer
+// maintenance requires allocation.
 static Lock finlock;
 
 void
@@ -95,7 +98,6 @@ runtime_addfinalizer(void *p, void (*f)(void*), const struct __go_func_type *ft)
 {
 	Fintab newtab;
 	int32 i;
-	uint32 *ref;
 	byte *base;
 	Finalizer *e;
 	
@@ -110,25 +112,22 @@ runtime_addfinalizer(void *p, void (*f)(void*), const struct __go_func_type *ft)
 		runtime_throw("finalizer deadlock");
 
 	runtime_lock(&finlock);
-	if(!runtime_mlookup(p, &base, nil, nil, &ref) || p != base) {
+	if(!runtime_mlookup(p, &base, nil, nil) || p != base) {
 		runtime_unlock(&finlock);
 		__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
 		runtime_throw("addfinalizer on invalid pointer");
 	}
 	if(f == nil) {
-		if(*ref & RefHasFinalizer) {
-			lookfintab(&fintab, p, 1);
-			*ref &= ~RefHasFinalizer;
-		}
+		lookfintab(&fintab, p, 1);
 		goto unlock;
 	}
 
-	if(*ref & RefHasFinalizer) {
+	if(lookfintab(&fintab, p, 0)) {
 		runtime_unlock(&finlock);
 		__sync_bool_compare_and_swap(&m->holds_finlock, 1, 0);
 		runtime_throw("double finalizer");
 	}
-	*ref |= RefHasFinalizer;
+	runtime_setblockspecial(p);
 
 	if(fintab.nkey >= fintab.max/2+fintab.max/4) {
 		// keep table at most 3/4 full:
@@ -144,7 +143,7 @@ runtime_addfinalizer(void *p, void (*f)(void*), const struct __go_func_type *ft)
 			newtab.max *= 3;
 		}
 
-		newtab.key = runtime_mallocgc(newtab.max*sizeof newtab.key[0], RefNoPointers, 0, 1);
+		newtab.key = runtime_mallocgc(newtab.max*sizeof newtab.key[0], FlagNoPointers, 0, 1);
 		newtab.val = runtime_mallocgc(newtab.max*sizeof newtab.val[0], 0, 0, 1);
 
 		for(i=0; i<fintab.max; i++) {

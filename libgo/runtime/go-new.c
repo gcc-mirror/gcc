@@ -17,5 +17,5 @@ __go_new (size_t size)
 void *
 __go_new_nopointers (size_t size)
 {
-  return runtime_mallocgc (size, RefNoPointers, 1, 1);
+  return runtime_mallocgc (size, FlagNoPointers, 1, 1);
 }

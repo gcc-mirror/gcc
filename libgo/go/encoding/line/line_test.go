@@ -6,6 +6,8 @@ package line
 
 import (
 	"bytes"
+	"io"
+	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -85,5 +87,47 @@ func TestLineTooLong(t *testing.T) {
 	line, isPrefix, err = l.ReadLine()
 	if isPrefix || !bytes.Equal(line, []byte("cc")) || err != nil {
 		t.Errorf("bad result for third line: %x", line)
+	}
+}
+
+func TestReadAfterLines(t *testing.T) {
+	line1 := "line1"
+	restData := "line2\nline 3\n"
+	inbuf := bytes.NewBuffer([]byte(line1 + "\n" + restData))
+	outbuf := new(bytes.Buffer)
+	maxLineLength := len(line1) + len(restData)/2
+	l := NewReader(inbuf, maxLineLength)
+	line, isPrefix, err := l.ReadLine()
+	if isPrefix || err != nil || string(line) != line1 {
+		t.Errorf("bad result for first line: isPrefix=%v err=%v line=%q", isPrefix, err, string(line))
+	}
+	n, err := io.Copy(outbuf, l)
+	if int(n) != len(restData) || err != nil {
+		t.Errorf("bad result for Read: n=%d err=%v", n, err)
+	}
+	if outbuf.String() != restData {
+		t.Errorf("bad result for Read: got %q; expected %q", outbuf.String(), restData)
+	}
+}
+
+func TestReadEmptyBuffer(t *testing.T) {
+	l := NewReader(bytes.NewBuffer(nil), 10)
+	line, isPrefix, err := l.ReadLine()
+	if err != os.EOF {
+		t.Errorf("expected EOF from ReadLine, got '%s' %t %s", line, isPrefix, err)
+	}
+}
+
+func TestLinesAfterRead(t *testing.T) {
+	l := NewReader(bytes.NewBuffer([]byte("foo")), 10)
+	_, err := ioutil.ReadAll(l)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	line, isPrefix, err := l.ReadLine()
+	if err != os.EOF {
+		t.Errorf("expected EOF from ReadLine, got '%s' %t %s", line, isPrefix, err)
 	}
 }

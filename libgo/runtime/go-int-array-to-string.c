@@ -41,7 +41,7 @@ __go_int_array_to_string (const void* p, size_t len)
 	slen += 4;
     }
 
-  retdata = runtime_mallocgc (slen, RefNoPointers, 1, 0);
+  retdata = runtime_mallocgc (slen, FlagNoPointers, 1, 0);
   ret.__data = retdata;
   ret.__length = slen;
 

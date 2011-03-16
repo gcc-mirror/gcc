@@ -1078,7 +1078,7 @@ Type::make_type_descriptor_type()
 						    bloc);
 
       Struct_type* type_descriptor_type =
-	Type::make_builtin_struct_type(9,
+	Type::make_builtin_struct_type(10,
 				       "Kind", uint8_type,
 				       "align", uint8_type,
 				       "fieldAlign", uint8_type,
@@ -1087,7 +1087,9 @@ Type::make_type_descriptor_type()
 				       "hashfn", hashfn_type,
 				       "equalfn", equalfn_type,
 				       "string", pointer_string_type,
-				       "", pointer_uncommon_type);
+				       "", pointer_uncommon_type,
+				       "ptrToThis",
+				       pointer_type_descriptor_type);
 
       Named_type* named = Type::make_builtin_named_type("commonType",
 							type_descriptor_type);
@@ -1257,6 +1259,16 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
 						      p->type()->deref(),
 						      name, methods,
 						      only_value_methods));
+    }
+
+  ++p;
+  gcc_assert(p->field_name() == "ptrToThis");
+  if (name == NULL)
+    vals->push_back(Expression::make_nil(bloc));
+  else
+    {
+      Type* pt = Type::make_pointer_type(name);
+      vals->push_back(Expression::make_type_descriptor(pt, bloc));
     }
 
   ++p;
