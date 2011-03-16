@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "plugin.h"
+#include "tree-pretty-print.h"
+#include "parser.h"
 
 
 /* The lexer.  */
@@ -44,109 +46,10 @@ along with GCC; see the file COPYING3.  If not see
 /* The cp_lexer_* routines mediate between the lexer proper (in libcpp
    and c-lex.c) and the C++ parser.  */
 
-/* A token's value and its associated deferred access checks and
-   qualifying scope.  */
-
-struct GTY(()) tree_check {
-  /* The value associated with the token.  */
-  tree value;
-  /* The checks that have been associated with value.  */
-  VEC (deferred_access_check, gc)* checks;
-  /* The token's qualifying scope (used when it is a
-     CPP_NESTED_NAME_SPECIFIER).  */
-  tree qualifying_scope;
-};
-
-/* A C++ token.  */
-
-typedef struct GTY (()) cp_token {
-  /* The kind of token.  */
-  ENUM_BITFIELD (cpp_ttype) type : 8;
-  /* If this token is a keyword, this value indicates which keyword.
-     Otherwise, this value is RID_MAX.  */
-  ENUM_BITFIELD (rid) keyword : 8;
-  /* Token flags.  */
-  unsigned char flags;
-  /* Identifier for the pragma.  */
-  ENUM_BITFIELD (pragma_kind) pragma_kind : 6;
-  /* True if this token is from a context where it is implicitly extern "C" */
-  BOOL_BITFIELD implicit_extern_c : 1;
-  /* True for a CPP_NAME token that is not a keyword (i.e., for which
-     KEYWORD is RID_MAX) iff this name was looked up and found to be
-     ambiguous.  An error has already been reported.  */
-  BOOL_BITFIELD ambiguous_p : 1;
-  /* The location at which this token was found.  */
-  location_t location;
-  /* The value associated with this token, if any.  */
-  union cp_token_value {
-    /* Used for CPP_NESTED_NAME_SPECIFIER and CPP_TEMPLATE_ID.  */
-    struct tree_check* GTY((tag ("1"))) tree_check_value;
-    /* Use for all other tokens.  */
-    tree GTY((tag ("0"))) value;
-  } GTY((desc ("(%1.type == CPP_TEMPLATE_ID) || (%1.type == CPP_NESTED_NAME_SPECIFIER)"))) u;
-} cp_token;
-
-/* We use a stack of token pointer for saving token sets.  */
-typedef struct cp_token *cp_token_position;
-DEF_VEC_P (cp_token_position);
-DEF_VEC_ALLOC_P (cp_token_position,heap);
-
 static cp_token eof_token =
 {
-  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, false, 0, 0, { NULL }
+  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, false, false, false, 0, { NULL }
 };
-
-/* The cp_lexer structure represents the C++ lexer.  It is responsible
-   for managing the token stream from the preprocessor and supplying
-   it to the parser.  Tokens are never added to the cp_lexer after
-   it is created.  */
-
-typedef struct GTY (()) cp_lexer {
-  /* The memory allocated for the buffer.  NULL if this lexer does not
-     own the token buffer.  */
-  cp_token * GTY ((length ("%h.buffer_length"))) buffer;
-  /* If the lexer owns the buffer, this is the number of tokens in the
-     buffer.  */
-  size_t buffer_length;
-
-  /* A pointer just past the last available token.  The tokens
-     in this lexer are [buffer, last_token).  */
-  cp_token_position GTY ((skip)) last_token;
-
-  /* The next available token.  If NEXT_TOKEN is &eof_token, then there are
-     no more available tokens.  */
-  cp_token_position GTY ((skip)) next_token;
-
-  /* A stack indicating positions at which cp_lexer_save_tokens was
-     called.  The top entry is the most recent position at which we
-     began saving tokens.  If the stack is non-empty, we are saving
-     tokens.  */
-  VEC(cp_token_position,heap) *GTY ((skip)) saved_tokens;
-
-  /* The next lexer in a linked list of lexers.  */
-  struct cp_lexer *next;
-
-  /* True if we should output debugging information.  */
-  bool debugging_p;
-
-  /* True if we're in the context of parsing a pragma, and should not
-     increment past the end-of-line marker.  */
-  bool in_pragma;
-} cp_lexer;
-
-/* cp_token_cache is a range of tokens.  There is no need to represent
-   allocate heap memory for it, since tokens are never removed from the
-   lexer's array.  There is also no need for the GC to walk through
-   a cp_token_cache, since everything in here is referenced through
-   a lexer.  */
-
-typedef struct GTY(()) cp_token_cache {
-  /* The beginning of the token range.  */
-  cp_token * GTY((skip)) first;
-
-  /* Points immediately after the last token in the range.  */
-  cp_token * GTY ((skip)) last;
-} cp_token_cache;
 
 /* The various kinds of non integral constant we encounter. */
 typedef enum non_integral_constant {
@@ -280,8 +183,6 @@ static void cp_lexer_destroy
   (cp_lexer *);
 static int cp_lexer_saving_tokens
   (const cp_lexer *);
-static cp_token_position cp_lexer_token_position
-  (cp_lexer *, bool);
 static cp_token *cp_lexer_token_at
   (cp_lexer *, cp_token_position);
 static void cp_lexer_get_preprocessor_token
@@ -337,30 +238,6 @@ static void cp_parser_initial_pragma
 #define CP_LEXER_BUFFER_SIZE ((256 * 1024) / sizeof (cp_token))
 #define CP_SAVED_TOKEN_STACK 5
 
-/* A token type for keywords, as opposed to ordinary identifiers.  */
-#define CPP_KEYWORD ((enum cpp_ttype) (N_TTYPES + 1))
-
-/* A token type for template-ids.  If a template-id is processed while
-   parsing tentatively, it is replaced with a CPP_TEMPLATE_ID token;
-   the value of the CPP_TEMPLATE_ID is whatever was returned by
-   cp_parser_template_id.  */
-#define CPP_TEMPLATE_ID ((enum cpp_ttype) (CPP_KEYWORD + 1))
-
-/* A token type for nested-name-specifiers.  If a
-   nested-name-specifier is processed while parsing tentatively, it is
-   replaced with a CPP_NESTED_NAME_SPECIFIER token; the value of the
-   CPP_NESTED_NAME_SPECIFIER is whatever was returned by
-   cp_parser_nested_name_specifier_opt.  */
-#define CPP_NESTED_NAME_SPECIFIER ((enum cpp_ttype) (CPP_TEMPLATE_ID + 1))
-
-/* A token type for tokens that are not tokens at all; these are used
-   to represent slots in the array where there used to be a token
-   that has now been deleted.  */
-#define CPP_PURGED ((enum cpp_ttype) (CPP_NESTED_NAME_SPECIFIER + 1))
-
-/* The number of token types, including C++-specific ones.  */
-#define N_CP_TTYPES ((int) (CPP_PURGED + 1))
-
 /* Variables.  */
 
 #ifdef ENABLE_CHECKING
@@ -372,23 +249,65 @@ static FILE *cp_lexer_debug_stream;
    sizeof, typeof, or alignof.  */
 int cp_unevaluated_operand;
 
-/* Create a new main C++ lexer, the lexer that gets tokens from the
-   preprocessor.  */
+#ifdef ENABLE_CHECKING
+/* Dump up to NUM tokens in BUFFER to FILE.  If NUM is 0, dump all the
+   tokens.  */
+
+void
+cp_lexer_dump_tokens (FILE *file, VEC(cp_token,gc) *buffer, unsigned num)
+{
+  unsigned i;
+  cp_token *token;
+
+  fprintf (file, "%u tokens\n", VEC_length (cp_token, buffer));
+
+  if (num == 0)
+    num = VEC_length (cp_token, buffer);
+
+  for (i = 0; VEC_iterate (cp_token, buffer, i, token) && i < num; i++)
+    {
+      cp_lexer_print_token (file, token);
+      switch (token->type)
+	{
+	  case CPP_SEMICOLON:
+	  case CPP_OPEN_BRACE:
+	  case CPP_CLOSE_BRACE:
+	  case CPP_EOF:
+	    fputc ('\n', file);
+	    break;
+
+	  default:
+	    fputc (' ', file);
+	}
+    }
+
+  if (i == num && i < VEC_length (cp_token, buffer))
+    {
+      fprintf (file, " ... ");
+      cp_lexer_print_token (file, VEC_index (cp_token, buffer,
+			    VEC_length (cp_token, buffer) - 1));
+    }
+
+  fprintf (file, "\n");
+}
+
+
+/* Dump all tokens in BUFFER to stderr.  */
+
+void
+cp_lexer_debug_tokens (VEC(cp_token,gc) *buffer)
+{
+  cp_lexer_dump_tokens (stderr, buffer, 0);
+}
+#endif
+
+
+/* Allocate memory for a new lexer object and return it.  */
 
 static cp_lexer *
-cp_lexer_new_main (void)
+cp_lexer_alloc (void)
 {
-  cp_token first_token;
   cp_lexer *lexer;
-  cp_token *pos;
-  size_t alloc;
-  size_t space;
-  cp_token *buffer;
-
-  /* It's possible that parsing the first pragma will load a PCH file,
-     which is a GC collection point.  So we have to do that before
-     allocating any memory.  */
-  cp_parser_initial_pragma (&first_token);
 
   c_common_no_more_pch ();
 
@@ -403,37 +322,50 @@ cp_lexer_new_main (void)
 				   CP_SAVED_TOKEN_STACK);
 
   /* Create the buffer.  */
-  alloc = CP_LEXER_BUFFER_SIZE;
-  buffer = ggc_alloc_vec_cp_token (alloc);
+  lexer->buffer = VEC_alloc (cp_token, gc, CP_LEXER_BUFFER_SIZE);
+
+  return lexer;
+}
+
+
+/* Create a new main C++ lexer, the lexer that gets tokens from the
+   preprocessor.  */
+
+static cp_lexer *
+cp_lexer_new_main (void)
+{
+  cp_lexer *lexer;
+  cp_token token;
+
+  /* It's possible that parsing the first pragma will load a PCH file,
+     which is a GC collection point.  So we have to do that before
+     allocating any memory.  */
+  cp_parser_initial_pragma (&token);
+
+  lexer = cp_lexer_alloc ();
 
   /* Put the first token in the buffer.  */
-  space = alloc;
-  pos = buffer;
-  *pos = first_token;
+  VEC_quick_push (cp_token, lexer->buffer, &token);
 
   /* Get the remaining tokens from the preprocessor.  */
-  while (pos->type != CPP_EOF)
+  while (token.type != CPP_EOF)
     {
-      pos++;
-      if (!--space)
-	{
-	  space = alloc;
-	  alloc *= 2;
-	  buffer = GGC_RESIZEVEC (cp_token, buffer, alloc);
-	  pos = buffer + space;
-	}
-      cp_lexer_get_preprocessor_token (lexer, pos);
+      cp_lexer_get_preprocessor_token (lexer, &token);
+      VEC_safe_push (cp_token, gc, lexer->buffer, &token);
     }
-  lexer->buffer = buffer;
-  lexer->buffer_length = alloc - space;
-  lexer->last_token = pos;
-  lexer->next_token = lexer->buffer_length ? buffer : &eof_token;
+
+  lexer->last_token = VEC_address (cp_token, lexer->buffer)
+                      + VEC_length (cp_token, lexer->buffer)
+		      - 1;
+  lexer->next_token = VEC_length (cp_token, lexer->buffer)
+		      ? VEC_address (cp_token, lexer->buffer)
+		      : &eof_token;
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
   done_lexing = true;
 
-  gcc_assert (lexer->next_token->type != CPP_PURGED);
+  gcc_assert (!lexer->next_token->purged_p);
   return lexer;
 }
 
@@ -449,7 +381,6 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
 
   /* We do not own the buffer.  */
   lexer->buffer = NULL;
-  lexer->buffer_length = 0;
   lexer->next_token = first == last ? &eof_token : first;
   lexer->last_token = last;
 
@@ -461,7 +392,7 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
   lexer->debugging_p = false;
 #endif
 
-  gcc_assert (lexer->next_token->type != CPP_PURGED);
+  gcc_assert (!lexer->next_token->purged_p);
   return lexer;
 }
 
@@ -470,8 +401,7 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
 static void
 cp_lexer_destroy (cp_lexer *lexer)
 {
-  if (lexer->buffer)
-    ggc_free (lexer->buffer);
+  VEC_free (cp_token, gc, lexer->buffer);
   VEC_free (cp_token_position, heap, lexer->saved_tokens);
   ggc_free (lexer);
 }
@@ -549,6 +479,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
 			lexer == NULL ? 0 : C_LEX_STRING_NO_JOIN);
   token->keyword = RID_MAX;
   token->pragma_kind = PRAGMA_NONE;
+  token->purged_p = false;
 
   /* On some systems, some header files are surrounded by an
      implicit extern "C" block.  Set a flag in the token if it
@@ -760,7 +691,7 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
 	  break;
 	}
 
-      if (token->type != CPP_PURGED)
+      if (!token->purged_p)
 	--n;
     }
 
@@ -794,7 +725,7 @@ cp_lexer_consume_token (cp_lexer* lexer)
 	}
 
     }
-  while (lexer->next_token->type == CPP_PURGED);
+  while (lexer->next_token->purged_p);
 
   cp_lexer_set_source_position_from_token (token);
 
@@ -819,7 +750,7 @@ cp_lexer_purge_token (cp_lexer *lexer)
   cp_token *tok = lexer->next_token;
 
   gcc_assert (tok != &eof_token);
-  tok->type = CPP_PURGED;
+  tok->purged_p = true;
   tok->location = UNKNOWN_LOCATION;
   tok->u.value = NULL_TREE;
   tok->keyword = RID_MAX;
@@ -833,7 +764,7 @@ cp_lexer_purge_token (cp_lexer *lexer)
 	  break;
 	}
     }
-  while (tok->type == CPP_PURGED);
+  while (tok->purged_p);
   lexer->next_token = tok;
 }
 
@@ -853,7 +784,7 @@ cp_lexer_purge_tokens_after (cp_lexer *lexer, cp_token *tok)
 
   for ( tok += 1; tok != peek; tok += 1)
     {
-      tok->type = CPP_PURGED;
+      tok->purged_p = true;
       tok->location = UNKNOWN_LOCATION;
       tok->u.value = NULL_TREE;
       tok->keyword = RID_MAX;
@@ -919,13 +850,7 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
     "KEYWORD",
     "TEMPLATE_ID",
     "NESTED_NAME_SPECIFIER",
-    "PURGED"
   };
-
-  /* If we have a name for the token, print it out.  Otherwise, we
-     simply give the numeric code.  */
-  gcc_assert (token->type < ARRAY_SIZE(token_names));
-  fputs (token_names[token->type], stream);
 
   /* For some tokens, print the associated data.  */
   switch (token->type)
@@ -948,7 +873,17 @@ cp_lexer_print_token (FILE * stream, cp_token *token)
       fprintf (stream, " \"%s\"", TREE_STRING_POINTER (token->u.value));
       break;
 
+    case CPP_NUMBER:
+      print_generic_expr (stream, token->u.value, 0);
+      break;
+
     default:
+      /* If we have a name for the token, print it out.  Otherwise, we
+	 simply give the numeric code.  */
+      if (token->type < ARRAY_SIZE(token_names))
+	fputs (token_names[token->type], stream);
+      else
+	fprintf (stream, "[%d]", token->type);
       break;
     }
 }
@@ -1413,19 +1348,6 @@ typedef struct cp_parser_binary_operations_map_node
   enum cp_parser_prec prec;
 } cp_parser_binary_operations_map_node;
 
-/* The status of a tentative parse.  */
-
-typedef enum cp_parser_status_kind
-{
-  /* No errors have occurred.  */
-  CP_PARSER_STATUS_KIND_NO_ERROR,
-  /* An error has occurred.  */
-  CP_PARSER_STATUS_KIND_ERROR,
-  /* We are committed to this tentative parse, whether or not an error
-     has occurred.  */
-  CP_PARSER_STATUS_KIND_COMMITTED
-} cp_parser_status_kind;
-
 typedef struct cp_parser_expression_stack_entry
 {
   /* Left hand side of the binary operation we are currently
@@ -1445,21 +1367,6 @@ typedef struct cp_parser_expression_stack_entry
    increasing.  */
 typedef struct cp_parser_expression_stack_entry
   cp_parser_expression_stack[NUM_PREC_VALUES];
-
-/* Context that is saved and restored when parsing tentatively.  */
-typedef struct GTY (()) cp_parser_context {
-  /* If this is a tentative parsing context, the status of the
-     tentative parse.  */
-  enum cp_parser_status_kind status;
-  /* If non-NULL, we have just seen a `x->' or `x.' expression.  Names
-     that are looked up in this context must be looked up both in the
-     scope given by OBJECT_TYPE (the type of `x' or `*x') and also in
-     the context of the containing expression.  */
-  tree object_type;
-
-  /* The next parsing context in the stack.  */
-  struct cp_parser_context *next;
-} cp_parser_context;
 
 /* Prototypes.  */
 
@@ -1550,177 +1457,6 @@ cp_parser_context_new (cp_parser_context* next)
 
   return context;
 }
-
-/* An entry in a queue of function arguments that require post-processing.  */
-
-typedef struct GTY(()) cp_default_arg_entry_d {
-  /* The current_class_type when we parsed this arg.  */
-  tree class_type;
-
-  /* The function decl itself.  */
-  tree decl;
-} cp_default_arg_entry;
-
-DEF_VEC_O(cp_default_arg_entry);
-DEF_VEC_ALLOC_O(cp_default_arg_entry,gc);
-
-/* An entry in a stack for member functions of local classes.  */
-
-typedef struct GTY(()) cp_unparsed_functions_entry_d {
-  /* Functions with default arguments that require post-processing.
-     Functions appear in this list in declaration order.  */
-  VEC(cp_default_arg_entry,gc) *funs_with_default_args;
-
-  /* Functions with defintions that require post-processing.  Functions
-     appear in this list in declaration order.  */
-  VEC(tree,gc) *funs_with_definitions;
-} cp_unparsed_functions_entry;
-
-DEF_VEC_O(cp_unparsed_functions_entry);
-DEF_VEC_ALLOC_O(cp_unparsed_functions_entry,gc);
-
-/* The cp_parser structure represents the C++ parser.  */
-
-typedef struct GTY(()) cp_parser {
-  /* The lexer from which we are obtaining tokens.  */
-  cp_lexer *lexer;
-
-  /* The scope in which names should be looked up.  If NULL_TREE, then
-     we look up names in the scope that is currently open in the
-     source program.  If non-NULL, this is either a TYPE or
-     NAMESPACE_DECL for the scope in which we should look.  It can
-     also be ERROR_MARK, when we've parsed a bogus scope.
-
-     This value is not cleared automatically after a name is looked
-     up, so we must be careful to clear it before starting a new look
-     up sequence.  (If it is not cleared, then `X::Y' followed by `Z'
-     will look up `Z' in the scope of `X', rather than the current
-     scope.)  Unfortunately, it is difficult to tell when name lookup
-     is complete, because we sometimes peek at a token, look it up,
-     and then decide not to consume it.   */
-  tree scope;
-
-  /* OBJECT_SCOPE and QUALIFYING_SCOPE give the scopes in which the
-     last lookup took place.  OBJECT_SCOPE is used if an expression
-     like "x->y" or "x.y" was used; it gives the type of "*x" or "x",
-     respectively.  QUALIFYING_SCOPE is used for an expression of the
-     form "X::Y"; it refers to X.  */
-  tree object_scope;
-  tree qualifying_scope;
-
-  /* A stack of parsing contexts.  All but the bottom entry on the
-     stack will be tentative contexts.
-
-     We parse tentatively in order to determine which construct is in
-     use in some situations.  For example, in order to determine
-     whether a statement is an expression-statement or a
-     declaration-statement we parse it tentatively as a
-     declaration-statement.  If that fails, we then reparse the same
-     token stream as an expression-statement.  */
-  cp_parser_context *context;
-
-  /* True if we are parsing GNU C++.  If this flag is not set, then
-     GNU extensions are not recognized.  */
-  bool allow_gnu_extensions_p;
-
-  /* TRUE if the `>' token should be interpreted as the greater-than
-     operator.  FALSE if it is the end of a template-id or
-     template-parameter-list. In C++0x mode, this flag also applies to
-     `>>' tokens, which are viewed as two consecutive `>' tokens when
-     this flag is FALSE.  */
-  bool greater_than_is_operator_p;
-
-  /* TRUE if default arguments are allowed within a parameter list
-     that starts at this point. FALSE if only a gnu extension makes
-     them permissible.  */
-  bool default_arg_ok_p;
-
-  /* TRUE if we are parsing an integral constant-expression.  See
-     [expr.const] for a precise definition.  */
-  bool integral_constant_expression_p;
-
-  /* TRUE if we are parsing an integral constant-expression -- but a
-     non-constant expression should be permitted as well.  This flag
-     is used when parsing an array bound so that GNU variable-length
-     arrays are tolerated.  */
-  bool allow_non_integral_constant_expression_p;
-
-  /* TRUE if ALLOW_NON_CONSTANT_EXPRESSION_P is TRUE and something has
-     been seen that makes the expression non-constant.  */
-  bool non_integral_constant_expression_p;
-
-  /* TRUE if local variable names and `this' are forbidden in the
-     current context.  */
-  bool local_variables_forbidden_p;
-
-  /* TRUE if the declaration we are parsing is part of a
-     linkage-specification of the form `extern string-literal
-     declaration'.  */
-  bool in_unbraced_linkage_specification_p;
-
-  /* TRUE if we are presently parsing a declarator, after the
-     direct-declarator.  */
-  bool in_declarator_p;
-
-  /* TRUE if we are presently parsing a template-argument-list.  */
-  bool in_template_argument_list_p;
-
-  /* Set to IN_ITERATION_STMT if parsing an iteration-statement,
-     to IN_OMP_BLOCK if parsing OpenMP structured block and
-     IN_OMP_FOR if parsing OpenMP loop.  If parsing a switch statement,
-     this is bitwise ORed with IN_SWITCH_STMT, unless parsing an
-     iteration-statement, OpenMP block or loop within that switch.  */
-#define IN_SWITCH_STMT		1
-#define IN_ITERATION_STMT	2
-#define IN_OMP_BLOCK		4
-#define IN_OMP_FOR		8
-#define IN_IF_STMT             16
-  unsigned char in_statement;
-
-  /* TRUE if we are presently parsing the body of a switch statement.
-     Note that this doesn't quite overlap with in_statement above.
-     The difference relates to giving the right sets of error messages:
-     "case not in switch" vs "break statement used with OpenMP...".  */
-  bool in_switch_statement_p;
-
-  /* TRUE if we are parsing a type-id in an expression context.  In
-     such a situation, both "type (expr)" and "type (type)" are valid
-     alternatives.  */
-  bool in_type_id_in_expr_p;
-
-  /* TRUE if we are currently in a header file where declarations are
-     implicitly extern "C".  */
-  bool implicit_extern_c;
-
-  /* TRUE if strings in expressions should be translated to the execution
-     character set.  */
-  bool translate_strings_p;
-
-  /* TRUE if we are presently parsing the body of a function, but not
-     a local class.  */
-  bool in_function_body;
-
-  /* TRUE if we can auto-correct a colon to a scope operator.  */
-  bool colon_corrects_to_scope_p;
-
-  /* If non-NULL, then we are parsing a construct where new type
-     definitions are not permitted.  The string stored here will be
-     issued as an error message if a type is defined.  */
-  const char *type_definition_forbidden_message;
-
-  /* A stack used for member functions of local classes.  The lists
-     contained in an individual entry can only be processed once the
-     outermost class being defined is complete.  */
-  VEC(cp_unparsed_functions_entry,gc) *unparsed_queues;
-
-  /* The number of classes whose definitions are currently in
-     progress.  */
-  unsigned num_classes_being_defined;
-
-  /* The number of template parameter lists that apply directly to the
-     current declaration.  */
-  unsigned num_template_parameter_lists;
-} cp_parser;
 
 /* Managing the unparsed function queues.  */
 

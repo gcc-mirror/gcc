@@ -1,3 +1,43 @@
+2011-03-16  Diego Novillo  <dnovillo@google.com>
+
+	* Make-lang.in (CXX_PARSER_H): New.
+	(cp/parser.o): Add dependency on CXX_PARSER_H.
+	Add dependency on tree-pretty-print.h
+	(cp/cp-lang.o): Add dependency on CXX_PARSER_H.
+	* cp-lang.c: Include parser.h.
+	* parser.c: Include parser.h.
+	(struct cp_token): Add bitfield purged_p.
+	Update all users.
+	Move to parser.h.
+	(CPP_PURGED): Remove.  Update all users.
+	(struct cp_lexer): Change field buffer to be a VEC of cp_token.
+	Remove field buffer_length.
+	Update all users.
+	Move to parser.h.
+	(struct tree_check): Move to parser.h.
+	(cp_token_position): Likewise.
+	(struct cp_token_cache): Likewise.
+	(CPP_KEYWORD): Likewise.
+	(CPP_TEMPLATE_ID): Likewise.
+	(CPP_NESTED_NAME_SPECIFIER): Likewise.
+	(N_CP_TTYPES): Likewise.
+	(enum cp_parser_status_kind): Likewise.
+	(struct cp_parser_context): Likewise.
+	(struct cp_default_arg_entry_d): Likewise.
+	(struct cp_unparsed_functions_entry_d): Likewise.
+	(struct cp_parser): Likewise.
+	(cp_lexer_dump_tokens): New.
+	(cp_lexer_debug_tokens): New.
+	(cp_lexer_finished_p): New.
+	(cp_lexer_alloc): Factor out of cp_lexer_new_main.
+	(cp_lexer_new_main): Re-write main lexing loop to push
+	tokens into the new VEC buffer.
+	(cp_lexer_print_token): Improve printing of CPP_NUMBER tokens.
+	Do not abort if the token type is not recognized, just print
+	its code.
+	* parser.h: New file.
+	* config-lang.in (gtfiles): Add cp/parser.h.
+
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
 	Core 1148
