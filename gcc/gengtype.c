@@ -1101,6 +1101,8 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 		t = symbol_union_tp, subname = "";
 	      else if (i == BARRIER && aindex >= 3)
 		t = scalar_tp, subname = "rt_int";
+	      else if (i == ENTRY_VALUE && aindex == 0)
+		t = rtx_tp, subname = "rt_rtx";
 	      else
 		{
 		  error_at_line 

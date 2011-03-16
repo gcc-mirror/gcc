@@ -14028,14 +14028,14 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
     case ENTRY_VALUE:
       mem_loc_result = new_loc_descr (DW_OP_GNU_entry_value, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_loc;
-      if (REG_P (XEXP (rtl, 0)))
+      if (REG_P (ENTRY_VALUE_EXP (rtl)))
 	mem_loc_result->dw_loc_oprnd1.v.val_loc
-	  = one_reg_loc_descriptor (dbx_reg_number (XEXP (rtl, 0)),
+	  = one_reg_loc_descriptor (dbx_reg_number (ENTRY_VALUE_EXP (rtl)),
 				    VAR_INIT_STATUS_INITIALIZED);
-      else if (MEM_P (XEXP (rtl, 0)) && REG_P (XEXP (XEXP (rtl, 0), 0)))
+      else if (MEM_P (ENTRY_VALUE_EXP (rtl)) && REG_P (XEXP (ENTRY_VALUE_EXP (rtl), 0)))
 	{
 	  dw_loc_descr_ref ref
-	    = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl),
+	    = mem_loc_descriptor (ENTRY_VALUE_EXP (rtl), GET_MODE (rtl),
 				  VAR_INIT_STATUS_INITIALIZED);
 	  if (ref == NULL)
 	    return NULL;

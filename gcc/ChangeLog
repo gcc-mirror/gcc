@@ -1,5 +1,19 @@
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/45882
+	* rtl.def (ENTRY_VALUE): Change format from "e" to "0".
+	* rtl.h (ENTRY_VALUE_EXP): Define.
+	* rtl.c (rtx_equal_p_cb, rtx_equal_p): Handle ENTRY_VALUE.
+	* cselib.c (rtx_equal_for_cselib_p, cselib_hash_rtx): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* gengtype.c (adjust_field_rtx_def): Likewise.
+	* var-tracking.c (vt_add_function_parameter): Adjust
+	gen_rtx_ENTRY_VALUE uses, use ENTRY_VALUE_EXP macro.
+	* dwarf2out.c (mem_loc_descriptor): Use ENTRY_VALUE_EXP macro.
+	* cfgexpand.c (expand_debug_expr): If a SSA_NAME without
+	partition is a default definition of a PARM_DECL, use ENTRY_VALUE
+	of its DECL_INCOMING_RTL if possible, or its DECL_RTL if set.
+
 	* final.c (final_scan_insn): Handle NOTE_INSN_CALL_ARG_LOCATION.
 	Call var_location debug hook even on CALL_INSNs.
 	(rest_of_clean_state): Don't print NOTE_INSN_CALL_ARG_LOCATION.

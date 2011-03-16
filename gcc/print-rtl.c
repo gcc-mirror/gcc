@@ -334,6 +334,14 @@ print_rtx (const_rtx in_rtx)
 		     DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (in_rtx)));
 #endif
 	  }
+	else if (i == 0 && GET_CODE (in_rtx) == ENTRY_VALUE)
+	  {
+	    indent += 2;
+	    if (!sawclose)
+	      fprintf (outfile, " ");
+	    print_rtx (ENTRY_VALUE_EXP (in_rtx));
+	    indent -= 2;
+	  }
 	break;
 
       case 'e':
