@@ -1,5 +1,8 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_abort_tentative_parse): Make sure we haven't
+	committed to this tentative parse.
+
 	PR c++/47999
 	* semantics.c (finish_call_expr): Preserve reference semantics
 	in templates.
