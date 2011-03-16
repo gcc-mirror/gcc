@@ -1,5 +1,11 @@
 2011-03-16  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/48146
+	* tree-ssa-sink.c (sink_code_in_bb): Manually update virtual
+	operands avoiding the need for renaming.
+
+2011-03-16  Richard Guenther  <rguenther@suse.de>
+
 	* gimple-fold.c (maybe_fold_reference): Open-code relevant
 	constant folding.  Move MEM_REF canonicalization first.
 	Rely on fold_const_aggregate_ref for initializer folding.
