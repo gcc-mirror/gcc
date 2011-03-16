@@ -1221,6 +1221,14 @@ GLIBCXX_3.4.15 {
     _ZNSt8__detail15_List_node_base11_M_transfer*;
     _ZNSt8__detail15_List_node_base4swapERS0_S1_;
 
+    _ZNSt11range_errorD2Ev;
+    _ZNSt12domain_errorD2Ev;
+    _ZNSt12length_errorD2Ev;
+    _ZNSt12out_of_rangeD2Ev;
+    _ZNSt14overflow_errorD2Ev;
+    _ZNSt15underflow_errorD2Ev;
+    _ZNSt16invalid_argumentD2Ev;
+
     _ZNSt11regex_errorD*;
     _ZNKSt11regex_error4whatEv;
     _ZTSSt11regex_error;
