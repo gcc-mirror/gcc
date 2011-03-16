@@ -33,9 +33,9 @@ AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY], [
 		 libgfor_cv_have_attribute_visibility, [
   save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -Werror"
-  AC_TRY_COMPILE([void __attribute__((visibility("hidden"))) foo(void) { }],
-		 [], libgfor_cv_have_attribute_visibility=yes,
-		 libgfor_cv_have_attribute_visibility=no)
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[void __attribute__((visibility("hidden"))) foo(void) { }]], [])],
+		    libgfor_cv_have_attribute_visibility=yes,
+		    libgfor_cv_have_attribute_visibility=no)
   CFLAGS="$save_CFLAGS"])
   if test $libgfor_cv_have_attribute_visibility = yes; then
     AC_DEFINE(HAVE_ATTRIBUTE_VISIBILITY, 1,
@@ -48,9 +48,9 @@ AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT], [
 		 libgfor_cv_have_attribute_dllexport, [
   save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -Werror"
-  AC_TRY_COMPILE([void __attribute__((dllexport)) foo(void) { }],
-		 [], libgfor_cv_have_attribute_dllexport=yes,
-		 libgfor_cv_have_attribute_dllexport=no)
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[void __attribute__((dllexport)) foo(void) { }]], [])],
+		    libgfor_cv_have_attribute_dllexport=yes,
+		    libgfor_cv_have_attribute_dllexport=no)
   CFLAGS="$save_CFLAGS"])
   if test $libgfor_cv_have_attribute_dllexport = yes; then
     AC_DEFINE(HAVE_ATTRIBUTE_DLLEXPORT, 1,
@@ -61,10 +61,10 @@ dnl Check whether the target supports symbol aliases.
 AC_DEFUN([LIBGFOR_CHECK_ATTRIBUTE_ALIAS], [
   AC_CACHE_CHECK([whether the target supports symbol aliases],
 		 libgfor_cv_have_attribute_alias, [
-  AC_TRY_LINK([
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 void foo(void) { }
-extern void bar(void) __attribute__((alias("foo")));],
-    [bar();], libgfor_cv_have_attribute_alias=yes, libgfor_cv_have_attribute_alias=no)])
+extern void bar(void) __attribute__((alias("foo")));]],
+    [[bar();]])], libgfor_cv_have_attribute_alias=yes, libgfor_cv_have_attribute_alias=no)])
   if test $libgfor_cv_have_attribute_alias = yes; then
     AC_DEFINE(HAVE_ATTRIBUTE_ALIAS, 1,
       [Define to 1 if the target supports __attribute__((alias(...))).])
@@ -74,9 +74,9 @@ dnl Check whether the target supports __sync_fetch_and_add.
 AC_DEFUN([LIBGFOR_CHECK_SYNC_FETCH_AND_ADD], [
   AC_CACHE_CHECK([whether the target supports __sync_fetch_and_add],
 		 libgfor_cv_have_sync_fetch_and_add, [
-  AC_TRY_LINK([int foovar = 0;], [
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[int foovar = 0;]], [[
 if (foovar <= 0) return __sync_fetch_and_add (&foovar, 1);
-if (foovar > 10) return __sync_add_and_fetch (&foovar, -1);],
+if (foovar > 10) return __sync_add_and_fetch (&foovar, -1);]])],
 	      libgfor_cv_have_sync_fetch_and_add=yes, libgfor_cv_have_sync_fetch_and_add=no)])
   if test $libgfor_cv_have_sync_fetch_and_add = yes; then
     AC_DEFINE(HAVE_SYNC_FETCH_AND_ADD, 1,
@@ -100,9 +100,11 @@ AC_DEFUN([LIBGFOR_GTHREAD_WEAK], [
 		 libgfor_cv_have_pragma_weak, [
   gfor_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -Wunknown-pragmas"
-  AC_TRY_COMPILE([void foo (void);
-#pragma weak foo], [if (foo) foo ();],
-		 libgfor_cv_have_pragma_weak=yes, libgfor_cv_have_pragma_weak=no)])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+void foo (void);
+#pragma weak foo
+]], [[if (foo) foo ();]])],
+		    libgfor_cv_have_pragma_weak=yes, libgfor_cv_have_pragma_weak=no)])
   if test $libgfor_cv_have_pragma_weak = yes; then
     AC_DEFINE(SUPPORTS_WEAK, 1,
 	      [Define to 1 if the target supports #pragma weak])
@@ -118,7 +120,7 @@ dnl Check whether target can unlink a file still open.
 AC_DEFUN([LIBGFOR_CHECK_UNLINK_OPEN_FILE], [
   AC_CACHE_CHECK([whether the target can unlink an open file],
                   libgfor_cv_have_unlink_open_file, [
-  AC_TRY_RUN([
+  AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -140,7 +142,7 @@ int main ()
     return 0;
   else
     return 1;
-}], libgfor_cv_have_unlink_open_file=yes, libgfor_cv_have_unlink_open_file=no, [
+}]])], libgfor_cv_have_unlink_open_file=yes, libgfor_cv_have_unlink_open_file=no, [
 case "${target}" in
   *mingw*) libgfor_cv_have_unlink_open_file=no ;;
   *) libgfor_cv_have_unlink_open_file=yes;;
@@ -153,7 +155,7 @@ dnl Check whether CRLF is the line terminator
 AC_DEFUN([LIBGFOR_CHECK_CRLF], [
   AC_CACHE_CHECK([whether the target has CRLF as line terminator],
                   libgfor_cv_have_crlf, [
-  AC_TRY_RUN([
+  AC_RUN_IFELSE([AC_LANG_SOURCE([[
 /* This test program should exit with status 0 if system uses a CRLF as
    line terminator, and status 1 otherwise.  
    Since it is used to check for mingw systems, and should return 0 in any
@@ -187,7 +189,7 @@ int main ()
   else
     exit(1);
 #endif
-}], libgfor_cv_have_crlf=yes, libgfor_cv_have_crlf=no, [
+}]])], libgfor_cv_have_crlf=yes, libgfor_cv_have_crlf=no, [
 case "${target}" in
   *mingw*) libgfor_cv_have_crlf=yes ;;
   *) libgfor_cv_have_crlf=no;;
@@ -202,7 +204,7 @@ dnl systems; it is known to be false on mingw32.
 AC_DEFUN([LIBGFOR_CHECK_WORKING_STAT], [
   AC_CACHE_CHECK([whether the target stat is reliable],
                   libgfor_cv_have_working_stat, [
-  AC_TRY_RUN([
+  AC_RUN_IFELSE([AC_LANG_SOURCE([[
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -222,7 +224,7 @@ int main ()
   fclose(f);
   fclose(g);
   return 0;
-}], libgfor_cv_have_working_stat=yes, libgfor_cv_have_working_stat=no, [
+}]])], libgfor_cv_have_working_stat=yes, libgfor_cv_have_working_stat=no, [
 case "${target}" in
   *mingw*) libgfor_cv_have_working_stat=no ;;
   *) libgfor_cv_have_working_stat=yes;;
@@ -234,13 +236,13 @@ fi])
 dnl Checks for fpsetmask function.
 AC_DEFUN([LIBGFOR_CHECK_FPSETMASK], [
   AC_CACHE_CHECK([whether fpsetmask is present], libgfor_cv_have_fpsetmask, [
-    AC_TRY_LINK([
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #if HAVE_FLOATINGPOINT_H
 # include <floatingpoint.h>
 #endif /* HAVE_FLOATINGPOINT_H */
 #if HAVE_IEEEFP_H
 # include <ieeefp.h>
-#endif /* HAVE_IEEEFP_H */],[fpsetmask(0);],
+#endif /* HAVE_IEEEFP_H */]],[[fpsetmask(0);]])],
     eval "libgfor_cv_have_fpsetmask=yes", eval "libgfor_cv_have_fpsetmask=no")
   ])
   if test x"$libgfor_cv_have_fpsetmask" = xyes; then
@@ -252,12 +254,12 @@ AC_DEFUN([LIBGFOR_CHECK_FPSETMASK], [
 dnl Check whether we have a mingw that provides a __mingw_snprintf function
 AC_DEFUN([LIBGFOR_CHECK_MINGW_SNPRINTF], [
   AC_CACHE_CHECK([whether __mingw_snprintf is present], libgfor_cv_have_mingw_snprintf, [
-    AC_TRY_LINK([
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <stdio.h>
 extern int __mingw_snprintf (char *, size_t, const char *, ...);
-],[
+]],[[
 __mingw_snprintf (NULL, 0, "%d\n", 1);
-],
+]])],
     eval "libgfor_cv_have_mingw_snprintf=yes", eval "libgfor_cv_have_mingw_snprintf=no")
   ])
   if test x"$libgfor_cv_have_mingw_snprintf" = xyes; then

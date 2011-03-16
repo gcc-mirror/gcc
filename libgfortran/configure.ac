@@ -151,7 +151,7 @@ FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-AC_TRY_LINK([int foo;],[],[gfortran_use_symver=gnu],[gfortran_use_symver=no])
+AC_LINK_IFELSE([AC_LANG_PROGRAM([[int foo;]],[[]])],[gfortran_use_symver=gnu],[gfortran_use_symver=no])
 if test x$gfortran_use_symver = xno; then
   case "$target_os" in
     solaris2*)
@@ -163,7 +163,7 @@ FOO_1.0 {
   global: foo; local: *;
 };
 EOF
-      AC_TRY_LINK([int foo;],[],[gfortran_use_symver=sun],[gfortran_use_symver=no])
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[int foo;]],[[]])],[gfortran_use_symver=sun],[gfortran_use_symver=no])
       ;;
   esac
 fi
@@ -181,7 +181,7 @@ ac_save_CFLAGS="$CFLAGS"
 # Check for -ffunction-sections -fdata-sections
 AC_MSG_CHECKING([for gcc that supports -ffunction-sections -fdata-sections])
 CFLAGS='-Werror -ffunction-sections -fdata-sections'
-AC_TRY_COMPILE(, [int foo;], [ac_fdsections=yes], [ac_fdsections=no])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[int foo;]])], [ac_fdsections=yes], [ac_fdsections=no])
 if test "$ac_test_CFLAGS" = set; then
   CFLAGS="$ac_save_CFLAGS"
 else
