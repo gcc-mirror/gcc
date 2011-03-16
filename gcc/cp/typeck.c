@@ -7454,7 +7454,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
     return rhs;
 
   if (MAYBE_CLASS_TYPE_P (type))
-    return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
+    return perform_implicit_conversion_flags (type, rhs, complain, flags);
 
   return convert_for_assignment (type, rhs, errtype, fndecl, parmnum,
 				 complain, flags);
