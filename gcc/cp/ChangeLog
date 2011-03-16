@@ -1,5 +1,14 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48113
+	* typeck.c (convert_for_initialization): Use
+	perform_implicit_conversion_flags.
+	* call.c (standard_conversion): If LOOKUP_PREFER_RVALUE, set
+	rvaluedness_matches_p on ck_rvalue.
+	(convert_like_real) [ck_rvalue]: And restore it here.
+
+2011-03-16  Jason Merrill  <jason@redhat.com>
+
 	PR c++/48115
 	* call.c (convert_arg_to_ellipsis): Handle incomplete type.
 
