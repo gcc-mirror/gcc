@@ -1,3 +1,8 @@
+2011-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* var-tracking.c (prepare_call_arguments): Add ATTRIBUTE_UNUSED
+	to nargs.
+
 2011-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR lto/46944

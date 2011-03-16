@@ -5620,7 +5620,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	    type = NULL;
 	  else
 	    {
-	      int nargs = list_length (TYPE_ARG_TYPES (type));
+	      int nargs ATTRIBUTE_UNUSED = list_length (TYPE_ARG_TYPES (type));
 	      link = CALL_INSN_FUNCTION_USAGE (insn);
 #ifndef PCC_STATIC_STRUCT_RETURN
 	      if (aggregate_value_p (TREE_TYPE (type), type)
