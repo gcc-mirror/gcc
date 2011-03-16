@@ -5994,8 +5994,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 				   argarray);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
-      if (!VOID_TYPE_P (return_type))
-	require_complete_type_sfinae (return_type, complain);
       return convert_from_reference (expr);
     }
 
