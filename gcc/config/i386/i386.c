@@ -27659,7 +27659,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
     case BUILT_IN_FLOOR:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math)
+      if (flag_trapping_math || !TARGET_ROUND)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -27673,7 +27673,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
     case BUILT_IN_FLOORF:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math)
+      if (flag_trapping_math || !TARGET_ROUND)
 	break;
 
       if (out_mode == SFmode && in_mode == SFmode)
@@ -27687,7 +27687,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
     case BUILT_IN_CEIL:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math)
+      if (flag_trapping_math || !TARGET_ROUND)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -27701,7 +27701,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
     case BUILT_IN_CEILF:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math)
+      if (flag_trapping_math || !TARGET_ROUND)
 	break;
 
       if (out_mode == SFmode && in_mode == SFmode)
@@ -27715,7 +27715,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
     case BUILT_IN_TRUNC:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math)
+      if (flag_trapping_math || !TARGET_ROUND)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -27729,7 +27729,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
     case BUILT_IN_TRUNCF:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math)
+      if (flag_trapping_math || !TARGET_ROUND)
 	break;
 
       if (out_mode == SFmode && in_mode == SFmode)
@@ -27743,7 +27743,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
     case BUILT_IN_RINT:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math)
+      if (flag_trapping_math || !TARGET_ROUND)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -27757,7 +27757,7 @@ ix86_builtin_vectorized_function (tree fndecl, tree type_out,
 
     case BUILT_IN_RINTF:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math)
+      if (flag_trapping_math || !TARGET_ROUND)
 	break;
 
       if (out_mode == SFmode && in_mode == SFmode)
