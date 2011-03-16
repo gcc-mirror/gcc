@@ -560,23 +560,50 @@ maybe_fold_reference (tree expr, bool is_lhs)
   tree *t = &expr;
   tree result;
 
+  if ((TREE_CODE (expr) == VIEW_CONVERT_EXPR
+       || TREE_CODE (expr) == REALPART_EXPR
+       || TREE_CODE (expr) == IMAGPART_EXPR)
+      && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
+    return fold_unary_loc (EXPR_LOCATION (expr),
+			   TREE_CODE (expr),
+			   TREE_TYPE (expr),
+			   TREE_OPERAND (expr, 0));
+  else if (TREE_CODE (expr) == BIT_FIELD_REF
+	   && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
+    return fold_ternary_loc (EXPR_LOCATION (expr),
+			     TREE_CODE (expr),
+			     TREE_TYPE (expr),
+			     TREE_OPERAND (expr, 0),
+			     TREE_OPERAND (expr, 1),
+			     TREE_OPERAND (expr, 2));
+
+  while (handled_component_p (*t))
+    t = &TREE_OPERAND (*t, 0);
+
+  /* Canonicalize MEM_REFs invariant address operand.  Do this first
+     to avoid feeding non-canonical MEM_REFs elsewhere.  */
+  if (TREE_CODE (*t) == MEM_REF
+      && !is_gimple_mem_ref_addr (TREE_OPERAND (*t, 0)))
+    {
+      bool volatile_p = TREE_THIS_VOLATILE (*t);
+      tree tem = fold_binary (MEM_REF, TREE_TYPE (*t),
+			      TREE_OPERAND (*t, 0),
+			      TREE_OPERAND (*t, 1));
+      if (tem)
+	{
+	  TREE_THIS_VOLATILE (tem) = volatile_p;
+	  *t = tem;
+	  tem = maybe_fold_reference (expr, is_lhs);
+	  if (tem)
+	    return tem;
+	  return expr;
+	}
+    }
+
   if (!is_lhs
       && (result = fold_const_aggregate_ref (expr))
       && is_gimple_min_invariant (result))
     return result;
-
-  /* ???  We might want to open-code the relevant remaining cases
-     to avoid using the generic fold.  */
-  if (handled_component_p (*t)
-      && CONSTANT_CLASS_P (TREE_OPERAND (*t, 0)))
-    {
-      tree tem = fold (*t);
-      if (tem != *t)
-	return tem;
-    }
-
-  while (handled_component_p (*t))
-    t = &TREE_OPERAND (*t, 0);
 
   /* Fold back MEM_REFs to reference trees.  */
   if (TREE_CODE (*t) == MEM_REF
@@ -593,7 +620,7 @@ maybe_fold_reference (tree expr, bool is_lhs)
 	 compatibility.  */
       && types_compatible_p (TREE_TYPE (*t),
 			     TREE_TYPE (TREE_OPERAND
-					  (TREE_OPERAND (*t, 0), 0))))
+					(TREE_OPERAND (*t, 0), 0))))
     {
       tree tem;
       *t = TREE_OPERAND (TREE_OPERAND (*t, 0), 0);
@@ -602,44 +629,12 @@ maybe_fold_reference (tree expr, bool is_lhs)
 	return tem;
       return expr;
     }
-  /* Canonicalize MEM_REFs invariant address operand.  */
-  else if (TREE_CODE (*t) == MEM_REF
-	   && !is_gimple_mem_ref_addr (TREE_OPERAND (*t, 0)))
-    {
-      bool volatile_p = TREE_THIS_VOLATILE (*t);
-      tree tem = fold_binary (MEM_REF, TREE_TYPE (*t),
-			      TREE_OPERAND (*t, 0),
-			      TREE_OPERAND (*t, 1));
-      if (tem)
-	{
-	  TREE_THIS_VOLATILE (tem) = volatile_p;
-	  *t = tem;
-	  tem = maybe_fold_reference (expr, is_lhs);
-	  if (tem)
-	    return tem;
-	  return expr;
-	}
-    }
   else if (TREE_CODE (*t) == TARGET_MEM_REF)
     {
       tree tem = maybe_fold_tmr (*t);
       if (tem)
 	{
 	  *t = tem;
-	  tem = maybe_fold_reference (expr, is_lhs);
-	  if (tem)
-	    return tem;
-	  return expr;
-	}
-    }
-  else if (!is_lhs
-	   && DECL_P (*t))
-    {
-      tree tem = get_symbol_constant_value (*t);
-      if (tem
-	  && useless_type_conversion_p (TREE_TYPE (*t), TREE_TYPE (tem)))
-	{
-	  *t = unshare_expr (tem);
 	  tem = maybe_fold_reference (expr, is_lhs);
 	  if (tem)
 	    return tem;

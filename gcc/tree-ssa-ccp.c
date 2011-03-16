@@ -1182,6 +1182,17 @@ ccp_fold (gimple stmt)
 					       TREE_CODE (rhs),
 					       TREE_TYPE (rhs), val);
 		    }
+		  else if (TREE_CODE (rhs) == BIT_FIELD_REF
+			   && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
+		    {
+		      tree val = get_constant_value (TREE_OPERAND (rhs, 0));
+		      if (val)
+			return fold_ternary_loc (EXPR_LOCATION (rhs),
+						 TREE_CODE (rhs),
+						 TREE_TYPE (rhs), val,
+						 TREE_OPERAND (rhs, 1),
+						 TREE_OPERAND (rhs, 2));
+		    }
 		  else if (TREE_CODE (rhs) == MEM_REF
 			   && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
 		    {

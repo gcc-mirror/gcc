@@ -1,3 +1,10 @@
+2011-03-16  Richard Guenther  <rguenther@suse.de>
+
+	* gimple-fold.c (maybe_fold_reference): Open-code relevant
+	constant folding.  Move MEM_REF canonicalization first.
+	Rely on fold_const_aggregate_ref for initializer folding.
+	* tree-ssa-ccp.c (ccp_fold): Handle constant vector extracts.
+
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/48136
