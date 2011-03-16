@@ -12342,7 +12342,8 @@ fold_binary_loc (location_t loc,
 		{
 		  tem = fold_build2_loc (loc, LSHIFT_EXPR, itype, arg01, arg001);
 		  tem = fold_build2_loc (loc, BIT_AND_EXPR, itype, arg000, tem);
-		  return fold_build2_loc (loc, code, type, tem, arg1);
+		  return fold_build2_loc (loc, code, type, tem,
+					  fold_convert_loc (loc, itype, arg1));
 		}
 	      /* Otherwise, for signed (arithmetic) shifts,
 		 ((X >> C1) & C2) != 0 is rewritten as X < 0, and
@@ -12393,8 +12394,10 @@ fold_binary_loc (location_t loc,
 	  tree notc = fold_build1_loc (loc, BIT_NOT_EXPR,
 				   TREE_TYPE (TREE_OPERAND (arg0, 1)),
 				   TREE_OPERAND (arg0, 1));
-	  tree dandnotc = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (arg0),
-				       arg1, notc);
+	  tree dandnotc
+	    = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (arg0),
+			       fold_convert_loc (loc, TREE_TYPE (arg0), arg1),
+			       notc);
 	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
 	  if (integer_nonzerop (dandnotc))
 	    return omit_one_operand_loc (loc, type, rslt, arg0);
@@ -12407,8 +12410,10 @@ fold_binary_loc (location_t loc,
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
 	  tree notd = fold_build1_loc (loc, BIT_NOT_EXPR, TREE_TYPE (arg1), arg1);
-	  tree candnotd = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (arg0),
-				       TREE_OPERAND (arg0, 1), notd);
+	  tree candnotd
+	    = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (arg0),
+			       TREE_OPERAND (arg0, 1),
+			       fold_convert_loc (loc, TREE_TYPE (arg0), notd));
 	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
 	  if (integer_nonzerop (candnotd))
 	    return omit_one_operand_loc (loc, type, rslt, arg0);
@@ -12483,13 +12488,13 @@ fold_binary_loc (location_t loc,
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
 	return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 0),
-			    build_int_cst (TREE_TYPE (arg1), 0));
+				build_int_cst (TREE_TYPE (arg0), 0));
       /* Likewise (X ^ Y) == X becomes Y == 0.  X has no side-effects.  */
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
 	  && reorder_operands_p (TREE_OPERAND (arg0, 1), arg1))
 	return fold_build2_loc (loc, code, type, TREE_OPERAND (arg0, 1),
-			    build_int_cst (TREE_TYPE (arg1), 0));
+				build_int_cst (TREE_TYPE (arg0), 0));
 
       /* (X ^ C1) op C2 can be rewritten as X op (C1 ^ C2).  */
       if (TREE_CODE (arg0) == BIT_XOR_EXPR
@@ -12507,10 +12512,12 @@ fold_binary_loc (location_t loc,
 	  && integer_pow2p (TREE_OPERAND (arg0, 1)))
 	{
 	  tem = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (arg0),
-			     TREE_OPERAND (TREE_OPERAND (arg0, 0), 0),
-			     TREE_OPERAND (arg0, 1));
+				 TREE_OPERAND (TREE_OPERAND (arg0, 0), 0),
+				 TREE_OPERAND (arg0, 1));
 	  return fold_build2_loc (loc, code == EQ_EXPR ? NE_EXPR : EQ_EXPR,
-			      type, tem, arg1);
+				  type, tem,
+				  fold_convert_loc (loc, TREE_TYPE (arg0),
+						    arg1));
 	}
 
       /* Fold ((X & C) ^ C) eq/ne 0 into (X & C) ne/eq 0, when the
@@ -12554,8 +12561,9 @@ fold_binary_loc (location_t loc,
       if (TREE_CODE (arg0) == NEGATE_EXPR
           && TREE_CODE (arg1) == NEGATE_EXPR)
 	return fold_build2_loc (loc, code, type,
-			    TREE_OPERAND (arg0, 0),
-			    TREE_OPERAND (arg1, 0));
+				TREE_OPERAND (arg0, 0),
+				fold_convert_loc (loc, TREE_TYPE (arg0),
+						  TREE_OPERAND (arg1, 0)));
 
       /* Fold (X & C) op (Y & C) as (X ^ Y) & C op 0", and symmetries.  */
       if (TREE_CODE (arg0) == BIT_AND_EXPR
@@ -12628,12 +12636,13 @@ fold_binary_loc (location_t loc,
 	  /* Optimize (X ^ C1) op (Y ^ C2) as (X ^ (C1 ^ C2)) op Y.  */
 	  if (TREE_CODE (arg01) == INTEGER_CST
 	      && TREE_CODE (arg11) == INTEGER_CST)
-	    return fold_build2_loc (loc, code, type,
-				fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg00,
-					     fold_build2_loc (loc,
-							  BIT_XOR_EXPR, itype,
-							  arg01, arg11)),
-				arg10);
+	    {
+	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg01,
+				     fold_convert_loc (loc, itype, arg11));
+	      tem = fold_build2_loc (loc, BIT_XOR_EXPR, itype, arg00, tem);
+	      return fold_build2_loc (loc, code, type, tem,
+				      fold_convert_loc (loc, itype, arg10));
+	    }
 	}
 
       /* Attempt to simplify equality/inequality comparisons of complex

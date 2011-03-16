@@ -1,5 +1,10 @@
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/48136
+	* fold-const.c (fold_binary_loc) <case EQ_EXPR, NE_EXPR>: Make sure
+	arg0/arg1 or their arguments are always fold converted to matching
+	types.
+
 	* var-tracking.c (prepare_call_arguments): Add ATTRIBUTE_UNUSED
 	to nargs.
 
