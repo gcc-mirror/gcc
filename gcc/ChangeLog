@@ -1,5 +1,36 @@
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* emit-rtl.c (try_split): Don't call copy_call_info debug hook.
+	* calls.c: Remove debug.h include.
+	(emit_call_1): Don't call virtual_call_token debug hook.
+	* dwarf2out.c (debug_dcall_section, debug_vcall_section,
+	dcall_entry, vcall_entry, dcall_table, vcall_table, vcall_insn,
+	vcall_insn_table, DEBUG_DCALL_SECTION, DEBUG_VCALL_SECTION,
+	size_of_dcall_table, output_dcall_table, size_of_vcall_table,
+	output_vcall_table, dwarf2out_direct_call, vcall_insn_table_hash,
+	vcall_insn_table_eq, store_vcall_insn, lookup_vcall_insn,
+	dwarf2out_virtual_call_token, dwarf2out_copy_call_info,
+	dwarf2out_virtual_call): Remove.
+	(dwarf2_debug_hooks): Remove direct_call, virtual_call_token,
+	copy_call_info and virtual_call hooks.
+	(dwarf2out_init): Don't initialize vcall_insn_table,
+	debug_dcall_section and debug_vcall_section.
+	(prune_unused_types): Don't mark nodes from dcall_table.
+	(dwarf2out_finish): Don't output dcall or vcall tables.
+	* final.c (final_scan_insn): Don't call direct_call or
+	virtual_call debug hooks.
+	* debug.h (struct gcc_debug_hooks): Remove direct_call,
+	virtual_call_token, copy_call_info and virtual_call hooks.
+	(debug_nothing_uid): Remove prototype.
+	* sdbout.c (sdb_debug_hooks): Remove direct_call, virtual_call_token,
+	copy_call_info and virtual_call hooks.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Likewise.
+	* debug.c (do_nothing_debug_hooks): Likewise.
+	(debug_nothing_uid): Remove.
+	* doc/invoke.texi (-fenable-icf-debug): Remove.
+	* common.opt (-fenable-icf-debug): Likewise.
+
 	* calls.c (emit_call_1): Set MEM_EXPR on call's MEM.
 	* var-tracking.c (prepare_call_arguments): Use MEM_EXPR on
 	call's MEM.  Handle functions returning aggregate through a hidden
