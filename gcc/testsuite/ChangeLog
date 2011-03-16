@@ -1,5 +1,7 @@
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/debug/dwarf2/icf.C: Adjust for -fenable-icf-debug removal.
+
 	PR debug/45882
 	* gcc.dg/guality/pr45882.c: New test.
 
