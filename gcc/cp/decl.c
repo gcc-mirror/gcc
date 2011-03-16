@@ -4596,6 +4596,9 @@ check_array_designated_initializer (const constructor_elt *ce)
       if (ce->index == error_mark_node)
 	error ("name used in a GNU-style designated "
 	       "initializer for an array");
+      else if (TREE_CODE (ce->index) == INTEGER_CST)
+	/* An index added by reshape_init.  */
+	return true;
       else
 	{
 	  gcc_assert (TREE_CODE (ce->index) == IDENTIFIER_NODE);
@@ -4899,7 +4902,8 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d)
       elt_init = reshape_init_r (elt_type, d, /*first_initializer_p=*/false);
       if (elt_init == error_mark_node)
 	return error_mark_node;
-      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init), NULL_TREE, elt_init);
+      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init),
+			      size_int (index), elt_init);
     }
 
   return new_init;
