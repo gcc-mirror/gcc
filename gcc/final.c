@@ -1,6 +1,7 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2005,6 +2006,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_VAR_LOCATION:
+	case NOTE_INSN_CALL_ARG_LOCATION:
 	  if (!DECL_IGNORED_P (current_function_decl))
 	    debug_hooks->var_location (insn);
 	  break;
@@ -2671,6 +2673,8 @@ final_scan_insn (rtx insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		if (t)
 		  assemble_external (t);
 	      }
+	    if (!DECL_IGNORED_P (current_function_decl))
+	      debug_hooks->var_location (insn);
 	  }
 
 	/* Output assembler code from the template.  */
@@ -4423,6 +4427,7 @@ rest_of_clean_state (void)
       if (final_output
 	  && (!NOTE_P (insn) ||
 	      (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
+	       && NOTE_KIND (insn) != NOTE_INSN_CALL_ARG_LOCATION
 	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
 	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END
 	       && NOTE_KIND (insn) != NOTE_INSN_CFA_RESTORE_STATE)))

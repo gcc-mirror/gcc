@@ -1,5 +1,5 @@
 /* Process source files and output type information.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -1013,6 +1013,7 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	    break;
 
 	  case NOTE_INSN_VAR_LOCATION:
+	  case NOTE_INSN_CALL_ARG_LOCATION:
 	    note_flds = create_field (note_flds, rtx_tp, "rt_rtx");
 	    break;
 

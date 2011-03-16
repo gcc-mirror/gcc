@@ -1,3 +1,8 @@
+2011-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-objcp-common.c (cp_function_decl_explicit_p): Don't crash if
+	DECL_LANG_SPECIFIC is NULL.
+
 2011-03-15  Jason Merrill  <jason@redhat.com>
 
 	Core 1074
