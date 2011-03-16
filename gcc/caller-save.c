@@ -1215,7 +1215,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
       /* Check that insn to restore REGNO in save_mode[regno] is
 	 correct.  */
       && reg_save_code (regno, save_mode[regno]) >= 0)
-    mem = adjust_address (mem, save_mode[regno], 0);
+    mem = adjust_address_nv (mem, save_mode[regno], 0);
   else
     mem = copy_rtx (mem);
 
@@ -1296,7 +1296,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
       /* Check that insn to save REGNO in save_mode[regno] is
 	 correct.  */
       && reg_save_code (regno, save_mode[regno]) >= 0)
-    mem = adjust_address (mem, save_mode[regno], 0);
+    mem = adjust_address_nv (mem, save_mode[regno], 0);
   else
     mem = copy_rtx (mem);
 
