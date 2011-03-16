@@ -1,5 +1,9 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-array3.C: New.
+
+2011-03-16  Jason Merrill  <jason@redhat.com>
+
 	* g++.dg/cpp0x/sfinae6.C: New.
 	* gcc/testsuite/g++.dg/cpp0x/initlist38.C: Adjust expected error.
 	* gcc/testsuite/g++.dg/cpp0x/pr45908.C: Likewise.

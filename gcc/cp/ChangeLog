@@ -1,5 +1,11 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48132
+	* decl.c (check_array_designated_initializer): Allow integer index.
+	(reshape_init_array_1): Set index on the elements.
+
+2011-03-16  Jason Merrill  <jason@redhat.com>
+
 	PR c++/48113
 	* typeck.c (convert_for_initialization): Use
 	perform_implicit_conversion_flags.
