@@ -1,3 +1,12 @@
+2011-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (DW_TAG_GNU_call_site, DW_TAG_GNU_call_site_parameter,
+	DW_AT_GNU_call_site_value, DW_AT_GNU_call_site_data_value,
+	DW_AT_GNU_call_site_target, DW_AT_GNU_call_site_target_clobbered,
+	DW_AT_GNU_tail_call, DW_AT_GNU_all_tail_call_sites,
+	DW_AT_GNU_all_call_sites,, DW_AT_GNU_all_source_call_sites,
+	DW_OP_GNU_entry_value): New.
+
 2011-02-28  Kai Tietz  <kai.tietz@onevision.com>
 
 	* filenames.h (filename_ncmp): New prototype.

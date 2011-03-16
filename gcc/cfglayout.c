@@ -1,6 +1,6 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,7 +54,6 @@ static void change_scope (rtx, tree, tree);
 
 void verify_insn_chain (void);
 static void fixup_fallthru_exit_predecessor (void);
-static tree insn_scope (const_rtx);
 
 rtx
 unlink_insn_chain (rtx first, rtx last)
@@ -499,7 +498,7 @@ locator_scope (int loc)
 }
 
 /* Return lexical scope block insn belongs to.  */
-static tree
+tree
 insn_scope (const_rtx insn)
 {
   return locator_scope (INSN_LOCATOR (insn));

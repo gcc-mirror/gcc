@@ -1,7 +1,7 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-   Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
+   2011 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2784,9 +2784,7 @@ expand_call (tree exp, rtx target, int ignore)
 		sibcall_failure = 1;
 	      }
 
-	  if (((flags & ECF_CONST)
-	       || ((flags & ECF_PURE) && ACCUMULATE_OUTGOING_ARGS))
-	      && args[i].stack)
+	  if (args[i].stack)
 	    call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
 					     gen_rtx_USE (VOIDmode,
 							  args[i].stack),
@@ -3682,6 +3680,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
       if (! (reg != 0 && partial == 0))
 	{
+	  rtx use;
+
 	  if (ACCUMULATE_OUTGOING_ARGS)
 	    {
 	      /* If this is being stored into a pre-allocated, fixed-size,
@@ -3752,28 +3752,22 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
 	  NO_DEFER_POP;
 
-	  if ((flags & ECF_CONST)
-	      || ((flags & ECF_PURE) && ACCUMULATE_OUTGOING_ARGS))
-	    {
-	      rtx use;
-
-	      /* Indicate argument access so that alias.c knows that these
-		 values are live.  */
-	      if (argblock)
-		use = plus_constant (argblock,
-				     argvec[argnum].locate.offset.constant);
-	      else
-		/* When arguments are pushed, trying to tell alias.c where
-		   exactly this argument is won't work, because the
-		   auto-increment causes confusion.  So we merely indicate
-		   that we access something with a known mode somewhere on
-		   the stack.  */
-		use = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
-				    gen_rtx_SCRATCH (Pmode));
-	      use = gen_rtx_MEM (argvec[argnum].mode, use);
-	      use = gen_rtx_USE (VOIDmode, use);
-	      call_fusage = gen_rtx_EXPR_LIST (VOIDmode, use, call_fusage);
-	    }
+	  /* Indicate argument access so that alias.c knows that these
+	     values are live.  */
+	  if (argblock)
+	    use = plus_constant (argblock,
+				 argvec[argnum].locate.offset.constant);
+	  else
+	    /* When arguments are pushed, trying to tell alias.c where
+	       exactly this argument is won't work, because the
+	       auto-increment causes confusion.  So we merely indicate
+	       that we access something with a known mode somewhere on
+	       the stack.  */
+	    use = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
+				gen_rtx_SCRATCH (Pmode));
+	  use = gen_rtx_MEM (argvec[argnum].mode, use);
+	  use = gen_rtx_USE (VOIDmode, use);
+	  call_fusage = gen_rtx_EXPR_LIST (VOIDmode, use, call_fusage);
 	}
     }
 

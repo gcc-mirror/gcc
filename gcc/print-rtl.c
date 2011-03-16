@@ -1,6 +1,6 @@
 /* Print RTL for GCC.
    Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000, 2002, 2003,
-   2004, 2005, 2007, 2008, 2009, 2010
+   2004, 2005, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -302,6 +302,7 @@ print_rtx (const_rtx in_rtx)
 		}
 
 	      case NOTE_INSN_VAR_LOCATION:
+	      case NOTE_INSN_CALL_ARG_LOCATION:
 #ifndef GENERATOR_FILE
 		fputc (' ', outfile);
 		print_rtx (NOTE_VAR_LOCATION (in_rtx));

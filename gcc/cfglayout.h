@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000, 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2007, 2011 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -27,6 +27,7 @@ extern GTY(()) rtx cfg_layout_function_header;
 
 extern void cfg_layout_initialize (unsigned int);
 extern void cfg_layout_finalize (void);
+extern tree insn_scope (const_rtx);
 extern void reemit_insn_block_notes (void);
 extern bool can_copy_bbs_p (basic_block *, unsigned);
 extern void copy_bbs (basic_block *, unsigned, basic_block *,

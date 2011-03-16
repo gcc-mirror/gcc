@@ -1,3 +1,81 @@
+2011-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* final.c (final_scan_insn): Handle NOTE_INSN_CALL_ARG_LOCATION.
+	Call var_location debug hook even on CALL_INSNs.
+	(rest_of_clean_state): Don't print NOTE_INSN_CALL_ARG_LOCATION.
+	* rtl.def (ENTRY_VALUE): New.
+	* dwarf2out.c: Include cfglayout.h.
+	(dwarf_stack_op_name, size_of_loc_descr, output_loc_operands,
+	output_loc_operands_raw): Handle DW_OP_GNU_entry_value.
+	(struct call_arg_loc_node): New type.
+	(call_arg_locations, call_arg_loc_last, block_map, call_site_count,
+	tail_call_site_count): New variables.
+	(dwarf_tag_name): Handle DW_TAG_GNU_call_site and
+	DW_TAG_GNU_call_site_parameter.
+	(dwarf_attr_name): Handle DW_AT_GNU_call_site_value,
+	DW_AT_GNU_call_site_data_value, DW_AT_GNU_call_site_target,
+	DW_AT_GNU_call_site_target_clobbered, DW_AT_GNU_tail_call,
+	DW_AT_GNU_all_tail_call_sites, DW_AT_GNU_all_call_sites
+	and DW_AT_GNU_all_source_call_sites.
+	(mem_loc_descriptor): Handle ENTRY_VALUE.
+	(add_src_coords_attributes): Don't add enything if
+	DECL_SOURCE_LOCATION is UNKNOWN_LOCATION.
+	(dwarf2out_abstract_function): Save and clear call_arg_location,
+	call_site_count and tail_call_site_count around dwarf2out_decl call.
+	(gen_call_site_die): New function.
+	(gen_subprogram_die): Emit DW_TAG_GNU_call_site DIEs for call sites.
+	(gen_lexical_block_die, gen_inlined_subroutine_die): Update block_map.
+	(dwarf2out_function_decl): Clear call_arg_locations,
+	call_arg_loc_last, set call_site_count and tail_call_site_count
+	to -1 and free block_map.
+	(dwarf2out_var_location): Handle NOTE_INSN_CALL_ARG_LOCATION and
+	CALL_INSNs.  Add NOTE_DURING_CALL_P var location notes even when not
+	followed by any real instructions.
+	(dwarf2out_begin_function): Set call_site_count and
+	tail_call_site_count to 0.
+	(resolve_addr): If DW_AT_abstract_origin of DW_TAG_GNU_call_site
+	is dw_val_class_addr, attempt to look it up again, for DECL_EXTERNAL
+	attempt to force a DIE for it and worst case remove the attribute.
+	(resolve_one_addr): For TREE_CONSTANT_POOL_ADDRESS_P SYMBOL_REFs
+	check TREE_ASM_WRITTEN of DECL_INITIAL of the decl instead of
+	the decl itself.
+	* var-tracking.c: Include tm_p.h.
+	(vt_stack_adjustments): For calls call note_register_arguments.
+	(argument_reg_set): New variable.
+	(add_stores): For MO_VAL_SET of non-tracked regs from argument_reg_set
+	ensure the VALUE is resolved.
+	(call_arguments): New variable.
+	(prepare_call_arguments): New function.
+	(add_with_sets): For MO_CALL set u.loc from call_arguments and clear it.
+	(struct expand_loc_callback_data): Add ignore_cur_loc field.
+	(vt_expand_loc_callback): If ignore_cur_loc, don't look at cur_loc and
+	always use the best expression.
+	(vt_expand_loc): Add ignore_cur_loc argument.
+	(vt_expand_loc_dummy): Clear ignore_cur_loc field.
+	(emit_note_insn_var_location): Adjust vt_expand_loc callers.
+	(emit_notes_in_bb) <case MO_CALL>: Add NOTE_INSN_CALL_ARG_LOCATION
+	note for all calls.
+	(vt_add_function_parameter): Use cselib_lookup_from_insn.
+	If dv is a VALUE, enter into hash table also ENTRY_VALUE for the
+	argument.  Don't call cselib_preserve_only_values and
+	cselib_reset_table.
+	(note_register_arguments): New function.
+	(vt_initialize): Compute argument_reg_set.  Call
+	vt_add_function_parameters before processing basic blocks instead of
+	afterwards.  For calls call prepare_call_arguments before calling
+	cselib_process_insn.
+	* print-rtl.c (print_rtx): Handle NOTE_INSN_CALL_ARG_LOCATION.
+	* Makefile.in (dwarf2out.o): Depend on $(CFGLAYOUT_H).
+	(var-tracking.o): Depend on $(TM_P_H).
+	* cfglayout.h (insn_scope): New prototype.
+	* gengtype.c (adjust_field_rtx_def): Handle NOTE_INSN_CALL_ARG_LOCATION.
+	* cfglayout.c (insn_scope): No longer static.
+	* insn-notes.def (CALL_ARG_LOCATION): New.
+	* calls.c (expand_call, emit_library_call_value_1): Put USEs for
+	MEM arguments into CALL_INSN_FUNCTION_USAGE unconditionally.
+	* integrate.c (set_block_origin_self, set_block_abstract_flags): Do
+	nothing for DECL_EXTERNAL BLOCK_VARS.
+
 2011-03-16  Alan Modra  <amodra@gmail.com>
 
 	PR target/45844

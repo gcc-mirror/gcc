@@ -1,5 +1,6 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -160,6 +161,7 @@ cp_function_decl_explicit_p (tree decl)
 {
   return (decl
 	  && FUNCTION_FIRST_USER_PARMTYPE (decl) != void_list_node
+	  && DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
 	  && DECL_NONCONVERTING_P (decl));
 }
 
