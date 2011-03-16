@@ -79,9 +79,6 @@ static struct sigtab signals[] =
 #ifdef SIGVTARLM
   { SIGVTALRM, 1 },
 #endif
-#ifdef SIGPROF
-  { SIGPROF, 1 },
-#endif
 #ifdef SIGWINCH
   { SIGWINCH, 1 },
 #endif
