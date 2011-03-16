@@ -1,5 +1,10 @@
 2011-03-16  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/26134
+	* gcc.dg/tree-ssa/complex-6.c: New testcase.
+
+2011-03-16  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/48146
 	* gcc.dg/torture/pr48146.c: New testcase.
 
