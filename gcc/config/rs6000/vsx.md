@@ -1076,7 +1076,7 @@
 (define_insn "vsx_splat_<mode>"
   [(set (match_operand:VSX_D 0 "vsx_register_operand" "=wd,wd,wd,?wa,?wa,?wa")
 	(vec_duplicate:VSX_D
-	 (match_operand:<VS_scalar> 1 "input_operand" "ws,f,Z,wa,wa,Z")))]
+	 (match_operand:<VS_scalar> 1 "splat_input_operand" "ws,f,Z,wa,wa,Z")))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    xxpermdi %x0,%x1,%x1,0
