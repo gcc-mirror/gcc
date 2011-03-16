@@ -1,3 +1,9 @@
+2011-03-16  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (identify_jump_threads): Slightly simplify type
+	check for operands of conditional.  Allow type to be a
+	pointer.
+
 2011-03-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/48149

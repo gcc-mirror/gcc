@@ -7538,12 +7538,14 @@ identify_jump_threads (void)
 	continue;
 
       /* We're basically looking for any kind of conditional with
-	 integral type arguments.  */
+	 integral or pointer type arguments.  Note the type of the second
+	 argument will be the same as the first argument, so no need to
+	 check it explicitly.  */
       if (TREE_CODE (gimple_cond_lhs (last)) == SSA_NAME
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (last)))
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (last)))
+	      || POINTER_TYPE_P (TREE_TYPE (gimple_cond_lhs (last))))
 	  && (TREE_CODE (gimple_cond_rhs (last)) == SSA_NAME
-	      || is_gimple_min_invariant (gimple_cond_rhs (last)))
-	  && INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_rhs (last))))
+	      || is_gimple_min_invariant (gimple_cond_rhs (last))))
 	{
 	  edge_iterator ei;
 
