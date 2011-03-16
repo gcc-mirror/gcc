@@ -28,9 +28,10 @@ f2 (int i)
 int
 main ()
 {
+  volatile int j;
   int i = 5;
   asm volatile ("" : "=r" (i) : "0" (i));
-  f1 (i);
+  j = f1 (i);
   f2 (i);
   return 0;
 }
