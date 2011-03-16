@@ -1,3 +1,8 @@
+2011-03-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/47510
+	* ++.dg/debug/dwarf2/typedef6.C: New test.
+
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-array3.C: New.
