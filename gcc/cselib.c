@@ -803,6 +803,10 @@ rtx_equal_for_cselib_1 (rtx x, rtx y, enum machine_mode memmode)
       return DEBUG_IMPLICIT_PTR_DECL (x)
 	     == DEBUG_IMPLICIT_PTR_DECL (y);
 
+    case ENTRY_VALUE:
+      return rtx_equal_for_cselib_1 (ENTRY_VALUE_EXP (x), ENTRY_VALUE_EXP (y),
+				     memmode);
+
     case LABEL_REF:
       return XEXP (x, 0) == XEXP (y, 0);
 
@@ -948,6 +952,10 @@ cselib_hash_rtx (rtx x, int create, enum machine_mode memmode)
       hash += ((unsigned) DEBUG_IMPLICIT_PTR << 7)
 	      + DECL_UID (DEBUG_IMPLICIT_PTR_DECL (x));
       return hash ? hash : (unsigned int) DEBUG_IMPLICIT_PTR;
+
+    case ENTRY_VALUE:
+      hash += cselib_hash_rtx (ENTRY_VALUE_EXP (x), create, memmode);
+      return hash ? hash : (unsigned int) ENTRY_VALUE;
 
     case CONST_INT:
       hash += ((unsigned) CONST_INT << 7) + INTVAL (x);

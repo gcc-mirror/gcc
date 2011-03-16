@@ -3171,7 +3171,31 @@ expand_debug_expr (tree exp)
 	    int part = var_to_partition (SA.map, exp);
 
 	    if (part == NO_PARTITION)
-	      return NULL;
+	      {
+		/* If this is a reference to an incoming value of parameter
+		   that is never used in the code or where the incoming
+		   value is never used in the code, use PARM_DECL's
+		   DECL_RTL if set.  */
+		if (SSA_NAME_IS_DEFAULT_DEF (exp)
+		    && TREE_CODE (SSA_NAME_VAR (exp)) == PARM_DECL)
+		  {
+		    rtx incoming = DECL_INCOMING_RTL (SSA_NAME_VAR (exp));
+		    if (incoming
+			&& GET_MODE (incoming) != BLKmode
+			&& (REG_P (incoming)
+			    || (MEM_P (incoming) && REG_P (XEXP (incoming, 0)))))
+		      {
+			op0 = gen_rtx_ENTRY_VALUE (GET_MODE (incoming));
+			ENTRY_VALUE_EXP (op0) = incoming;
+			goto adjust_mode;
+		      }
+		    op0 = expand_debug_expr (SSA_NAME_VAR (exp));
+		    if (!op0)
+		      return NULL;
+		    goto adjust_mode;
+		  }
+		return NULL;
+	      }
 
 	    gcc_assert (part >= 0 && (unsigned)part < SA.map->num_partitions);
 

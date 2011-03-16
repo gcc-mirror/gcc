@@ -8377,7 +8377,8 @@ vt_add_function_parameter (tree parm)
 	  el = (struct elt_loc_list *)
 	    ggc_alloc_cleared_atomic (sizeof (*el));
 	  el->next = val->locs;
-	  el->loc = gen_rtx_ENTRY_VALUE (GET_MODE (incoming), incoming);
+	  el->loc = gen_rtx_ENTRY_VALUE (GET_MODE (incoming));
+	  ENTRY_VALUE_EXP (el->loc) = incoming;
 	  el->setting_insn = get_insns ();
 	  val->locs = el;
 	  if (TREE_CODE (TREE_TYPE (parm)) == REFERENCE_TYPE
@@ -8394,7 +8395,8 @@ vt_add_function_parameter (tree parm)
 		  el = (struct elt_loc_list *)
 		    ggc_alloc_cleared_atomic (sizeof (*el));
 		  el->next = val->locs;
-		  el->loc = gen_rtx_ENTRY_VALUE (indmode, mem);
+		  el->loc = gen_rtx_ENTRY_VALUE (indmode);
+		  ENTRY_VALUE_EXP (el->loc) = mem;
 		  el->setting_insn = get_insns ();
 		  val->locs = el;
 		}

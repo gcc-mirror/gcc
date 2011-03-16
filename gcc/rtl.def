@@ -718,9 +718,10 @@ DEF_RTL_EXPR(VAR_LOCATION, "var_location", "tei", RTX_EXTRA)
    addressable.  */
 DEF_RTL_EXPR(DEBUG_IMPLICIT_PTR, "debug_implicit_ptr", "t", RTX_OBJ)
 
-/* Represents value that argument had on function entry.  Should
-   be only used in VAR_LOCATION location expression.  */
-DEF_RTL_EXPR(ENTRY_VALUE, "entry_value", "e", RTX_OBJ)
+/* Represents value that argument had on function entry.  The
+   single argument is the DECL_INCOMING_RTL of the corresponding
+   parameter.  */
+DEF_RTL_EXPR(ENTRY_VALUE, "entry_value", "0", RTX_OBJ)
 
 /* All expressions from this point forward appear only in machine
    descriptions.  */
