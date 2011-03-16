@@ -505,12 +505,18 @@ sink_code_in_bb (basic_block bb)
 		   bb->index, (gsi_bb (togsi))->index);
 	}
 
-      /* Prepare for VOP update.  */
+      /* Update virtual operands of statements in the path we
+         do not sink to.  */
       if (gimple_vdef (stmt))
 	{
-	  unlink_stmt_vdef (stmt);
-	  gimple_set_vdef (stmt, gimple_vop (cfun));
-	  mark_sym_for_renaming (gimple_vop (cfun));
+	  imm_use_iterator iter;
+	  use_operand_p use_p;
+	  gimple vuse_stmt;
+
+	  FOR_EACH_IMM_USE_STMT (vuse_stmt, iter, gimple_vdef (stmt))
+	    if (gimple_code (vuse_stmt) != GIMPLE_PHI)
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, gimple_vuse (stmt));
 	}
 
       /* If this is the end of the basic block, we need to insert at the end
