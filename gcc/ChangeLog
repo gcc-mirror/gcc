@@ -1,5 +1,14 @@
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* calls.c (emit_call_1): Set MEM_EXPR on call's MEM.
+	* var-tracking.c (prepare_call_arguments): Use MEM_EXPR on
+	call's MEM.  Handle functions returning aggregate through a hidden
+	first pointer.  For virtual calls add clobbered pc to call arguments
+	chain.
+	* dwarf2out.c (gen_subprogram_die): Emit
+	DW_AT_GNU_call_site_target_clobbered if DW_AT_GNU_call_site_target
+	can't be emitted.
+
 	PR debug/45882
 	* rtl.def (ENTRY_VALUE): Change format from "e" to "0".
 	* rtl.h (ENTRY_VALUE_EXP): Define.

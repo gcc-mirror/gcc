@@ -256,7 +256,7 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	     CUMULATIVE_ARGS *args_so_far ATTRIBUTE_UNUSED)
 {
   rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
-  rtx call_insn;
+  rtx call_insn, call, funmem;
   int already_popped = 0;
   HOST_WIDE_INT n_popped
     = targetm.calls.return_pops_args (fndecl, funtype, stack_size);
@@ -271,6 +271,12 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   if (GET_CODE (funexp) != SYMBOL_REF)
     funexp = memory_address (FUNCTION_MODE, funexp);
 
+  funmem = gen_rtx_MEM (FUNCTION_MODE, funexp);
+  if (fndecl && TREE_CODE (fndecl) == FUNCTION_DECL)
+    set_mem_expr (funmem, fndecl);
+  else if (fntree)
+    set_mem_expr (funmem, build_fold_indirect_ref (CALL_EXPR_FN (fntree)));
+
 #if defined (HAVE_sibcall_pop) && defined (HAVE_sibcall_value_pop)
   if ((ecf_flags & ECF_SIBCALL)
       && HAVE_sibcall_pop && HAVE_sibcall_value_pop
@@ -283,13 +289,11 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	 if possible, for the sake of frame pointer elimination.  */
 
       if (valreg)
-	pat = GEN_SIBCALL_VALUE_POP (valreg,
-				     gen_rtx_MEM (FUNCTION_MODE, funexp),
-				     rounded_stack_size_rtx, next_arg_reg,
-				     n_pop);
+	pat = GEN_SIBCALL_VALUE_POP (valreg, funmem, rounded_stack_size_rtx,
+				     next_arg_reg, n_pop);
       else
-	pat = GEN_SIBCALL_POP (gen_rtx_MEM (FUNCTION_MODE, funexp),
-			       rounded_stack_size_rtx, next_arg_reg, n_pop);
+	pat = GEN_SIBCALL_POP (funmem, rounded_stack_size_rtx, next_arg_reg,
+			       n_pop);
 
       emit_call_insn (pat);
       already_popped = 1;
@@ -316,12 +320,11 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 	 if possible, for the sake of frame pointer elimination.  */
 
       if (valreg)
-	pat = GEN_CALL_VALUE_POP (valreg,
-				  gen_rtx_MEM (FUNCTION_MODE, funexp),
-				  rounded_stack_size_rtx, next_arg_reg, n_pop);
+	pat = GEN_CALL_VALUE_POP (valreg, funmem, rounded_stack_size_rtx,
+				  next_arg_reg, n_pop);
       else
-	pat = GEN_CALL_POP (gen_rtx_MEM (FUNCTION_MODE, funexp),
-			    rounded_stack_size_rtx, next_arg_reg, n_pop);
+	pat = GEN_CALL_POP (funmem, rounded_stack_size_rtx, next_arg_reg,
+			    n_pop);
 
       emit_call_insn (pat);
       already_popped = 1;
@@ -334,13 +337,12 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
       && HAVE_sibcall && HAVE_sibcall_value)
     {
       if (valreg)
-	emit_call_insn (GEN_SIBCALL_VALUE (valreg,
-					   gen_rtx_MEM (FUNCTION_MODE, funexp),
+	emit_call_insn (GEN_SIBCALL_VALUE (valreg, funmem,
 					   rounded_stack_size_rtx,
 					   next_arg_reg, NULL_RTX));
       else
-	emit_call_insn (GEN_SIBCALL (gen_rtx_MEM (FUNCTION_MODE, funexp),
-				     rounded_stack_size_rtx, next_arg_reg,
+	emit_call_insn (GEN_SIBCALL (funmem, rounded_stack_size_rtx,
+				     next_arg_reg,
 				     GEN_INT (struct_value_size)));
     }
   else
@@ -350,13 +352,10 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
   if (HAVE_call && HAVE_call_value)
     {
       if (valreg)
-	emit_call_insn (GEN_CALL_VALUE (valreg,
-					gen_rtx_MEM (FUNCTION_MODE, funexp),
-					rounded_stack_size_rtx, next_arg_reg,
-					NULL_RTX));
+	emit_call_insn (GEN_CALL_VALUE (valreg, funmem, rounded_stack_size_rtx,
+					next_arg_reg, NULL_RTX));
       else
-	emit_call_insn (GEN_CALL (gen_rtx_MEM (FUNCTION_MODE, funexp),
-				  rounded_stack_size_rtx, next_arg_reg,
+	emit_call_insn (GEN_CALL (funmem, rounded_stack_size_rtx, next_arg_reg,
 				  GEN_INT (struct_value_size)));
     }
   else
@@ -365,6 +364,19 @@ emit_call_1 (rtx funexp, tree fntree ATTRIBUTE_UNUSED, tree fndecl ATTRIBUTE_UNU
 
   /* Find the call we just emitted.  */
   call_insn = last_call_insn ();
+
+  /* Some target create a fresh MEM instead of reusing the one provided
+     above.  Set its MEM_EXPR.  */
+  call = PATTERN (call_insn);
+  if (GET_CODE (call) == PARALLEL)
+    call = XVECEXP (call, 0, 0);
+  if (GET_CODE (call) == SET)
+    call = SET_SRC (call);
+  if (GET_CODE (call) == CALL
+      && MEM_P (XEXP (call, 0))
+      && MEM_EXPR (XEXP (call, 0)) == NULL_TREE
+      && MEM_EXPR (funmem) != NULL_TREE)
+    set_mem_expr (XEXP (call, 0), MEM_EXPR (funmem));
 
   /* Put the register usage information there.  */
   add_function_usage_to (call_insn, call_fusage);
