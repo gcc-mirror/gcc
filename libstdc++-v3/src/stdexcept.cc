@@ -1,6 +1,6 @@
 // Methods for Exception Support for -*- C++ -*-
 
-// Copyright (C) 1997, 1999, 2001, 2002, 2005, 2009
+// Copyright (C) 1997, 1999, 2001, 2002, 2005, 2009, 2011
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,7 +34,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  logic_error::logic_error(const string& __arg) 
+  logic_error::logic_error(const string& __arg)
   : exception(), _M_msg(__arg) { }
 
   logic_error::~logic_error() throw() { }
@@ -46,16 +46,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   domain_error::domain_error(const string& __arg)
   : logic_error(__arg) { }
 
+  domain_error::~domain_error() throw() { }
+
   invalid_argument::invalid_argument(const string& __arg)
   : logic_error(__arg) { }
+
+  invalid_argument::~invalid_argument() throw() { }
 
   length_error::length_error(const string& __arg)
   : logic_error(__arg) { }
 
+  length_error::~length_error() throw() { }
+
   out_of_range::out_of_range(const string& __arg)
   : logic_error(__arg) { }
 
-  runtime_error::runtime_error(const string& __arg) 
+  out_of_range::~out_of_range() throw() { }
+
+  runtime_error::runtime_error(const string& __arg)
   : exception(), _M_msg(__arg) { }
 
   runtime_error::~runtime_error() throw() { }
@@ -67,12 +75,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   range_error::range_error(const string& __arg)
   : runtime_error(__arg) { }
 
+  range_error::~range_error() throw() { }
+
   overflow_error::overflow_error(const string& __arg)
   : runtime_error(__arg) { }
+
+  overflow_error::~overflow_error() throw() { }
 
   underflow_error::underflow_error(const string& __arg)
   : runtime_error(__arg) { }
 
+  underflow_error::~underflow_error() throw() { }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-

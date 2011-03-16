@@ -61,8 +61,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     virtual char const*
-    what() const throw()
-    { return "std::bad_weak_ptr"; }
+    what() const throw();
+
+    virtual ~bad_weak_ptr() throw();    
   };
 
   // Substitute for bad_weak_ptr object in the case of -fno-exceptions.

@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010 Free Software Foundation, Inc.
+// Copyright (C) 2010, 2011 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,10 +31,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 namespace __regex
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #ifdef _GLIBCXX_DEBUG
 inline std::ostream& _State::
 _M_print(std::ostream& ostr) const
@@ -169,7 +169,6 @@ inline _StateIdT _StateSeq::
 _M_clone()
 { return 0; }
 
-} // namespace __regex
-
 _GLIBCXX_END_NAMESPACE_VERSION
+} // namespace __regex
 } // namespace

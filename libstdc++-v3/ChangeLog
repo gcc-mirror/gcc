@@ -1,3 +1,36 @@
+2011-03-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * src/Makefile.am: Add functional.cc, shared_ptr.cc.
+        * src/Makefile.in: Regenerate.
+        * libsupc++/Makefile.am: Add nested_exception.cc.
+        * libsupc++/Makefile.in: Regenerate.
+        * src/system_error.cc: Add ctor and dtor definitions for error_category.
+        * src/functional.cc: New. Add dtor definition for bad_function_call.
+        * src/stdexcept.cc: Add dtor definitions for domain_error,
+        invalid_argument, length_error, out_of_range, range_error,
+        overflow_error, underflow_error.
+        * src/future.cc: Add dtor definition for __future_base::_Result_base.
+        * src/shared_ptr.cc: New. Add dtor definition for bad_weak_ptr.
+        * include/std/system_error: Adjust.
+        * include/std/stdexcept: Same.
+        * include/std/future: Same.
+        * include/std/functional: Same.
+        * include/bits/shared_ptr_base.h: Same.
+        * libsupc++/nested_exception.cc: New. Add dtor for nested_exception.
+        * libsupc++/nested_exception.h: Adjust.
+        * testsuite/20_util/shared_ptr/cons/43820_neg.cc: Adjust line numbers.
+        * testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Same.
+        * config/abi/pre/gnu.ver: Add new exports.
+
+	* src/future.cc: Guard definitions.
+        * libsupc++/nested_exception.cc: Same.
+
+        * config/abi/pre/gnu.ver: Make nested_exception exports super clear.
+        Move bad_function_call exports from CXXABI_1.3.5 to GLIBCXX_3.4.15.
+	Add base destructors for stdexcept classes.
+
+	* testsuite/19_diagnostics/stdexcept.cc: New.
+
 2011-03-15  Doug Kwan  <dougkwan@google.com>
 
 	PR libstdc++/48123

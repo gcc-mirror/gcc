@@ -37,9 +37,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Bi_iter, typename _Allocator>
     class match_results;
+
+_GLIBCXX_END_NAMESPACE_VERSION
   
 namespace __regex
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   // A _Results facade specialized for wrapping a templated match_results.
   template<typename _FwdIterT, typename _Alloc>
     class _SpecializedResults
@@ -121,9 +125,8 @@ namespace __regex
     _Results&                          _M_results;
   };
 
-} // namespace __regex
-
 _GLIBCXX_END_NAMESPACE_VERSION
+} // namespace __regex
 } // namespace
 
 #include <bits/regex_grep_matcher.tcc>

@@ -124,7 +124,7 @@ GLIBCXX_3.4 {
       std::messages*;
       std::money*;
 #     std::n[^u]*;
-      std::n[^au]*;
+      std::n[^aue]*;
       std::nu[^m]*;
       std::num[^e]*;
       std::ostrstream*;
@@ -618,7 +618,10 @@ GLIBCXX_3.4 {
     _ZTVSt[0-9][0-9][g-k]*;
     _ZTVSt11logic_error;
     _ZTVSt12length_error;
-    _ZTVSt[0-9][0-9][m-q]*;
+#   _ZTVSt[0-9][0-9][m-q]*;
+    _ZTVSt[0-9][0-9][m]*;
+    _ZTVSt[0-9][0-9]n[^e]*;
+    _ZTVSt[0-9][0-9][o-q]*;
     _ZTVSt11range_error;
     _ZTVSt13runtime_error;
     _ZTVSt[0-9][0-9][t-z]*;
@@ -648,7 +651,10 @@ GLIBCXX_3.4 {
     _ZTISt[0-9][0-9][g-k]*;
     _ZTISt11logic_error;
     _ZTISt12length_error;
-    _ZTISt[0-9][0-9][m-q]*;
+#   _ZTISt[0-9][0-9][m-q]*;
+    _ZTISt[0-9][0-9][m]*;
+    _ZTISt[0-9][0-9]n[^e]*;
+    _ZTISt[0-9][0-9][o-q]*;
     _ZTISt11range_error;
     _ZTISt13runtime_error;
     _ZTISt[0-9][0-9][t-z]*;
@@ -682,7 +688,10 @@ GLIBCXX_3.4 {
     _ZTSSt[0-9][0-9][g-k]*;
     _ZTSSt11logic_error;
     _ZTSSt12length_error;
-    _ZTSSt[0-9][0-9][m-q]*;
+#   _ZTSSt[0-9][0-9][m-q]*;
+    _ZTSSt[0-9][0-9][m]*;
+    _ZTSSt[0-9][0-9]n[^e]*;
+    _ZTSSt[0-9][0-9][o-q]*;
     _ZTSSt11range_error;
     _ZTSSt13runtime_error;
     _ZTSSt[0-9][0-9][t-z]*;
@@ -1212,12 +1221,47 @@ GLIBCXX_3.4.15 {
     _ZNSt8__detail15_List_node_base11_M_transfer*;
     _ZNSt8__detail15_List_node_base4swapERS0_S1_;
 
+    _ZNSt11range_errorD2Ev;
+    _ZNSt12domain_errorD2Ev;
+    _ZNSt12length_errorD2Ev;
+    _ZNSt12out_of_rangeD2Ev;
+    _ZNSt14overflow_errorD2Ev;
+    _ZNSt15underflow_errorD2Ev;
+    _ZNSt16invalid_argumentD2Ev;
+
     _ZNSt11regex_errorD*;
     _ZNKSt11regex_error4whatEv;
     _ZTSSt11regex_error;
     _ZTVSt11regex_error;
     _ZTISt11regex_error;
     _ZSt19__throw_regex_errorNSt15regex_constants10error_typeE;
+
+    # std::bad_weak_ptr
+    _ZNSt12bad_weak_ptrD*;
+    _ZNKSt12bad_weak_ptr4whatEv;
+    _ZTSSt12bad_weak_ptr;
+    _ZTVSt12bad_weak_ptr;
+    _ZTISt12bad_weak_ptr;
+
+    # std::bad_function_call
+    _ZNSt17bad_function_callD*;
+    _ZTISt17bad_function_call;
+    _ZTSSt17bad_function_call;
+    _ZTVSt17bad_function_call;
+
+    _ZNSt14error_categoryC*;
+    _ZNSt14error_categoryD*;
+
+    _ZNSt13__future_base12_Result_baseC*;
+    _ZNSt13__future_base12_Result_baseD*;
+    _ZTINSt13__future_base12_Result_baseE;
+    _ZTSNSt13__future_base12_Result_baseE;
+    _ZTVNSt13__future_base12_Result_baseE;
+
+    _ZNSt13__future_base11_State_baseD*;
+    _ZTINSt13__future_base11_State_baseE;
+    _ZTSNSt13__future_base11_State_baseE;
+    _ZTVNSt13__future_base11_State_baseE;
 
 } GLIBCXX_3.4.14;
 
@@ -1397,10 +1441,10 @@ CXXABI_1.3.5 {
     # FNV hash.
     _ZSt15_Fnv_hash_bytesPKv*;
 
-    # std::bad_function_call.
-    _ZNSt17bad_function_callD*;
-    _ZTISt17bad_function_call;
-    _ZTSSt17bad_function_call;
-    _ZTVSt17bad_function_call;
+    # std::nested_exception
+    _ZNSt16nested_exceptionD*;
+    _ZTISt16nested_exception;
+    _ZTSSt16nested_exception;
+    _ZTVSt16nested_exception;
 
 } CXXABI_1.3.4;

@@ -79,8 +79,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   const char* 
   future_error::what() const throw() { return _M_code.message().c_str(); }
 
+#if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1) \
+  && defined(_GLIBCXX_ATOMIC_BUILTINS_4)
+  __future_base::_Result_base::_Result_base() = default;
+
+  __future_base::_Result_base::~_Result_base() = default;
+
+  __future_base::_State_base::~_State_base() = default;
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 // XXX GLIBCXX_ABI Deprecated
 // gcc-4.6.0
