@@ -5803,7 +5803,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
   if (TREE_CODE (arg) == CONSTRUCTOR)
     {
       arg = digest_init (type, arg);
-      arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
+      arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
 					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);
     }
@@ -5817,7 +5817,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 	 are never modified in place.  */
       if (!CONSTANT_CLASS_P (arg))
 	arg = unshare_expr (arg);
-      arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
+      arg = convert_for_initialization (0, type, arg, LOOKUP_IMPLICIT,
 					ICR_DEFAULT_ARGUMENT, fn, parmnum,
                                         tf_warning_or_error);
       arg = convert_for_arg_passing (type, arg);
