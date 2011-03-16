@@ -1,5 +1,9 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	Core 1148
+	* typeck.c (check_return_expr): Fix conditions for setting
+	LOOKUP_PREFER_RVALUE.
+
 	* call.c (build_over_call): Remove require_complete_type_sfinae call.
 
 	PR c++/48132

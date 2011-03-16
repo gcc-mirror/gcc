@@ -1,5 +1,7 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/elision2.C: New.
+
 	* g++.dg/cpp0x/constexpr-array3.C: New.
 
 2011-03-16  Jason Merrill  <jason@redhat.com>
