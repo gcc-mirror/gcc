@@ -1855,6 +1855,14 @@ maybe_rewrite_mem_ref_base (tree *tp)
 					 bitsize_int (BITS_PER_UNIT),
 					 TREE_OPERAND (*tp, 1), 0));
 	}
+      else if (TREE_CODE (TREE_TYPE (sym)) == COMPLEX_TYPE
+	       && useless_type_conversion_p (TREE_TYPE (*tp),
+					     TREE_TYPE (TREE_TYPE (sym))))
+	{
+	  *tp = build1 (integer_zerop (TREE_OPERAND (*tp, 1))
+			? REALPART_EXPR : IMAGPART_EXPR,
+			TREE_TYPE (*tp), sym);
+	}
       else if (integer_zerop (TREE_OPERAND (*tp, 1)))
 	{
 	  if (!useless_type_conversion_p (TREE_TYPE (*tp),
@@ -1888,10 +1896,14 @@ non_rewritable_mem_ref_base (tree ref)
       && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
     {
       tree decl = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
-      if (TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE
+      if ((TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE
+	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
 	  && useless_type_conversion_p (TREE_TYPE (base),
 					TREE_TYPE (TREE_TYPE (decl)))
 	  && double_int_fits_in_uhwi_p (mem_ref_offset (base))
+	  && double_int_ucmp
+	       (tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (decl))),
+		mem_ref_offset (base)) == 1
 	  && multiple_of_p (sizetype, TREE_OPERAND (base, 1),
 			    TYPE_SIZE_UNIT (TREE_TYPE (base))))
 	return NULL_TREE;

@@ -1,5 +1,14 @@
 2011-03-16  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/26134
+	* tree-ssa.c (maybe_rewrite_mem_ref_base): Handle rewriting
+	complex part accesses to REALPART_EXPR and IMAGPART_EXPR.
+	(non_rewritable_mem_ref_base): Handle complex type component
+	accesses, constrain offsets for vector and complex extracts
+	more properly.
+
+2011-03-16  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/48146
 	* tree-ssa-sink.c (sink_code_in_bb): Manually update virtual
 	operands avoiding the need for renaming.
