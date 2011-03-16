@@ -1252,7 +1252,7 @@
 #endif
 
 
-/* Define if your linker supports plugin. */
+/* Define to the level of your linker's plugin support. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LTO_PLUGIN
 #endif
