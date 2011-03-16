@@ -6206,7 +6206,7 @@ if test $target_elf = yes; then :
 else
   if test x"$default_enable_lto" = x"yes" ; then
     case $target in
-      *-cygwin* | *-mingw*) ;;
+      *-apple-darwin9 | *-cygwin* | *-mingw*) ;;
       # On other non-ELF platforms, LTO has yet to be validated.
       *) enable_lto=no ;;
     esac
