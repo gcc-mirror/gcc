@@ -1,5 +1,9 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47999
+	* semantics.c (finish_call_expr): Preserve reference semantics
+	in templates.
+
 	* call.c (convert_default_arg): Use LOOKUP_IMPLICIT.
 
 2011-03-16  Jakub Jelinek  <jakub@redhat.com>

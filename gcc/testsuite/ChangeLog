@@ -1,3 +1,7 @@
+2011-03-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto22.C: New.
+
 2011-03-16  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/guality/vla-1.c (main): Use result of f1 to avoid
