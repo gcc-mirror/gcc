@@ -1,3 +1,9 @@
+2011-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/48154
+	* config/i386/i386.c (ix86_builtin_vectorized_function): Check
+	TARGET_ROUND for BUILT_IN_{FLOOR,CEIL,TRUNC,RINT}{,F} builtins.
+
 2011-03-16  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (identify_jump_threads): Slightly simplify type
