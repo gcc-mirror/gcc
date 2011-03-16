@@ -1,3 +1,8 @@
+2011-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48115
+	* call.c (convert_arg_to_ellipsis): Handle incomplete type.
+
 2011-03-11  Dodji Seketeli  <dodji@redhat.com>
 
 	* call.c (add_builtin_candidate)<case INDIRECT_REF>: The type of

@@ -1,3 +1,7 @@
+2011-03-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/incomplete6.C: New.
+
 2011-03-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
 	PR target/46788
