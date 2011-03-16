@@ -6676,6 +6676,14 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
 {
   bool reg_offset_p = reg_offset_addressing_ok_p (mode);
 
+  /* Nasty hack for vsx_splat_V2DF/V2DI load from mem, which takes a
+     DFmode/DImode MEM.  */
+  if (reg_offset_p
+      && opnum == 1
+      && ((mode == DFmode && recog_data.operand_mode[0] == V2DFmode)
+	  || (mode == DImode && recog_data.operand_mode[0] == V2DImode)))
+    reg_offset_p = false;
+
   /* We must recognize output that we have already generated ourselves.  */
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == PLUS
