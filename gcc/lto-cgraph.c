@@ -975,6 +975,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
 	  || node->clone_of->decl != node->decl))
     {
       DECL_EXTERNAL (node->decl) = 1;
+      DECL_ABSTRACT_ORIGIN (node->decl) = NULL_TREE;
       TREE_STATIC (node->decl) = 0;
     }
   node->alias = bp_unpack_value (bp, 1);
@@ -1146,6 +1147,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   if (node->in_other_partition)
     {
       DECL_EXTERNAL (node->decl) = 1;
+      DECL_ABSTRACT_ORIGIN (node->decl) = NULL_TREE;
       TREE_STATIC (node->decl) = 0;
     }
   aliases_p = bp_unpack_value (&bp, 1);
