@@ -1,5 +1,12 @@
 2011-03-17  Richard Guenther  <rguenther@suse.de>
 
+	PR bootstrap/48148
+	* lto-cgraph.c (input_overwrite_node): Clear the abstract
+	origin for decls in other ltrans units.
+	(input_varpool_node): Likewise.
+
+2011-03-17  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/48165
 	* tree-object-size.c (compute_object_offset): Properly return
 	the offset operand of MEM_REFs as sizetype.
