@@ -329,11 +329,11 @@ Target Undocumented Alias(mavx) Warn(%<-msse5%> was removed)
 ;; Deprecated
 
 mavx
-Target Report Mask(ISA_AVX) Var(ix86_isa_flags)
+Target Report Mask(ISA_AVX) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in functions and code generation
 
 mfma
-Target Report Mask(ISA_FMA) Var(ix86_isa_flags)
+Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation
 
 msse4a
