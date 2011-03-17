@@ -19481,7 +19481,11 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 			 == REGNO (XEXP (XEXP (XEXP (next_arg, 0), 0), 0)))
 		    next_arg = XEXP (next_arg, 1);
 		  if (mode == VOIDmode)
-		    mode = GET_MODE (XEXP (XEXP (arg, 0), 0));
+		    {
+		      mode = GET_MODE (XEXP (XEXP (arg, 0), 0));
+		      if (mode == VOIDmode)
+			mode = GET_MODE (XEXP (arg, 0));
+		    }
 		  if (GET_MODE_CLASS (mode) != MODE_INT
 		      || GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE)
 		    continue;

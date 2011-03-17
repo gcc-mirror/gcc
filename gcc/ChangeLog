@@ -1,6 +1,14 @@
 2011-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48163
+	* var-tracking.c (prepare_call_arguments): If CALL target
+	is a non-SYMBOL_REF CONSTANT_P, just add that into the list as
+	pc instead of looking it up using cselib_lookup and use
+	Pmode for it if x has VOIDmode.
+	* dwarf2out.c (gen_subprogram_die): If also both first and
+	second CONCAT arguments are VOIDmode, use mode of CONCAT itself.
+
+	PR debug/48163
 	* function.c (assign_parms): For data.passed_pointer parms
 	use MEM of data.entry_parm instead of data.entry_parm itself
 	as DECL_INCOMING_RTL.
