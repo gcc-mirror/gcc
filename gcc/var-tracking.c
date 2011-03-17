@@ -5732,11 +5732,18 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	  call_arguments = gen_rtx_EXPR_LIST (VOIDmode, item, call_arguments);
 	if (t && t != void_list_node)
 	  {
-	    enum machine_mode mode = TYPE_MODE (TREE_VALUE (t));
-	    rtx reg = targetm.calls.function_arg (&args_so_far, mode,
-						  TREE_VALUE (t), true);
-	    if (TREE_CODE (TREE_VALUE (t)) == REFERENCE_TYPE
-		&& INTEGRAL_TYPE_P (TREE_TYPE (TREE_VALUE (t)))
+	    tree argtype = TREE_VALUE (t);
+	    enum machine_mode mode = TYPE_MODE (argtype);
+	    rtx reg;
+	    if (pass_by_reference (&args_so_far, mode, argtype, true))
+	      {
+		argtype = build_pointer_type (argtype);
+		mode = TYPE_MODE (argtype);
+	      }
+	    reg = targetm.calls.function_arg (&args_so_far, mode,
+					      argtype, true);
+	    if (TREE_CODE (argtype) == REFERENCE_TYPE
+		&& INTEGRAL_TYPE_P (TREE_TYPE (argtype))
 		&& reg
 		&& REG_P (reg)
 		&& GET_MODE (reg) == mode
@@ -5747,7 +5754,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 		&& item)
 	      {
 		enum machine_mode indmode
-		  = TYPE_MODE (TREE_TYPE (TREE_VALUE (t)));
+		  = TYPE_MODE (TREE_TYPE (argtype));
 		rtx mem = gen_rtx_MEM (indmode, x);
 		cselib_val *val = cselib_lookup (mem, indmode, 0, VOIDmode);
 		if (val && cselib_preserved_value_p (val))
@@ -5784,7 +5791,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 		  }
 	      }
 	    targetm.calls.function_arg_advance (&args_so_far, mode,
-						TREE_VALUE (t), true);
+						argtype, true);
 	    t = TREE_CHAIN (t);
 	  }
       }
