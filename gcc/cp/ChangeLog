@@ -1,5 +1,9 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47301
+	* decl.c (compute_array_index_type): Don't bother trying to deal
+	with literal classes in ABI v1.
+
 	PR c++/46336
 	* decl.c (duplicate_decls): Return NULL_TREE for clashing
 	C functions.
