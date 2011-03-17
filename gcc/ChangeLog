@@ -1,3 +1,11 @@
+2011-03-17  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/v850/v850.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
+	* config/v850/v850-protos.h (v850_output_addr_const_extra): Remove.
+	* config/v850/v850.c (v850_output_addr_const_extra): Make static.
+	Change return type to bool.
+	(TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
+
 2011-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48163
