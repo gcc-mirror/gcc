@@ -1,3 +1,8 @@
+2011-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48141
+	* gcc.dg/pr48141.c: New test.
+
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-48089.C: New.
