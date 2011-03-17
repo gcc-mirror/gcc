@@ -1,7 +1,7 @@
-2011-03-16  Dodji Seketeli  <dodji@redhat.com>
+2011-03-17  Dodji Seketeli  <dodji@redhat.com>
 
-	PR debug/47510
-	* ++.dg/debug/dwarf2/typedef6.C: New test.
+	Revert fix for PR debug/47510
+	* g++.dg/debug/dwarf2/typedef6.C: Revert.
 
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
