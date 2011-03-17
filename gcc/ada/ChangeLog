@@ -1,5 +1,11 @@
 2011-03-17  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (elaborate_expression_1): Try harder to find
+	out whether the expression is read-only.  Short-circuit placeholder
+	case and rename a couple of local variables.
+
+2011-03-17  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (smaller_form_type_p): Declare.
 	* gcc-interface/trans.c (smaller_form_type_p): Make global and move...
 	* gcc-interface/utils.c (smaller_form_type_p): ...to here.
