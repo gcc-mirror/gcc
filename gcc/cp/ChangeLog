@@ -1,3 +1,8 @@
+2011-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/48166
+	* decl.c (revert_static_member_fn): Strip function-cv-quals.
+
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/48089
