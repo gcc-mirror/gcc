@@ -4043,6 +4043,18 @@ convert (tree type, tree expr)
       } while (TREE_CODE (child_etype) == RECORD_TYPE);
     }
 
+  /* If we are converting from a smaller form of record type back to it, just
+     make a VIEW_CONVERT_EXPR.  But first pad the expression to have the same
+     size on both sides.  */
+  else if (ecode == RECORD_TYPE && code == RECORD_TYPE
+	   && smaller_form_type_p (etype, type))
+    {
+      expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0, Empty,
+				      false, false, false, true),
+		      expr);
+      return build1 (VIEW_CONVERT_EXPR, type, expr);
+    }
+
   /* In all other cases of related types, make a NOP_EXPR.  */
   else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (etype))
     return fold_convert (type, expr);
@@ -4670,6 +4682,30 @@ type_for_nonaliased_component_p (tree gnu_type)
     return false;
 
   return true;
+}
+
+/* Return true if TYPE is a smaller form of ORIG_TYPE.  */
+
+bool
+smaller_form_type_p (tree type, tree orig_type)
+{
+  tree size, osize;
+
+  /* We're not interested in variants here.  */
+  if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig_type))
+    return false;
+
+  /* Like a variant, a packable version keeps the original TYPE_NAME.  */
+  if (TYPE_NAME (type) != TYPE_NAME (orig_type))
+    return false;
+
+  size = TYPE_SIZE (type);
+  osize = TYPE_SIZE (orig_type);
+
+  if (!(TREE_CODE (size) == INTEGER_CST && TREE_CODE (osize) == INTEGER_CST))
+    return false;
+
+  return tree_int_cst_lt (size, osize) != 0;
 }
 
 /* Perform final processing on global variables.  */

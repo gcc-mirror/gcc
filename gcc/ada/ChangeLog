@@ -1,3 +1,10 @@
+2011-03-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (smaller_form_type_p): Declare.
+	* gcc-interface/trans.c (smaller_form_type_p): Make global and move...
+	* gcc-interface/utils.c (smaller_form_type_p): ...to here.
+	(convert): Deal with conversions from a smaller form type specially.
+
 2011-02-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init_options): Do not concatenate -I and

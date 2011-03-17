@@ -756,6 +756,9 @@ extern bool is_double_scalar_or_array (Entity_Id gnat_type,
    component of an aggregate type.  */
 extern bool type_for_nonaliased_component_p (tree gnu_type);
 
+/* Return true if TYPE is a smaller form of ORIG_TYPE.  */
+extern bool smaller_form_type_p (tree type, tree orig_type);
+
 /* Return the base type of TYPE.  */
 extern tree get_base_type (tree type);
 
