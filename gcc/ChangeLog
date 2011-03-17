@@ -1,5 +1,11 @@
 2011-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR bootstrap/48153
+	* dwarf2out.c (mem_loc_descriptor) <case ENTRY_VALUE>: Return NULL
+	if dwarf_strict.
+	(gen_subprogram_die): Don't add call_site DIEs if dwarf_strict.
+	Clear call_arg_locations and call_arg_loc_last always.
+
 	PR middle-end/48152
 	* var-tracking.c (prepare_call_arguments): If argument needs to be
 	passed by reference, adjust argtype and mode.
