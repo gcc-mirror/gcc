@@ -1,3 +1,14 @@
+2011-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48163
+	* function.c (assign_parms): For data.passed_pointer parms
+	use MEM of data.entry_parm instead of data.entry_parm itself
+	as DECL_INCOMING_RTL.
+	* dwarf2out.c (rtl_for_decl_location): Use DECL_INCOMING_RTL
+	also when passed and declared mode is the same, DECL_RTL
+	is a MEM with pseudo as address and DECL_INCOMING_RTL is
+	a MEM too.
+
 2011-03-16  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/37273
