@@ -1,5 +1,9 @@
 2011-03-17  Jason Merrill  <jason@redhat.com>
 
+	PR c++/47504
+	* semantics.c (cxx_eval_constant_expression) [NOP_EXPR]: Don't let
+	the conversion set TREE_OVERFLOW.
+
 	Core 1212
 	* semantics.c (finish_decltype_type): Return T&& for xvalue.
 	* typeck.c (unlowered_expr_type): Preserve cv-quals.
