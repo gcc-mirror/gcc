@@ -1,3 +1,9 @@
+2011-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/47570
+	* semantics.c (cxx_eval_constant_expression) [COMPOUND_EXPR]: Don't
+	use the generic binary expression handling.
+
 2011-03-16  Diego Novillo  <dnovillo@google.com>
 
 	* Make-lang.in (CXX_PARSER_H): New.
