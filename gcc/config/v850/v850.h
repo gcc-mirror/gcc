@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008, 2009, 2010  Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010, 2011  Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -747,10 +747,6 @@ typedef enum
 
 #undef  USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
-
-#define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)  \
-  if (! v850_output_addr_const_extra (FILE, X)) \
-     goto FAIL
 
 /* This says how to output the assembler to define a global
    uninitialized but not common symbol.  */

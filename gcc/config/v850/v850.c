@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for NEC V850 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -795,13 +795,13 @@ v850_print_operand_punct_valid_p (unsigned char code)
    the truncate and just emit the difference of the two labels.  The
    .hword directive will automatically handle the truncation for us.
    
-   Returns 1 if rtx was handled, 0 otherwise.  */
+   Returns true if rtx was handled, false otherwise.  */
 
-int
+static bool
 v850_output_addr_const_extra (FILE * file, rtx x)
 {
   if (GET_CODE (x) != TRUNCATE)
-    return 0;
+    return false;
 
   x = XEXP (x, 0);
 
@@ -814,10 +814,10 @@ v850_output_addr_const_extra (FILE * file, rtx x)
       && GET_CODE (XEXP (x, 0)) == LABEL_REF
       && GET_CODE (XEXP (XEXP (x, 0), 0)) == CODE_LABEL
       && INSN_DELETED_P (XEXP (XEXP (x, 0), 0)))
-    return 1;
+    return true;
 
   output_addr_const (file, x);
-  return 1;
+  return true;
 }
 
 /* Return appropriate code to load up a 1, 2, or 4 integer/floating
@@ -3137,6 +3137,9 @@ static const struct attribute_spec v850_attribute_table[] =
 #define TARGET_PRINT_OPERAND_ADDRESS v850_print_operand_address
 #undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P v850_print_operand_punct_valid_p
+
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA v850_output_addr_const_extra
 
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE v850_attribute_table
