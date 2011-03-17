@@ -1,3 +1,9 @@
+2011-03-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/48134
+	* tree-ssa.c (insert_debug_temp_for_var_def): If we propagated
+	a value make sure to fold the statement.
+
 2011-03-17  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR target/43872
