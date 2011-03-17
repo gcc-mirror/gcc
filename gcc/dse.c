@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "dbgcnt.h"
 #include "target.h"
+#include "params.h"
 
 /* This file contains three techniques for performing Dead Store
    Elimination (dse).
@@ -387,6 +388,7 @@ static alloc_pool insn_info_pool;
 /* The linked list of stores that are under consideration in this
    basic block.  */
 static insn_info_t active_local_stores;
+static int active_local_stores_len;
 
 struct bb_info
 {
@@ -947,6 +949,7 @@ add_wild_read (bb_info_t bb_info)
     }
   insn_info->wild_read = true;
   active_local_stores = NULL;
+  active_local_stores_len = 0;
 }
 
 
@@ -1537,6 +1540,7 @@ record_store (rtx body, bb_info_t bb_info)
 	{
 	  insn_info_t insn_to_delete = ptr;
 
+	  active_local_stores_len--;
 	  if (last)
 	    last->next_local_store = ptr->next_local_store;
 	  else
@@ -2074,6 +2078,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	      if (dump_file)
 		dump_insn_info ("removing from active", i_ptr);
 
+	      active_local_stores_len--;
 	      if (last)
 		last->next_local_store = i_ptr->next_local_store;
 	      else
@@ -2163,6 +2168,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	      if (dump_file)
 		dump_insn_info ("removing from active", i_ptr);
 
+	      active_local_stores_len--;
 	      if (last)
 		last->next_local_store = i_ptr->next_local_store;
 	      else
@@ -2222,6 +2228,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	      if (dump_file)
 		dump_insn_info ("removing from active", i_ptr);
 
+	      active_local_stores_len--;
 	      if (last)
 		last->next_local_store = i_ptr->next_local_store;
 	      else
@@ -2426,6 +2433,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		  if (dump_file)
 		    dump_insn_info ("removing from active", i_ptr);
 
+		  active_local_stores_len--;
 		  if (last)
 		    last->next_local_store = i_ptr->next_local_store;
 		  else
@@ -2453,6 +2461,12 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		    fprintf (dump_file, "handling memset as BLKmode store\n");
 		  if (mems_found == 1)
 		    {
+		      if (active_local_stores_len++
+			  >= PARAM_VALUE (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES))
+			{
+			  active_local_stores_len = 1;
+			  active_local_stores = NULL;
+			}
 		      insn_info->next_local_store = active_local_stores;
 		      active_local_stores = insn_info;
 		    }
@@ -2496,6 +2510,12 @@ scan_insn (bb_info_t bb_info, rtx insn)
      it as cannot delete.  This simplifies the processing later.  */
   if (mems_found == 1)
     {
+      if (active_local_stores_len++
+	  >= PARAM_VALUE (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES))
+	{
+	  active_local_stores_len = 1;
+	  active_local_stores = NULL;
+	}
       insn_info->next_local_store = active_local_stores;
       active_local_stores = insn_info;
     }
@@ -2534,6 +2554,7 @@ remove_useless_values (cselib_val *base)
 
       if (del)
 	{
+	  active_local_stores_len--;
 	  if (last)
 	    last->next_local_store = insn_info->next_local_store;
 	  else
@@ -2584,6 +2605,7 @@ dse_step1 (void)
 	    = create_alloc_pool ("cse_store_info_pool",
 				 sizeof (struct store_info), 100);
 	  active_local_stores = NULL;
+	  active_local_stores_len = 0;
 	  cselib_clear_table ();
 
 	  /* Scan the insns.  */

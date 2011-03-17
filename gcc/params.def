@@ -698,6 +698,12 @@ DEFPARAM(PARAM_MAX_SCHED_READY_INSNS,
 	 "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass",
 	 100, 0, 0)
 
+/* This is the maximum number of active local stores RTL DSE will consider.  */
+DEFPARAM (PARAM_MAX_DSE_ACTIVE_LOCAL_STORES,
+	  "max-dse-active-local-stores",
+	  "Maximum number of active local stores in RTL dead store elimination",
+	  5000, 0, 0)
+
 /* Prefetching and cache-optimizations related parameters.  Default values are
    usually set by machine description.  */
 
