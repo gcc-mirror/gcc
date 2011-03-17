@@ -4787,7 +4787,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
 	  && processing_template_decl
 	  && TREE_CODE (expr) == COMPONENT_REF))
     {
-    treat_as_dependent:
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
       DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type)
@@ -4899,91 +4898,34 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
     }
   else
     {
-      /* Expressions of reference type are sometimes wrapped in
-         INDIRECT_REFs.  INDIRECT_REFs are just internal compiler
-         representation, not part of the language, so we have to look
-         through them.  */
-      if (TREE_CODE (expr) == INDIRECT_REF
-          && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
-  	  == REFERENCE_TYPE)
-        expr = TREE_OPERAND (expr, 0);
+      /* Within a lambda-expression:
 
-      if (TREE_CODE (expr) == CALL_EXPR)
-        {
-          /* If e is a function call (5.2.2 [expr.call]) or an
-           invocation of an overloaded operator (parentheses around e
-           are ignored), decltype(e) is defined as the return type of
-           that function.  */
-          tree fndecl = get_callee_fndecl (expr);
-          if (fndecl && fndecl != error_mark_node)
-            type = TREE_TYPE (TREE_TYPE (fndecl));
-          else 
-            {
-              tree target_type = TREE_TYPE (CALL_EXPR_FN (expr));
-              if ((TREE_CODE (target_type) == REFERENCE_TYPE
-                   || TREE_CODE (target_type) == POINTER_TYPE)
-                  && (TREE_CODE (TREE_TYPE (target_type)) == FUNCTION_TYPE
-                      || TREE_CODE (TREE_TYPE (target_type)) == METHOD_TYPE))
-                type = TREE_TYPE (TREE_TYPE (target_type));
-	      else if (processing_template_decl)
-		/* Within a template finish_call_expr doesn't resolve
-		   CALL_EXPR_FN, so even though this decltype isn't really
-		   dependent let's defer resolving it.  */
-		goto treat_as_dependent;
-              else
-                sorry ("unable to determine the declared type of expression %<%E%>",
-                       expr);
-            }
-        }
-      else 
-        {
-          type = is_bitfield_expr_with_lowered_type (expr);
-          if (type)
-            {
-              /* Bitfields are special, because their type encodes the
-                 number of bits they store.  If the expression referenced a
-                 bitfield, TYPE now has the declared type of that
-                 bitfield.  */
-              type = cp_build_qualified_type (type, 
-                                              cp_type_quals (TREE_TYPE (expr)));
-              
-              if (real_lvalue_p (expr))
-                type = build_reference_type (type);
-            }
-	  /* Within a lambda-expression:
-
-	     Every occurrence of decltype((x)) where x is a possibly
-	     parenthesized id-expression that names an entity of
-	     automatic storage duration is treated as if x were
-	     transformed into an access to a corresponding data member
-	     of the closure type that would have been declared if x
-	     were a use of the denoted entity.  */
-	  else if (outer_automatic_var_p (expr)
-		   && current_function_decl
-		   && LAMBDA_FUNCTION_P (current_function_decl))
-	    type = capture_decltype (expr);
-          else
-            {
-              /* Otherwise, where T is the type of e, if e is an lvalue,
-                 decltype(e) is defined as T&, otherwise decltype(e) is
-                 defined as T.  */
-              type = TREE_TYPE (expr);
-              if (type == error_mark_node)
-                return error_mark_node;
-              else if (expr == current_class_ptr)
-                /* If the expression is just "this", we want the
-                   cv-unqualified pointer for the "this" type.  */
-                type = TYPE_MAIN_VARIANT (type);
-              else if (real_lvalue_p (expr))
-                {
-                  if (TREE_CODE (type) != REFERENCE_TYPE
-		      || TYPE_REF_IS_RVALUE (type))
-                    type = build_reference_type (non_reference (type));
-                }
-              else
-                type = non_reference (type);
-            }
-        }
+	 Every occurrence of decltype((x)) where x is a possibly
+	 parenthesized id-expression that names an entity of
+	 automatic storage duration is treated as if x were
+	 transformed into an access to a corresponding data member
+	 of the closure type that would have been declared if x
+	 were a use of the denoted entity.  */
+      if (outer_automatic_var_p (expr)
+	  && current_function_decl
+	  && LAMBDA_FUNCTION_P (current_function_decl))
+	type = capture_decltype (expr);
+      else if (error_operand_p (expr))
+	type = error_mark_node;
+      else if (expr == current_class_ptr)
+	/* If the expression is just "this", we want the
+	   cv-unqualified pointer for the "this" type.  */
+	type = TYPE_MAIN_VARIANT (TREE_TYPE (expr));
+      else
+	{
+	  /* Otherwise, where T is the type of e, if e is an lvalue,
+	     decltype(e) is defined as T&; if an xvalue, T&&; otherwise, T. */
+	  cp_lvalue_kind clk = lvalue_kind (expr);
+	  type = unlowered_expr_type (expr);
+	  gcc_assert (TREE_CODE (type) != REFERENCE_TYPE);
+	  if (clk != clk_none && !(clk & clk_class))
+	    type = cp_build_reference_type (type, (clk & clk_rvalueref));
+	}
     }
 
   if (!type || type == unknown_type_node)
