@@ -29,6 +29,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "time_1.h"
 
+/* Tru64 UNIX doesn't support weakrefs, so the trickery below completely
+   breaks libgfortran (PR fortran/47571).  Don't use clock_gettime until a
+   proper solution has been tested.  */
+#if defined(__alpha__) && defined(__osf__)
+#undef HAVE_CLOCK_GETTIME
+#endif
+
 #ifdef HAVE_CLOCK_GETTIME
 /* POSIX states that CLOCK_REALTIME must be present if clock_gettime
    is available, others are optional.  */
