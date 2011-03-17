@@ -4,13 +4,14 @@
 	* tree-object-size.c (compute_object_offset): Properly return
 	the offset operand of MEM_REFs as sizetype.
 
-2011-03-17  Dodji Seketeli  <dodji@redhat.com>
+2011-03-16  Dodji Seketeli  <dodji@redhat.com>
 
-	Revert Fix for PR debug/47510"
-	* dwarf2out.c (strip_naming_typedef): Revert.
-	(lookup_type_die_strip_naming_typedef, get_context_die): Revert
-	use of strip_naming_typedef.
-	(gen_typedef_die): Revert DW_AT_linkage_name addition.
+	PR debug/47510
+	* dwarf2out.c (strip_naming_typedef): Factorize out of ...
+	(lookup_type_die_strip_naming_typedef): ... here.
+	(get_context_die): Use it.
+	(gen_typedef_die): Add a DW_AT_{,MIPS_}linkage_name attribute to
+	the anonymous struct named by the naming typedef.
 
 2011-03-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 

@@ -6346,6 +6346,7 @@ static void remove_child_TAG (dw_die_ref, enum dwarf_tag);
 static void add_child_die (dw_die_ref, dw_die_ref);
 static dw_die_ref new_die (enum dwarf_tag, dw_die_ref, tree);
 static dw_die_ref lookup_type_die (tree);
+static dw_die_ref strip_naming_typedef (tree, dw_die_ref);
 static dw_die_ref lookup_type_die_strip_naming_typedef (tree);
 static void equate_type_number_to_die (tree, dw_die_ref);
 static hashval_t decl_die_table_hash (const void *);
@@ -8120,6 +8121,22 @@ lookup_type_die (tree type)
   return TYPE_SYMTAB_DIE (type);
 }
 
+/* Given a TYPE_DIE representing the type TYPE, if TYPE is an
+   anonymous type named by the typedef TYPE_DIE, return the DIE of the
+   anonymous type instead the one of the naming typedef.  */
+
+static inline dw_die_ref
+strip_naming_typedef (tree type, dw_die_ref type_die)
+{
+  if (type
+      && TREE_CODE (type) == RECORD_TYPE
+      && type_die
+      && type_die->die_tag == DW_TAG_typedef
+      && is_naming_typedef_decl (TYPE_NAME (type)))
+    type_die = get_AT_ref (type_die, DW_AT_type);
+  return type_die;
+}
+
 /* Like lookup_type_die, but if type is an anonymous type named by a
    typedef[1], return the DIE of the anonymous type instead the one of
    the naming typedef.  This is because in gen_typedef_die, we did
@@ -8134,11 +8151,7 @@ static inline dw_die_ref
 lookup_type_die_strip_naming_typedef (tree type)
 {
   dw_die_ref die = lookup_type_die (type);
-  if (TREE_CODE (type) == RECORD_TYPE
-      && die->die_tag == DW_TAG_typedef
-      && is_naming_typedef_decl (TYPE_NAME (type)))
-    die = get_AT_ref (die, DW_AT_type);
-  return die;
+  return strip_naming_typedef (type, die);
 }
 
 /* Equate a DIE to a given type specifier.  */
@@ -20350,6 +20363,14 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
 	         anonymous struct DIE.  */
 	      if (!TREE_ASM_WRITTEN (type))
 	        gen_tagged_type_die (type, context_die, DINFO_USAGE_DIR_USE);
+
+	      /* This is a GNU Extension.  We are adding a
+		 DW_AT_linkage_name attribute to the DIE of the
+		 anonymous struct TYPE.  The value of that attribute
+		 is the name of the typedef decl naming the anonymous
+		 struct.  This greatly eases the work of consumers of
+		 this debug info.  */
+	      add_linkage_attr (lookup_type_die (type), decl);
 	    }
 	}
 
@@ -20830,7 +20851,10 @@ get_context_die (tree context)
     {
       /* Find die that represents this context.  */
       if (TYPE_P (context))
-	return force_type_die (TYPE_MAIN_VARIANT (context));
+	{
+	  context = TYPE_MAIN_VARIANT (context);
+	  return strip_naming_typedef (context, force_type_die (context));
+	}
       else
 	return force_decl_die (context);
     }

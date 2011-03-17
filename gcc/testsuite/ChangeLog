@@ -3,10 +3,10 @@
 	PR middle-end/48165
 	* g++.dg/torture/pr48165.C: New testcase.
 
-2011-03-17  Dodji Seketeli  <dodji@redhat.com>
+2011-03-16  Dodji Seketeli  <dodji@redhat.com>
 
-	Revert fix for PR debug/47510
-	* g++.dg/debug/dwarf2/typedef6.C: Revert.
+	PR debug/47510
+	* g++.dg/debug/dwarf2/typedef6.C: New test.
 
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
