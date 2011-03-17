@@ -1,5 +1,10 @@
 2011-03-17  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/decltype-1212.C: New.
+	* g++.dg/cpp0x/rv-return.C: Adjust expected type.
+
+2011-03-17  Jason Merrill  <jason@redhat.com>
+
 	* g++.dg/parse/memfnquals1.C: New.
 
 2011-03-17  Richard Guenther  <rguenther@suse.de>

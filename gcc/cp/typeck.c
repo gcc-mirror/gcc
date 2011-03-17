@@ -1768,10 +1768,13 @@ tree
 unlowered_expr_type (const_tree exp)
 {
   tree type;
+  tree etype = TREE_TYPE (exp);
 
   type = is_bitfield_expr_with_lowered_type (exp);
-  if (!type)
-    type = TREE_TYPE (exp);
+  if (type)
+    type = cp_build_qualified_type (type, cp_type_quals (etype));
+  else
+    type = etype;
 
   return type;
 }
