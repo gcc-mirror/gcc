@@ -659,7 +659,8 @@ typedef unsigned int CUMULATIVE_ARGS;
 
 #define BRANCH_COST(SPEED, PREDICT)           1
 #define REGISTER_MOVE_COST(MODE, FROM, TO)    2
-#define MEMORY_MOVE_COST(MODE, REGCLASS, IN) (2 + memory_move_secondary_cost (MODE, REGCLASS, IN))
+#define MEMORY_MOVE_COST(MODE, REGCLASS, IN) \
+  (((IN) ? 2 : 0) + memory_move_secondary_cost (MODE, REGCLASS, IN))
   
 #define SELECT_CC_MODE(OP,X,Y)  rx_select_cc_mode ((OP), (X), (Y))
 
