@@ -1,3 +1,9 @@
+2011-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/48152
+	* var-tracking.c (prepare_call_arguments): If argument needs to be
+	passed by reference, adjust argtype and mode.
+
 2011-03-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48134
