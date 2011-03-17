@@ -13864,6 +13864,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       return 0;
 
     case ENTRY_VALUE:
+      if (dwarf_strict)
+	return NULL;
       mem_loc_result = new_loc_descr (DW_OP_GNU_entry_value, 0, 0);
       mem_loc_result->dw_loc_oprnd1.val_class = dw_val_class_loc;
       if (REG_P (ENTRY_VALUE_EXP (rtl)))
@@ -19447,7 +19449,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       current_function_has_inlines = 0;
       decls_for_scope (outer_scope, subr_die, 0);
 
-      if (call_arg_locations)
+      if (call_arg_locations && !dwarf_strict)
 	{
 	  struct call_arg_loc_node *ca_loc;
 	  for (ca_loc = call_arg_locations; ca_loc; ca_loc = ca_loc->next)
@@ -19547,11 +19549,12 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		    tail_call_site_note_count++;
 		}
 	    }
-	  call_arg_locations = NULL;
-	  call_arg_loc_last = NULL;
 	}
+      call_arg_locations = NULL;
+      call_arg_loc_last = NULL;
       if (tail_call_site_count >= 0
-	  && tail_call_site_count == tail_call_site_note_count)
+	  && tail_call_site_count == tail_call_site_note_count
+	  && !dwarf_strict)
 	{
 	  if (call_site_count >= 0
 	      && call_site_count == call_site_note_count)
