@@ -15415,7 +15415,10 @@ arm_get_frame_offsets (void)
   offsets->soft_frame = offsets->saved_regs + CALLER_INTERWORKING_SLOT_SIZE;
   /* A leaf function does not need any stack alignment if it has nothing
      on the stack.  */
-  if (leaf && frame_size == 0)
+  if (leaf && frame_size == 0
+      /* However if it calls alloca(), we have a dynamically allocated
+	 block of BIGGEST_ALIGNMENT on stack, so still do stack alignment.  */
+      && ! cfun->calls_alloca)
     {
       offsets->outgoing_args = offsets->soft_frame;
       offsets->locals_base = offsets->soft_frame;
