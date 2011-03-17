@@ -1,5 +1,10 @@
 2011-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR debug/48160
+	* var-tracking.c (prepare_call_arguments): Check SUBREG.
+
+2011-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/48171
 	* config/i386/i386.opt: Add Save to -mavx and -mfma.
 

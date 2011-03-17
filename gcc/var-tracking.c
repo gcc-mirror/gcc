@@ -5770,7 +5770,11 @@ prepare_call_arguments (basic_block bb, rtx insn)
 
 		    /* Try harder, when passing address of a constant
 		       pool integer it can be easily read back.  */
-		    val = CSELIB_VAL_PTR (XEXP (item, 1));
+		    item = XEXP (item, 1);
+		    if (GET_CODE (item) == SUBREG)
+		      item = SUBREG_REG (item);
+		    gcc_assert (GET_CODE (item) == VALUE);
+		    val = CSELIB_VAL_PTR (item);
 		    for (l = val->locs; l; l = l->next)
 		      if (GET_CODE (l->loc) == SYMBOL_REF
 			  && TREE_CONSTANT_POOL_ADDRESS_P (l->loc)
