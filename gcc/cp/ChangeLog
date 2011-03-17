@@ -1,5 +1,9 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/46336
+	* decl.c (duplicate_decls): Return NULL_TREE for clashing
+	C functions.
+
 	PR c++/47570
 	* semantics.c (cxx_eval_constant_expression) [COMPOUND_EXPR]: Don't
 	use the generic binary expression handling.

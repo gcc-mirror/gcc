@@ -1456,6 +1456,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      error ("declaration of C function %q#D conflicts with",
 		     newdecl);
 	      error ("previous declaration %q+#D here", olddecl);
+	      return NULL_TREE;
 	    }
 	  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (newdecl)),
 			      TYPE_ARG_TYPES (TREE_TYPE (olddecl))))

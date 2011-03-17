@@ -1,5 +1,8 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/constexpr-46336.C: New.
+	* g++.dg/parse/friend5.C: Adjust expected errors.
+
 	* g++.dg/cpp0x/constexpr-47570.C: New.
 
 2011-03-16  Dodji Seketeli  <dodji@redhat.com>
