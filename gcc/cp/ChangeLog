@@ -1,5 +1,10 @@
 2011-03-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48089
+	* semantics.c (potential_constant_expression_1): Don't allow *this
+	in a constructor.
+	(register_constexpr_fundef): Use potential_rvalue_constant_expression.
+
 	PR c++/47301
 	* decl.c (compute_array_index_type): Don't bother trying to deal
 	with literal classes in ABI v1.
