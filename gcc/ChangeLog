@@ -1,3 +1,11 @@
+2011-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2011-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/48171
+	* config/i386/i386.opt: Add Save to -mavx and -mfma.
+
 2011-03-18  Richard Henderson  <rth@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
