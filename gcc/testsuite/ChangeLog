@@ -1,3 +1,8 @@
+2011-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/47725
+	* gcc.dg/torture/pr47725.c: New.
+
 2011-03-17  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/constexpr-overflow2.C: New.
