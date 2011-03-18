@@ -1,6 +1,7 @@
 /* Prototypes for exported functions defined in avr.c
    
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2009, 2010
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2009, 2010,
+   2011
    Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
@@ -23,7 +24,6 @@
 
 extern int function_arg_regno_p (int r);
 extern void avr_cpu_cpp_builtins (struct cpp_reader * pfile);
-extern int avr_ret_register (void);
 extern enum reg_class avr_regno_reg_class (int r);
 extern void asm_globalize_label (FILE *file, const char *name);
 extern void avr_asm_declare_function_name (FILE *, const char *, tree);
@@ -85,7 +85,6 @@ extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 
 extern int extra_constraint_Q (rtx x);
 extern int adjust_insn_length (rtx insn, int len);
-extern rtx avr_libcall_value (enum machine_mode mode);
 extern const char *output_reload_inhi (rtx insn, rtx *operands, int *len);
 extern const char *output_reload_insisf (rtx insn, rtx *operands, int *len);
 extern enum reg_class secondary_input_reload_class (enum reg_class,

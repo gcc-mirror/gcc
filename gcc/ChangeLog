@@ -1,3 +1,17 @@
+2011-03-18  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.h (RET_REGISTER, LIBCALL_VALUE,
+	FUNCTION_VALUE_REGNO_P): Remove.
+	* config/avr/avr-protos.h (avr_ret_register, avr_libcall_value):
+	Remove.
+	* config/avr/avr.c (avr_ret_register): Make static inline.
+	(avr_function_value_regno_p): New function.
+	(avr_libcall_value): Make static. Add 'func' argument.
+	(avr_function_value): Make static. Rename 'func' argument to
+	'fn_decl_or_type', forward it to avr_libcall_value. Call
+	avr_ret_register function instead of RET_REGISTER macro.
+ 	(TARGET_LIBCALL_VALUE, TARGET_FUNCTION_VALUE_REGNO_P): Define.
+
 2011-03-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/23372

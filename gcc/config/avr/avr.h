@@ -380,12 +380,6 @@ typedef struct avr_args {
 
 extern int avr_reg_order[];
 
-#define RET_REGISTER avr_ret_register ()
-
-#define LIBCALL_VALUE(MODE)  avr_libcall_value (MODE)
-
-#define FUNCTION_VALUE_REGNO_P(N) ((int) (N) == RET_REGISTER)
-
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 #define EPILOGUE_USES(REGNO) avr_epilogue_uses(REGNO)
