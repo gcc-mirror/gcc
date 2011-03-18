@@ -4,20 +4,13 @@
 
 #include <stddef.h>
 
-typedef struct
-{
-  int i;
-} s0;
-
-typedef union
-{
-  int i;
-} u0;
-
 struct s1
 {
   int a;
-  u0;
+  union
+  {
+    int i;
+  };
   struct
   {
     int b;
@@ -27,7 +20,10 @@ struct s1
 union u1
 {
   int b;
-  s0;
+  struct
+  {
+    int i;
+  };
   union
   {
     int c;
@@ -44,7 +40,10 @@ struct s2
 
 struct s3
 {
-  u0;
+  union
+  {
+    int i;
+  };
 };
 
 struct s4
