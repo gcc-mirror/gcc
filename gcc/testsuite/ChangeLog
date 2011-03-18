@@ -1,3 +1,9 @@
+2011-03-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/vect/slp-multitypes-2.c: Replace dg-do run with
+	dg-xfail-run-if.
+	Only xfail with gas.
+
 2011-03-18  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/fn-ptr1.C: New.
