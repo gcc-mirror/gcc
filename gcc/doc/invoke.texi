@@ -1885,7 +1885,7 @@ been added for putting variables into BSS without making them common.
 Set the maximum nested evaluation depth for C++0x constexpr functions
 to @var{n}.  A limit is needed to detect endless recursion during
 constant expression evaluation.  The minimum specified by the standard
-is 512; G++ defaults to 1024.
+is 512.
 
 @item -fno-deduce-init-list
 @opindex fno-deduce-init-list
