@@ -1,3 +1,9 @@
+2011-03-16  Andrew Pinski  <pinskia@gmail.com>
+
+	PR middle-end/47790
+	* expr.c (optimize_bitfield_assignment_op): Revamp to work
+	again after expansion changes.
+
 2011-03-18  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* combine.c (try_combine): Do simplification only call of
