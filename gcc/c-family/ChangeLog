@@ -1,3 +1,9 @@
+2011-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35315
+	* c-common.c (handle_transparent_union_attribute): Don't
+	make a duplicate type in C++.
+
 2011-03-15  Jason Merrill  <jason@redhat.com>
 
 	* c-common.c (max_constexpr_depth): New.
