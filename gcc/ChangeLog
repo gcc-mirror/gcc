@@ -1,3 +1,11 @@
+2011-03-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (float<SSEMODEI24:mode><X87MODEF:mode>2):
+	Rewrite using indirect functions.
+	(lwp_slwpcb): Ditto.
+	* config/i386/sse.md (avx_vextractf128<mode>): Ditto.
+	(avx_vinsertf128<mode>): Ditto.
+
 2011-03-18  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_delegitimize_address): Handle GOTOFF
@@ -214,8 +222,7 @@
 2011-03-16  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (identify_jump_threads): Slightly simplify type
-	check for operands of conditional.  Allow type to be a
-	pointer.
+	check for operands of conditional.  Allow type to be a pointer.
 
 2011-03-16  Richard Guenther  <rguenther@suse.de>
 
@@ -470,8 +477,7 @@
 
 2011-03-15  Richard Guenther  <rguenther@suse.de>
 
-	* config/i386/i386.c (ix86_emit_swdivsf): Implement more
-	efficiently.
+	* config/i386/i386.c (ix86_emit_swdivsf): Implement more efficiently.
 
 2011-03-15  Alan Modra  <amodra@gmail.com>
 
@@ -499,8 +505,7 @@
 
 2011-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* config/sol2.c (solaris_assemble_visibility): Remove obsolete
-	URLs.
+	* config/sol2.c (solaris_assemble_visibility): Remove obsolete URLs.
 
 2011-03-14  Jakub Jelinek  <jakub@redhat.com>
 

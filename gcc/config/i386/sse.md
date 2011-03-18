@@ -4122,17 +4122,21 @@
    (match_operand:SI 2 "const_0_to_1_operand" "")]
   "TARGET_AVX"
 {
+  rtx (*insn)(rtx, rtx);
+
   switch (INTVAL (operands[2]))
     {
     case 0:
-      emit_insn (gen_vec_extract_lo_<mode> (operands[0], operands[1]));
+      insn = gen_vec_extract_lo_<mode>;
       break;
     case 1:
-      emit_insn (gen_vec_extract_hi_<mode> (operands[0], operands[1]));
+      insn = gen_vec_extract_hi_<mode>;
       break;
     default:
       gcc_unreachable ();
     }
+
+  emit_insn (insn (operands[0], operands[1]));
   DONE;
 })
 
@@ -11776,19 +11780,21 @@
    (match_operand:SI 3 "const_0_to_1_operand" "")]
   "TARGET_AVX"
 {
+  rtx (*insn)(rtx, rtx, rtx);
+
   switch (INTVAL (operands[3]))
     {
     case 0:
-      emit_insn (gen_vec_set_lo_<mode> (operands[0], operands[1],
-					operands[2]));
+      insn = gen_vec_set_lo_<mode>;
       break;
     case 1:
-      emit_insn (gen_vec_set_hi_<mode> (operands[0], operands[1],
-					operands[2]));
+      insn = gen_vec_set_hi_<mode>;
       break;
     default:
       gcc_unreachable ();
     }
+
+  emit_insn (insn (operands[0], operands[1], operands[2]));
   DONE;
 })
 
