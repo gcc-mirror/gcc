@@ -1,3 +1,8 @@
+2011-03-18  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/45381
+	* lex.c [ALTIVEC] (search_line_fast): Require gcc version 4.5.
+
 2011-11-04  Eric Botcazou  <ebotcazou@adacore.com>
             Jakub Jelinek  <jakub@redhat.com>
 
