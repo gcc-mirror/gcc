@@ -1,3 +1,10 @@
+2011-03-18  Richard Henderson  <rth@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/48161
+	* expr.c (expand_expr_addr_expr_1): Use simplify_gen_binary
+	instead of gen_rtx_PLUS if EXPAND_SUM or EXPAND_INITIALIZER.
+
 2011-03-17  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/48165
