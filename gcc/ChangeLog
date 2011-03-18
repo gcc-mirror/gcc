@@ -1,3 +1,9 @@
+2011-03-18  Richard Guenther  <rguenther@suse.de>
+
+	* doc/install.texi (--enable-gold): Remove.
+	(--with-plugin-ld): Document.
+	* doc/invoke.texi (-fuse-linker-plugin): Clarify.
+
 2011-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

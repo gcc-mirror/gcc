@@ -7717,8 +7717,8 @@ Disabled by default.
 
 @item -fuse-linker-plugin
 Enables the use of linker plugin during link time optimization.  This option
-relies on the linker plugin support in linker that is available in @code{gold}
-or in GNU ld 2.21.51 or newer..
+relies on the linker plugin support in linker that is available in gold
+or in GNU ld 2.21 or newer.
 
 This option enables the extraction of object files with GIMPLE bytecode out of
 library archives. This improves the quality of optimization by exposing more
@@ -7729,7 +7729,7 @@ use hidden visibility) is similar to @code{-fwhole-program}.  See
 @option{-flto} for a description on the effect of this flag and how to use it.
 
 Enabled by default when LTO support in GCC is enabled and GCC was compiled
-with linker supporting plugins (GNU ld or @code{gold}).
+with a linker supporting plugins (GNU ld 2.21 or newer or gold).
 
 @item -fcompare-elim
 @opindex fcompare-elim
