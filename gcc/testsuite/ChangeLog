@@ -1,5 +1,7 @@
 2011-03-18  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/template/fn-ptr1.C: New.
+
 	* g++.dg/overload/volatile1.C: New.
 
 	* g++.dg/opt/pr23372.C: New.
