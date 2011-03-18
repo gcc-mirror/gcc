@@ -623,10 +623,6 @@ extern enum cxx_dialect cxx_dialect;
 
 extern int max_tinst_depth;
 
-/* Likewise, for constexpr function call evaluations.  */
-
-extern int max_constexpr_depth;
-
 /* Nonzero means that we should not issue warnings about problems that
    occur when the code is executed, because the code being processed
    is not expected to be executed.  This is set during parsing.  This
