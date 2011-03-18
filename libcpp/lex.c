@@ -512,7 +512,7 @@ init_vectorized_lexer (void)
   search_line_fast = impl;
 }
 
-#elif defined(__GNUC__) && defined(__ALTIVEC__)
+#elif (GCC_VERSION >= 4005) && defined(__ALTIVEC__)
 
 /* A vection of the fast scanner using AltiVec vectorized byte compares.  */
 /* ??? Unfortunately, attribute(target("altivec")) is not yet supported,
