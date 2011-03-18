@@ -6651,7 +6651,7 @@ s390_chunkify_start (void)
 	  s390_add_execute (curr_pool, insn);
 	  s390_add_pool_insn (curr_pool, insn);
 	}
-      else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+      else if (GET_CODE (insn) == INSN || CALL_P (insn))
 	{
 	  rtx pool_ref = NULL_RTX;
 	  find_constant_pool_ref (PATTERN (insn), &pool_ref);
@@ -6675,6 +6675,15 @@ s390_chunkify_start (void)
 		  gcc_assert (!pending_ltrel);
 		  pending_ltrel = pool_ref;
 		}
+	    }
+	  /* Make sure we do not split between a call and its
+	     corresponding CALL_ARG_LOCATION note.  */
+	  if (CALL_P (insn))
+	    {
+	      rtx next = NEXT_INSN (insn);
+	      if (next && NOTE_P (next)
+		  && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
+		continue;
 	    }
 	}
 
