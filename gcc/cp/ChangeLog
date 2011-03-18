@@ -1,5 +1,8 @@
 2011-03-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/48162
+	* semantics.c (finish_call_expr): Allow TARGET_EXPR for now.
+
 	PR c++/48118
 	* call.c (build_over_call): Don't skip ck_rvalue.
 
