@@ -1,5 +1,10 @@
 2011-03-18  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
+	* config/s390/s390.c (s390_delegitimize_address): Handle GOTOFF
+	unspecs.
+
+2011-03-18  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
 	* config/s390/s390.c (s390_chunkify_start): Prevent literal pool
 	splitting between a call and its corresponding CALL_ARG_LOCATION
 	note.
