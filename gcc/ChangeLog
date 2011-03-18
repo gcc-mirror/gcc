@@ -1,3 +1,8 @@
+2011-03-18  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md: Use define_c_enum for the unspec constant
+	definitions.
+
 2011-03-18  Richard Henderson  <rth@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
