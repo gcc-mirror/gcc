@@ -6168,12 +6168,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       conv = convs[i];
 
-      /* Don't make a copy here if build_call is going to.  */
-      if (conv->kind == ck_rvalue
-	  && COMPLETE_TYPE_P (complete_type (type))
-	  && !TREE_ADDRESSABLE (type))
-	conv = conv->u.next;
-
       /* Warn about initializer_list deduction that isn't currently in the
 	 working draft.  */
       if (cxx_dialect > cxx98
