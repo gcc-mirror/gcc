@@ -1,5 +1,7 @@
 2011-03-18  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/overload/volatile1.C: New.
+
 	* g++.dg/opt/pr23372.C: New.
 
 	* g++.dg/ext/attrib32.C: Expect errors on the two-names case.
