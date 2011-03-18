@@ -5036,16 +5036,6 @@ check-parallel-% : site.exp
 	fi ; \
 	$(RUNTEST) --tool $(check_p_tool) $(RUNTESTFLAGS) $$runtestflags)
 
-check-consistency: testsuite/site.exp
-	-rootme=`${PWD_COMMAND}`; export rootme; \
-	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
-	cd testsuite; \
-	EXPECT=${EXPECT} ; export EXPECT ; \
-	if [ -f $${rootme}/../expect/expect ] ; then  \
-	   TCL_LIBRARY=`cd .. ; cd $${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
-	   export TCL_LIBRARY ; fi ; \
-	$(RUNTEST) --tool consistency $(RUNTESTFLAGS)
-
 # QMTest targets
 
 # The path to qmtest.
