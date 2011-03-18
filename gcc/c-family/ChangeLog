@@ -1,5 +1,10 @@
 2011-03-18  Jason Merrill  <jason@redhat.com>
 
+	* c.opt (fconstexpr-depth): Add Var(max_constexpr_depth).
+	* c-common.h: Don't declare it here.
+	* c-common.c: Or define it here.
+	* c-opts.c (c_common_handle_option): Or set it here.
+
 	PR c++/35315
 	* c-common.c (handle_transparent_union_attribute): Don't
 	make a duplicate type in C++.

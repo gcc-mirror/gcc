@@ -568,10 +568,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	disable_builtin_function (arg);
       break;
 
-    case OPT_fconstexpr_depth_:
-      max_constexpr_depth = value;
-      break;
-
     case OPT_fdirectives_only:
       cpp_opts->directives_only = value;
       break;

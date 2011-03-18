@@ -260,11 +260,6 @@ enum cxx_dialect cxx_dialect = cxx98;
 
 int max_tinst_depth = 1024;
 
-/* Likewise, for constexpr function call evaluations.  N3225 specifies a
-   minimum of 512.  */
-
-int max_constexpr_depth = 512;
-
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
 tree *ridpointers;
