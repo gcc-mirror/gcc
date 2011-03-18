@@ -1,3 +1,11 @@
+2011-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/48176
+	* dwarf2out.c (dwarf2out_finish): Call output_aranges even when
+	arange_table_in_use is 0, but either text_section_used or
+	cold_text_section_used is true.  Don't call it if
+	!info_section_emitted.
+
 2011-03-18  Richard Guenther  <rguenther@suse.de>
 
 	* doc/install.texi (--enable-gold): Remove.

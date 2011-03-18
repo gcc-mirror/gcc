@@ -23616,7 +23616,8 @@ dwarf2out_finish (const char *filename)
 
   /* Output the address range information.  We only put functions in the arange
      table, so don't write it out if we don't have any.  */
-  if (arange_table_in_use)
+  if ((text_section_used || cold_text_section_used || arange_table_in_use)
+      && info_section_emitted)
     {
       switch_to_section (debug_aranges_section);
       output_aranges ();
