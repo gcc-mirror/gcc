@@ -1,3 +1,8 @@
+2011-03-18  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* combine.c (try_combine): Do simplification only call of
+	subst() on i2 even when i1 is present. Update comments.
+
 2011-03-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_delegitimize_address): Handle UNSPEC_SYMOFF
