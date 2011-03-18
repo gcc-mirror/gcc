@@ -1,3 +1,8 @@
+2011-03-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* ira-color.c (assign_hard_reg): Honor LOCAL_REGNO in cost
+	computation for	prologue/epilogue.
+
 2011-03-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.in (check-consistency): Remove.
@@ -35,7 +40,7 @@
 	(--with-plugin-ld): Document.
 	* doc/invoke.texi (-fuse-linker-plugin): Clarify.
 
-2011-03-16  Andrew Pinski  <pinskia@gmail.com>
+2011-03-18  Andrew Pinski  <pinskia@gmail.com>
 
 	PR middle-end/47790
 	* expr.c (optimize_bitfield_assignment_op): Revamp to work
