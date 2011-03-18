@@ -13352,12 +13352,11 @@ The compiler gives errors for such constructs.
 @opindex fms-extensions
 Unless @option{-fms-extensions} is used, the unnamed field must be a
 structure or union definition without a tag (for example, @samp{struct
-@{ int a; @};}), or a @code{typedef} name for such a structure or
-union.  If @option{-fms-extensions} is used, the field may
+@{ int a; @};}).  If @option{-fms-extensions} is used, the field may
 also be a definition with a tag such as @samp{struct foo @{ int a;
 @};}, a reference to a previously defined structure or union such as
 @samp{struct foo;}, or a reference to a @code{typedef} name for a
-previously defined structure or union type with a tag.
+previously defined structure or union type.
 
 @opindex fplan9-extensions
 The option @option{-fplan9-extensions} enables

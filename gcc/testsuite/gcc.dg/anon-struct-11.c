@@ -50,7 +50,7 @@ struct E {
   struct F { char f; };	/* { dg-warning "does not declare anything" } */
   char c;
   union {
-    D;
+    D;			/* { dg-warning "does not declare anything" } */
   };
   char e;
 };
@@ -85,7 +85,7 @@ test2 (void)
   e.e = 5;
   f2 (&e);		/* { dg-warning "incompatible pointer type" } */
   f3 (&e);		/* { dg-warning "incompatible pointer type" } */
-  if (e.d != 4)
+  if (e.d != 4)		/* { dg-error "no member" } */
     abort ();
   if (e.f != 6)		/* { dg-error "no member" } */
     abort ();

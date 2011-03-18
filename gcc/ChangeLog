@@ -1,3 +1,9 @@
+2011-03-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (grokfield): Don't allow typedefs for structures or
+	unions with no tag by default.
+	* doc/extend.texi (Unnamed Fields): Update.
+
 2011-03-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (float<SSEMODEI24:mode><X87MODEF:mode>2):
