@@ -4520,9 +4520,7 @@ hoist_code (void)
 		    {
 		      /* An occurence might've been already deleted
 			 while processing a dominator of BB.  */
-		      if (occr->deleted_p)
-			gcc_assert (MAX_HOIST_DEPTH > 1);
-		      else
+		      if (!occr->deleted_p)
 			{
 			  gcc_assert (NONDEBUG_INSN_P (occr->insn));
 			  hoistable++;
@@ -4554,10 +4552,7 @@ hoist_code (void)
 		  /* An occurence might've been already deleted
 		     while processing a dominator of BB.  */
 		  if (occr->deleted_p)
-		    {
-		      gcc_assert (MAX_HOIST_DEPTH > 1);
-		      continue;
-		    }
+		    continue;
 		  gcc_assert (NONDEBUG_INSN_P (occr->insn));
 
 		  max_distance = expr->max_distance;

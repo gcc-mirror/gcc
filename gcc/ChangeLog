@@ -1,3 +1,8 @@
+2011-03-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR rtl-optimization/48170
+	* gcse.c (hoist_code): Remove bogus asserts.
+
 2011-03-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	* ira-color.c (assign_hard_reg): Honor LOCAL_REGNO in cost
