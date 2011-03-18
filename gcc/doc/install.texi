@@ -1666,13 +1666,12 @@ GLIBC 2.11 or above, otherwise disabled.
 Enable support for link-time optimization (LTO).  This is enabled by
 default, and may be disabled using @option{--disable-lto}.
 
-@item --enable-gold
-Enable support for using @command{gold} as the linker.  If gold support is
-enabled together with @option{--enable-lto}, an additional directory
-@file{lto-plugin} will be built.  The code in this directory is a
-plugin for gold that allows the link-time optimizer to extract object
-files with LTO information out of library archives.  See
-@option{-flto} and @option{-fwhopr} for details.
+@item --with-plugin-ld=@var{pathname}
+Enable an alternate linker to be used at link-time optimization (LTO)
+link time when @option{-fuse-linker-plugin} is enabled.
+This linker should have plugin support such as gold starting with
+version 2.20 or GNU ld starting with version 2.21.
+See @option{-fuse-linker-plugin} for details.
 @end table
 
 @subheading Cross-Compiler-Specific Options
