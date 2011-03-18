@@ -18,11 +18,11 @@
 // { dg-do compile }
 // { dg-require-effective-target dfp }
 
-// Test that binary operators do not accept mixed decimal and generic
-// floating-point operands.  This isn't explicity prohibited in
-// ISO/IEC TR 24733 but it is prohibited in C, and in C++ there should
-// not be an implicit conversion from a decimal floating-point type to
-// a generic floating-point type.
+// Test that binary arithmetic operators do not accept mixed decimal
+// and generic floating-point operands.  This isn't explicity
+// prohibited in ISO/IEC TR 24733 but it is prohibited in C, and in C++
+// there should not be an implicit conversion from a decimal
+// floating-point type to a generic floating-point type.
 
 #include <decimal/decimal>
 #include <testsuite_hooks.h>
@@ -79,72 +79,6 @@ bad_divide (void)
   a64 = ld / b64;	// { dg-error "error" }
   a128 = b128 / ld;	// { dg-error "error" }
   a128 = d / b128;	// { dg-error "error" }
-}
-
-void
-bad_eq (void)
-{
-  b1 = b32 == f;	// { dg-error "error" }
-  b2 = ld == b32;	// { dg-error "error" }
-  b3 = b64 == d;	// { dg-error "error" }
-  b4 = ld == b64;	// { dg-error "error" }
-  b5 = b128 == ld;	// { dg-error "error" }
-  b6 = d == b128;	// { dg-error "error" }
-}
-
-void
-bad_ne (void)
-{
-  b1 = b32 != f;	// { dg-error "error" }
-  b2 = ld != b32;	// { dg-error "error" }
-  b3 = b64 != d;	// { dg-error "error" }
-  b4 = ld != b64;	// { dg-error "error" }
-  b5 = b128 != ld;	// { dg-error "error" }
-  b6 = d != b128;	// { dg-error "error" }
-}
-
-void
-bad_lt (void)
-{
-  b1 = b32 < f;		// { dg-error "error" }
-  b2 = ld < b32;	// { dg-error "error" }
-  b3 = b64 < d;		// { dg-error "error" }
-  b4 = ld < b64;	// { dg-error "error" }
-  b5 = b128 < ld;	// { dg-error "error" }
-  b6 = d < b128;	// { dg-error "error" }
-}
-
-void
-bad_le (void)
-{
-  b1 = b32 <= f;	// { dg-error "error" }
-  b2 = ld <= b32;	// { dg-error "error" }
-  b3 = b64 <= d;	// { dg-error "error" }
-  b4 = ld <= b64;	// { dg-error "error" }
-  b5 = b128 <= ld;	// { dg-error "error" }
-  b6 = d <= b128;	// { dg-error "error" }
-}
-
-void
-bad_gt (void)
-{
-  b1 = b32 > f;		// { dg-error "error" }
-  b2 = ld > b32;	// { dg-error "error" }
-  b3 = b64 > d;		// { dg-error "error" }
-  b4 = ld > b64;	// { dg-error "error" }
-  b5 = b128 > ld;	// { dg-error "error" }
-  b6 = d > b128;	// { dg-error "error" }
-}
-
-void
-bad_ge (void)
-{
-  b1 = b32 >= f;	// { dg-error "error" }
-  b2 = ld >= b32;	// { dg-error "error" }
-  b3 = b64 >= d;	// { dg-error "error" }
-  b4 = ld >= b64;	// { dg-error "error" }
-  b5 = b128 >= ld;	// { dg-error "error" }
-  b6 = d >= b128;	// { dg-error "error" }
 }
 
 void
