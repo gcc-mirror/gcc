@@ -1,3 +1,11 @@
+2011-03-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR fortran/35667
+	* io/io.h (convert_infnan): Declare.
+	* io/read.c (convert_infnan): New.
+	(read_f): Use convert_infnan to convert INFs and NANs.
+	* list_read.c (parse_real, read_real): Likewise.
+
 2011-03-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/47439
