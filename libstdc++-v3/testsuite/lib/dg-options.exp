@@ -107,8 +107,8 @@ proc dg-require-cstdint { args } {
     return
 }
 
-proc dg-require-c99_math { args } {
-    if { ![ check_v3_target_c99_math ] } {
+proc dg-require-cmath { args } {
+    if { ![ check_v3_target_cmath ] } {
 	upvar dg-do-what dg-do-what
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
 	return

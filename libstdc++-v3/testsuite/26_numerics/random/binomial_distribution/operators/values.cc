@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
-// { dg-require-c99_math "" }
+// { dg-require-cmath "" }
 //
 // Copyright (C) 2011 Free Software Foundation, Inc.
 //

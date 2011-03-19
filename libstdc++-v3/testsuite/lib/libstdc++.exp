@@ -1146,7 +1146,7 @@ proc check_v3_target_cstdint { } {
     return $et_cstdint
 }
 
-proc check_v3_target_c99_math { } {
+proc check_v3_target_cmath { } {
     global cxxflags
     global DEFAULT_CXXFLAGS
     global et_c99_math
