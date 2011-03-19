@@ -4876,6 +4876,16 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	     || LABEL_P (from))
 	from = PREV_INSN (from);
 
+      /* Make sure we do not split between a call and its corresponding
+	 CALL_ARG_LOCATION note.  */
+      if (CALL_P (from))
+	{
+	  rtx next = NEXT_INSN (from);
+	  if (next && NOTE_P (next)
+	      && NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION)
+	    from = next;
+	}
+
       from = emit_jump_insn_after (gen_jump (label), from);
       JUMP_LABEL (from) = label;
       LABEL_NUSES (label) = 1;
