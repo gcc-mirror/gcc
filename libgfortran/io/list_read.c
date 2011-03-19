@@ -1215,6 +1215,15 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 
   return m;
 
+ done_infnan:
+  unget_char (dtp, c);
+  push_char (dtp, '\0');
+
+  m = convert_infnan (dtp, buffer, dtp->u.p.saved_string, length);
+  free_saved (dtp);
+
+  return m;
+
  inf_nan:
   /* Match INF and Infinity.  */
   if ((c == 'i' || c == 'I')
@@ -1235,7 +1244,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 	     push_char (dtp, 'i');
 	     push_char (dtp, 'n');
 	     push_char (dtp, 'f');
-	     goto done;
+	     goto done_infnan;
 	  }
     } /* Match NaN.  */
   else if (((c = next_char (dtp)) == 'a' || c == 'A')
@@ -1259,7 +1268,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 	  if (is_separator (c))
 	    unget_char (dtp, c);
 	}
-      goto done;
+      goto done_infnan;
     }
 
  bad:
@@ -1718,7 +1727,15 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
     }
 
   free_line (dtp);
-  goto done;
+  unget_char (dtp, c);
+  eat_separator (dtp);
+  push_char (dtp, '\0');
+  if (convert_infnan (dtp, dest, dtp->u.p.saved_string, length))
+    return;
+
+  free_saved (dtp);
+  dtp->u.p.saved_type = BT_REAL;
+  return;
 
  unwind:
   if (dtp->u.p.namelist_mode)
