@@ -1728,12 +1728,11 @@ look_for_hardregs (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
   bitmap regs_set = (bitmap) data;
 
   if (REG_P (x)
-      && REGNO (x) < FIRST_PSEUDO_REGISTER)
+      && HARD_REGISTER_P (x))
     {
-      int regno = REGNO (x);
-      int n = hard_regno_nregs[regno][GET_MODE (x)];
-      while (--n >= 0)
-	bitmap_set_bit (regs_set, regno + n);
+      unsigned int regno = REGNO (x);
+      bitmap_set_range (regs_set, regno,
+			hard_regno_nregs[regno][GET_MODE (x)]);
     }
 }
 

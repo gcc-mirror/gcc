@@ -1,6 +1,6 @@
 /* Control flow optimization code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -208,13 +208,11 @@ mark_effect (rtx exp, regset nonequal)
 	{
 	  dest = XEXP (exp, 0);
 	  regno = REGNO (dest);
-	  CLEAR_REGNO_REG_SET (nonequal, regno);
-	  if (regno < FIRST_PSEUDO_REGISTER)
-	    {
-	      int n = hard_regno_nregs[regno][GET_MODE (dest)];
-	      while (--n > 0)
-		CLEAR_REGNO_REG_SET (nonequal, regno + n);
-	    }
+	  if (HARD_REGISTER_NUM_P (regno))
+	    bitmap_clear_range (nonequal, regno,
+				hard_regno_nregs[regno][GET_MODE (dest)]);
+	  else
+	    bitmap_clear_bit (nonequal, regno);
 	}
       return false;
 
@@ -227,13 +225,11 @@ mark_effect (rtx exp, regset nonequal)
       if (!REG_P (dest))
 	return true;
       regno = REGNO (dest);
-      SET_REGNO_REG_SET (nonequal, regno);
-      if (regno < FIRST_PSEUDO_REGISTER)
-	{
-	  int n = hard_regno_nregs[regno][GET_MODE (dest)];
-	  while (--n > 0)
-	    SET_REGNO_REG_SET (nonequal, regno + n);
-	}
+      if (HARD_REGISTER_NUM_P (regno))
+	bitmap_set_range (nonequal, regno,
+			  hard_regno_nregs[regno][GET_MODE (dest)]);
+      else
+	bitmap_set_bit (nonequal, regno);
       return false;
 
     default:

@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -1762,29 +1762,18 @@ update_live_1 (int src, rtx x)
 
   regno = REGNO (reg);
 
-  if (regno >= FIRST_PSEUDO_REGISTER || !global_regs[regno])
+  if (! HARD_REGISTER_NUM_P (regno)
+      || !global_regs[regno])
     {
-      if (regno < FIRST_PSEUDO_REGISTER)
+      for (i = 0; i < candidate_table[src].update_bbs.nr_members; i++)
 	{
-	  int j = hard_regno_nregs[regno][GET_MODE (reg)];
-	  while (--j >= 0)
-	    {
-	      for (i = 0; i < candidate_table[src].update_bbs.nr_members; i++)
-		{
-		  basic_block b = candidate_table[src].update_bbs.first_member[i];
+	  basic_block b = candidate_table[src].update_bbs.first_member[i];
 
-		  SET_REGNO_REG_SET (df_get_live_in (b), regno + j);
-		}
-	    }
-	}
-      else
-	{
-	  for (i = 0; i < candidate_table[src].update_bbs.nr_members; i++)
-	    {
-	      basic_block b = candidate_table[src].update_bbs.first_member[i];
-
-	      SET_REGNO_REG_SET (df_get_live_in (b), regno);
-	    }
+	  if (HARD_REGISTER_NUM_P (regno))
+	    bitmap_set_range (df_get_live_in (b), regno,
+			      hard_regno_nregs[regno][GET_MODE (reg)]);
+	  else
+	    bitmap_set_bit (df_get_live_in (b), regno);
 	}
     }
 }
