@@ -1,4 +1,9 @@
-2011-03-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+2011-03-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/47439
+	* gfortran.dg/scratch_1.f90: Adjust test.
+
+2011-03-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/47439
 	* gfortran.dg/scratch_1.f90: New test.
