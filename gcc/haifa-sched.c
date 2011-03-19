@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -672,11 +672,11 @@ setup_ref_regs (rtx x)
   if (REG_P (x))
     {
       regno = REGNO (x);
-      if (regno >= FIRST_PSEUDO_REGISTER)
-	bitmap_set_bit (region_ref_regs, REGNO (x));
+      if (HARD_REGISTER_NUM_P (regno))
+	bitmap_set_range (region_ref_regs, regno,
+			  hard_regno_nregs[regno][GET_MODE (x)]);
       else
-	for (i = hard_regno_nregs[regno][GET_MODE (x)] - 1; i >= 0; i--)
-	  bitmap_set_bit (region_ref_regs, regno + i);
+	bitmap_set_bit (region_ref_regs, REGNO (x));
       return;
     }
   fmt = GET_RTX_FORMAT (code);

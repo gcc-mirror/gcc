@@ -1312,7 +1312,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
 static int
 add_used_regs_1 (rtx *loc, void *data)
 {
-  int regno, i;
+  unsigned int regno;
   regset live;
   rtx x;
 
@@ -1321,11 +1321,10 @@ add_used_regs_1 (rtx *loc, void *data)
   if (REG_P (x))
     {
       regno = REGNO (x);
-      if (!HARD_REGISTER_NUM_P (regno))
+      if (HARD_REGISTER_NUM_P (regno))
+	bitmap_set_range (live, regno, hard_regno_nregs[regno][GET_MODE (x)]);
+      else
 	regno = reg_renumber[regno];
-      if (regno >= 0)
-	for (i = hard_regno_nregs[regno][GET_MODE (x)] - 1; i >= 0; i--)
-	  SET_REGNO_REG_SET (live, regno + i);
     }
   return 0;
 }

@@ -1,3 +1,13 @@
+2011-03-19  Anatoly Sokolov  <aesok@post.ru>
+
+	* cfgcleanup.c (mark_effect): Use bitmap_set_range/bitmap_clear_range
+	instead of loop. Use HARD_REGISTER_NUM_P predicate.
+	* haifa-sched.c (setup_ref_regs): Ditto.
+	* caller-save.c (add_used_regs_1): Ditto.
+	* dse.c (look_for_hardregs): Ditto.
+	* df-problems.c (df_simulate_one_insn_forwards): Ditto.
+	* sched-rgn.c (check_live_1): Ditto.
+
 2011-03-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (diagnose_mismatched_decls): Give an error for
