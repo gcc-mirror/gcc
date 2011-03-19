@@ -1,3 +1,9 @@
+2011-03-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR debug/48178
+	* config/sh/sh.c (find_barrier): Don't emit a constant pool
+	between a call and its corresponding CALL_ARG_LOCATION note.
+
 2011-03-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* cfgcleanup.c (mark_effect): Use bitmap_set_range/bitmap_clear_range
