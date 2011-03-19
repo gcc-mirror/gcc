@@ -1,7 +1,18 @@
+2011-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_c99_math): Rename
+	to check_v3_target_cmath.
+	* testsuite/lib/dg-options.exp (dg-require-c99_math): Rename
+	to dg-require-cmath.
+	* testsuite/26_numerics/random/binomial_distribution/
+	operators/values.cc: Adjust.
+
 2011-03-18  Diego Novillo  <dnovillo@google.com>
 
-	* mixed-mode-arith_neg.cc: Rename from mixed-mode_neg.cc
-	* mixed-mode-cmp_neg.cc: Factor out of mixed-mode-arith_neg.cc
+	* testsuite/decimal/mixed-mode-arith_neg.cc: Rename from
+	mixed-mode_neg.cc
+	* testsuite/decimal/mixed-mode-cmp_neg.cc: Factor out of
+	mixed-mode-arith_neg.cc
 
 2011-03-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
