@@ -1,3 +1,8 @@
+2011-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/48156
+	* gcc.dg/pr48156.c: New test.
+
 2011-03-19  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/47439
