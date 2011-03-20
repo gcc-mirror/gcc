@@ -6674,11 +6674,14 @@ grokfield (location_t loc,
 		      || TREE_CODE (type) == UNION_TYPE);
       bool ok = false;
 
-      if (type_ok)
+      if (type_ok
+	  && (flag_ms_extensions
+	      || flag_plan9_extensions
+	      || !declspecs->typedef_p))
 	{
 	  if (flag_ms_extensions || flag_plan9_extensions)
 	    ok = true;
-	  else if (TYPE_NAME (TYPE_MAIN_VARIANT (type)) == NULL)
+	  else if (TYPE_NAME (type) == NULL)
 	    ok = true;
 	  else
 	    ok = false;

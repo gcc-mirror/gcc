@@ -1,3 +1,9 @@
+2011-03-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (grokfield): Don't allow typedefs for structures or
+	unions with no tag by default.
+	* doc/extend.texi (Unnamed Fields): Update.
+
 2011-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/48176

@@ -1,3 +1,9 @@
+2011-03-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c1x-anon-struct-1.c: Don't test use of typedefs.
+	* gcc.dg/c1x-anon-struct-3.c: New test.
+	* gcc.dg/anon-struct-11.c: Update.
+
 2011-03-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR middle-end/47405
