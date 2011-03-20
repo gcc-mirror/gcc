@@ -1,3 +1,9 @@
+2011-03-20  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
+
+	PR debug/48023
+	* config/arm/arm.c (create_fix_barrier): Do not emit a minipool
+	between a call and its CALL_ARG_LOCATION note.
+
 2011-03-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR debug/48178
