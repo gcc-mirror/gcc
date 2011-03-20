@@ -88,28 +88,28 @@ Boston, MA 02111-1307, USA.  */
 #ifndef UPC_SHARED_SECTION_NAME
 #define UPC_SHARED_SECTION_NAME "upc_shared"
 #endif
-/* used in crtbegin.o to define the beginning of the shared section */
+/* Used by upc-crtbegin to define the beginning of the shared section */
 #define UPC_SHARED_BEGIN_NAME __upc_shared_start
 #define UPC_SHARED_BEGIN_NAME_STR "__upc_shared_start"
-/* used in crtend.o to define the end of the shared section */
+/* Used by upc-crtend to define the end of the shared section */
 #define UPC_SHARED_END_NAME __upc_shared_end
 
 /* Name of section used to hold info. describing how a UPC source file was compiled. */
 #ifndef UPC_PGM_INFO_SECTION_NAME
 #define UPC_PGM_INFO_SECTION_NAME "upc_pgm_info"
 #endif
-/* used in crtbegin.o to define the beginning of the shared section */
+/* Used by upc-crtbegin to define the beginning of the shared section */
 #define UPC_PGM_INFO_BEGIN_NAME __upc_pgm_info_start
-/* used in crtend.o to define the end of the shared section */
+/* Used by upc-crtend to define the end of the shared section */
 #define UPC_PGM_INFO_END_NAME __upc_pgm_info_end
 
 /* Name of section where UPC iniitialization routines are located.  */
 #ifndef UPC_INIT_SECTION_NAME
 #define UPC_INIT_SECTION_NAME "upc_init"
 #endif
-/* used in crtbegin.o to define the beginning of init. routines section */
+/* Used by upc-crtbegin to define the beginning of init. routines section */
 #define UPC_INIT_BEGIN_NAME __upc_init_start
-/* used in crtend.o to define the beginning of init. routines section */
+/* Used by upc-crtend to define the beginning of init. routines section */
 #define UPC_INIT_END_NAME __upc_init_end
 
 /* Name of section that holds an array of addresses that points to 
@@ -117,75 +117,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef UPC_INIT_ARRAY_SECTION_NAME
 #define UPC_INIT_ARRAY_SECTION_NAME "upc_init_array"
 #endif
-/* used in crtbegin.o to define the beginning of UPC init. array ection */
+/* Used by upc-crtbegin to define the beginning of UPC init. array ection.  */
 #define UPC_INIT_ARRAY_BEGIN_NAME __upc_init_array_start
-/* used in crtend.o to define the beginning of UPC init. array section */
+/* Used by upc-crtend to define the beginning of UPC init. array section.  */
 #define UPC_INIT_ARRAY_END_NAME __upc_init_array_end
-
-#ifdef TARGET_ASM_NAMED_SECTION
-
-#ifndef UPC_SHARED_SECTION_BEGIN_INIT
-#define UPC_SHARED_SECTION_BEGIN_INIT \
-/* Establish a symbol at the beginning of the data section \
-   Must take up some space, so that variables don't begin \
-   at offset zero.  */ \
-char UPC_SHARED_BEGIN_NAME [256]  \
-     __attribute__((section(UPC_SHARED_SECTION_NAME)));
-#endif
-
-#ifndef UPC_PGM_INFO_SECTION_BEGIN_INIT
-#define UPC_PGM_INFO_SECTION_BEGIN_INIT \
-/* Establish a symbol at the beginning of the progam info data section */ \
-char UPC_PGM_INFO_BEGIN_NAME []  \
-     __attribute__((section(UPC_PGM_INFO_SECTION_NAME))) = {};
-#endif
-
-#ifndef UPC_INIT_SECTION_BEGIN_INIT
-#define UPC_INIT_SECTION_BEGIN_INIT \
-/* Establish a symbol at the beginning of the section containing \
-   the code for UPC initialization procedures */ \
-char UPC_INIT_BEGIN_NAME []  \
-     __attribute__((section(UPC_INIT_SECTION_NAME))) = {};
-#endif
-
-#ifndef UPC_INIT_ARRAY_SECTION_BEGIN_INIT
-#define UPC_INIT_ARRAY_SECTION_BEGIN_INIT \
-/* Establish a symbol at the beginning of the section that contains \
-   a list of addresses pointing to UPC data initialization procedures. */ \
-void (*UPC_INIT_ARRAY_BEGIN_NAME[]) (void) \
-     __attribute__((section(UPC_INIT_ARRAY_SECTION_NAME))) = {};
-#endif
-
-#ifndef UPC_SHARED_SECTION_END_INIT
-#define UPC_SHARED_SECTION_END_INIT \
-/* Establish a symbol at the end of the shared data section */ \
-char UPC_SHARED_END_NAME []  \
-     __attribute__((section(UPC_SHARED_SECTION_NAME))) = {'\0'};
-#endif
-
-#ifndef UPC_PGM_INFO_SECTION_END_INIT
-#define UPC_PGM_INFO_SECTION_END_INIT \
-/* Establish a symbol at the end of the progam info data section */ \
-char UPC_PGM_INFO_END_NAME []  \
-     __attribute__((section(UPC_PGM_INFO_SECTION_NAME))) = {'\0'};
-#endif
-
-#ifndef UPC_INIT_SECTION_END_INIT
-#define UPC_INIT_SECTION_END_INIT \
-/* Establish a symbol at the end of the section containing \
-   the code for UPC initialization procedures */ \
-char UPC_INIT_END_NAME []  \
-     __attribute__((section(UPC_INIT_SECTION_NAME))) = {'\0'};
-#endif
-
-#ifndef UPC_INIT_ARRAY_SECTION_END_INIT
-#define UPC_INIT_ARRAY_SECTION_END_INIT \
-/* Establish a symbol at the end of the UPC init. procedure table section.  */ \
-void (*UPC_INIT_ARRAY_END_NAME[]) (void) \
-     __attribute__((section(UPC_INIT_ARRAY_SECTION_NAME))) = {0};
-#endif
-
-#endif /* TARGET_ASM_NAMED_SECTION */
 
 /* Name of initialization routine that is called to initialize
    shared variables and calculate shared address.  Both of these

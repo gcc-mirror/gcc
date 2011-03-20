@@ -1,3 +1,33 @@
+2011-03-20  Gary Funck  <gary@intrepid.com>
+
+	Move UPC start files, end files, and linker specs.
+	into libupc.  This reduces the impact on common GCC
+	configuration files, and ensures that these UPC-specific
+	components are only built when the UPC language dialect is selected.
+
+	* config-lang.in: Remove setting of 'upc_extra_parts', which
+	  was used to specify which upc-crtbegin and upc-crtend files
+	  need to built.  Remove extraneous (commented out)
+	  settings of 'cfiles'.  The listed configuration files
+	  have been reverted to trunk, and weren't referenced
+	  via cfiles in any event.
+
+	* upc/upc-cmd.c: Remove test for HAVE_UPC_LINK_SCRIPT.
+	  Simply test for the presence of the UPC link script
+	  in the current directory or the libupc directory.
+	  Add -B<path-to-libupc> to the switches passed to 'gcc';
+	  this is needed in order to find the upc-crtbegin
+	  and upc-crtend object files now built in libupc.
+	  Remove test for and inclusion of UPC_LINKER_SWITCHES.
+	  if extra switches are needed for a particular target
+	  (like SGI/Irix), they will be defined by the custom
+	  linker spec. built in libupc.  Remove test for
+	  HAVE_UPC_NUMA_SUPPORT; if '-lnuma' is needed, it
+	  will be added to the custom linker specs. built
+	  in libupc.
+
+	* upc-crtstuff.c: Move to libupc.
+
 2011-02-22  Gary Funck  <gary@intrepid.com>
 
 	* upc-act.c (upc_diagnose_deprecated_stmt): New.

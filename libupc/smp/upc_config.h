@@ -228,6 +228,12 @@ extern void __upc_gum_init (int, int);
 #define GUPCR_PGM_INFO_SECTION_START __upc_pgm_info_start
 /* The ending address (plus one) of the UPC compiled program info. section */
 #define GUPCR_PGM_INFO_SECTION_END __upc_pgm_info_end
+
+/* The base address of an array of pointers to UPC initialization routines.  */
+#define GUPCR_INIT_ARRAY_START __upc_init_array_start
+/* The ending address (plus one) of pointers to UPC initialization routines */
+#define GUPCR_INIT_ARRAY_END   __upc_init_array_end
+
 //end lib_config_shared_section
 
 //begin lib_config_msgs

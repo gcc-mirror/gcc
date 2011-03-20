@@ -335,8 +335,6 @@ if test $enable_symvers = gnu; then
 	    [Define to 1 if GNU symbol versioning is used for libupc.])
 fi
 
-# Get target configury.
-# . ${srcdir}/configure.tgt
 CFLAGS="$save_CFLAGS $XCFLAGS"
 
 # Check for __sync_val_compare_and_swap, but only after the target has
@@ -345,9 +343,6 @@ LIBUPC_CHECK_SYNC_BUILTINS
 
 XCFLAGS="$XCFLAGS"
 
-AC_SUBST(config_path)
-AC_SUBST(XCFLAGS)
-AC_SUBST(XLDFLAGS)
 
 # Cleanup and exit.
 CFLAGS="$save_CFLAGS"
@@ -493,6 +488,10 @@ if test "$targ_runtime" = "smp"; then
     fi
   fi
   AC_MSG_RESULT($enable_upc_link_script)
+  if test "$enable_upc_link_script" = yes; then
+    AC_DEFINE(HAVE_UPC_LINK_SCRIPT, 1, [Define to 1 if UPC link script is supported.])
+  fi
+  AC_SUBST(upc_crtstuff_cflags)
   AC_MSG_CHECKING(for Linux scheduling affinity)
   AC_TRY_RUN(
   changequote(<<,>>)dnl
@@ -567,9 +566,23 @@ if test "$targ_runtime" = "smp"; then
   ])
   AC_MSG_RESULT([$upc_gum_debug])
   if test "x${upc_gum_debug}" = "xyes"; then
-    AC_DEFINE_UNQUOTED(HAVE_GUM_DEBUG,[1],
+    AC_DEFINE_UNQUOTED(GUPCR_HAVE_GUM_DEBUG,[1],
     [Define if UPC GUM debug server is supported])
   fi
+
+  # Get target configury.
+  . ${srcdir}/configure.tgt
+
+  # configure.tgt sets these substitution variables.
+  # It also sets 'upc_crtstuff=yes' if upc-crtstuff needs
+  # to be compiled.
+  AC_SUBST(config_path)
+  AC_SUBST(XCFLAGS)
+  AC_SUBST(XLDFLAGS)
+  AC_SUBST(link_upc_spec)
+  AC_SUBST(upc_crtbegin_spec)
+  AC_SUBST(upc_crtend_spec)
+  AC_SUBST(upc_crtstuff_objs)
 fi
 
 dnl Define ARG_UNUSED macro
@@ -583,6 +596,7 @@ dnl Build the 'SMP' based runtime for all targets.
 AM_CONDITIONAL(LIBUPC_SMP_RUNTIME, [test "$targ_runtime" = "smp"])
 
 dnl 'smp' runtime specific settings
+AM_CONDITIONAL(LIBUPC_CRTSTUFF, [test "$upc_crtstuff" = "yes"])
 AM_CONDITIONAL(LIBUPC_PTHREADS, [test "$targ_runtime_pthreads" = "yes"])
 AM_CONDITIONAL(LIBUPC_LINK_SCRIPT, [test "$enable_upc_link_script" = "yes"])
 AM_CONDITIONAL(LIBUPC_AFFINITY, [test "$upc_affinity" = "yes"])
@@ -590,7 +604,7 @@ AM_CONDITIONAL(LIBUPC_NUMA, [test "$upc_numa" = "yes"])
 AM_CONDITIONAL(LIBUPC_GUM, [test "$upc_gum_debug" = "yes"])
 
 AH_TOP(
-[/* Copyright (C) 2008 Free Software Foundation, Inc.
+[/* Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>
@@ -626,8 +640,7 @@ AH_BOTTOM(
 #endif /* __CONFIG_H__ */
 ])
 
-dnl UPC TODO: add libupc.spec support.
-dnl AC_CONFIG_FILES(libupc.spec)
 AC_CONFIG_FILES([Makefile testsuite/Makefile])
+AC_CONFIG_FILES([upc-crtbegin.spec libupc.spec upc-crtend.spec])
 
 AC_OUTPUT

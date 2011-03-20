@@ -42,13 +42,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined HAVE_LD_PIE
 #define LINUX_TARGET_STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
-   %{static:upc-crtbeginT.o%s;shared|pie:upc-crtbeginS.o%s;:upc-crtbegin.o%s}"
+   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #else
 #define LINUX_TARGET_STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
-   %{static:upc-crtbeginT.o%s;shared|pie:upc-crtbeginS.o%s;:upc-crtbegin.o%s}"
+   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #endif
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC LINUX_TARGET_STARTFILE_SPEC
@@ -60,8 +58,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    GNU/Linux "finalizer" file, `crtn.o'.  */
 
 #define LINUX_TARGET_ENDFILE_SPEC \
-  "%{static:upc-crtendT.o%s;shared|pie:upc-crtendS.o%s;:upc-crtend.o%s} \
-   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+  "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC LINUX_TARGET_ENDFILE_SPEC
 

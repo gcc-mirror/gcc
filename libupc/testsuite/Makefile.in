@@ -166,6 +166,7 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 libtool_VERSION = @libtool_VERSION@
+link_upc_spec = @link_upc_spec@
 localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
@@ -190,6 +191,10 @@ toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+upc_crtbegin_spec = @upc_crtbegin_spec@
+upc_crtend_spec = @upc_crtend_spec@
+upc_crtstuff_cflags = @upc_crtstuff_cflags@
+upc_crtstuff_objs = @upc_crtstuff_objs@
 AUTOMAKE_OPTIONS = foreign dejagnu
 
 # May be used by various substitution variables.

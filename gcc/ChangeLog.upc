@@ -1,3 +1,45 @@
+2011-03-20  Gary Funck  <gary@intrepid.com>
+
+	Move UPC start files, end files, and linker specs.
+	into libupc.  This reduces the impact on common GCC
+	configuration files, and ensures that these UPC-specific
+	components are only built when the UPC language dialect is selected.
+
+
+gcc/
+	* c-family/c.opt: Add -fupc-link switch, used to select UPC-specific
+	  linker specs. Fix typo in -fupc-debug message.
+
+	* config/upc-conf.h, config/darwin.h: Move defines for
+	  UPC-related section begins/ends into libupc/config/default/
+	  upc-crt-config.h.
+
+	* config/darwin.h(LINK_COMMAND_SPEC_A): Add call outs to
+	  UPC-related linker compiler specifications,
+	  accessed via %:include().
+
+        * configure.ac, configure: Remove logic related to building
+	  upc-crtbegin/end. Remove config. tests for numa and cpu
+	  affinity (previously used by the 'upc' driver); these
+	  settings are now propagated by target-specific compiler
+	  specs. built by libupc.  Regenerate autoconf.
+
+	* gcc.c (LINK_COMMAND_SPEC): Add call outs to UPC-related
+	  linker compiler specifications, accessed via %:include().
+	  Define 'upc_crtbegin_spec', 'upc_crtend_spec', and
+	  'link_upc_spec'.
+
+	* Makefile.in: Remove definition of UPC_CRTSTUFF_CFLAGS.
+
+	* config/linux.h, config/i386/darwin.h, config/i386/linux64.h,
+	  config/i386/linux.h, config/i386/t-darwin, config/i386/t-darwin64,
+	  config/ia64/linux.h, config/mips/t-iris,
+	  config/mips/iris6.h: Revert to trunk version 167307.
+
+libgcc/
+	* configure, configure.ac, config.host, Makefile.in:
+	  Revert to trunk version 167307.
+
 2011-02-23  Gary Funck  <gary@intrepid.com>
 
 	* c-decl.c (undeclared_variable): fix typo. Inadvertenly

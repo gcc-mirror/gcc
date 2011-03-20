@@ -119,7 +119,6 @@ along with GCC; see the file COPYING3.  If not see
    %{mpc32:crtprec32.o%s} \
    %{mpc64:crtprec64.o%s} \
    %{mpc80:crtprec80.o%s} \
-   %{static:upc-crtendT.o%s;shared|pie:upc-crtendS.o%s;:upc-crtend.o%s} \
    %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 /* A C statement (sans semicolon) to output to the stdio stream

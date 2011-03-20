@@ -555,7 +555,6 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 asm_hidden_op
 extra_parts
-upc_crtstuff_cflags
 tmake_file
 set_use_emutls
 set_have_cc_tls
@@ -649,7 +648,6 @@ enable_maintainer_mode
 with_build_libsubdir
 enable_decimal_float
 enable_tls
-enable_upc_link_script
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1284,9 +1282,6 @@ Optional Features:
 			or 'dpd' choses which decimal floating point format
 			to use
   --enable-tls            Use thread-local storage [default=yes]
-  --enable-upc-link-script Enable UPC's use of a custom linker script.
-  This will define the UPC shared section as a no load section on
-  targets where this feature is supported.  Requires GNU LD.
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -3902,31 +3897,6 @@ do
 	fi
 done
 tmake_file="${tmake_file_}"
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UPC link script support" >&5
-$as_echo_n "checking for UPC link script support... " >&6; }
-# Check whether --enable-upc-link-script was given.
-if test "${enable_upc_link_script+set}" = set; then :
-  enableval=$enable_upc_link_script;
-  case $enableval in
-  yes | no) ;;
-  *)
-    as_fn_error "--enable-upc-link-script accepts only yes or no." "$LINENO" 5
-  esac
-
-else
-
-  enable_upc_link_script=no
-
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_link_script" >&5
-$as_echo "$enable_upc_link_script" >&6; }
-upc_crtstuff_cflags=
-if test "$enable_upc_link_script" = yes; then
-  upc_crtstuff_cflags=-DHAVE_UPC_LINK_SCRIPT
-fi
 
 
 # Substitute configuration variables

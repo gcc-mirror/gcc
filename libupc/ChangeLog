@@ -1,3 +1,68 @@
+2011-03-20  Gary Funck  <gary@intrepid.com>
+
+	Move UPC start files, end files, and linker specs.
+	into libupc.  This reduces the impact on common GCC
+	configuration files, and ensures that these UPC-specific
+	components are only built when the UPC language dialect is built.
+
+	* upc-crtstuff.c: New file. Moved from gcc/upc/upc-crtstuff.c.
+
+	* config/darwin/upc-crt-config.h: New file. Move defines for
+	  UPC-related section begins/ends from gcc/config/darwin.h to here.
+
+	* config/default/upc-crt-config.h: New file. Move defines for
+	  UPC-related section begins/ends from gcc/config/upc-conf.h to here.
+
+	* config/default/upc-crtstuff.mak: New file. Default makefile fragment for
+	  building the upc-crtbegin and upc-crtend object files.
+	  This logic was moved from libgcc/Makefile.in to here.
+
+	* config.h.in: Regenerate with autoheader.  Rename HAVE_GUM_DEBUG
+	  to GUPCR_HAVE_GUM_DEBUG.  Add define for HAVE_UPC_LINK_SCRIPT.
+
+	* configure.ac, configure: Include new configure.tgt script
+	  towards the end of the logic that configures the smp runtime.
+	  Define substitutions for 'config_path', 'XCFLAGS',
+	  'XLDFLAGS', 'link_upc_spec', 'upc_crtbegin_spec',
+	  'upc_crtend_spec', 'upc_crtstuff_objs'. Add LIBUPC_CRTSTUFF
+	  automake conditional.  Fix copyright date in AM_TOP() comment.
+	  Define upc-crtbegin.spec libupc.spec upc-crtend.spec as
+	  autoconf generated config. files.  Regenerate 'configure'.
+
+	* configure.tgt: New. Target-specific configuration logic.
+	  Defines 'config_path', 'upc_crtstuff', 'upc_crtbegin_spec',
+	  'upc_crtend_spec', 'upc_crtstuff_objs' variables; these are used
+	  to control the build of the UPC-related begin/end files
+	  and associated target-specific compiler specification files.
+
+	* libupc.spec.in, upc-crtbegin.spec.in, upc-crtend.spec.in: New.
+	  Define target-specific compiler specifications for linking
+	  and for inclusion of UPC-related start/end object files
+	  when a UPC program is linked.  These files are used
+	  to create resulting .spec files that are included via
+	  GCC's link spec. when a UPC program is linked.
+
+	* Makefile.am: Add rules to build and install upc-crtbegin.spec,
+	  libupc.spec, and upc-crtend.spec from there .in files.
+	  Add rules to build the UPC-specific start/end files if the
+	  automake conditional LIBUPC_CRTSTUFF is enabled.
+	  Fix references to make variables $(UPC_COLL_PREFIX_REDUCE_UPC)
+	  and $(UPC_COLL_REDUCE_UPC) in MAINTAINER_MODE block.
+
+        * Makefile.in, testsuite/Makefile.in: Regenerate with automake.
+	  
+	* smp/Make-defs, smp/Make-deps, smp/Make-rules: Remove.
+	  These Makefile fragments have not been used since libupc
+	  was re-worked to use automake (when the gupc branch
+	  was first checked in).
+
+	* smp/upc_config.h: Move the defintions of GUPCR_INIT_ARRAY_START
+	  and GUPCR_INIT_ARRAY_END from smp/upc_main.c to here.
+
+	* smp/upc_main.c: Rename HAVE_GUM_DEBUG to GUPCR_HAVE_GUM_DEBUG.
+	  Move the defintions of GUPCR_INIT_ARRAY_START and
+	  GUPCR_INIT_ARRAY_END to smp/upc_config.h.
+
 2011-02-22  Gary Funck  <gary@intrepid.com>
 
 	* include/gcc-upc.h (barrier, barrier_notify, barrier_wait,

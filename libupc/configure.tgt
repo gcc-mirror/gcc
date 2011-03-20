@@ -1,0 +1,92 @@
+# This is the target specific configuration file.  This is invoked by the
+# autoconf generated configure script.  Putting it in a separate shell file
+# lets us skip running autoconf when modifying target specific information.
+#
+# This file is adapted from the libgomp implementation.
+
+# This file switches on the shell variable ${target}, and sets the
+# following shell variables:
+#  config_path		An ordered list of directories to search for
+#			sources and headers.  This is relative to the
+#			config subdirectory of the source tree.
+#  XCFLAGS		Add extra compile flags to use.
+#  XLDFLAGS		Add extra link flags to use.
+
+
+# Set defaults
+config_path="posix default"
+
+case "${target}" in
+
+  *-*-hpux*)
+	case "${target}" in
+	  *-*-hpux11*)
+	     # HPUX v11.x requires -lrt to resolve sem_init in libupc.la
+	     XLDFLAGS="${XLDFLAGS} -lrt"
+	     ;;
+	esac
+	case "${target}" in
+	  hppa[12]*-*-hpux*)
+	    # PA 32 HP-UX needs -frandom-seed for bootstrap compare.
+	    XCFLAGS="${XCFLAGS} -frandom-seed=fixed-seed"
+	    ;;
+	esac
+	;;
+
+  *-*-mingw32*)
+	config_path="mingw32 ${config_path}"
+	;;
+
+  *-*-darwin*)
+	config_path="darwin bsd ${config_path}"
+	;;
+
+  mips-sgi-irix6*)
+	# Need to link with -lpthread so libupc.so is self-contained.
+	XLDFLAGS="${XLDFLAGS} -lpthread"
+	;;
+  *)
+	;;
+
+esac
+#
+#  The logic above sets configuration directories that may
+#  be currently unsupported.  Remove non-existent directories
+#  from the 'config_path' variable.  It is assumed that higher
+#  level logic will check for valid libupc targets.
+#
+_config_path=
+for cfg_dir in ${config_path}; do
+  if test -d ${srcdir}/config/$cfg_dir; then
+    _config_path="${_config_path} $cfg_dir"
+  fi
+done
+config_path="${_config_path}"
+
+upc_crtstuff=yes
+upc_crtbegin_spec=\
+"%{static:upc-crtbeginT%O%s; shared|pie:upc-crtbeginS%O%s; :upc-crtbegin%O%s}"
+upc_crtend_spec=\
+"%{static:upc-crtendT%O%s; shared|pie:upc-crtendS%O%s; :upc-crtend%O%s}"
+upc_crtstuff_objs=\
+"upc-crtbeginT.o upc-crtbeginS.o upc-crtbegin.o upc-crtendT.o upc-crtendS.o upc-crtend.o"
+case "${target}" in
+  *-*-darwin*)
+    ;;
+  mips-sgi-irix6*)
+    ;;
+  *)
+    ;;
+esac
+
+# For UPC, always add the math library
+LIBS="-lm $LIBS"
+if test "${upc_numa}" = "yes"; then
+  LIBS="-lnuma $LIBS"
+fi
+# Set up the set of libraries that we need to link against for libupc.
+if test "$enable_shared" = "yes"; then
+  link_upc_spec="-lupc %{static: $LIBS}"
+else
+  link_upc_spec="-lupc $LIBS"
+fi 

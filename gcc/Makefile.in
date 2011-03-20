@@ -510,7 +510,6 @@ target_cpu_default=@target_cpu_default@
 GCC_THREAD_FILE=@thread_file@
 OBJC_BOEHM_GC=@objc_boehm_gc@
 UPC_PTS_REP = @upc_pts_rep@
-UPC_CRTSTUFF_CFLAGS = @upc_crtstuff_cflags@
 GTHREAD_FLAGS=@gthread_flags@
 extra_modes_file=@extra_modes_file@
 extra_opt_files=@extra_opt_files@

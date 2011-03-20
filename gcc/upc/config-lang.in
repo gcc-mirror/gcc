@@ -51,31 +51,21 @@ gtfiles="\$(srcdir)/upc/upc-act.h \$(srcdir)/upc/upc-act.c \$(srcdir)/c-tree.h \
 for v in tm_include_list tm_file_list
 do
   cfiles="config/upc-conf.h"
-  upc_extra_parts="upc-crtbegin.o upc-crtbeginS.o upc-crtbeginT.o upc-crtend.o upc-crtendS.o upc-crtendT.o"
   case $build in
   alpha*-*-unicosmk*)
   	cfiles="${cfiles} config/alpha/upc-unicosmk.h"
 	;;
   i[356]86-*-darwin*)
-  	# cfiles="${cfiles} i386/upc-linux.h"
-        upc_extra_parts="upc-crtbegin.o upc-crtend.o"
 	;;
   i[56]86-*-linux*)
-  	# cfiles="${cfiles} i386/upc-linux.h"
 	;;
   mips-sgi-irix6*)
-  	# cfiles="${cfiles} mips/upc-iris6.h"
-        upc_extra_parts="upc-crtbegin.o upc-crtend.o"
 	;;
   ia64-*-linux*)
-  	# cfiles="${cfiles} ia64/upc-linux.h"
 	;;
   x86_64-*-linux*)
-  	# cfiles="${cfiles} i386/upc-linux.h"
 	;;
   x86_64-*-darwin*)
-	# cfiles="${cfiles} i386/upc-linux.h"
-	upc_extra_parts="upc-crtbegin.o upc-crtend.o"
 	;;
   *)
 	echo "UPC has not been configured for ${build}." >&2

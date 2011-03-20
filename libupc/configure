@@ -611,11 +611,18 @@ LIBUPC_LINK_SCRIPT_FALSE
 LIBUPC_LINK_SCRIPT_TRUE
 LIBUPC_PTHREADS_FALSE
 LIBUPC_PTHREADS_TRUE
+LIBUPC_CRTSTUFF_FALSE
+LIBUPC_CRTSTUFF_TRUE
 LIBUPC_SMP_RUNTIME_FALSE
 LIBUPC_SMP_RUNTIME_TRUE
+upc_crtstuff_objs
+upc_crtend_spec
+upc_crtbegin_spec
+link_upc_spec
 XLDFLAGS
 XCFLAGS
 config_path
+upc_crtstuff_cflags
 LIBUPC_BUILD_VERSIONED_SHLIB_FALSE
 LIBUPC_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
@@ -2109,8 +2116,10 @@ fi
 ac_fn_c_check_decl ()
 {
   as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $2 is declared" >&5
-$as_echo_n "checking whether $2 is declared... " >&6; }
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
 if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
   $as_echo_n "(cached) " >&6
 else
@@ -2120,8 +2129,12 @@ $4
 int
 main ()
 {
-#ifndef $2
-  (void) $2;
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
 #endif
 
   ;
@@ -11384,7 +11397,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11387 "configure"
+#line 11400 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11490,7 +11503,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11493 "configure"
+#line 11506 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12252,8 +12265,7 @@ _ACEOF
 $as_echo_n "checking for type equivalent to int8_t... " >&6; }
   case "$ac_cv_sizeof_char" in
     1) acx_cv_type_int8_t=char ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 8-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 8-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int8_t" >&5
 $as_echo "$acx_cv_type_int8_t" >&6; }
@@ -12263,8 +12275,7 @@ $as_echo_n "checking for type equivalent to int16_t... " >&6; }
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_short" in
     2:*) acx_cv_type_int16_t=int ;;
     *:2) acx_cv_type_int16_t=short ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 16-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 16-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int16_t" >&5
 $as_echo "$acx_cv_type_int16_t" >&6; }
@@ -12274,8 +12285,7 @@ $as_echo_n "checking for type equivalent to int32_t... " >&6; }
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_long" in
     4:*) acx_cv_type_int32_t=int ;;
     *:4) acx_cv_type_int32_t=long ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no 32-bit type" "$LINENO" 5; }
+    *) as_fn_error "no 32-bit type, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_int32_t" >&5
 $as_echo "$acx_cv_type_int32_t" >&6; }
@@ -12302,8 +12312,7 @@ $as_echo_n "checking for type equivalent to intptr_t... " >&6; }
     2) acx_cv_type_intptr_t=int16_t ;;
     4) acx_cv_type_intptr_t=int32_t ;;
     8) acx_cv_type_intptr_t=int64_t ;;
-    *) { as_fn_set_status please report a bug
-as_fn_error "no equivalent for intptr_t" "$LINENO" 5; }
+    *) as_fn_error "no equivalent for intptr_t, please report a bug" "$LINENO" 5
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $acx_cv_type_intptr_t" >&5
 $as_echo "$acx_cv_type_intptr_t" >&6; }
@@ -13651,7 +13660,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	CFLAGS="$chktls_save_CFLAGS"
 	if test "X$thread_CFLAGS" != Xfailed; then
 	  CFLAGS="$thread_CFLAGS $chktls_save_CFLAGS"
-	  if test "$cross_compiling" = yes; then :
+ 	  	  	  	  	  	  if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error "cannot run test program while cross compiling
@@ -13661,7 +13670,7 @@ else
 /* end confdefs.h.  */
 #include <pthread.h>
 		__thread int a;
-		static int *a_in_other_thread;
+		static int *volatile a_in_other_thread;
 		static void *
 		thread_func (void *arg)
 		{
@@ -13673,11 +13682,11 @@ main ()
 {
 pthread_t thread;
 		void *thread_retval;
-		int *a_in_main_thread;
+		int *volatile a_in_main_thread;
+		a_in_main_thread = &a;
 		if (pthread_create (&thread, (pthread_attr_t *)0,
 				    thread_func, (void *)0))
 		  return 0;
-		a_in_main_thread = &a;
 		if (pthread_join (thread, &thread_retval))
 		  return 0;
 		return (a_in_other_thread == a_in_main_thread);
@@ -14215,8 +14224,6 @@ $as_echo "#define LIBUPC_GNU_SYMBOL_VERSIONING 1" >>confdefs.h
 
 fi
 
-# Get target configury.
-# . ${srcdir}/configure.tgt
 CFLAGS="$save_CFLAGS $XCFLAGS"
 
 # Check for __sync_val_compare_and_swap, but only after the target has
@@ -14256,9 +14263,6 @@ $as_echo "#define HAVE_SYNC_BUILTINS 1" >>confdefs.h
   fi
 
 XCFLAGS="$XCFLAGS"
-
-
-
 
 
 # Cleanup and exit.
@@ -14600,6 +14604,12 @@ fi
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_upc_link_script" >&5
 $as_echo "$enable_upc_link_script" >&6; }
+  if test "$enable_upc_link_script" = yes; then
+
+$as_echo "#define HAVE_UPC_LINK_SCRIPT 1" >>confdefs.h
+
+  fi
+
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux scheduling affinity" >&5
 $as_echo_n "checking for Linux scheduling affinity... " >&6; }
   if test "$cross_compiling" = yes; then :
@@ -14700,10 +14710,24 @@ $as_echo "$upc_gum_debug" >&6; }
   if test "x${upc_gum_debug}" = "xyes"; then
 
 cat >>confdefs.h <<_ACEOF
-#define HAVE_GUM_DEBUG 1
+#define GUPCR_HAVE_GUM_DEBUG 1
 _ACEOF
 
   fi
+
+  # Get target configury.
+  . ${srcdir}/configure.tgt
+
+  # configure.tgt sets these substitution variables.
+  # It also sets 'upc_crtstuff=yes' if upc-crtstuff needs
+  # to be compiled.
+
+
+
+
+
+
+
 fi
 
 
@@ -14716,6 +14740,14 @@ else
   LIBUPC_SMP_RUNTIME_FALSE=
 fi
 
+
+ if test "$upc_crtstuff" = "yes"; then
+  LIBUPC_CRTSTUFF_TRUE=
+  LIBUPC_CRTSTUFF_FALSE='#'
+else
+  LIBUPC_CRTSTUFF_TRUE='#'
+  LIBUPC_CRTSTUFF_FALSE=
+fi
 
  if test "$targ_runtime_pthreads" = "yes"; then
   LIBUPC_PTHREADS_TRUE=
@@ -14764,6 +14796,8 @@ fi
 
 
 ac_config_files="$ac_config_files Makefile testsuite/Makefile"
+
+ac_config_files="$ac_config_files upc-crtbegin.spec libupc.spec upc-crtend.spec"
 
 
 cat >confcache <<\_ACEOF
@@ -14901,6 +14935,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBUPC_SMP_RUNTIME_TRUE}" && test -z "${LIBUPC_SMP_RUNTIME_FALSE}"; then
   as_fn_error "conditional \"LIBUPC_SMP_RUNTIME\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBUPC_CRTSTUFF_TRUE}" && test -z "${LIBUPC_CRTSTUFF_FALSE}"; then
+  as_fn_error "conditional \"LIBUPC_CRTSTUFF\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBUPC_PTHREADS_TRUE}" && test -z "${LIBUPC_PTHREADS_FALSE}"; then
@@ -15817,6 +15855,9 @@ do
     "gstdint.h") CONFIG_COMMANDS="$CONFIG_COMMANDS gstdint.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
+    "upc-crtbegin.spec") CONFIG_FILES="$CONFIG_FILES upc-crtbegin.spec" ;;
+    "libupc.spec") CONFIG_FILES="$CONFIG_FILES libupc.spec" ;;
+    "upc-crtend.spec") CONFIG_FILES="$CONFIG_FILES upc-crtend.spec" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

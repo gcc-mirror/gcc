@@ -996,12 +996,16 @@ Make \"char\" unsigned by default
 fupc-debug
 UPC Var(flag_upc_debug) VarExists
 Generate code that provides the UPC runtime with
-the file and line number where the runtime was callled.
+the file and line number where the runtime was called.
 
 fupc-inline-lib
 UPC Var(flag_upc_inline_lib) VarExists
 Generate code for inlined UPC runtime library routines.
 Default, at optimization levels greater than 0.
+
+fupc-link
+C UPC C++ 
+Enable UPC linker specs for upc-crtbegin/upc-crtend
 
 fupc-pthreads-model-tls
 UPC

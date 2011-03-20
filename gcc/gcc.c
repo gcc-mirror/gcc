@@ -643,11 +643,14 @@ proper position among the other output files.  */
     %{flto*} %l " LINK_PIE_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}}\
+    %{!nostdlib:%{!nostartfiles:%{fupc-link:%:include(upc-crtbegin.spec)%(upc_crtbegin)}}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o\
     %{fopenmp|ftree-parallelize-loops=*:%:include(libgomp.spec)%(link_gomp)}\
+    %{fupc-link:%:include(libupc.spec)%(link_upc)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov}\
     %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
+    %{!nostdlib:%{!nostartfiles:%{fupc-link:%:include(upc-crtend.spec)%(upc_crtend)}}}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} }}}}}}"
 #endif
 
@@ -685,6 +688,9 @@ static const char *lib_spec = LIB_SPEC;
 static const char *mfwrap_spec = MFWRAP_SPEC;
 static const char *mflib_spec = MFLIB_SPEC;
 static const char *link_gomp_spec = "";
+static const char *upc_crtbegin_spec = "";
+static const char *link_upc_spec = "";
+static const char *upc_crtend_spec = "";
 static const char *libgcc_spec = LIBGCC_SPEC;
 static const char *endfile_spec = ENDFILE_SPEC;
 static const char *startfile_spec = STARTFILE_SPEC;
@@ -1167,6 +1173,9 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("mfwrap",			&mfwrap_spec),
   INIT_STATIC_SPEC ("mflib",			&mflib_spec),
   INIT_STATIC_SPEC ("link_gomp",		&link_gomp_spec),
+  INIT_STATIC_SPEC ("upc_crtbegin",		&upc_crtbegin_spec),
+  INIT_STATIC_SPEC ("link_upc",			&link_upc_spec),
+  INIT_STATIC_SPEC ("upc_crtend",		&upc_crtend_spec),
   INIT_STATIC_SPEC ("libgcc",			&libgcc_spec),
   INIT_STATIC_SPEC ("startfile",		&startfile_spec),
   INIT_STATIC_SPEC ("cross_compile",		&cross_compile),

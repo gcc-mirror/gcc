@@ -307,7 +307,6 @@ get_libupc_path (const char *exec_args[], int n_args)
   return libupc_path;
 }
 
-#ifdef HAVE_UPC_LINK_SCRIPT
 /* Search for the UPC linker script, first in the current
    directory, and then in LIB_DIR.  */
 static
@@ -323,7 +322,6 @@ find_ld_script(const char *lib_dir)
     return ld_script;
   return NULL;
 }
-#endif
 
 int
 main (int argc, char *argv[])
@@ -565,11 +563,15 @@ main (int argc, char *argv[])
 	  exec_args[nargs++] = xstrdup ("-isystem");
 	  exec_args[nargs++] = lib_dir;
         }
+      /* add -B <lib_dir>/ so that we can find libupc.spec.  */
+      exec_args[nargs++] = concat ("-B", lib_dir, "/", END_ARGS);
     }
 
   if (invoke_linker)
     {
-#ifdef HAVE_UPC_LINK_SCRIPT
+      /* The -fupc-link switch triggers per-target libupc compiler specs
+         via %:include(libupc.spec). */
+      exec_args[nargs++] = "-fupc-link";
       if (!explicit_linker_script)
         {
 	  /* Look for special linker script.  If found, add it
@@ -581,23 +583,6 @@ main (int argc, char *argv[])
 	      exec_args[nargs++] = concat("-T", ld_script, END_ARGS);
 	    }
         }
-#endif
-#ifdef UPC_LINKER_SWITCHES
-      /* add additional linker switches as required */
-      cp = UPC_LINKER_SWITCHES;
-      while (*cp)
-	{
-	  char *ap;
-	  char arg[1024];
-	  for (ap = arg; *cp && !ISSPACE(*cp); )
-	    *ap++ = *cp++;
-	  *ap = '\0';
-	  exec_args[nargs++] = xstrdup (arg);
-	  while (*cp && ISSPACE(*cp)) ++cp;
-	}
-#endif
-      /* always link with -lm */
-      exec_args[nargs++] = "-lm";
       if (!no_default_libs && lib_dir)
 	{
 	  const char *link_lib_dir = lib_dir;
@@ -609,18 +594,9 @@ main (int argc, char *argv[])
 	  /* Add the link library path where libupc.a is located.  */
           exec_args[nargs++] = concat (xstrdup ("-L"), link_lib_dir, END_ARGS);
         }
-      if (!flag_upc_pthreads)
-	{
-	  exec_args[nargs++] = LIBUPC;
-	}
-      else
-	{
-	  exec_args[nargs++] = LIBUPC_PT;
-	  exec_args[nargs++] = "-lpthread";
-	}
-#ifdef HAVE_UPC_NUMA_SUPPORT
-      exec_args[nargs++] = LIBNUMA;
-#endif
+      exec_args[nargs++] = LIBUPC;
+      if (flag_upc_pthreads)
+        exec_args[nargs++] = "-lpthread";
     }
 
   if (debug)

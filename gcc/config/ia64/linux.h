@@ -45,20 +45,17 @@ do {						\
 #ifdef HAVE_LD_PIE
 #define STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}}\
-   crti.o%s %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}\
-   %{shared|pie:upc-crtbeginS.o%s;:upc-crtbegin.o%s}"
+   crti.o%s %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #else
 #define STARTFILE_SPEC \
   "%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}}\
-   crti.o%s %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}\
-   %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
+   crti.o%s %{shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 #endif
 
 /* Similar to standard Linux, but adding -ffast-math support.  */
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
-   %{shared|pie:upc-crtendS.o%s;:upc-crtend.o%s} \
    %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 
 /* Define this for shared library support because it isn't in the main

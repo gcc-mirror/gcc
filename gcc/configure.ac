@@ -830,66 +830,6 @@ AC_ARG_ENABLE(upc-link-script,
 AC_MSG_RESULT($enable_upc_link_script)
 if test "$enable_upc_link_script" = yes; then
   AC_DEFINE(HAVE_UPC_LINK_SCRIPT, 1, [Define to 1 if UPC link script is supported.])
-  upc_crtstuff_cflags=-DHAVE_UPC_LINK_SCRIPT
-fi
-AC_SUBST(upc_crtstuff_cflags)
-
-dnl Check if scheduling affinity is supported
-AC_MSG_CHECKING(for Linux scheduling affinity)
-AC_RUN_IFELSE([AC_LANG_SOURCE([[#define _GNU_SOURCE
-#include <sched.h>
-cpu_set_t mask;
-main ()
-{
-unsigned int len = sizeof(mask);
-if (sched_getaffinity(0, len, &mask) < 0) {
-    return 1;
-    }
-return 0;
-}]])],
-    [upc_affinity=yes],
-    [upc_affinity=no]
-)
-if test "x$enable_upc_affinity" = "xyes" &&
-  test "x$upc_affinity" = "xno"; then
-    AC_MSG_ERROR([scheduling affinity enabled but not supported - use --disable-upc-affinity ])
-fi
-if test "x$enable_upc_affinity" = "xno"; then
-    upc_affinity=no
-fi
-AC_MSG_RESULT($upc_affinity)
-if test "$upc_affinity" = "yes"; then
-  AC_DEFINE(HAVE_UPC_AFFINITY_SUPPORT, 1, [Define to 1 if UPC affinity is supported.])
-fi
-
-dnl Check if NUMA affinity is supported
-AC_MSG_CHECKING(for NUMA)
-save_LIBS="$LIBS"
-LIBS="-lnuma"
-AC_RUN_IFELSE([AC_LANG_SOURCE([[#include <stdio.h>
-#include <numa.h>
-int
-main ()
-{
-  if (numa_available() < 0) return 1;
-  else return 0;
-}]])],
-    [upc_numa=yes],
-    [upc_numa=no]
-)
-LIBS="$save_LIBS"
-
-if test "x$enable_upc_numa" = "xyes" &&
-  test "x$upc_numa" = "xno"; then
-    AC_MSG_ERROR([NUMA enabled but not supported - use --disable-upc-numa])
-fi
-if test "x$enable_upc_numa" = "xno" ||
-   test "x$upc_affinity" = "xno"; then
-  upc_numa=no;
-fi
-AC_MSG_RESULT($upc_numa)
-if test "$upc_numa" = "yes"; then
-  AC_DEFINE(HAVE_UPC_NUMA_SUPPORT, 1, [Define to 1 if UPC NUMA is supported.])
 fi
 
 AC_ARG_WITH(dwarf2,

@@ -2,21 +2,4 @@ MULTILIB_OPTIONS = m64
 MULTILIB_DIRNAMES = x86_64
 LIB2_SIDITI_CONV_FUNCS=yes
 LIB2FUNCS_EXTRA = $(srcdir)/config/darwin-64.c
-
-# UPC related crtstuff
-
-$(T)upc-crtbegin.o: $(srcdir)/upc/upc-crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
-	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	$(UPC_CRTSTUFF_CFLAGS) \
-	-c $(srcdir)/upc/upc-crtstuff.c -DCRT_BEGIN \
-	-o $(T)upc-crtbegin.o
-
-$(T)upc-crtend.o: $(srcdir)/upc/upc-crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
-	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	$(UPC_CRTSTUFF_CFLAGS) \
-	-c $(srcdir)/upc/upc-crtstuff.c -DCRT_END \
-	-o $(T)upc-crtend.o
-
 LIB2FUNCS_EXCLUDE = _fixtfdi _fixunstfdi _floatditf _floatunditf

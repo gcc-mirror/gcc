@@ -6,18 +6,4 @@ $(T)irix-crtn.o: $(srcdir)/config/mips/irix-crtn.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
 	-c -o $@ -x assembler-with-cpp $<
 
-$(T)upc-crtbegin.o: $(srcdir)/upc/upc-crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
-	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	$(UPC_CRTSTUFF_CFLAGS) \
-	-c $(srcdir)/upc/upc-crtstuff.c -DCRT_BEGIN \
-	-o $(T)upc-crtbegin.o
-
-$(T)upc-crtend.o: $(srcdir)/upc/upc-crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
-	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	$(UPC_CRTSTUFF_CFLAGS) \
-	-c $(srcdir)/upc/upc-crtstuff.c -DCRT_END \
-	-o $(T)upc-crtend.o
-
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o irix-crti.o irix-crtn.o upc-crtbegin.o upc-crtend.o
+EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o irix-crti.o irix-crtn.o

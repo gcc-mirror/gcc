@@ -494,7 +494,7 @@ __upc_process_switches (char *pgm, int *argc, char *argv[])
 	}
     }
 #endif /* GUPCR_USE_PTHREADS */
-#if !HAVE_GUM_DEBUG
+#if !GUPCR_HAVE_GUM_DEBUG
   if (__upc_gum_debug)
     {
       fprintf (stderr, "UPC debugging not supported or configured\n");
@@ -574,9 +574,6 @@ __upc_init (char *pgm, const char **err_msg)
   return u;
 }
 
-#define GUPCR_INIT_ARRAY_START __upc_init_array_start
-#define GUPCR_INIT_ARRAY_END   __upc_init_array_end
-
 /* Per thread initialization.  The VM system has to be initialized
    in each thread, because it maintains a record of locally
    mapped memory regions.  Further, for thread 0, the initial
@@ -637,7 +634,7 @@ __upc_run_this_thread (upc_info_p u, int argc, char *argv[],
       while (!MPIR_debug_gate)
 	__upc_yield_cpu ();
     }
-#if HAVE_GUM_DEBUG
+#if GUPCR_HAVE_GUM_DEBUG
   if (__upc_gum_debug)
     {
       __upc_gum_init (THREADS, thread_id);

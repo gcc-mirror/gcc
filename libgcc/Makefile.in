@@ -41,7 +41,6 @@ enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
 
 host_noncanonical = @host_noncanonical@
-UPC_CRTSTUFF_CFLAGS = @upc_crtstuff_cflags@
 
 # List of extra object files that should be compiled for this target machine.
 # The rules for compiling them should be in the t-* file for the machine.
@@ -845,39 +844,6 @@ crtbeginT.o: $(gcc_srcdir)/crtstuff.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
 	  -c $(gcc_srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFT_O
 endif
-
-# UPC related begin/end files
-upc-crtbegin$(objext): $(gcc_srcdir)/upc/upc-crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
-        $(UPC_CRTSTUFF_CFLAGS) \
-	-c $(gcc_srcdir)/upc/upc-crtstuff.c -DCRT_BEGIN
-
-upc-crtend$(objext): $(gcc_srcdir)/upc/upc-crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
-        $(UPC_CRTSTUFF_CFLAGS) \
-	-c $(gcc_srcdir)/upc/upc-crtstuff.c -DCRT_END
-
-# These are versions of crtbegin and crtend for shared libraries.
-upc-crtbeginS$(objext): $(gcc_srcdir)/upc/upc-crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) \
-        $(UPC_CRTSTUFF_CFLAGS) \
-	-c $(gcc_srcdir)/upc/upc-crtstuff.c -DCRT_BEGIN
-
-upc-crtendS$(objext): $(gcc_srcdir)/upc/upc-crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) \
-        $(UPC_CRTSTUFF_CFLAGS) \
-	-c $(gcc_srcdir)/upc/upc-crtstuff.c -DCRT_END
-
-# This is a version of crtbegin for -static links.
-upc-crtbeginT.o: $(gcc_srcdir)/upc/upc-crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS) \
-        $(UPC_CRTSTUFF_CFLAGS) \
-	-c $(gcc_srcdir)/upc/upc-crtstuff.c -DCRT_BEGIN
-
-upc-crtendT$(objext): $(gcc_srcdir)/upc/upc-crtstuff.c
-	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) \
-        $(UPC_CRTSTUFF_CFLAGS) \
-	-c $(gcc_srcdir)/upc/upc-crtstuff.c -DCRT_END
 
 # Build extra startfiles in the libgcc directory.
 .PHONY: libgcc-extra-parts

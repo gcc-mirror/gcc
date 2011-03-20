@@ -19,6 +19,7 @@
 
 
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -44,14 +45,17 @@ target_triplet = @target@
 @LIBUPC_SMP_RUNTIME_FALSE@libupc_la_DEPENDENCIES =
 @LIBUPC_PTHREADS_FALSE@libupc_pt_la_DEPENDENCIES =
 @LIBUPC_SMP_RUNTIME_FALSE@libupc_pt_la_DEPENDENCIES =
-subdir = .
 DIST_COMMON = $(am__configure_deps) $(am__libsubinclude_HEADERS_DIST) \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
 	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
 	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure
+	$(srcdir)/libupc.spec.in $(srcdir)/upc-crtbegin.spec.in \
+	$(srcdir)/upc-crtend.spec.in \
+	$(top_srcdir)/config/default/upc-crtstuff.mak \
+	$(top_srcdir)/configure ChangeLog
+subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
@@ -71,7 +75,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = upc-crtbegin.spec libupc.spec upc-crtend.spec
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -96,8 +100,8 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" \
-	"$(DESTDIR)$(libsubincludedir)" \
-	"$(DESTDIR)$(libsubincludedir)"
+	"$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(libsubincludedir)" \
+	"$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__libupc_la_SOURCES_DIST = smp/upc_access.c smp/upc_accessg.c \
 	smp/upc_access.h smp/upc_addr.c smp/upc_affinity.h \
@@ -229,12 +233,13 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-pdf-recursive install-ps-recursive install-recursive \
 	installcheck-recursive installdirs-recursive pdf-recursive \
 	ps-recursive uninstall-recursive
+DATA = $(toolexeclib_DATA)
 am__libsubinclude_HEADERS_DIST = include/gasp.h include/gasp_upc.h \
 	include/gcc-upc.h include/pupc.h include/upc_collective.h \
 	include/upc.h include/upc_relaxed.h include/upc_strict.h \
 	gcc-upc-lib.h
 HEADERS = $(libsubinclude_HEADERS) $(nodist_libsubinclude_HEADERS) \
-	$(nodist_noinst_HEADERS)
+	$(nodist_noinst_HEADERS) $(nodist_toolexeclib_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -385,6 +390,7 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 libtool_VERSION = @libtool_VERSION@
+link_upc_spec = @link_upc_spec@
 localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
@@ -409,8 +415,13 @@ toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+upc_crtbegin_spec = @upc_crtbegin_spec@
+upc_crtend_spec = @upc_crtend_spec@
+upc_crtstuff_cflags = @upc_crtstuff_cflags@
+upc_crtstuff_objs = @upc_crtstuff_objs@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
+gcc_objdir = $(MULTIBUILDTOP)../../$(host_subdir)/gcc
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
@@ -454,6 +465,7 @@ nodist_libsubinclude_HEADERS =
 @LIBUPC_PTHREADS_FALSE@@LIBUPC_SMP_RUNTIME_TRUE@libupc_pt = 
 @LIBUPC_PTHREADS_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@libupc_pt = libupc_pt.la
 @LIBUPC_SMP_RUNTIME_TRUE@toolexeclib_LTLIBRARIES = libupc.la $(libupc_pt)
+@LIBUPC_SMP_RUNTIME_TRUE@nodist_toolexeclib_HEADERS = upc-crtbegin.spec libupc.spec upc-crtend.spec
 @LIBUPC_AFFINITY_FALSE@@LIBUPC_SMP_RUNTIME_TRUE@UPC_AFFINITY_SUP = smp/upc_affinity_stub.c
 
 # Even though we're using vpath, we have to qualify the
@@ -500,6 +512,14 @@ nodist_libsubinclude_HEADERS =
 @LIBUPC_PTHREADS_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@libupc_pt_la_CPPFLAGS = $(AM_CPPFLAGS) -DGUPCR_USE_PTHREADS=1
 @LIBUPC_PTHREADS_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@libupc_pt_la_UPCFLAGS = $(AM_UPCFLAGS) -fupc-pthreads-model-tls
 @LIBUPC_PTHREADS_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@libupc_pt_la_LINK = $(libupc_la_LINK)
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@toolexeclib_DATA = @upc_crtstuff_objs@
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@ALL_CRT_CFLAGS = $(CFLAGS) $(CRTSTUFF_CFLAGS) $(INCLUDES) $(UPC_CRTSTUFF_CFLAGS)
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@GCC_SRCDIR_CONF_INC = -I$(srcdir)/../gcc/config
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@GCC_OBJDIR_INC = -I$(gcc_objdir)
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@crt_compile = $(CC) $(ALL_CRT_CFLAGS) $(AM_CPPFLAGS) \
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@              $(GCC_SRCDIR_CONF_INC) $(GCC_OBJDIR_INC) 
+
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@upc_crtstuff_src = $(top_srcdir)/upc-crtstuff.c
 
 # Automake Documentation:
 # If your package has Texinfo files in many directories, you can use the
@@ -528,7 +548,7 @@ all: $(BUILT_SOURCES) config.h
 .SUFFIXES: .c .dvi .lo .o .obj .ps .upc
 am--refresh:
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/config/default/upc-crtstuff.mak $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -577,6 +597,12 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
+upc-crtbegin.spec: $(top_builddir)/config.status $(srcdir)/upc-crtbegin.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+libupc.spec: $(top_builddir)/config.status $(srcdir)/libupc.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+upc-crtend.spec: $(top_builddir)/config.status $(srcdir)/upc-crtend.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
@@ -1338,6 +1364,26 @@ maintainer-clean-aminfo:
 	  echo " rm -f $$i $$i-[0-9] $$i-[0-9][0-9] $$i_i[0-9] $$i_i[0-9][0-9]"; \
 	  rm -f $$i $$i-[0-9] $$i-[0-9][0-9] $$i_i[0-9] $$i_i[0-9][0-9]; \
 	done
+install-toolexeclibDATA: $(toolexeclib_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
+	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibdir)" && rm -f $$files
 install-libsubincludeHEADERS: $(libsubinclude_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(libsubincludedir)" || $(MKDIR_P) "$(DESTDIR)$(libsubincludedir)"
@@ -1378,6 +1424,26 @@ uninstall-nodist_libsubincludeHEADERS:
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(libsubincludedir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(libsubincludedir)" && rm -f $$files
+install-nodist_toolexeclibHEADERS: $(nodist_toolexeclib_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(toolexeclibdir)" || $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)"
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-nodist_toolexeclibHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_toolexeclib_HEADERS)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(toolexeclibdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(toolexeclibdir)" && rm -f $$files
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -1696,10 +1762,10 @@ check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-recursive
 all-am: Makefile $(INFO_DEPS) $(LTLIBRARIES) $(SCRIPTS) all-multi \
-		$(HEADERS) config.h all-local
+		$(DATA) $(HEADERS) config.h all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" "$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(libsubincludedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(infodir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(libsubincludedir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1772,7 +1838,8 @@ install-dvi-am: $(DVIS)
 	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(dvidir)'"; \
 	  $(INSTALL_DATA) $$files "$(DESTDIR)$(dvidir)" || exit $$?; \
 	done
-install-exec-am: install-multi install-toolexeclibLTLIBRARIES \
+install-exec-am: install-multi install-nodist_toolexeclibHEADERS \
+	install-toolexeclibDATA install-toolexeclibLTLIBRARIES \
 	install-toolexeclibSCRIPTS
 
 install-html: install-html-recursive
@@ -1884,9 +1951,10 @@ ps-am: $(PSS)
 
 uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 	uninstall-libsubincludeHEADERS \
-	uninstall-nodist_libsubincludeHEADERS uninstall-pdf-am \
-	uninstall-ps-am uninstall-toolexeclibLTLIBRARIES \
-	uninstall-toolexeclibSCRIPTS
+	uninstall-nodist_libsubincludeHEADERS \
+	uninstall-nodist_toolexeclibHEADERS uninstall-pdf-am \
+	uninstall-ps-am uninstall-toolexeclibDATA \
+	uninstall-toolexeclibLTLIBRARIES uninstall-toolexeclibSCRIPTS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all all-multi \
 	check clean-multi ctags-recursive distclean-multi install \
@@ -1906,8 +1974,9 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-libsubincludeHEADERS install-man \
-	install-multi install-nodist_libsubincludeHEADERS install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
+	install-multi install-nodist_libsubincludeHEADERS \
+	install-nodist_toolexeclibHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES install-toolexeclibSCRIPTS \
 	installcheck installcheck-am installdirs installdirs-am \
 	maintainer-clean maintainer-clean-aminfo \
@@ -1917,17 +1986,18 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 	tags-recursive uninstall uninstall-am uninstall-dvi-am \
 	uninstall-html-am uninstall-info-am \
 	uninstall-libsubincludeHEADERS \
-	uninstall-nodist_libsubincludeHEADERS uninstall-pdf-am \
-	uninstall-ps-am uninstall-toolexeclibLTLIBRARIES \
-	uninstall-toolexeclibSCRIPTS
+	uninstall-nodist_libsubincludeHEADERS \
+	uninstall-nodist_toolexeclibHEADERS uninstall-pdf-am \
+	uninstall-ps-am uninstall-toolexeclibDATA \
+	uninstall-toolexeclibLTLIBRARIES uninstall-toolexeclibSCRIPTS
 
 
 @LIBUPC_SMP_RUNTIME_TRUE@vpath % $(strip $(search_path))
 
-@LIBUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@UPC_COLL_PREFIX_REDUCE_UPC: gen-upc-coll-reduce.pl upc_coll_prefix_reduce.in 
+@LIBUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@$(UPC_COLL_PREFIX_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_prefix_reduce.in 
 @LIBUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@	$(PERL) $+ > $@
 
-@LIBUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@UPC_COLL_REDUCE_UPC: gen-upc-coll-reduce.pl upc_coll_reduce.in 
+@LIBUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@$(UPC_COLL_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_reduce.in 
 @LIBUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@	$(PERL) $+ > $@
 
 @LIBUPC_SMP_RUNTIME_TRUE@gcc-upc-lib.h: gen-gccupc-inline-lib.pl gcc-upc-lib.in \
@@ -1936,6 +2006,29 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 @LIBUPC_LINK_SCRIPT_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@$(UPC_LINK_SCRIPT): gen-gccupc-ld-script.pl
 @LIBUPC_LINK_SCRIPT_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@	-$(CC) $(LDFLAGS) -Xlinker --verbose -x none /dev/null 2>&1 | \
 @LIBUPC_LINK_SCRIPT_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@	 $(PERL) $+ > $@
+
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@include $(gcc_objdir)/libgcc.mvars
+
+# UPC related begin/end files
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@upc-crtbegin.$(OBJEXT): $(upc_crtstuff_src)
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@	$(crt_compile) -DCRT_BEGIN $(CRTSTUFF_T_CFLAGS) -c $< -o $@
+
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@upc-crtend.$(OBJEXT): $(upc_crtstuff_src)
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@	$(crt_compile) -DCRT_END $(CRTSTUFF_T_CFLAGS) -c $< -o $@
+
+# upc-crtbegin and upc-crtend for shared libraries
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@upc-crtbeginS.$(OBJEXT): $(upc_crtstuff_src)
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@	$(crt_compile) -DCRT_BEGIN $(CRTSTUFF_T_CFLAGS_S) -c $< -o $@
+
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@upc-crtendS.$(OBJEXT): $(upc_crtstuff_src)
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@	$(crt_compile) -DCRT_END $(CRTSTUFF_T_CFLAGS_S) -c $< -o $@
+
+# upc-crtbegin and upc-crtend for -static links
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@upc-crtbeginT.$(OBJEXT): $(upc_crtstuff_src)
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@	$(crt_compile) -DCRT_BEGIN $(CRTSTUFF_T_CFLAGS) -c $< -o $@
+
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@upc-crtendT.$(OBJEXT): $(upc_crtstuff_src)
+@LIBUPC_CRTSTUFF_TRUE@@LIBUPC_SMP_RUNTIME_TRUE@	$(crt_compile) -DCRT_END $(CRTSTUFF_T_CFLAGS) -c $< -o $@
 
 all-local: $(STAMP_GENINSRC)
 

@@ -236,28 +236,6 @@ done
 tmake_file="${tmake_file_}"
 AC_SUBST(tmake_file)
 
-AC_MSG_CHECKING([for UPC link script support])
-AC_ARG_ENABLE(upc-link-script,
-[  --enable-upc-link-script Enable UPC's use of a custom linker script.
-  This will define the UPC shared section as a no load section on
-  targets where this feature is supported.  Requires GNU LD.],
-[
-  case $enableval in
-  yes | no) ;;
-  *)
-    AC_MSG_ERROR([--enable-upc-link-script accepts only yes or no.])
-  esac
-],
-[
-  enable_upc_link_script=no
-])
-AC_MSG_RESULT($enable_upc_link_script)
-upc_crtstuff_cflags=
-if test "$enable_upc_link_script" = yes; then
-  upc_crtstuff_cflags=-DHAVE_UPC_LINK_SCRIPT
-fi
-AC_SUBST(upc_crtstuff_cflags)
-
 # Substitute configuration variables
 AC_SUBST(extra_parts)
 AC_SUBST(asm_hidden_op)

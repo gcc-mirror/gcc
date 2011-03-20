@@ -5,6 +5,8 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 ## May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
+gcc_objdir = $(MULTIBUILDTOP)../../$(host_subdir)/gcc
+
 config_path = @config_path@
 
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
@@ -30,6 +32,7 @@ AM_CPPFLAGS = $(IN_LIB_CPPFLAGS)
 AM_CFLAGS = $(WARN_CFLAGS)
 AM_UPCFLAGS = $(AM_CFLAGS)
 
+
 SUBDIRS = testsuite
 
 search_path =   $(addprefix $(top_srcdir)/config/, $(config_path)) \
@@ -53,10 +56,10 @@ UPC_COLL_PREFIX_REDUCE_UPC = $(LIBUPC_SMP_SRCDIR)/upc_coll_prefix_reduce.upc
 UPC_COLL_REDUCE_UPC = $(LIBUPC_SMP_SRCDIR)/upc_coll_reduce.upc
 
 if MAINTAINER_MODE
-UPC_COLL_PREFIX_REDUCE_UPC: gen-upc-coll-reduce.pl upc_coll_prefix_reduce.in 
+$(UPC_COLL_PREFIX_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_prefix_reduce.in 
 	$(PERL) $+ > $@
 
-UPC_COLL_REDUCE_UPC: gen-upc-coll-reduce.pl upc_coll_reduce.in 
+$(UPC_COLL_REDUCE_UPC): gen-upc-coll-reduce.pl upc_coll_reduce.in 
 	$(PERL) $+ > $@
 endif
 
@@ -74,6 +77,7 @@ libupc_pt =
 endif
 
 toolexeclib_LTLIBRARIES = libupc.la $(libupc_pt)
+nodist_toolexeclib_HEADERS = upc-crtbegin.spec libupc.spec upc-crtend.spec
 
 # Even though we're using vpath, we have to qualify the
 # filenames with "smp/", because the libupc_pt.la rules
@@ -134,6 +138,7 @@ UPC_LINK_SCRIPT =
 endif
 toolexeclib_SCRIPTS = $(UPC_LINK_SCRIPT)
 
+
 libupc_la_SOURCES = $(UPC_RUNTIME_SRC)
 libupc_version_info = -version-info $(libtool_VERSION)
 libupc_la_LDFLAGS = $(libupc_version_info)
@@ -148,6 +153,23 @@ libupc_pt_la_DEPENDENCIES = $(libupc_pt_la_LIBADD)
 libupc_pt_la_CPPFLAGS = $(AM_CPPFLAGS) -DGUPCR_USE_PTHREADS=1
 libupc_pt_la_UPCFLAGS = $(AM_UPCFLAGS) -fupc-pthreads-model-tls
 libupc_pt_la_LINK = $(libupc_la_LINK)
+endif
+
+if LIBUPC_CRTSTUFF
+
+toolexeclib_DATA = @upc_crtstuff_objs@
+
+upc_crtstuff_dir = \
+  $(dir $(first_word $(foreach dir,$(config_path), \
+    $(wildcard $(top_srcdir)/config/$(dir)/upc-crtstuff.mak))))
+
+ifeq ($(upc_crtstuff_dir),)
+  $(error could not find upc-crtstuff.mak in config_path)
+endif
+
+include $(gcc_objdir)/libgcc.mvars
+include $(upc_crtstuff_dir)/upc-crtstuff.mak
+
 endif
 
 endif    ### LIBUPC_SMP_RUNTIME

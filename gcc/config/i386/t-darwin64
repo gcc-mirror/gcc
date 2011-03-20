@@ -6,20 +6,3 @@ MULTILIB_DIRNAMES = i386
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
-
-# UPC related crtstuff
-
-$(T)upc-crtbegin.o: $(srcdir)/upc/upc-crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
-	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	$(UPC_CRTSTUFF_CFLAGS) \
-	-c $(srcdir)/upc/upc-crtstuff.c -DCRT_BEGIN \
-	-o $(T)upc-crtbegin.o
-
-$(T)upc-crtend.o: $(srcdir)/upc/upc-crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-  stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
-	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	$(UPC_CRTSTUFF_CFLAGS) \
-	-c $(srcdir)/upc/upc-crtstuff.c -DCRT_END \
-	-o $(T)upc-crtend.o
-
