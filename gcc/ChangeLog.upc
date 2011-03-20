@@ -1,5 +1,12 @@
 2011-03-20  Gary Funck  <gary@intrepid.com>
 
+	* configure.ac: Fix the check for gnu ld when enabling
+	  UPC link script support.
+	  configure: Regenerate (also picks up changes from previous
+	  merge with trunk).
+
+2011-03-20  Gary Funck  <gary@intrepid.com>
+
 	Move UPC start files, end files, and linker specs.
 	into libupc.  This reduces the impact on common GCC
 	configuration files, and ensures that these UPC-specific

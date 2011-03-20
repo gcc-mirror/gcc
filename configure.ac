@@ -3142,7 +3142,7 @@ AC_ARG_ENABLE(upc-link-script,
   esac
 ],
 [
-  if test x${use_gnu_ld} = x ; then
+  if test x${use_gnu_ld} != xno ; then
     case "$target" in
       # disable linker script for CRAY XT3/4 cnl/catamount
       *-catamount-*)
