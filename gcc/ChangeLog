@@ -1,5 +1,10 @@
 2011-03-20  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-decl.c (diagnose_mismatched_decls): Give an error for
+	redefining a typedef with variably modified type.
+
+2011-03-20  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-decl.c (grokfield): Don't allow typedefs for structures or
 	unions with no tag by default.
 	* doc/extend.texi (Unnamed Fields): Update.

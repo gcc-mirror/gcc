@@ -3,7 +3,8 @@
 /* { dg-options "-std=c1x -pedantic-errors" } */
 
 /* C1X permits typedefs to be redeclared to the same type, but not to
-   different-but-compatible types.  */
+   different-but-compatible types, and not when the type is variably
+   modified.  */
 
 #include <limits.h>
 
@@ -60,9 +61,10 @@ f (void)
   typedef void FN2(int (*p)[*]); /* { dg-message "previous declaration" } */
   typedef void FN2(int (*p)[]); /* { dg-error "with different type" } */
   typedef int AV[a]; /* { dg-message "previous declaration" } */
-  typedef int AV[b-1]; /* { dg-warning "may be a constraint violation at runtime" } */
-  typedef int AAa[a];
+  typedef int AV[b-1]; /* { dg-error "redefinition" } */
+  typedef int AAa[a]; /* { dg-message "previous declaration" } */
   typedef int AAb[b-1];
   typedef AAa *VF(void); /* { dg-message "previous declaration" } */
-  typedef AAb *VF(void); /* { dg-warning "may be a constraint violation at runtime" } */
+  typedef AAb *VF(void); /* { dg-error "redefinition" } */
+  typedef AAa AAa; /* { dg-error "redefinition" } */
 }
