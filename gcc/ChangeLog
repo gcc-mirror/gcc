@@ -1,5 +1,11 @@
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR bootstrap/48135
+	* doc/install.texi (Prerequisites): Move Perl to build
+	requirements.  Always necessary on Solaris 2 with Sun ld.
+
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* doc/install.texi (Specific, alpha*-dec-osf5.1): Update for
 	binutils 2.21.
 	(Specific, i?86-*-solaris2.[89]): Likewise.
