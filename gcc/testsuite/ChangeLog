@@ -1,3 +1,12 @@
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2011-03-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/vect/slp-multitypes-2.c: Replace dg-do run with
+	dg-xfail-run-if.
+	Only xfail with gas.
+
 2011-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48213
