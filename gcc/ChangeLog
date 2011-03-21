@@ -87,7 +87,7 @@
 
 2011-03-15  Ramana Radhakrishnan  <ramana.radhakrishnan@linaro.org>
 
-	PR target/46778
+	PR target/46788
 	* config/arm/arm.md (arm_movtas_ze): Use 'L' instead of 'c'
 	in the output template.
 
