@@ -308,10 +308,8 @@ systems' @command{tar} programs will also work, only try GNU
 Necessary when targetting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
 Necessary when targetting Solaris 2 with Sun @command{ld} and not using
-@option{--disable-symvers}.  A helper
-script needs @samp{Glob.pm}, which is missing from @command{perl} 5.005
-included in Solaris@tie{}8.  The bundled @command{perl} in Solaris@tie{}9 and up
-works.
+@option{--disable-symvers}.  The bundled @command{perl} in Solaris@tie{}8
+and up works.
 
 Necessary when regenerating @file{Makefile} dependencies in libiberty.
 Necessary when regenerating @file{libiberty/functions.texi}.
