@@ -747,6 +747,7 @@ with_gnu_ld
 enable_libtool_lock
 enable_maintainer_mode
 enable_multilib
+enable_symvers
 enable_generated_files_in_srcdir
 '
       ac_precious_vars='build_alias
@@ -1391,6 +1392,7 @@ Optional Features:
   --enable-maintainer-mode  enable make rules and dependencies not useful
 			  (and sometimes confusing) to the casual installer
   --enable-multilib       build many library versions (default)
+  --disable-symvers       disable symbol versioning for libquadmath
   --enable-generated-files-in-srcdir
                           put copies of generated files in source dir intended
                           for creating source tarballs for users without
@@ -10511,7 +10513,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10514 "configure"
+#line 10516 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10617,7 +10619,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10620 "configure"
+#line 10622 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12339,19 +12341,27 @@ CFLAGS="$saved_CFLAGS"
 # Check for symbol versioning (copied from libssp).
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether symbol versioning is supported" >&5
 $as_echo_n "checking whether symbol versioning is supported... " >&6; }
-if test x$gcc_no_link = xyes; then
-  # If we cannot link, we cannot build shared libraries, so do not use
-  # symbol versioning.
-  quadmath_use_symver=no
+# Check whether --enable-symvers was given.
+if test "${enable_symvers+set}" = set; then :
+  enableval=$enable_symvers; quadmath_use_symver=$enableval
 else
-  save_LDFLAGS="$LDFLAGS"
-  LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
-  cat > conftest.map <<EOF
+  quadmath_use_symver=yes
+fi
+
+if test "x$quadmath_use_symver" = xyes; then
+  if test x$gcc_no_link = xyes; then
+    # If we cannot link, we cannot build shared libraries, so do not use
+    # symbol versioning.
+    quadmath_use_symver=no
+  else
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+    cat > conftest.map <<EOF
 FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-  if test x$gcc_no_link = xyes; then
+    if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -12372,18 +12382,18 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-  if test x$quadmath_use_symver = xno; then
-    case "$target_os" in
-      solaris2*)
-        LDFLAGS="$save_LDFLAGS"
-        LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
-        # Sun ld cannot handle wildcards and treats all entries as undefined.
-        cat > conftest.map <<EOF
+    if test x$quadmath_use_symver = xno; then
+      case "$target_os" in
+        solaris2*)
+          LDFLAGS="$save_LDFLAGS"
+          LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+          # Sun ld cannot handle wildcards and treats all entries as undefined.
+          cat > conftest.map <<EOF
 FOO_1.0 {
   global: foo; local: *;
 };
 EOF
-        if test x$gcc_no_link = xyes; then
+          if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -12404,10 +12414,11 @@ else
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-        ;;
-    esac
+          ;;
+      esac
+    fi
+    LDFLAGS="$save_LDFLAGS"
   fi
-  LDFLAGS="$save_LDFLAGS"
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $quadmath_use_symver" >&5
 $as_echo "$quadmath_use_symver" >&6; }

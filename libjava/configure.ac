@@ -1800,26 +1800,38 @@ GCC_CHECK_UNWIND_GETIPINFO
 # See if linker supports anonymous version scripts.
 AC_CACHE_CHECK([whether ld supports anonymous version scripts],
   [libjava_cv_anon_version_script],
-  [save_CFLAGS="$CFLAGS"; save_LDFLAGS="$LDFLAGS"
-   libjava_cv_anon_version_script=no
-   CFLAGS="$CFLAGS -fPIC";
-   LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
-   echo '{ global: globalsymb*; local: *; };' > conftest.map
-   AC_TRY_LINK(void globalsymbol (void) {} void localsymbol (void) {},,
-	       [libjava_cv_anon_version_script=gnu], [])
-   if test x$libjava_cv_anon_version_script = xno; then
-     case "$target_os" in
-       solaris2*)
-         LDFLAGS="$save_LDFLAGS"
-         LDFLAGS="$LDFLAGS -shared -Wl,-M,conftest.map"
-         # Sun ld doesn't understand wildcards here.
-         echo '{ global: globalsymbol; local: *; };' > conftest.map
-         AC_TRY_LINK(void globalsymbol (void) {} void localsymbol (void) {},,
-	 	     [libjava_cv_anon_version_script=sun], [])
-         ;;
-     esac
+  [AC_ARG_ENABLE(symvers,
+     AS_HELP_STRING([--disable-symvers],
+		    [disable symbol versioning for libjava]),
+       [case "$enableval" in
+         yes) libjava_cv_anon_version_script=yes ;;
+         no)  libjava_cv_anon_version_script=no ;;
+         *)   AC_MSG_ERROR([Unknown argument to enable/disable symvers]);;
+        esac],
+       [libjava_cv_anon_version_script=yes]
+   )
+   if test x$libjava_cv_anon_version_script = xyes; then
+     save_CFLAGS="$CFLAGS"; save_LDFLAGS="$LDFLAGS"
+     CFLAGS="$CFLAGS -fPIC";
+     LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
+     echo '{ global: globalsymb*; local: *; };' > conftest.map
+     AC_TRY_LINK(void globalsymbol (void) {} void localsymbol (void) {},,
+	         [libjava_cv_anon_version_script=gnu],
+		 [libjava_cv_anon_version_script=no])
+     if test x$libjava_cv_anon_version_script = xno; then
+       case "$target_os" in
+         solaris2*)
+           LDFLAGS="$save_LDFLAGS"
+           LDFLAGS="$LDFLAGS -shared -Wl,-M,conftest.map"
+           # Sun ld doesn't understand wildcards here.
+           echo '{ global: globalsymbol; local: *; };' > conftest.map
+           AC_TRY_LINK(void globalsymbol (void) {} void localsymbol (void) {},,
+	 	       [libjava_cv_anon_version_script=sun], [])
+           ;;
+       esac
+     fi
+     CFLAGS="$save_CFLAGS"; LDFLAGS="$save_LDFLAGS"
    fi
-   CFLAGS="$save_CFLAGS"; LDFLAGS="$save_LDFLAGS"
   ])
 AM_CONDITIONAL(ANONVERSCRIPT, test "$libjava_cv_anon_version_script" != no)
 AM_CONDITIONAL(ANONVERSCRIPT_GNU, test "$libjava_cv_anon_version_script" = gnu)
