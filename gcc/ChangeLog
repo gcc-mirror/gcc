@@ -1,3 +1,7 @@
+2011-03-21  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* tree-dfa.c (add_referenced_var): Fix typo in comment.
+
 2011-03-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/48168
