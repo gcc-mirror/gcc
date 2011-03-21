@@ -1,3 +1,10 @@
+2011-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/42544
+	PR c/48197
+	* gcc.c-torture/execute/pr42544.c: New test.
+	* gcc.c-torture/execute/pr48197.c: New test.
+
 2011-03-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR preprocessor/48192
