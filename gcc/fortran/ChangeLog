@@ -1,3 +1,29 @@
+2010-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/22572
+	* gfortran.h (gfc_option_t) : Add
+	flag_aggressive_function_elimination.
+	(gfc_dep_compare_functions):  Add prototype.
+	* lang.opt: Add faggressive-function-elimination.
+	* invoke.texi: Document -faggressive-function-elimination.
+	* frontend_passes (expr_array):  New static variable.
+	(expr_size):  Likewise.
+	(expr_count):  Likewise.
+	(current_code):  Likewise.
+	(current_ns):  Likewise.
+	(gfc_run_passes):  Allocate and free space for expressions.
+	(cfe_register_funcs):  New function.
+	(create_var):  New function.
+	(cfc_expr_0):  New function.
+	(cfe_code):  New function.
+	(optimize_namespace):  Invoke gfc_code_walker with cfe_code
+	and cfe_expr_0.
+	* dependency.c (gfc_dep_compare_functions):  New function.
+	(gfc_dep_compare_expr):  Use it.
+	* options.c (gfc_init_options):  Handle
+	flag_aggressive_function_elimination.
+	(gfc_handle_option):  Likewise.
+
 2011-03-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* arith.c (arith_power): Plug memory leak.
