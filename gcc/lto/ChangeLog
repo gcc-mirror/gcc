@@ -1,3 +1,8 @@
+2011-03-21  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/12171
+	* lto-lang.c (lto_attribute_table): Adjust table.
+
 2011-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/47807

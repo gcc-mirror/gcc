@@ -32723,45 +32723,56 @@ ix86_expand_round (rtx operand0, rtx operand1)
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ix86_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
   /* Stdcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  { "stdcall",   0, 0, false, true,  true,  ix86_handle_cconv_attribute },
+  { "stdcall",   0, 0, false, true,  true,  ix86_handle_cconv_attribute,
+    true },
   /* Fastcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  { "fastcall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute },
+  { "fastcall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute,
+    true },
   /* Thiscall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  { "thiscall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute },
+  { "thiscall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute,
+    true },
   /* Cdecl attribute says the callee is a normal C declaration */
-  { "cdecl",     0, 0, false, true,  true,  ix86_handle_cconv_attribute },
+  { "cdecl",     0, 0, false, true,  true,  ix86_handle_cconv_attribute,
+    true },
   /* Regparm attribute specifies how many integer arguments are to be
      passed in registers.  */
-  { "regparm",   1, 1, false, true,  true,  ix86_handle_cconv_attribute },
+  { "regparm",   1, 1, false, true,  true,  ix86_handle_cconv_attribute,
+    true },
   /* Sseregparm attribute says we are using x86_64 calling conventions
      for FP arguments.  */
-  { "sseregparm", 0, 0, false, true, true, ix86_handle_cconv_attribute },
+  { "sseregparm", 0, 0, false, true, true, ix86_handle_cconv_attribute,
+    true },
   /* force_align_arg_pointer says this function realigns the stack at entry.  */
   { (const char *)&ix86_force_align_arg_pointer_string, 0, 0,
-    false, true,  true, ix86_handle_cconv_attribute },
+    false, true,  true, ix86_handle_cconv_attribute, false },
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport", 0, 0, false, false, false, handle_dll_attribute },
-  { "dllexport", 0, 0, false, false, false, handle_dll_attribute },
-  { "shared",    0, 0, true,  false, false, ix86_handle_shared_attribute },
+  { "dllimport", 0, 0, false, false, false, handle_dll_attribute, false },
+  { "dllexport", 0, 0, false, false, false, handle_dll_attribute, false },
+  { "shared",    0, 0, true,  false, false, ix86_handle_shared_attribute,
+    false },
 #endif
-  { "ms_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute },
-  { "gcc_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute },
+  { "ms_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute,
+    false },
+  { "gcc_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute,
+    false },
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE,
 #endif
   /* ms_abi and sysv_abi calling convention function attributes.  */
-  { "ms_abi", 0, 0, false, true, true, ix86_handle_abi_attribute },
-  { "sysv_abi", 0, 0, false, true, true, ix86_handle_abi_attribute },
-  { "ms_hook_prologue", 0, 0, true, false, false, ix86_handle_fndecl_attribute },
+  { "ms_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true },
+  { "sysv_abi", 0, 0, false, true, true, ix86_handle_abi_attribute, true },
+  { "ms_hook_prologue", 0, 0, true, false, false, ix86_handle_fndecl_attribute,
+    false },
   { "callee_pop_aggregate_return", 1, 1, false, true, true,
-    ix86_handle_callee_pop_aggregate_return },
+    ix86_handle_callee_pop_aggregate_return, true },
   /* End element.  */
-  { NULL,        0, 0, false, false, false, NULL }
+  { NULL,        0, 0, false, false, false, NULL, false }
 };
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */

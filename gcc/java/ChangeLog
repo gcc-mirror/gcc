@@ -1,3 +1,8 @@
+2011-03-21  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/12171
+	* lang.c (java_attribute_table): Adjust table.
+
 2011-02-13  Joseph Myers  <joseph@codesourcery.com>
 
 	* jvspec.c (jvgenmain_spec): Remove %{a*}.

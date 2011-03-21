@@ -107,9 +107,11 @@ static void arc_conditional_register_usage (void);
 
 static const struct attribute_spec arc_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt", 1, 1, true,  false, false, arc_handle_interrupt_attribute },
-  { NULL,        0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "interrupt", 1, 1, true,  false, false, arc_handle_interrupt_attribute,
+    false },
+  { NULL,        0, 0, false, false, false, NULL, false }
 };
 
 /* Initialize the GCC target structure.  */

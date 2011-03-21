@@ -1,3 +1,9 @@
+2011-03-21  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/12171
+	* gcc-interface/utils.c (gnat_internal_attribute_table):
+	Add new element.
+
 2011-03-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (elaborate_expression_1): Try harder to find

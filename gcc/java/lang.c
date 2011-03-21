@@ -75,8 +75,8 @@ static tree java_eh_personality (void);
 const struct attribute_spec java_attribute_table[] =
 {
  { "nonnull",                0, -1, false, true, true,
-			      NULL },
-  { NULL,                     0, 0, false, false, false, NULL }
+			      NULL, false },
+  { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
 /* Used to avoid printing error messages with bogus function

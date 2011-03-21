@@ -3118,13 +3118,19 @@ v850_issue_rate (void)
 
 static const struct attribute_spec v850_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt_handler", 0, 0, true,  false, false, v850_handle_interrupt_attribute },
-  { "interrupt",         0, 0, true,  false, false, v850_handle_interrupt_attribute },
-  { "sda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
-  { "tda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
-  { "zda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
-  { NULL,                0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "interrupt_handler", 0, 0, true,  false, false,
+    v850_handle_interrupt_attribute, false },
+  { "interrupt",         0, 0, true,  false, false,
+    v850_handle_interrupt_attribute, false },
+  { "sda",               0, 0, true,  false, false,
+    v850_handle_data_area_attribute, false },
+  { "tda",               0, 0, true,  false, false,
+    v850_handle_data_area_attribute, false },
+  { "zda",               0, 0, true,  false, false,
+    v850_handle_data_area_attribute, false },
+  { NULL,                0, 0, false, false, false, NULL, false }
 };
 
 /* Initialize the GCC target structure.  */

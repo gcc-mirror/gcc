@@ -2237,11 +2237,15 @@ rx_handle_func_attribute (tree * node,
 /* Table of RX specific attributes.  */
 const struct attribute_spec rx_attribute_table[] =
 {
-  /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler.  */
-  { "fast_interrupt", 0, 0, true, false, false, rx_handle_func_attribute },
-  { "interrupt",      0, 0, true, false, false, rx_handle_func_attribute },
-  { "naked",          0, 0, true, false, false, rx_handle_func_attribute },
-  { NULL,             0, 0, false, false, false, NULL }
+  /* Name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+     affects_type_identity.  */
+  { "fast_interrupt", 0, 0, true, false, false, rx_handle_func_attribute,
+    false },
+  { "interrupt",      0, 0, true, false, false, rx_handle_func_attribute,
+    false },
+  { "naked",          0, 0, true, false, false, rx_handle_func_attribute,
+    false },
+  { NULL,             0, 0, false, false, false, NULL, false }
 };
 
 /* Extra processing for target specific command line options.  */

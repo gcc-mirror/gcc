@@ -57,7 +57,7 @@ static bool attributes_initialized = false;
 
 static const struct attribute_spec empty_attribute_table[] =
 {
-  { NULL, 0, 0, false, false, false, NULL }
+  { NULL, 0, 0, false, false, false, NULL, false }
 };
 
 /* Return base name of the attribute.  Ie '__attr__' is turned into 'attr'.

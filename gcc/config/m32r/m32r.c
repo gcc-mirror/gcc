@@ -108,10 +108,12 @@ static void m32r_trampoline_init (rtx, tree, rtx);
 
 static const struct attribute_spec m32r_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt", 0, 0, true,  false, false, NULL },
-  { "model",     1, 1, true,  false, false, m32r_handle_model_attribute },
-  { NULL,        0, 0, false, false, false, NULL }
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "interrupt", 0, 0, true,  false, false, NULL, false },
+  { "model",     1, 1, true,  false, false, m32r_handle_model_attribute,
+    false },
+  { NULL,        0, 0, false, false, false, NULL, false }
 };
 
 static const struct default_options m32r_option_optimization_table[] =

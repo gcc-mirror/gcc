@@ -342,15 +342,18 @@ static section * ia64_hpux_function_section (tree, enum node_frequency,
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "syscall_linkage", 0, 0, false, true,  true,  NULL },
-  { "model",	       1, 1, true, false, false, ia64_handle_model_attribute },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "syscall_linkage", 0, 0, false, true,  true,  NULL, false },
+  { "model",	       1, 1, true, false, false, ia64_handle_model_attribute,
+    false },
 #if TARGET_ABI_OPEN_VMS
-  { "common_object",   1, 1, true, false, false, ia64_vms_common_object_attribute},
+  { "common_object",   1, 1, true, false, false,
+    ia64_vms_common_object_attribute, false },
 #endif
   { "version_id",      1, 1, true, false, false,
-    ia64_handle_version_id_attribute },
-  { NULL,	       0, 0, false, false, false, NULL }
+    ia64_handle_version_id_attribute, false },
+  { NULL,	       0, 0, false, false, false, NULL, false }
 };
 
 /* Implement overriding of the optimization options.  */

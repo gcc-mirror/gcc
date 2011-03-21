@@ -104,29 +104,42 @@ static tree fake_attribute_handler      (tree *, tree, tree, int, bool *);
    this minimal set of attributes to accommodate the needs of builtins.  */
 const struct attribute_spec gnat_internal_attribute_table[] =
 {
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "const",        0, 0,  true,  false, false, handle_const_attribute   },
-  { "nothrow",      0, 0,  true,  false, false, handle_nothrow_attribute },
-  { "pure",         0, 0,  true,  false, false, handle_pure_attribute },
-  { "no vops",      0, 0,  true,  false, false, handle_novops_attribute },
-  { "nonnull",      0, -1, false, true,  true,  handle_nonnull_attribute },
-  { "sentinel",     0, 1,  false, true,  true,  handle_sentinel_attribute },
-  { "noreturn",     0, 0,  true,  false, false, handle_noreturn_attribute },
-  { "leaf",         0, 0,  true,  false, false, handle_leaf_attribute },
-  { "malloc",       0, 0,  true,  false, false, handle_malloc_attribute },
-  { "type generic", 0, 0,  false, true, true, handle_type_generic_attribute },
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
+       affects_type_identity } */
+  { "const",        0, 0,  true,  false, false, handle_const_attribute,
+    false },
+  { "nothrow",      0, 0,  true,  false, false, handle_nothrow_attribute,
+    false },
+  { "pure",         0, 0,  true,  false, false, handle_pure_attribute,
+    false },
+  { "no vops",      0, 0,  true,  false, false, handle_novops_attribute,
+    false },
+  { "nonnull",      0, -1, false, true,  true,  handle_nonnull_attribute,
+    false },
+  { "sentinel",     0, 1,  false, true,  true,  handle_sentinel_attribute,
+    false },
+  { "noreturn",     0, 0,  true,  false, false, handle_noreturn_attribute,
+    false },
+  { "leaf",         0, 0,  true,  false, false, handle_leaf_attribute,
+    false },
+  { "malloc",       0, 0,  true,  false, false, handle_malloc_attribute,
+    false },
+  { "type generic", 0, 0,  false, true, true, handle_type_generic_attribute,
+    false },
 
-  { "vector_size",  1, 1,  false, true, false,  handle_vector_size_attribute },
-  { "vector_type",  0, 0,  false, true, false,  handle_vector_type_attribute },
-  { "may_alias",    0, 0, false, true, false, NULL },
+  { "vector_size",  1, 1,  false, true, false,  handle_vector_size_attribute,
+    false },
+  { "vector_type",  0, 0,  false, true, false,  handle_vector_type_attribute,
+    false },
+  { "may_alias",    0, 0, false, true, false, NULL, false },
 
   /* ??? format and format_arg are heavy and not supported, which actually
      prevents support for stdio builtins, which we however declare as part
      of the common builtins.def contents.  */
-  { "format",     3, 3,  false, true,  true,  fake_attribute_handler },
-  { "format_arg", 1, 1,  false, true,  true,  fake_attribute_handler },
+  { "format",     3, 3,  false, true,  true,  fake_attribute_handler, false },
+  { "format_arg", 1, 1,  false, true,  true,  fake_attribute_handler, false },
 
-  { NULL,         0, 0, false, false, false, NULL }
+  { NULL,         0, 0, false, false, false, NULL, false }
 };
 
 /* Associates a GNAT tree node to a GCC tree node. It is used in

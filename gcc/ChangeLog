@@ -1,3 +1,41 @@
+2011-03-21  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/12171
+	* doc/plugins.texi: Adjust documentation
+	for plugin register_callback.
+	* tree.h (attribute_spec): Add new member
+	affects_type_identity.
+	- Zitierten Text anzeigen -
+	* attribs.c (empty_attribute_table): Adjust
+	attribute_spec initializers.
+	* config/alpha/alpha.c: Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/avr/avr.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/crx/crx.c: Likewise.
+	* config/darwin.h: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/i386/cygming.h: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/m32c/m32c.c: Likewise.
+	* config/m32r/m32r.c: Likewise.
+	* config/m68hc11/m68hc11.c: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mep/mep.c: Likewise.
+	* config/microblaze/microblaze.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rx/rx.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sol2.h: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/v850/v850.c: Likewise.
+
 2011-03-21  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Handle

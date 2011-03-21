@@ -183,8 +183,8 @@ static void crx_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 
 static const struct attribute_spec crx_attribute_table[] = {
   /* ISRs have special prologue and epilogue requirements. */
-  {"interrupt", 0, 0, false, true, true, NULL},
-  {NULL, 0, 0, false, false, false, NULL}
+  {"interrupt", 0, 0, false, true, true, NULL, false},
+  {NULL, 0, 0, false, false, false, NULL, false}
 };
 
 /* Option handling.  */
