@@ -1,5 +1,14 @@
 2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (components_to_record): Add REORDER parameter,
+	rename DEBUG_INFO_P into DEBUG_INFO and move P_GNU_REP_LIST parameter
+	to the end of the list.  Adjust recursive call.  Rename local variable.
+	If REORDER is true, reorder components of the record type.
+	(gnat_to_gnu_entity): Pass OK_To_Reorder_Components flag as argument to
+	components_to_record and adjust the parameter list.
+
+2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (elaborate_expression_1): When optimization is
 	disabled, use the variable for bounds of loop iteration scheme.
 

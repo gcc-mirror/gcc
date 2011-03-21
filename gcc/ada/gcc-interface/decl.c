@@ -159,8 +159,8 @@ static bool array_type_has_nonaliased_component (tree, Entity_Id);
 static bool compile_time_known_address_p (Node_Id);
 static bool cannot_be_superflat_p (Node_Id);
 static bool constructor_address_p (tree);
-static void components_to_record (tree, Node_Id, tree, int, bool, tree *,
-				  bool, bool, bool, bool, bool);
+static void components_to_record (tree, Node_Id, tree, int, bool, bool, bool,
+				  bool, bool, bool, bool, tree *);
 static Uint annotate_value (tree);
 static void annotate_rep (Entity_Id, tree);
 static tree build_position_list (tree, bool, tree, tree, unsigned int, tree);
@@ -2951,9 +2951,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Add the fields into the record type and finish it up.  */
 	components_to_record (gnu_type, Component_List (record_definition),
-			      gnu_field_list, packed, definition, NULL,
-			      false, all_rep, is_unchecked_union,
-			      debug_info_p, false);
+			      gnu_field_list, packed, definition, false,
+			      all_rep, is_unchecked_union, debug_info_p,
+			      false, OK_To_Reorder_Components (gnat_entity),
+			      NULL);
 
 	/* If it is passed by reference, force BLKmode to ensure that objects
 	   of this type will always be put in memory.  */
@@ -6992,10 +6993,6 @@ compare_field_bitpos (const PTR rt1, const PTR rt2)
 
    DEFINITION is true if we are defining this record type.
 
-   P_GNU_REP_LIST, if nonzero, is a pointer to a list to which each field
-   with a rep clause is to be added; in this case, that is all that should
-   be done with such fields.
-
    CANCEL_ALIGNMENT is true if the alignment should be zeroed before laying
    out the record.  This means the alignment only serves to force fields to
    be bitfields, but not to require the record to be that aligned.  This is
@@ -7006,27 +7003,37 @@ compare_field_bitpos (const PTR rt1, const PTR rt2)
    UNCHECKED_UNION is true if we are building this type for a record with a
    Pragma Unchecked_Union.
 
-   DEBUG_INFO_P is true if we need to write debug information about the type.
+   DEBUG_INFO is true if we need to write debug information about the type.
 
    MAYBE_UNUSED is true if this type may be unused in the end; this doesn't
-   mean that its contents may be unused as well, but only the container.  */
+   mean that its contents may be unused as well, only the container itself.
 
+   REORDER is true if we are permitted to reorder components of this type.
+
+   P_GNU_REP_LIST, if nonzero, is a pointer to a list to which each field
+   with a rep clause is to be added; in this case, that is all that should
+   be done with such fields.  */
 
 static void
 components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		      tree gnu_field_list, int packed, bool definition,
-		      tree *p_gnu_rep_list, bool cancel_alignment,
-		      bool all_rep, bool unchecked_union, bool debug_info_p,
-		      bool maybe_unused)
+		      bool cancel_alignment, bool all_rep,
+		      bool unchecked_union, bool debug_info,
+		      bool maybe_unused, bool reorder,
+		      tree *p_gnu_rep_list)
 {
   bool all_rep_and_size = all_rep && TYPE_SIZE (gnu_record_type);
   bool layout_with_rep = false;
   Node_Id component_decl, variant_part;
-  tree gnu_our_rep_list = NULL_TREE;
-  tree gnu_field, gnu_next, gnu_last = tree_last (gnu_field_list);
+  tree gnu_field, gnu_next, gnu_last;
+  tree gnu_variant_part = NULL_TREE;
+  tree gnu_rep_list = NULL_TREE;
+  tree gnu_var_list = NULL_TREE;
+  tree gnu_self_list = NULL_TREE;
 
   /* For each component referenced in a component declaration create a GCC
      field and add it to the list, skipping pragmas in the GNAT list.  */
+  gnu_last = tree_last (gnu_field_list);
   if (Present (Component_Items (gnat_component_list)))
     for (component_decl
 	   = First_Non_Pragma (Component_Items (gnat_component_list));
@@ -7046,7 +7053,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	else
 	  {
 	    gnu_field = gnat_to_gnu_field (gnat_field, gnu_record_type, packed,
-					   definition, debug_info_p);
+					   definition, debug_info);
 
 	    /* If this is the _Tag field, put it before any other fields.  */
 	    if (gnat_name == Name_uTag)
@@ -7091,7 +7098,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       tree gnu_var_name
 	= concat_name (get_identifier (Get_Name_String (Chars (gnat_discr))),
 		       "XVN");
-      tree gnu_union_type, gnu_union_name, gnu_union_field;
+      tree gnu_union_type, gnu_union_name;
       tree gnu_variant_list = NULL_TREE;
 
       if (TREE_CODE (gnu_name) == TYPE_DECL)
@@ -7151,8 +7158,9 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	     we aren't sure to really use it at this point, see below.  */
 	  components_to_record (gnu_variant_type, Component_List (variant),
 				NULL_TREE, packed, definition,
-				&gnu_our_rep_list, !all_rep_and_size, all_rep,
-				unchecked_union, debug_info_p, true);
+				!all_rep_and_size, all_rep,
+				unchecked_union, debug_info,
+				true, reorder, &gnu_rep_list);
 
 	  gnu_qual = choices_to_gnu (gnu_discr, Discrete_Choices (variant));
 
@@ -7177,7 +7185,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		 the fields associated with these empty variants.  */
 	      rest_of_record_type_compilation (gnu_variant_type);
 	      create_type_decl (TYPE_NAME (gnu_variant_type), gnu_variant_type,
-				NULL, true, debug_info_p, gnat_component_list);
+				NULL, true, debug_info, gnat_component_list);
 
 	      gnu_field
 		= create_field_decl (gnu_inner_name, gnu_variant_type,
@@ -7211,7 +7219,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	    }
 
 	  finish_record_type (gnu_union_type, nreverse (gnu_variant_list),
-			      all_rep_and_size ? 1 : 0, debug_info_p);
+			      all_rep_and_size ? 1 : 0, debug_info);
 
 	  /* If GNU_UNION_TYPE is our record type, it means we must have an
 	     Unchecked_Union with no fields.  Verify that and, if so, just
@@ -7220,71 +7228,124 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	    {
 	      gcc_assert (unchecked_union
 			  && !gnu_field_list
-			  && !gnu_our_rep_list);
+			  && !gnu_rep_list);
 	      return;
 	    }
 
 	  create_type_decl (TYPE_NAME (gnu_union_type), gnu_union_type,
-			    NULL, true, debug_info_p, gnat_component_list);
+			    NULL, true, debug_info, gnat_component_list);
 
 	  /* Deal with packedness like in gnat_to_gnu_field.  */
 	  union_field_packed
 	    = adjust_packed (gnu_union_type, gnu_record_type, packed);
 
-	  gnu_union_field
+	  gnu_variant_part
 	    = create_field_decl (gnu_var_name, gnu_union_type, gnu_record_type,
 				 all_rep ? TYPE_SIZE (gnu_union_type) : 0,
 				 all_rep ? bitsize_zero_node : 0,
 				 union_field_packed, 0);
 
-	  DECL_INTERNAL_P (gnu_union_field) = 1;
-	  DECL_CHAIN (gnu_union_field) = gnu_field_list;
-	  gnu_field_list = gnu_union_field;
+	  DECL_INTERNAL_P (gnu_variant_part) = 1;
+	  DECL_CHAIN (gnu_variant_part) = gnu_field_list;
+	  gnu_field_list = gnu_variant_part;
 	}
     }
 
-  /* Scan GNU_FIELD_LIST and see if any fields have rep clauses.  If they
-     do, pull them out and put them into GNU_OUR_REP_LIST.  We have to do
-     this in a separate pass since we want to handle the discriminants but
-     can't play with them until we've used them in debugging data above.
+  /* Scan GNU_FIELD_LIST and see if any fields have rep clauses and, if we are
+     permitted to reorder components, self-referential sizes or variable sizes.
+     If they do, pull them out and put them onto the appropriate list.  We have
+     to do this in a separate pass since we want to handle the discriminants
+     but can't play with them until we've used them in debugging data above.
 
-     ??? If we then reorder them, debugging information will be wrong but
-     there's nothing that can be done about this at the moment.  */
+     ??? If we reorder them, debugging information will be wrong but there is
+     nothing that can be done about this at the moment.  */
   gnu_last = NULL_TREE;
+
+#define MOVE_FROM_FIELD_LIST_TO(LIST)	\
+  do {					\
+    if (gnu_last)			\
+      DECL_CHAIN (gnu_last) = gnu_next;	\
+    else				\
+      gnu_field_list = gnu_next;	\
+					\
+    DECL_CHAIN (gnu_field) = (LIST);	\
+    (LIST) = gnu_field;			\
+  } while (0)
+
   for (gnu_field = gnu_field_list; gnu_field; gnu_field = gnu_next)
     {
       gnu_next = DECL_CHAIN (gnu_field);
 
       if (DECL_FIELD_OFFSET (gnu_field))
 	{
-	  if (!gnu_last)
-	    gnu_field_list = gnu_next;
-	  else
-	    DECL_CHAIN (gnu_last) = gnu_next;
-
-	  DECL_CHAIN (gnu_field) = gnu_our_rep_list;
-	  gnu_our_rep_list = gnu_field;
+	  MOVE_FROM_FIELD_LIST_TO (gnu_rep_list);
+	  continue;
 	}
-      else
-	gnu_last = gnu_field;
+
+      if (reorder)
+	{
+	  /* Pull out the variant part and put it onto GNU_SELF_LIST.  */
+	  if (gnu_field == gnu_variant_part)
+	    {
+	      MOVE_FROM_FIELD_LIST_TO (gnu_self_list);
+	      continue;
+	    }
+
+	  /* Skip internal fields and fields with fixed size.  */
+	  if (!DECL_INTERNAL_P (gnu_field)
+	      && !(DECL_SIZE (gnu_field)
+		   && TREE_CODE (DECL_SIZE (gnu_field)) == INTEGER_CST))
+	    {
+	      tree type_size = TYPE_SIZE (TREE_TYPE (gnu_field));
+
+	      if (CONTAINS_PLACEHOLDER_P (type_size))
+		{
+		  MOVE_FROM_FIELD_LIST_TO (gnu_self_list);
+		  continue;
+		}
+
+	      if (TREE_CODE (type_size) != INTEGER_CST)
+		{
+		  MOVE_FROM_FIELD_LIST_TO (gnu_var_list);
+		  continue;
+		}
+	    }
+	}
+
+      gnu_last = gnu_field;
     }
+
+#undef MOVE_FROM_FIELD_LIST_TO
+
+  /* If permitted, we reorder the components as follows:
+
+       1) all fixed length fields,
+       2) all fields whose length doesn't depend on discriminants,
+       3) all fields whose length depends on discriminants,
+       4) the variant part,
+
+     within the record and within each variant recursively.  */
+  if (reorder)
+    gnu_field_list
+      = chainon (nreverse (gnu_self_list),
+		 chainon (nreverse (gnu_var_list), gnu_field_list));
 
   /* If we have any fields in our rep'ed field list and it is not the case that
      all the fields in the record have rep clauses and P_REP_LIST is nonzero,
      set it and ignore these fields.  */
-  if (gnu_our_rep_list && p_gnu_rep_list && !all_rep)
-    *p_gnu_rep_list = chainon (*p_gnu_rep_list, gnu_our_rep_list);
+  if (gnu_rep_list && p_gnu_rep_list && !all_rep)
+    *p_gnu_rep_list = chainon (*p_gnu_rep_list, gnu_rep_list);
 
   /* Otherwise, sort the fields by bit position and put them into their own
      record, before the others, if we also have fields without rep clauses.  */
-  else if (gnu_our_rep_list)
+  else if (gnu_rep_list)
     {
       tree gnu_rep_type
 	= (gnu_field_list ? make_node (RECORD_TYPE) : gnu_record_type);
-      int i, len = list_length (gnu_our_rep_list);
+      int i, len = list_length (gnu_rep_list);
       tree *gnu_arr = XALLOCAVEC (tree, len);
 
-      for (gnu_field = gnu_our_rep_list, i = 0;
+      for (gnu_field = gnu_rep_list, i = 0;
 	   gnu_field;
 	   gnu_field = DECL_CHAIN (gnu_field), i++)
 	gnu_arr[i] = gnu_field;
@@ -7293,17 +7354,17 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 
       /* Put the fields in the list in order of increasing position, which
 	 means we start from the end.  */
-      gnu_our_rep_list = NULL_TREE;
+      gnu_rep_list = NULL_TREE;
       for (i = len - 1; i >= 0; i--)
 	{
-	  DECL_CHAIN (gnu_arr[i]) = gnu_our_rep_list;
-	  gnu_our_rep_list = gnu_arr[i];
+	  DECL_CHAIN (gnu_arr[i]) = gnu_rep_list;
+	  gnu_rep_list = gnu_arr[i];
 	  DECL_CONTEXT (gnu_arr[i]) = gnu_rep_type;
 	}
 
       if (gnu_field_list)
 	{
-	  finish_record_type (gnu_rep_type, gnu_our_rep_list, 1, debug_info_p);
+	  finish_record_type (gnu_rep_type, gnu_rep_list, 1, debug_info);
 	  gnu_field
 	    = create_field_decl (get_identifier ("REP"), gnu_rep_type,
 				 gnu_record_type, NULL_TREE, NULL_TREE, 0, 1);
@@ -7313,7 +7374,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       else
 	{
 	  layout_with_rep = true;
-	  gnu_field_list = nreverse (gnu_our_rep_list);
+	  gnu_field_list = nreverse (gnu_rep_list);
 	}
     }
 
@@ -7321,7 +7382,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
     TYPE_ALIGN (gnu_record_type) = 0;
 
   finish_record_type (gnu_record_type, nreverse (gnu_field_list),
-		      layout_with_rep ? 1 : 0, debug_info_p && !maybe_unused);
+		      layout_with_rep ? 1 : 0, debug_info && !maybe_unused);
 }
 
 /* Given GNU_SIZE, a GCC tree representing a size, return a Uint to be
