@@ -1,5 +1,10 @@
 2011-03-21  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/47661
+	* gimple.c (is_gimple_condexpr): Use tree_could_throw_p.
+
+2011-03-21  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/48210
 	* params.def (lto-partitions): Require at least 1 partition.
 

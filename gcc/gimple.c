@@ -2581,7 +2581,7 @@ bool
 is_gimple_condexpr (tree t)
 {
   return (is_gimple_val (t) || (COMPARISON_CLASS_P (t)
-				&& !tree_could_trap_p (t)
+				&& !tree_could_throw_p (t)
 				&& is_gimple_val (TREE_OPERAND (t, 0))
 				&& is_gimple_val (TREE_OPERAND (t, 1))));
 }
