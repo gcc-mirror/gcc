@@ -80,7 +80,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\
 %{pthreads|pthread:-D_REENTRANT -D_PTHREADS} \
-%{!pthreads:%{!pthread:%{threads:-D_REENTRANT -D_SOLARIS_THREADS}}} \
 %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude} \
 "
 
@@ -134,8 +133,6 @@ along with GCC; see the file COPYING3.  If not see
    %{!symbolic:\
      %{pthreads|pthread:" \
         LIB_THREAD_LDFLAGS_SPEC " -lpthread " LIB_TLS_SPEC "} \
-     %{!pthreads:%{!pthread:%{threads:" \
-	LIB_THREAD_LDFLAGS_SPEC " -lthread}}} \
      %{p|pg:-ldl} -lc}"
 
 #undef  ENDFILE_SPEC
