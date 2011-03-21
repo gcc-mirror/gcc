@@ -6006,7 +6006,6 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 {
   const bool expr_global_p = Is_Public (gnat_entity) || global_bindings_p ();
   bool expr_variable_p, use_variable;
-  tree gnu_decl;
 
   /* In most cases, we won't see a naked FIELD_DECL because a discriminant
      reference will have been replaced with a COMPONENT_REF when the type
@@ -6071,15 +6070,17 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 
   /* Now create it, possibly only for debugging purposes.  */
   if (use_variable || need_debug)
-    gnu_decl
-      = create_var_decl (create_concat_name (gnat_entity,
-					     IDENTIFIER_POINTER (gnu_name)),
-			 NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr,
-			 !need_debug, Is_Public (gnat_entity),
-			 !definition, expr_global_p, NULL, gnat_entity);
+    {
+      tree gnu_decl
+	= create_var_decl (create_concat_name (gnat_entity,
+					       IDENTIFIER_POINTER (gnu_name)),
+			   NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr,
+			   !need_debug, Is_Public (gnat_entity),
+			   !definition, expr_global_p, NULL, gnat_entity);
 
-  if (use_variable)
-    return gnu_decl;
+      if (use_variable)
+	return gnu_decl;
+    }
 
   return expr_variable_p ? gnat_save_expr (gnu_expr) : gnu_expr;
 }

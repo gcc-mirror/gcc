@@ -1,5 +1,10 @@
 2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR bootstrap/48216
+	* gcc-interface/decl.c (elaborate_expression_1): Localize GNU_DECL.
+
+2011-03-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (components_to_record): Add REORDER parameter,
 	rename DEBUG_INFO_P into DEBUG_INFO and move P_GNU_REP_LIST parameter
 	to the end of the list.  Adjust recursive call.  Rename local variable.
