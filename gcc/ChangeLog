@@ -1,3 +1,22 @@
+2011-03-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* expr.h (prepare_operand): Move to...
+	* optabs.h (prepare_operand): ...here and change the insn code
+	parameter from "int" to "enum insn_code".
+	(insn_operand_matches): Declare.
+	* expr.c (init_expr_target): Use insn_operand_matches.
+	(compress_float_constant): Likewise.
+	* function.c (safe_insn_predicate, assign_parm_setup_reg): Likewise.
+	* optabs.c (can_compare_p, prepare_cmp_insn): Likewise.
+	(emit_cmp_and_jump_insn_1, gen_add2_insn, gen_add3_insn): Likewise.
+	(have_add2_insn, gen_sub2_insn, gen_sub3_insn, have_sub2_insn): Likewise.
+	(gen_cond_trap): Likewise.
+	(prepare_operand): Likewise.  Change icode to an insn_code.
+	(insn_operand_matches): New function.
+	* reload.c (find_reloads_address_1): Use insn_operand_matches.
+	* reload1.c (gen_reload): Likewise.
+	* targhooks.c (default_secondary_reload): Likewise.
+
 2011-03-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (unspec): New define_c_enum.

@@ -286,7 +286,7 @@ init_expr_target (void)
 
 	  PUT_MODE (mem, srcmode);
 
-	  if ((*insn_data[ic].operand[1].predicate) (mem, srcmode))
+	  if (insn_operand_matches (ic, 1, mem))
 	    float_extend_from_mem[mode][srcmode] = true;
 	}
     }
@@ -3446,7 +3446,7 @@ compress_float_constant (rtx x, rtx y)
 	{
 	  /* Skip if the target needs extra instructions to perform
 	     the extension.  */
-	  if (! (*insn_data[ic].operand[1].predicate) (trunc_y, srcmode))
+	  if (!insn_operand_matches (ic, 1, trunc_y))
 	    continue;
 	  /* This is valid, but may not be cheaper than the original. */
 	  newcost = rtx_cost (gen_rtx_FLOAT_EXTEND (dstmode, trunc_y), SET, speed);

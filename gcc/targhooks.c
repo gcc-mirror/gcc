@@ -893,8 +893,7 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 				reload_mode);
 
       if (icode != CODE_FOR_nothing
-	  && insn_data[(int) icode].operand[in_p].predicate
-	  && ! insn_data[(int) icode].operand[in_p].predicate (x, reload_mode))
+	  && !insn_operand_matches (icode, in_p, x))
 	icode = CODE_FOR_nothing;
       else if (icode != CODE_FOR_nothing)
 	{

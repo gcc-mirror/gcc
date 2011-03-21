@@ -8479,7 +8479,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 	 not valid than to dummy things up.  */
 
       rtx op0, op1, tem, insn;
-      int code;
+      enum insn_code code;
 
       op0 = find_replacement (&XEXP (in, 0));
       op1 = find_replacement (&XEXP (in, 1));
@@ -8517,14 +8517,13 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 	 DEFINE_PEEPHOLE should be specified that recognizes the sequence
 	 we emit below.  */
 
-      code = (int) optab_handler (add_optab, GET_MODE (out));
+      code = optab_handler (add_optab, GET_MODE (out));
 
       if (CONSTANT_P (op1) || MEM_P (op1) || GET_CODE (op1) == SUBREG
 	  || (REG_P (op1)
 	      && REGNO (op1) >= FIRST_PSEUDO_REGISTER)
 	  || (code != CODE_FOR_nothing
-	      && ! ((*insn_data[code].operand[2].predicate)
-		    (op1, insn_data[code].operand[2].mode))))
+	      && !insn_operand_matches (code, 2, op1)))
 	tem = op0, op0 = op1, op1 = tem;
 
       gen_reload (out, op0, opnum, type);
