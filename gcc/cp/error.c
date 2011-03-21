@@ -661,6 +661,8 @@ dump_type_prefix (tree t, int flags)
 	  {
 	    pp_cxx_whitespace (cxx_pp);
 	    pp_cxx_left_paren (cxx_pp);
+	    pp_c_attributes_display (pp_c_base (cxx_pp),
+				     TYPE_ATTRIBUTES (sub));
 	  }
 	if (TREE_CODE (t) == POINTER_TYPE)
 	  pp_character(cxx_pp, '*');

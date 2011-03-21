@@ -460,6 +460,7 @@ pp_c_specifier_qualifier_list (c_pretty_printer *pp, tree t)
 	  {
 	    pp_c_whitespace (pp);
 	    pp_c_left_paren (pp);
+	    pp_c_attributes_display (pp, TYPE_ATTRIBUTES (pointee));
 	  }
 	else if (!c_dialect_cxx ())
 	  pp_c_whitespace (pp);
@@ -788,6 +789,47 @@ pp_c_attributes (c_pretty_printer *pp, tree attributes)
     }
   pp_c_right_paren (pp);
   pp_c_right_paren (pp);
+}
+
+/* Pretty-print ATTRIBUTES using GNU C extension syntax for attributes
+   marked to be displayed on disgnostic.  */
+
+void
+pp_c_attributes_display (c_pretty_printer *pp, tree a)
+{
+  bool is_first = true;
+
+  if (a == NULL_TREE)
+    return;
+
+  for (; a != NULL_TREE; a = TREE_CHAIN (a))
+    {
+      const struct attribute_spec *as;
+      as = lookup_attribute_spec (TREE_PURPOSE (a));
+      if (!as || as->affects_type_identity == false)
+        continue;
+      if (is_first)
+       {
+         pp_c_ws_string (pp, "__attribute__");
+         pp_c_left_paren (pp);
+         pp_c_left_paren (pp);
+         is_first = false;
+       }
+      else
+       {
+         pp_separate_with (pp, ',');
+       }
+      pp_tree_identifier (pp, TREE_PURPOSE (a));
+      if (TREE_VALUE (a))
+       pp_c_call_argument_list (pp, TREE_VALUE (a));
+    }
+
+  if (!is_first)
+    {
+      pp_c_right_paren (pp);
+      pp_c_right_paren (pp);
+      pp_c_whitespace (pp);
+    }
 }
 
 /* function-definition:
