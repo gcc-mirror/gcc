@@ -1,3 +1,8 @@
+2011-03-21  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/48210
+	* params.def (lto-partitions): Require at least 1 partition.
+
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gthr-solaris.h: Remove.
