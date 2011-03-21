@@ -1,3 +1,7 @@
+2011-03-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/pre/gnu.ver: Remove typeinfo name exports for C++0x types.
+
 2011-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/pre/gnu.ver (CXXABI_1.3): Don't export _ZT[IS][PK]*[no].
