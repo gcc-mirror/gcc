@@ -578,7 +578,7 @@ add_referenced_var (tree var)
   get_var_ann (var);
   gcc_assert (DECL_P (var));
 
-  /* Insert VAR into the referenced_vars has table if it isn't present.  */
+  /* Insert VAR into the referenced_vars hash table if it isn't present.  */
   if (referenced_var_check_and_insert (var))
     {
       /* Scan DECL_INITIAL for pointer variables as they may contain
