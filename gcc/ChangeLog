@@ -1,3 +1,13 @@
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, alpha*-dec-osf5.1): Update for
+	binutils 2.21.
+	(Specific, i?86-*-solaris2.[89]): Likewise.
+	(Specific, i?86-*-solaris2.10): Likewise.
+	(Specific, mips-sgi-irix6): Likewise.
+	(Specific, *-*-solaris2*): Remove Sun Studio download URL.
+	Update for binutils 2.21.
+
 2011-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48213
