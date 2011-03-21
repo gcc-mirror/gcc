@@ -1,3 +1,8 @@
+2011-03-21  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/unwind-arm.c (__gnu_unwind_pr_common): Correct test
+	for barrier handlers.
+
 2011-03-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (UNSPEC_*, UNSPECV_*): Redefine all
