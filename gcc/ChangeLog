@@ -1,6 +1,12 @@
 2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/48135
+	* doc/install.texi (Prerequisites, Perl): Remove Glob.pm
+	reference.  Solaris 8 perl works.
+
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/48135
 	* doc/install.texi (Prerequisites): Move jar etc. up.
 	Explain support library version requirements.
 
