@@ -303,6 +303,22 @@ Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
 @command{tar} if you have problems.
 
+@item Perl version 5.6.1 (or later)
+
+Necessary when targetting Darwin, building @samp{libstdc++},
+and not using @option{--disable-symvers}.
+Necessary when targetting Solaris 2 with Sun @command{ld} and not using
+@option{--disable-symvers}.  A helper
+script needs @samp{Glob.pm}, which is missing from @command{perl} 5.005
+included in Solaris@tie{}8.  The bundled @command{perl} in Solaris@tie{}9 and up
+works.
+
+Necessary when regenerating @file{Makefile} dependencies in libiberty.
+Necessary when regenerating @file{libiberty/functions.texi}.
+Necessary when generating manpages from Texinfo manuals.
+Used by various scripts to generate some files included in SVN (mainly
+Unicode-related and rarely changing) from source tables.
+
 @item GNU Multiple Precision Library (GMP) version 4.3.2 (or later)
 
 Necessary to build GCC@.  If you do not have it installed in your
@@ -446,21 +462,6 @@ DVI or PDF files, respectively.
 
 Necessary to access the SVN repository.  Public releases and weekly
 snapshots of the development sources are also available via FTP@.
-
-@item Perl version 5.6.1 (or later)
-
-Necessary when regenerating @file{Makefile} dependencies in libiberty.
-Necessary when regenerating @file{libiberty/functions.texi}.
-Necessary when generating manpages from Texinfo manuals.
-Necessary when targetting Darwin, building @samp{libstdc++},
-and not using @option{--disable-symvers}.
-Necessary when targetting Solaris 2 with Sun @command{ld}, building
-@samp{libstdc++}, and not using @option{--disable-symvers}.  A helper
-scripts needs @samp{Glob.pm}, which is missing from @command{perl} 5.005
-included in Solaris@tie{}8.  The bundled @command{perl} in Solaris@tie{}9 and up
-works.
-Used by various scripts to generate some files included in SVN (mainly
-Unicode-related and rarely changing) from source tables.
 
 @item GNU diffutils version 2.7 (or later)
 
