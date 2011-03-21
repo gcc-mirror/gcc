@@ -319,6 +319,20 @@ Necessary when generating manpages from Texinfo manuals.
 Used by various scripts to generate some files included in SVN (mainly
 Unicode-related and rarely changing) from source tables.
 
+@item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
+
+Necessary to build libgcj, the GCJ runtime.
+
+@end table
+
+Several support libraries are necessary to build GCC, some are required,
+others optional.  While any sufficiently new version of required tools
+usually work, library requirements are generally stricter.  Newer
+versions may work in some cases, but it's safer to use the exact
+versions documented.  We appreciate bug reports about problems with
+newer versions, though.
+
+@table @asis
 @item GNU Multiple Precision Library (GMP) version 4.3.2 (or later)
 
 Necessary to build GCC@.  If you do not have it installed in your
@@ -373,10 +387,6 @@ does not use PPL, PPL is still required for Graphite.
 
 In both cases @option{--with-cloog} configure option should be used
 if CLooG is not installed in your default library search path.
-
-@item @command{jar}, or InfoZIP (@command{zip} and @command{unzip})
-
-Necessary to build libgcj, the GCJ runtime.
 
 @end table
 
