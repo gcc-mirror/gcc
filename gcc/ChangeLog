@@ -1,3 +1,20 @@
+2011-03-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (UNSPEC_*, UNSPECV_*): Redefine all
+	UNSPEC constants to be in the unspec enumeration, and redefine
+	all UNSPECV constants to be in the unspecv enumeration, so that
+	dumps print which unspec/unspec_volatile this is.
+	* config/rs6000/vector.md (UNSPEC_*): Ditto.
+	* config/rs6000/paired.md (UNSPEC_*): Ditto.
+	* config/rs6000/vsx.md (UNSPEC_*): Ditto.
+	* config/rs6000/altivec.md (UNSPEC_*, UNSPECV_*): Ditto.
+	* config/rs6000/dfp.md (UNSPEC_*): Ditto.
+
+	* config/rs6000/rs6000.md (UNSPECV_ISYNC, UNSPECV_LWSYNC): Rename
+	UNSPEC_ISYNC and UNSPEC_HWSYNC to UNSPECV_ISYNC and
+	UNSPECV_LWSYNC, since these are used as unspec_volatile.
+	* config/rs6000/sync.md (isync, lwsync): Ditto.
+
 2011-03-21  Richard Guenther  <rguenther@suse.de>
 
 	* params.def (lto-min-partition): Fix typo.

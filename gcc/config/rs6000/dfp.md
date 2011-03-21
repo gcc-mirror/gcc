@@ -1,5 +1,5 @@
 ;; Decimal Floating Point (DFP) patterns.
-;; Copyright (C) 2007, 2008, 2010
+;; Copyright (C) 2007, 2008, 2010, 2011
 ;; Free Software Foundation, Inc.
 ;; Contributed by Ben Elliston (bje@au.ibm.com) and Peter Bergner
 ;; (bergner@vnet.ibm.com).
@@ -24,9 +24,9 @@
 ;; UNSPEC usage
 ;;
 
-(define_constants
-  [(UNSPEC_MOVSD_LOAD		400)
-   (UNSPEC_MOVSD_STORE		401)
+(define_c_enum "unspec"
+  [UNSPEC_MOVSD_LOAD
+   UNSPEC_MOVSD_STORE
   ])
 
 
