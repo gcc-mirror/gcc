@@ -250,6 +250,7 @@ case ${target} in
  | powerpc*-*-gnu*			\
  | score-*				\
  | sh*-*-symbianelf*			\
+ | *-*-solaris2.8*			\
  | vax-*-netbsd*			\
  )
     if test "x$enable_obsolete" != xyes; then

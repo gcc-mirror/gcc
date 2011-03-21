@@ -46,7 +46,7 @@
 
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
 @c 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 
-@c 2010 Free Software Foundation, Inc.
+@c 2010, 2011 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -4145,7 +4145,9 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @heading @anchor{x-x-solaris2}*-*-solaris2*
 
-Support for Solaris 7 has been removed in GCC 4.6.
+Support for Solaris 8 has been obsoleted in GCC 4.7, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2, though you can download
 the Sun Studio compilers for free.  Alternatively,
