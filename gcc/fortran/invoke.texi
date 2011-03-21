@@ -1468,13 +1468,24 @@ need to be in effect.
 An allocatable left-hand side of an intrinsic assignment is automatically
 (re)allocated if it is either unallocated or has a different shape. The
 option is enabled by default except when @option{-std=f95} is given.
+
+@item -faggressive-function-elimination
+@opindex @code{faggressive-function-elimination}
+@cindex Elimination of functions with identical argument lists
+Functions with identical argument lists are eliminated within
+statements, regardless of whether these functions are marked
+@code{PURE} or not. For example, in
+@smallexample
+  a = f(b,c) + f(b,c)
+@end smallexample
+there will only be a single call to @code{f}.
+
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,
 gcc,Using the GNU Compiler Collection (GCC)}, for information on more options
 offered by the GBE
 shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
-
 
 @c man end
 

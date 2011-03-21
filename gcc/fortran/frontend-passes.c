@@ -40,6 +40,21 @@ static bool optimize_trim (gfc_expr *);
 
 static int count_arglist;
 
+/* Pointer to an array of gfc_expr ** we operate on, plus its size
+   and counter.  */
+
+static gfc_expr ***expr_array;
+static int expr_size, expr_count;
+
+/* Pointer to the gfc_code we currently work on - to be able to insert
+   a statement before.  */
+
+static gfc_code **current_code;
+
+/* The namespace we are currently dealing with.  */
+
+gfc_namespace *current_ns;
+
 /* Entry point - run all passes for a namespace.  So far, only an
    optimization pass is run.  */
 
@@ -48,9 +63,16 @@ gfc_run_passes (gfc_namespace *ns)
 {
   if (optimize)
     {
+      expr_size = 20;
+      expr_array = XNEWVEC(gfc_expr **, expr_size);
+
       optimize_namespace (ns);
       if (gfc_option.dump_fortran_optimized)
 	gfc_dump_parse_tree (ns, stdout);
+
+      /* FIXME: The following should be XDELETEVEC(expr_array);
+      but we cannot do that because it depends on free.  */
+      gfc_free (expr_array);
     }
 }
 
@@ -106,11 +128,214 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
+
+/* Callback function for common function elimination, called from cfe_expr_0.
+   Put all eligible function expressions into expr_array.  We can't do
+   allocatable functions.  */
+
+static int
+cfe_register_funcs (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
+	  void *data ATTRIBUTE_UNUSED)
+{
+  if ((*e)->expr_type != EXPR_FUNCTION)
+    return 0;
+
+  /* We don't do character functions (yet).  */
+  if ((*e)->ts.type == BT_CHARACTER)
+    return 0;
+
+  /* If we don't know the shape at compile time, we do not create a temporary
+     variable to hold the intermediate result.  FIXME: Change this later when
+     allocation on assignment works for intrinsics.  */
+
+  if ((*e)->rank > 0 && (*e)->shape == NULL)
+    return 0;
+  
+  /* Skip the test for pure functions if -faggressive-function-elimination
+     is specified.  */
+  if ((*e)->value.function.esym)
+    {
+      if ((*e)->value.function.esym->attr.allocatable)
+	return 0;
+
+      /* Don't create an array temporary for elemental functions.  */
+      if ((*e)->value.function.esym->attr.elemental && (*e)->rank > 0)
+	return 0;
+
+      /* Only eliminate potentially impure functions if the
+	 user specifically requested it.  */
+      if (!gfc_option.flag_aggressive_function_elimination
+	  && !(*e)->value.function.esym->attr.pure
+	  && !(*e)->value.function.esym->attr.implicit_pure)
+	return 0;
+    }
+
+  if ((*e)->value.function.isym)
+    {
+      /* Conversions are handled on the fly by the middle end,
+	 transpose during trans-* stages.  */
+      if ((*e)->value.function.isym->id == GFC_ISYM_CONVERSION
+	  || (*e)->value.function.isym->id == GFC_ISYM_TRANSPOSE)
+	return 0;
+
+      /* Don't create an array temporary for elemental functions,
+	 as this would be wasteful of memory.
+	 FIXME: Create a scalar temporary during scalarization.  */
+      if ((*e)->value.function.isym->elemental && (*e)->rank > 0)
+	return 0;
+
+      if (!(*e)->value.function.isym->pure)
+	return 0;
+    }
+
+  if (expr_count >= expr_size)
+    {
+      expr_size += expr_size;
+      expr_array = XRESIZEVEC(gfc_expr **, expr_array, expr_size);
+    }
+  expr_array[expr_count] = e;
+  expr_count ++;
+  return 0;
+}
+
+/* Returns a new expression (a variable) to be used in place of the old one,
+   with an an assignment statement before the current statement to set
+   the value of the variable.  */
+
+static gfc_expr*
+create_var (gfc_expr * e)
+{
+  char name[GFC_MAX_SYMBOL_LEN +1];
+  static int num = 1;
+  gfc_symtree *symtree;
+  gfc_symbol *symbol;
+  gfc_expr *result;
+  gfc_code *n;
+  int i;
+
+  sprintf(name, "__var_%d",num++);
+  if (gfc_get_sym_tree (name, current_ns, &symtree, false) != 0)
+    gcc_unreachable ();
+
+  symbol = symtree->n.sym;
+  symbol->ts = e->ts;
+  symbol->as = gfc_get_array_spec ();
+  symbol->as->rank = e->rank;
+  symbol->as->type = AS_EXPLICIT;
+  for (i=0; i<e->rank; i++)
+    {
+      gfc_expr *p, *q;
+      
+      p = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
+				 &(e->where));
+      mpz_set_si (p->value.integer, 1);
+      symbol->as->lower[i] = p;
+	  
+      q = gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
+				 &(e->where));
+      mpz_set (q->value.integer, e->shape[i]);
+      symbol->as->upper[i] = q;
+    }
+
+  symbol->attr.flavor = FL_VARIABLE;
+  symbol->attr.referenced = 1;
+  symbol->attr.dimension = e->rank > 0;
+  gfc_commit_symbol (symbol);
+
+  result = gfc_get_expr ();
+  result->expr_type = EXPR_VARIABLE;
+  result->ts = e->ts;
+  result->rank = e->rank;
+  result->shape = gfc_copy_shape (e->shape, e->rank);
+  result->symtree = symtree;
+  result->where = e->where;
+  if (e->rank > 0)
+    {
+      result->ref = gfc_get_ref ();
+      result->ref->type = REF_ARRAY;
+      result->ref->u.ar.type = AR_FULL;
+      result->ref->u.ar.where = e->where;
+      result->ref->u.ar.as = symbol->as;
+    }
+
+  /* Generate the new assignment.  */
+  n = XCNEW (gfc_code);
+  n->op = EXEC_ASSIGN;
+  n->loc = (*current_code)->loc;
+  n->next = *current_code;
+  n->expr1 = gfc_copy_expr (result);
+  n->expr2 = e;
+  *current_code = n;
+
+  return result;
+}
+
+/* Callback function for the code walker for doing common function
+   elimination.  This builds up the list of functions in the expression
+   and goes through them to detect duplicates, which it then replaces
+   by variables.  */
+
+static int
+cfe_expr_0 (gfc_expr **e, int *walk_subtrees,
+	  void *data ATTRIBUTE_UNUSED)
+{
+  int i,j;
+  gfc_expr *newvar;
+
+  expr_count = 0;
+
+  gfc_expr_walker (e, cfe_register_funcs, NULL);
+
+  /* Walk backwards through all the functions to make sure we
+     catch the leaf functions first.  */
+  for (i=expr_count-1; i>=1; i--)
+    {
+      /* Skip if the function has been replaced by a variable already.  */
+      if ((*(expr_array[i]))->expr_type == EXPR_VARIABLE)
+	continue;
+
+      newvar = NULL;
+      for (j=i-1; j>=0; j--)
+	{
+	  if (gfc_dep_compare_functions(*(expr_array[i]),
+					*(expr_array[j]), true)	== 0)
+	    {
+	      if (newvar == NULL)
+		newvar = create_var (*(expr_array[i]));
+	      gfc_free (*(expr_array[j]));
+	      *(expr_array[j]) = gfc_copy_expr (newvar);
+	    }
+	}
+      if (newvar)
+	*(expr_array[i]) = newvar;
+    }
+
+  /* We did all the necessary walking in this function.  */
+  *walk_subtrees = 0;
+  return 0;
+}
+
+/* Callback function for common function elimination, called from
+   gfc_code_walker.  This keeps track of the current code, in order
+   to insert statements as needed.  */
+
+static int
+cfe_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
+	  void *data ATTRIBUTE_UNUSED)
+{
+  current_code = c;
+  return 0;
+}
+
 /* Optimize a namespace, including all contained namespaces.  */
 
 static void
 optimize_namespace (gfc_namespace *ns)
 {
+
+  current_ns = ns;
+
+  gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
   gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
 
   for (ns = ns->contained; ns; ns = ns->sibling)

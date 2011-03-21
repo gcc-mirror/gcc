@@ -1,3 +1,9 @@
+2010-03-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/22572
+	* gfortran.dg/function_optimize_1.f90:  New test.
+	* gfortran.dg/function_optimize_2.f90:  New test.
+
 2011-03-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/47502

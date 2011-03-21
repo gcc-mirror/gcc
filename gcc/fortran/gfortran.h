@@ -2232,6 +2232,7 @@ typedef struct
   int flag_whole_file;
   int flag_protect_parens;
   int flag_realloc_lhs;
+  int flag_aggressive_function_elimination;
 
   int fpe;
   int rtcheck;
@@ -2865,6 +2866,7 @@ void gfc_global_used (gfc_gsymbol *, locus *);
 gfc_namespace* gfc_build_block_ns (gfc_namespace *);
 
 /* dependency.c */
+int gfc_dep_compare_functions (gfc_expr *, gfc_expr *, bool);
 int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);
 
 /* check.c */

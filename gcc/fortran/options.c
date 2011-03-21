@@ -150,6 +150,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.flag_align_commons = 1;
   gfc_option.flag_protect_parens = 1;
   gfc_option.flag_realloc_lhs = -1;
+  gfc_option.flag_aggressive_function_elimination = 0;
   
   gfc_option.fpe = 0;
   gfc_option.rtcheck = 0;
@@ -970,6 +971,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_falign_commons:
       gfc_option.flag_align_commons = value;
+      break;
+
+    case  OPT_faggressive_function_elimination:
+      gfc_option.flag_aggressive_function_elimination = value;
       break;
 
     case OPT_fprotect_parens:
