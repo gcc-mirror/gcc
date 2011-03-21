@@ -1677,10 +1677,10 @@ fi
 
 if test "x$with_ppl" != xno; then
   if test "x$pwllib" = x; then
-    saved_LDFLAGS="$LDFLAGS"
-    LDFLAGS="$LDFLAGS $ppllibs"
-    AC_CHECK_LIB(pwl,PWL_handle_timeout,[pwllib="-lpwl"])
-    LDFLAGS="$saved_LDFLAGS"
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS $ppllibs -lstdc++ -lm"
+    AC_CHECK_LIB(pwl, PWL_handle_timeout, [pwllib="-lpwl"])
+    LIBS="$saved_LIBS"
   fi
 
   ppllibs="$ppllibs -lppl_c -lppl $pwllib -lgmpxx"
