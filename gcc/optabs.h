@@ -923,4 +923,10 @@ set_direct_optab_handler (direct_optab op, enum machine_mode mode,
 extern rtx optab_libfunc (optab optab, enum machine_mode mode);
 extern rtx convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,
 			          enum machine_mode mode2);
+
+extern bool insn_operand_matches (enum insn_code icode, unsigned int opno,
+				  rtx operand);
+extern rtx prepare_operand (enum insn_code, rtx, int, enum machine_mode,
+			    enum machine_mode, int);
+
 #endif /* GCC_OPTABS_H */

@@ -5819,17 +5819,15 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	      rtx equiv = (MEM_P (XEXP (x, 0))
 			   ? XEXP (x, 0)
 			   : reg_equiv_mem[regno]);
-	      int icode = (int) optab_handler (add_optab, GET_MODE (x));
+	      enum insn_code icode = optab_handler (add_optab, GET_MODE (x));
 	      if (insn && NONJUMP_INSN_P (insn) && equiv
 		  && memory_operand (equiv, GET_MODE (equiv))
 #ifdef HAVE_cc0
 		  && ! sets_cc0_p (PATTERN (insn))
 #endif
 		  && ! (icode != CODE_FOR_nothing
-			&& ((*insn_data[icode].operand[0].predicate)
-			    (equiv, GET_MODE (x)))
-			&& ((*insn_data[icode].operand[1].predicate)
-			    (equiv, GET_MODE (x)))))
+			&& insn_operand_matches (icode, 0, equiv)
+			&& insn_operand_matches (icode, 1, equiv)))
 		{
 		  /* We use the original pseudo for loc, so that
 		     emit_reload_insns() knows which pseudo this

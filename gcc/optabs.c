@@ -3943,15 +3943,15 @@ can_compare_p (enum rtx_code code, enum machine_mode mode,
   test = gen_rtx_fmt_ee (code, mode, const0_rtx, const0_rtx);
   do
     {
-      int icode;
+      enum insn_code icode;
 
       if (purpose == ccp_jump
           && (icode = optab_handler (cbranch_optab, mode)) != CODE_FOR_nothing
-          && insn_data[icode].operand[0].predicate (test, mode))
+          && insn_operand_matches (icode, 0, test))
         return 1;
       if (purpose == ccp_store_flag
           && (icode = optab_handler (cstore_optab, mode)) != CODE_FOR_nothing
-          && insn_data[icode].operand[1].predicate (test, mode))
+          && insn_operand_matches (icode, 1, test))
         return 1;
       if (purpose == ccp_cmov
 	  && optab_handler (cmov_optab, mode) != CODE_FOR_nothing)
@@ -4112,16 +4112,14 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       enum insn_code icode;
       icode = optab_handler (cbranch_optab, cmp_mode);
       if (icode != CODE_FOR_nothing
-	  && insn_data[icode].operand[0].predicate (test, VOIDmode))
+	  && insn_operand_matches (icode, 0, test))
 	{
 	  rtx last = get_last_insn ();
 	  rtx op0 = prepare_operand (icode, x, 1, mode, cmp_mode, unsignedp);
 	  rtx op1 = prepare_operand (icode, y, 2, mode, cmp_mode, unsignedp);
 	  if (op0 && op1
-	      && insn_data[icode].operand[1].predicate
-		 (op0, insn_data[icode].operand[1].mode)
-	      && insn_data[icode].operand[2].predicate
-		 (op1, insn_data[icode].operand[2].mode))
+	      && insn_operand_matches (icode, 1, op0)
+	      && insn_operand_matches (icode, 2, op1))
 	    {
 	      XEXP (test, 0) = op0;
 	      XEXP (test, 1) = op1;
@@ -4200,18 +4198,17 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
    that it is accepted by the operand predicate.  Return the new value.  */
 
 rtx
-prepare_operand (int icode, rtx x, int opnum, enum machine_mode mode,
+prepare_operand (enum insn_code icode, rtx x, int opnum, enum machine_mode mode,
 		 enum machine_mode wider_mode, int unsignedp)
 {
   if (mode != wider_mode)
     x = convert_modes (wider_mode, mode, x, unsignedp);
 
-  if (!insn_data[icode].operand[opnum].predicate
-      (x, insn_data[icode].operand[opnum].mode))
+  if (!insn_operand_matches (icode, opnum, x))
     {
       if (reload_completed)
 	return NULL_RTX;
-      x = copy_to_mode_reg (insn_data[icode].operand[opnum].mode, x);
+      x = copy_to_mode_reg (insn_data[(int) icode].operand[opnum].mode, x);
     }
 
   return x;
@@ -4232,7 +4229,7 @@ emit_cmp_and_jump_insn_1 (rtx test, enum machine_mode mode, rtx label)
   icode = optab_handler (cbranch_optab, optab_mode);
 
   gcc_assert (icode != CODE_FOR_nothing);
-  gcc_assert (insn_data[icode].operand[0].predicate (test, VOIDmode));
+  gcc_assert (insn_operand_matches (icode, 0, test));
   emit_jump_insn (GEN_FCN (icode) (test, XEXP (test, 0), XEXP (test, 1), label));
 }
 
@@ -4699,14 +4696,11 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 rtx
 gen_add2_insn (rtx x, rtx y)
 {
-  int icode = (int) optab_handler (add_optab, GET_MODE (x));
+  enum insn_code icode = optab_handler (add_optab, GET_MODE (x));
 
-  gcc_assert (insn_data[icode].operand[0].predicate
-	      (x, insn_data[icode].operand[0].mode));
-  gcc_assert (insn_data[icode].operand[1].predicate
-	      (x, insn_data[icode].operand[1].mode));
-  gcc_assert (insn_data[icode].operand[2].predicate
-	      (y, insn_data[icode].operand[2].mode));
+  gcc_assert (insn_operand_matches (icode, 0, x));
+  gcc_assert (insn_operand_matches (icode, 1, x));
+  gcc_assert (insn_operand_matches (icode, 2, y));
 
   return GEN_FCN (icode) (x, x, y);
 }
@@ -4717,15 +4711,12 @@ gen_add2_insn (rtx x, rtx y)
 rtx
 gen_add3_insn (rtx r0, rtx r1, rtx c)
 {
-  int icode = (int) optab_handler (add_optab, GET_MODE (r0));
+  enum insn_code icode = optab_handler (add_optab, GET_MODE (r0));
 
   if (icode == CODE_FOR_nothing
-      || !(insn_data[icode].operand[0].predicate
-	   (r0, insn_data[icode].operand[0].mode))
-      || !(insn_data[icode].operand[1].predicate
-	   (r1, insn_data[icode].operand[1].mode))
-      || !(insn_data[icode].operand[2].predicate
-	   (c, insn_data[icode].operand[2].mode)))
+      || !insn_operand_matches (icode, 0, r0)
+      || !insn_operand_matches (icode, 1, r1)
+      || !insn_operand_matches (icode, 2, c))
     return NULL_RTX;
 
   return GEN_FCN (icode) (r0, r1, c);
@@ -4734,21 +4725,18 @@ gen_add3_insn (rtx r0, rtx r1, rtx c)
 int
 have_add2_insn (rtx x, rtx y)
 {
-  int icode;
+  enum insn_code icode;
 
   gcc_assert (GET_MODE (x) != VOIDmode);
 
-  icode = (int) optab_handler (add_optab, GET_MODE (x));
+  icode = optab_handler (add_optab, GET_MODE (x));
 
   if (icode == CODE_FOR_nothing)
     return 0;
 
-  if (!(insn_data[icode].operand[0].predicate
-	(x, insn_data[icode].operand[0].mode))
-      || !(insn_data[icode].operand[1].predicate
-	   (x, insn_data[icode].operand[1].mode))
-      || !(insn_data[icode].operand[2].predicate
-	   (y, insn_data[icode].operand[2].mode)))
+  if (!insn_operand_matches (icode, 0, x)
+      || !insn_operand_matches (icode, 1, x)
+      || !insn_operand_matches (icode, 2, y))
     return 0;
 
   return 1;
@@ -4759,14 +4747,11 @@ have_add2_insn (rtx x, rtx y)
 rtx
 gen_sub2_insn (rtx x, rtx y)
 {
-  int icode = (int) optab_handler (sub_optab, GET_MODE (x));
+  enum insn_code icode = optab_handler (sub_optab, GET_MODE (x));
 
-  gcc_assert (insn_data[icode].operand[0].predicate
-	      (x, insn_data[icode].operand[0].mode));
-  gcc_assert (insn_data[icode].operand[1].predicate
-	      (x, insn_data[icode].operand[1].mode));
-  gcc_assert  (insn_data[icode].operand[2].predicate
-	       (y, insn_data[icode].operand[2].mode));
+  gcc_assert (insn_operand_matches (icode, 0, x));
+  gcc_assert (insn_operand_matches (icode, 1, x));
+  gcc_assert (insn_operand_matches (icode, 2, y));
 
   return GEN_FCN (icode) (x, x, y);
 }
@@ -4777,15 +4762,12 @@ gen_sub2_insn (rtx x, rtx y)
 rtx
 gen_sub3_insn (rtx r0, rtx r1, rtx c)
 {
-  int icode = (int) optab_handler (sub_optab, GET_MODE (r0));
+  enum insn_code icode = optab_handler (sub_optab, GET_MODE (r0));
 
   if (icode == CODE_FOR_nothing
-      || !(insn_data[icode].operand[0].predicate
-	   (r0, insn_data[icode].operand[0].mode))
-      || !(insn_data[icode].operand[1].predicate
-	   (r1, insn_data[icode].operand[1].mode))
-      || !(insn_data[icode].operand[2].predicate
-	   (c, insn_data[icode].operand[2].mode)))
+      || !insn_operand_matches (icode, 0, r0)
+      || !insn_operand_matches (icode, 1, r1)
+      || !insn_operand_matches (icode, 2, c))
     return NULL_RTX;
 
   return GEN_FCN (icode) (r0, r1, c);
@@ -4794,21 +4776,18 @@ gen_sub3_insn (rtx r0, rtx r1, rtx c)
 int
 have_sub2_insn (rtx x, rtx y)
 {
-  int icode;
+  enum insn_code icode;
 
   gcc_assert (GET_MODE (x) != VOIDmode);
 
-  icode = (int) optab_handler (sub_optab, GET_MODE (x));
+  icode = optab_handler (sub_optab, GET_MODE (x));
 
   if (icode == CODE_FOR_nothing)
     return 0;
 
-  if (!(insn_data[icode].operand[0].predicate
-	(x, insn_data[icode].operand[0].mode))
-      || !(insn_data[icode].operand[1].predicate
-	   (x, insn_data[icode].operand[1].mode))
-      || !(insn_data[icode].operand[2].predicate
-	   (y, insn_data[icode].operand[2].mode)))
+  if (!insn_operand_matches (icode, 0, x)
+      || !insn_operand_matches (icode, 1, x)
+      || !insn_operand_matches (icode, 2, y))
     return 0;
 
   return 1;
@@ -6643,8 +6622,7 @@ gen_cond_trap (enum rtx_code code, rtx op1, rtx op2, rtx tcode)
     return 0;
 
   /* Some targets only accept a zero trap code.  */
-  if (insn_data[icode].operand[3].predicate
-      && !insn_data[icode].operand[3].predicate (tcode, VOIDmode))
+  if (!insn_operand_matches (icode, 3, tcode))
     return 0;
 
   do_pending_stack_adjust ();
@@ -7328,6 +7306,17 @@ expand_sync_lock_test_and_set (rtx mem, rtx val, rtx target)
     }
 
   return NULL_RTX;
+}
+
+/* Return true if OPERAND is suitable for operand number OPNO of
+   instruction ICODE.  */
+
+bool
+insn_operand_matches (enum insn_code icode, unsigned int opno, rtx operand)
+{
+  return (!insn_data[(int) icode].operand[opno].predicate
+	  || (insn_data[(int) icode].operand[opno].predicate
+	      (operand, insn_data[(int) icode].operand[opno].mode)));
 }
 
 #include "gt-optabs.h"
