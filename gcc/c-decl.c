@@ -4888,6 +4888,7 @@ grokdeclarator (const struct c_declarator *declarator,
   const char *errmsg;
   tree expr_dummy;
   bool expr_const_operands_dummy;
+  enum c_declarator_kind first_non_attr_kind;
 
   if (TREE_CODE (type) == ERROR_MARK)
     return error_mark_node;
@@ -4907,6 +4908,7 @@ grokdeclarator (const struct c_declarator *declarator,
   {
     const struct c_declarator *decl = declarator;
 
+    first_non_attr_kind = cdk_attrs;
     while (decl)
       switch (decl->kind)
 	{
@@ -4918,6 +4920,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	case cdk_pointer:
 	  funcdef_syntax = (decl->kind == cdk_function);
 	  decl = decl->declarator;
+	  if (first_non_attr_kind == cdk_attrs)
+	    first_non_attr_kind = decl->kind;
 	  break;
 
 	case cdk_attrs:
@@ -4928,6 +4932,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	  loc = decl->id_loc;
 	  if (decl->u.id)
 	    name = decl->u.id;
+	  if (first_non_attr_kind == cdk_attrs)
+	    first_non_attr_kind = decl->kind;
 	  decl = 0;
 	  break;
 
@@ -5034,7 +5040,9 @@ grokdeclarator (const struct c_declarator *declarator,
     error_at (loc, "conflicting named address spaces (%s vs %s)",
 	      c_addr_space_name (as1), c_addr_space_name (as2));
 
-  if (!flag_gen_aux_info && (TYPE_QUALS (element_type)))
+  if ((TREE_CODE (type) == ARRAY_TYPE
+       || first_non_attr_kind == cdk_array)
+      && TYPE_QUALS (element_type))
     type = TYPE_MAIN_VARIANT (type);
   type_quals = ((constp ? TYPE_QUAL_CONST : 0)
 		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
