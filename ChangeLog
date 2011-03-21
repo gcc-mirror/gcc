@@ -1,3 +1,10 @@
+2011-03-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/48120:
+	* configure.ac (pwllib): Use LIBS instead of LDFLAGS.
+	Add -lstdc++ -lm to LIBS.
+	* configure: Regenerate.
+
 2011-03-18  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config.guess: Update to version 2011-02-02
