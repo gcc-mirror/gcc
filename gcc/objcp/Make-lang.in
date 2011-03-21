@@ -45,7 +45,7 @@ obj-c++: cc1objplus$(exeext)
 .PHONY: obj-c++
 
 START_HDRS = $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \
-  langhooks.h c-family/c-objc.h objc/objc-act.h
+  $(CXX_PARSER_H) $(CXX_PRETTY_PRINT_H) langhooks.h c-family/c-objc.h objc/objc-act.h
 
 # Use maximal warnings for this front end.  Also, make ObjC and C++
 # headers accessible.
@@ -78,7 +78,7 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
 
 objcp/objcp-lang.o : objcp/objcp-lang.c $(START_HDRS) \
   $(C_COMMON_H) $(LANGHOOKS_DEF_H) cp/cp-objcp-common.h \
-  $(TARGET_H) gtype-objcp.h 
+  $(TARGET_H) gtype-objcp.h
 
 objcp/objcp-decl.o : objcp/objcp-decl.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) \

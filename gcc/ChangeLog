@@ -1,3 +1,8 @@
+2011-03-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR bootstrap/48167
+	* gengtype.c (files_rules): Added rule for cp/parser.h.
+
 2011-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/48213
